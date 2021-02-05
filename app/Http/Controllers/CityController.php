@@ -15,9 +15,11 @@ class CityController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($name)
     {
-        return City::with('townships')->paginate(10);
+        return City::with('townships')
+        ->where('name', 'LIKE', '%' . $name . '%')
+        ->orWhere('slug', $name)->paginate(10);
     }
 
     /**
