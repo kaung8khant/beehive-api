@@ -17,7 +17,9 @@ class CreateTownshipsTable extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('slug')->unique();
+            $table->unsignedBigInteger('city_id');
             $table->timestamps();
+            $table->foreign('city_id')->references('id')->on('cities')->onDelete('cascade');
         });
     }
 

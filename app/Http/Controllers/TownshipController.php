@@ -30,11 +30,13 @@ class TownshipController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $township=Township::create($request->validate([
+        $township = Township::create($request->validate([
             'name' => 'required|unique:townships',
             'slug' => 'required|unique:townships',
             'city_id' => 'required|exists:App\Models\City,id'
         ]));
+
+        return response()->json($township, 201);
     }
 
     /**
