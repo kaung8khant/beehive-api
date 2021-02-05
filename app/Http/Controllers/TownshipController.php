@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StringHelper;
 use App\Models\Township;
 use Illuminate\Http\Request;
 
 class TownshipController extends Controller
 {
+    use StringHelper;
     /**
      * Display a listing of the resource.
      *
@@ -14,18 +16,9 @@ class TownshipController extends Controller
      */
     public function index()
     {
-        //
+        return Township::with('city')->paginate(10);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -35,7 +28,13 @@ class TownshipController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $township=Township::create($request->validate([
+            'name' => 'required|unique:townships',
+            'slug' => 'required|unique:townships',
+            'city_id' => 'required|exists:App\Models\City,id'
+        ]));
     }
 
     /**
@@ -44,21 +43,11 @@ class TownshipController extends Controller
      * @param  \App\Models\Township  $township
      * @return \Illuminate\Http\Response
      */
-    public function show(Township $township)
+    public function show($slug)
     {
-        //
+        return Township::with('city')->where('slug', $slug)->firstOrFail();
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Township  $township
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Township $township)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
