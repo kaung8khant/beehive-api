@@ -19,7 +19,7 @@ class TownshipController extends Controller
         return Township::with('city')
         ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)
-        ->orderBy('name', 'desc')->paginate(10);
+        ->paginate(10);
     }
 
 
