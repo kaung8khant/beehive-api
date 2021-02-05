@@ -26,6 +26,8 @@ class CitySeeder extends Seeder
                 "slug" => $this->generateUniqueSlug(),
             ],
         ];
-        City::insert($cities);
+        foreach ($cities as $city) {
+            City::create($city);
+        }
     }
 }

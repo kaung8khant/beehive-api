@@ -20,6 +20,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::resource('categories', 'CategoryController');
 Route::resource('sub-categories', 'SubCategoryController');
+Route::resource('cities', 'CityController');
+Route::resource('townships', 'TownshipController');
 
 // Route::group([
 //     'prefix'=> 'categories',
