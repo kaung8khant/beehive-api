@@ -4,10 +4,11 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
+use App\Models\City;
 
 class CitySeeder extends Seeder
 {
-    use StirngHelper;
+    use StringHelper;
     /**
      * Run the database seeds.
      *
