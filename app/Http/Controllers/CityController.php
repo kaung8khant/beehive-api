@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\StringHelper;
 use App\Models\City;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 
 class CityController extends Controller
@@ -16,16 +17,7 @@ class CityController extends Controller
      */
     public function index()
     {
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return City::with('townships')->paginate(10);
     }
 
     /**
@@ -36,7 +28,15 @@ class CityController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request['slug']=$this->generateUniqueSlug();
+
+        $city=City::create($request->validate(
+            [
+                'name'=>'required|unique:cities',
+                'slug'=>'required|unique:cities',
+            ]
+        ));
+        return response()->json($city, 201);
     }
 
     /**
@@ -45,20 +45,9 @@ class CityController extends Controller
      * @param  \App\Models\City  $city
      * @return \Illuminate\Http\Response
      */
-    public function show(City $city)
+    public function show($slug)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\City  $city
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(City $city)
-    {
-        //
+        City::with('townships')->where('slug', $slug)->firstOrFail();
     }
 
     /**
@@ -68,9 +57,16 @@ class CityController extends Controller
      * @param  \App\Models\City  $city
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, City $city)
+    public function update(Request $request, $slug)
     {
-        //
+        $city=City::where('slug', $slug)->firstOrFail();
+
+        $city->update($request->validate([
+            'name'=>'required',
+            Rule::unique('cities')->ignore($city->id),
+        ]));
+
+        return response()->json($city, 200);
     }
 
     /**
@@ -79,8 +75,9 @@ class CityController extends Controller
      * @param  \App\Models\City  $city
      * @return \Illuminate\Http\Response
      */
-    public function destroy(City $city)
+    public function destroy($slug)
     {
-        //
+        City::where('slug', $slug)->firstOrFail()->delete();
+        return response()->json(['message'=>'successfully deleted'], 200);
     }
 }
