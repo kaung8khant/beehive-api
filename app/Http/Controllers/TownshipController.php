@@ -14,9 +14,12 @@ class TownshipController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($filter)
     {
-        return Township::with('city')->paginate(10);
+        return Township::with('city')
+        ->where('name', 'LIKE', '%' . $filter . '%')
+        ->orWhere('slug', 'LIKE', '%' . $filter .'%')
+        ->orderBy('name', 'desc')->paginate(10);
     }
 
 
@@ -30,11 +33,13 @@ class TownshipController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $township=Township::create($request->validate([
+        $township = Township::create($request->validate([
             'name' => 'required|unique:townships',
             'slug' => 'required|unique:townships',
             'city_id' => 'required|exists:App\Models\City,id'
         ]));
+
+        return response()->json($township, 201);
     }
 
     /**
