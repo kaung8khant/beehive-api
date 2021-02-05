@@ -61,9 +61,17 @@ class TownshipController extends Controller
      * @param  \App\Models\Township  $township
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Township $township)
+    public function update(Request $request, $slug)
     {
-        //
+        $township = Township::where('slug', $slug)->firstOrFail();
+
+        $township->update($request->validate([
+            'name' => ['required',
+            Rule::unique('townsips')->ignore('$township_id'),
+        ],
+            'city_id' => 'required|exists:App\Models\City,id',
+        ]));
+        return response()->json($township, 200);
     }
 
     /**
@@ -72,8 +80,9 @@ class TownshipController extends Controller
      * @param  \App\Models\Township  $township
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Township $township)
+    public function destroy($slug)
     {
-        //
+        Township::where('slug', $slug)->firstOrFail()->delete();
+        return response()->json(['message'=>'Successfully deleted'], 200);
     }
 }
