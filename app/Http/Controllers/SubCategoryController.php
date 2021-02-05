@@ -18,17 +18,7 @@ class SubCategoryController extends Controller
      */
     public function index()
     {
-        return SubCategory::paginate(10);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return SubCategory::with('category')->paginate(10);
     }
 
     /**
@@ -53,45 +43,45 @@ class SubCategoryController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $slug
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
     public function show($slug)
     {
-        return SubCategory::where('slug', $slug)->firstOrFail();
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
+        return SubCategory::with('category')->where('slug', $slug)->firstOrFail();
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $slug)
     {
-        //
+        $subCategory = SubCategory::where('slug', $slug)->firstOrFail();
+
+        $subCategory->update($request->validate([
+            'name' => [
+                'required',
+                Rule::unique('sub_categories')->ignore($subCategory->id),
+            ],
+            'category_id' => 'required|exists:App\Models\Category,id',
+        ]));
+
+        return response()->json($subCategory, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($slug)
     {
-        //
+        SubCategory::where('slug', $slug)->firstOrFail()->delete();
+        return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 }

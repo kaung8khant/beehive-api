@@ -18,17 +18,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        return Category::paginate(10);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return Category::with('sub_categories')->paginate(10);
     }
 
     /**
@@ -52,34 +42,24 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $slug
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
     public function show($slug)
     {
-        return Category::where('slug', $slug)->firstOrFail();
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Request $request)
-    {
-        //
+        return Category::with('sub_categories')->where('slug', $slug)->firstOrFail();
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $slug)
     {
-        $category = Category::where('slug', $request->category)->firstOrFail();
+        $category = Category::where('slug', $slug)->firstOrFail();
 
         $category->update($request->validate([
             'name' => [
@@ -94,12 +74,12 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request)
+    public function destroy($slug)
     {
-        Category::where('slug', $request->category)->firstOrFail()->delete();
+        Category::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 }
