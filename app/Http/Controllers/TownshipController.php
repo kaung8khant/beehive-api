@@ -14,9 +14,12 @@ class TownshipController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($filter)
     {
-        return Township::with('city')->paginate(10);
+        return Township::with('city')
+        ->where('name', 'LIKE', '%' . $filter . '%')
+        ->orWhere('slug', 'LIKE', '%' . $filter .'%')
+        ->orderBy('name', 'desc')->paginate(10);
     }
 
 
