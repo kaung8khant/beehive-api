@@ -11,7 +11,7 @@ class City extends Model
 
     protected $fillable = ['name', 'slug'];
 
-    public function township()
+    public function townships()
     {
         return $this->hasMany(Township::class);
     }
