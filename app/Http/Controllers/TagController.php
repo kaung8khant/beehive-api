@@ -50,7 +50,7 @@ class TagController extends Controller
      */
     public function show($slug)
     {
-        Tag::where('slug', $slug)->firstOrFail();
+        return response()->json(Tag::where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**

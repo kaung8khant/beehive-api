@@ -48,7 +48,7 @@ class SubCategoryController extends Controller
      */
     public function show($slug)
     {
-        return SubCategory::with('category')->where('slug', $slug)->firstOrFail();
+        return response()->json(SubCategory::with('category')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**

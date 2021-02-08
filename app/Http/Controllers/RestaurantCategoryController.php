@@ -50,7 +50,7 @@ class RestaurantCategoryController extends Controller
      */
     public function show($slug)
     {
-        RestaurantCategory::where('slug', $slug)->firstOrFail();
+        return response()->json(RestaurantCategory::where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
