@@ -42,9 +42,9 @@ class RestaurantVendorController extends Controller
             'name' => 'required|unique:restaurant_vendors',
             'name_mm'=>'unique:restaurant_vendors',
             'address' => 'required|string:restaurant_vendors',
-            'contactNumber'=> "required|string:restaurant_vendors",
-            'openingTime'=> "required|timezone:restaurant_vendors",
-            'closingTime'=> "required|timezone:restaurant_vendors",
+            'contactNumber'=> 'required|string:restaurant_vendors',
+            'openingTime'=> 'required|timezone:restaurant_vendors',
+            'closingTime'=> 'required|timezone:restaurant_vendors',
             'enable'=> 'requierd|boolean:restaurant_vendors',
      ]));
 
