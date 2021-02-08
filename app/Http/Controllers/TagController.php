@@ -17,6 +17,11 @@ class TagController extends Controller
      */
     public function index($filter)
     {
+        return Tag::paginate(10);
+    }
+
+    public function search($filter)
+    {
         return Tag::where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);

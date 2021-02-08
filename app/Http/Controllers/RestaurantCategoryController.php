@@ -17,6 +17,11 @@ class RestaurantCategoryController extends Controller
      */
     public function index($filter)
     {
+        return RestaurantCategory::paginate(10);
+    }
+
+    public function search($filter)
+    {
         return RestaurantCategory::where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);

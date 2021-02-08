@@ -21,6 +21,13 @@ class SubCategoryController extends Controller
         return SubCategory::with('category')->paginate(10);
     }
 
+    public function search($filter)
+    {
+        return SubCategory::where('name', 'LIKE', '%' . $filter . '%')
+        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
+        ->orWhere('slug', $filter)->paginate(10);
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -48,7 +55,7 @@ class SubCategoryController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(SubCategory::with('category')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(SubCategory::with('store_category')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
