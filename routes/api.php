@@ -29,3 +29,4 @@ Route::resource('tags', 'TagController');
 Route::get('tags/filter/{param}', 'TagController@search')->name('search');
 Route::resource('cities', 'CityController');
 Route::resource('townships', 'TownshipController');
+Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');

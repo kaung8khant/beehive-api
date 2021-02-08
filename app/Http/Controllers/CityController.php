@@ -22,6 +22,7 @@ class CityController extends Controller
         ->orWhere('slug', $name)->paginate(10);
     }
 
+
     /**
      * Store a newly created resource in storage.
      *
@@ -35,6 +36,7 @@ class CityController extends Controller
         $city=City::create($request->validate(
             [
                 'name'=>'required|unique:cities',
+                'name_mm'=>'unique:cities',
                 'slug'=>'required|unique:cities',
             ]
         ));
@@ -65,6 +67,7 @@ class CityController extends Controller
 
         $city->update($request->validate([
             'name'=>'required',
+            'name_mm'=>'unique:cities',
             Rule::unique('cities')->ignore($city->id),
         ]));
 

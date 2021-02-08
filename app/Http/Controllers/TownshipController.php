@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\StringHelper;
+use App\Models\City;
 use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -24,7 +25,11 @@ class TownshipController extends Controller
         ->paginate(10);
     }
 
-
+    public function getTownshipsByCity($slug)
+    {
+        $city=City::with('townships')->where('slug', $slug)->firstOrFail();
+        return response()->json($city->townships()->paginate(10), 200);
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -70,8 +75,9 @@ class TownshipController extends Controller
 
         $township->update($request->validate([
             'name' => ['required',
-            Rule::unique('townsips')->ignore('$township_id'),
+            Rule::unique('townships')->ignore('$township_id'),
         ],
+            'name_mm'=>'unique:townships',
             'city_id' => 'required|exists:App\Models\City,id',
         ]));
         return response()->json($township, 200);
