@@ -23,3 +23,5 @@ Route::resource('restaurant-categories', 'RestaurantCategoryController');
 Route::resource('store-categories', 'StoreCategoryController');
 Route::get('store-categories/{slug?}/sub-catrgories', 'StoreCategoryController@getSubCategoriesByStoreCategory')->name('getSubCategoriesByStoreCategory');
 Route::resource('tags', 'TagController');
+Route::resource('cities', 'CityController');
+Route::resource('townships', 'TownshipController');

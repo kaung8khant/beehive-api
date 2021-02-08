@@ -39,6 +39,8 @@ class TownshipSeeder extends Seeder
             ],
         ];
 
-        Township::insert($townships);
+        foreach ($townships as $township) {
+            Township::create($township);
+        }
     }
 }
