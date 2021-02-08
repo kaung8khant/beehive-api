@@ -15,9 +15,10 @@ class RestaurantVendorController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($filter)
     {
-        //
+        return RestaurantVendor::where('name', 'LIKE', '%' . $filter . '%')
+        ->orWhere('slug', $filter)->paginate(10);
     }
 
     /**
@@ -57,8 +58,9 @@ class RestaurantVendorController extends Controller
      * @param  \App\Models\RestaurantVendor  $restaurantVendor
      * @return \Illuminate\Http\Response
      */
-    public function show(RestaurantVendor $restaurantVendor)
+    public function show($slug)
     {
+        RestaurantVendor::where('slug', $slug)->firstOrFail();
     }
 
     /**
@@ -82,7 +84,7 @@ class RestaurantVendorController extends Controller
         $restaurantVendor->update($request->validate([
             'name' => [
                 'required',
-                Rule::unique('restaurant_vendor')->ignore($restaurantVendor->id),
+                Rule::unique('restaurant_vendors')->ignore($restaurantVendor->id),
             ],
         ]));
 
