@@ -13,7 +13,12 @@ class StoreCategoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($filter)
+    public function index()
+    {
+        return StoreCategory::paginate(10);
+    }
+
+    public function search($filter)
     {
         return StoreCategory::where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
@@ -54,7 +59,7 @@ class StoreCategoryController extends Controller
      */
     public function show($slug)
     {
-        StoreCategory::where('slug', $slug)->firstOrFail();
+        return response()->json(StoreCategory::where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
