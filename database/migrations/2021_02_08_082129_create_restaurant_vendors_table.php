@@ -16,8 +16,8 @@ class CreateRestaurantVendorsTable extends Migration
         Schema::create('restaurant_vendors', function (Blueprint $table) {
             $table->id();
             $table->string("name")->unique();
+            $table->string('name_mm')->unique()->nullable();
             $table->string("slug")->unique();
-            $table->boolean("offical");
             $table->string("address");
             $table->string("contactNumber");
             $table->time("openingTime");

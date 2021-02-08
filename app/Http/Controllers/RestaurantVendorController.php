@@ -40,6 +40,7 @@ class RestaurantVendorController extends Controller
         $restaurantVendor = RestaurantVendor::create($request->validate([
             'slug' => 'required|unique:restaurant_vendors',
             'name' => 'required|unique:restaurant_vendors',
+            'name_mm'=>'unique:restaurant_vendors',
             'official'=> 'requierd|boolean:restaurant_vendors',
             'address' => 'required|string:restaurant_vendors',
             'contactNumber'=> "required|string:restaurant_vendors",
