@@ -18,18 +18,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::resource('categories', 'CategoryController');
 Route::resource('sub-categories', 'SubCategoryController');
+Route::resource('restaurant-categories', 'RestaurantCategoryController');
+Route::resource('store-categories', 'StoreCategoryController');
+Route::get('store-categories/{slug?}/sub-catrgories', 'StoreCategoryController@getSubCategoriesByStoreCategory')->name('getSubCategoriesByStoreCategory');
+Route::resource('tags', 'TagController');
 Route::resource('cities', 'CityController');
 Route::resource('townships', 'TownshipController');
-
-// Route::group([
-//     'prefix'=> 'categories',
-//     'namespace'=> 'App\Http\Controllers',
-// ], function () {
-//     Route::get('/', 'CategoryController@index');
-//     Route::get('/{id}', 'CategoryController@view');
-//     Route::post('/', 'CategoryController@create');
-//     Route::put('/{id}', 'CategoryController@update');
-//     Route::delete('/{id}', 'CategoryController@destroy');
-// });
