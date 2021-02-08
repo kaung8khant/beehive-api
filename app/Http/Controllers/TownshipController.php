@@ -19,6 +19,7 @@ class TownshipController extends Controller
     {
         return Township::with('city')
         ->where('name', 'LIKE', '%' . $filter . '%')
+        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)
         ->paginate(10);
     }
@@ -36,6 +37,7 @@ class TownshipController extends Controller
 
         $township = Township::create($request->validate([
             'name' => 'required|unique:townships',
+            'name_mm'=>'unique:townships',
             'slug' => 'required|unique:townships',
             'city_id' => 'required|exists:App\Models\City,id'
         ]));
@@ -51,7 +53,7 @@ class TownshipController extends Controller
      */
     public function show($slug)
     {
-        return Township::with('city')->where('slug', $slug)->firstOrFail();
+        return response()->json(Township::with('city')->where('slug', $slug)->firstOrFail(), 200);
     }
 
 

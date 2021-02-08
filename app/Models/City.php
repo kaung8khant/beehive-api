@@ -9,7 +9,7 @@ class City extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug'];
+    protected $fillable = ['name','name_mm', 'slug'];
 
     public function townships()
     {

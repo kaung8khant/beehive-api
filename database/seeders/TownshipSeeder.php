@@ -19,21 +19,25 @@ class TownshipSeeder extends Seeder
         $townships = [
             [
                 "name" => "Latha",
+                "name_mm" => "လသာ",
                 "slug" => $this->generateUniqueSlug(),
                 "city_id" => 1
             ],
             [
                 "name" => "Sule",
+                "name_mm" => "ဆူးလေ",
                 "slug" => $this->generateUniqueSlug(),
                 "city_id" => 1
             ],
             [
                 "name" => "Kyauktada",
+                "name_mm" => "ကျောက်တံတား",
                 "slug" => $this->generateUniqueSlug(),
                 "city_id" => 1
             ],
             [
                 "name" => "Pyin Oo Lwin",
+                "name_mm" => "ပြင်ဦးလွင်",
                 "slug" => $this->generateUniqueSlug(),
                 "city_id" => 2
             ],

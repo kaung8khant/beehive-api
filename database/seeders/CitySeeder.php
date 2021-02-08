@@ -19,10 +19,12 @@ class CitySeeder extends Seeder
         $cities = [
             [
                 "name" => "Yangon",
+                "name_mm" => "ရန်ကုန်",
                 "slug" => $this->generateUniqueSlug(),
             ],
             [
                 "name" => "Mandalay",
+                "name_mm" => "မန္တလေး",
                 "slug" => $this->generateUniqueSlug(),
             ],
         ];

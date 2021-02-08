@@ -49,7 +49,7 @@ class CityController extends Controller
      */
     public function show($slug)
     {
-        City::with('townships')->where('slug', $slug)->firstOrFail();
+        return response()->json(City::with('townships')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
