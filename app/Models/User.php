@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Auth;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -32,8 +33,11 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
+        'id',
         'password',
         'remember_token',
+        'created_at',
+        'updated_at',
     ];
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class UserAuthController extends Controller
 {
@@ -20,11 +21,13 @@ class UserAuthController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
-        if (!$token = Auth::attempt($validatedRequest)) {
+        $user = User::where('username', $request->username)->first();
+
+        if (!$token = Auth::claims($user->toArray())->attempt($validatedRequest)) {
             return response()->json(['message' => 'Username or password wrong.'], 401);
         }
 
-        return $this->createNewToken($token);
+        return response()->json(['token' => $token], 200);
     }
 
     /**
@@ -45,7 +48,7 @@ class UserAuthController extends Controller
      */
     public function refreshToken()
     {
-        return $this->createNewToken(Auth::refresh());
+        return response()->json(['token' => Auth::refresh()], 200);
     }
 
     /**
@@ -56,22 +59,5 @@ class UserAuthController extends Controller
     public function getAuthenticatedUser()
     {
         return response()->json(Auth::user());
-    }
-
-    /**
-     * Get the token array structure.
-     *
-     * @param  string $token
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function createNewToken($token)
-    {
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => Auth::factory()->getTTL() * 1440,   // 1 day
-            'user' => Auth::user(),
-        ]);
     }
 }
