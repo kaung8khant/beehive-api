@@ -24,6 +24,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
         Route::resource('categories', 'CategoryController');
         Route::resource('sub-categories', 'SubCategoryController');
+        Route::resource('menus', 'MenuController');
+        Route::resource('menuVariations', 'MenuVariationController');
     });
 });
 

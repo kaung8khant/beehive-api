@@ -15,4 +15,9 @@ class Menu extends Model
     // {
     //     return $this->belongsTo(RestaurantCategory::class);
     // }
+
+    public function menu_variations()
+    {
+        return $this->hasMany(MenuVariation::class);
+    }
 }

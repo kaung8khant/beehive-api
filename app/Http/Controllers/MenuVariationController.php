@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Menu;
+use App\Models\MenuVariation;
 use Illuminate\Http\Request;
 
-class MenuController extends Controller
+class MenuVariationController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,7 +14,7 @@ class MenuController extends Controller
      */
     public function index()
     {
-        return Menu::with('restaurantCategory')->paginate(10);
+        return MenuVariation::with('menu')->paginate(10);
     }
 
     /**
@@ -37,12 +37,10 @@ class MenuController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $menu = Menu::create($request->validate([
+        $menuVariation = MenuVariation::create($request->validate([
             'name' => 'required|unique:menus',
-            'name_mm' => 'required|unique:menus',
-            'price' => 'required|unique:menus',
             'slug' => 'required|unique:menus',
-            // 'restaurantCategoy_id' => 'required|exists:App\Models\RestaurantCategory,id',
+            'menu_id' => 'required|exists:App\Models\Menu,id',
         ]));
 
         return response()->json($menu, 201);
@@ -51,20 +49,21 @@ class MenuController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Menu  $menu
+     * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
      */
-    public function show(Menu $menu)
+    public function show(MenuVariation $menuVariation)
     {
-        return Menu::with('restaurantCategory')->where('slug', $slug)->firstOrFail();
+        return MenuVariation::with('menu')->where('slug', $slug)->firstOrFail();
     }
+
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Menu  $menu
+     * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
      */
-    public function edit(Menu $menu)
+    public function edit(MenuVariation $menuVariation)
     {
         //
     }
@@ -73,38 +72,33 @@ class MenuController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Menu  $menu
+     * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Menu $menu)
+    public function update(Request $request, MenuVariation $menuVariation)
     {
-        $menu = Menu::where('slug', $slug)->firstOrFail();
+        $menuVariation = MenuVariation::where('slug', $slug)->firstOrFail();
 
-        $menu->update($request->validate([
+        $menuVariation->update($request->validate([
             'name' => [
                 'required',
                 Rule::unique('menus')->ignore($menu->id),
             ],
-            'name_mm' => [
-                'required',
-                Rule::unique('menus')->ignore($menu->id),
-            ],
-           
-            // 'restaurantCategory_id' => 'required|exists:App\Models\RestaurantCategory,id',
+             'menu_id' => 'required|exists:App\Models\Menu,id',
         ]));
 
-        return response()->json($menu, 200);
+        return response()->json($menuVariation, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Menu  $menu
+     * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Menu $menu)
+    public function destroy(MenuVariation $menuVariation)
     {
-        Menu::where('slug', $slug)->firstOrFail()->delete();
+        MenuVariation::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 }
