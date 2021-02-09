@@ -16,27 +16,24 @@ class TownshipController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Township::with('city')->paginate(10);
-        // return Township::with('city')
-        // ->where('name', 'LIKE', '%' . $filter . '%')
-        // ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
-        // ->orWhere('slug', $filter)
-        // ->paginate(10);
+        $filter= $request->filter;
+
+        return Township::with('city')
+        ->where('name', 'LIKE', '%' . $filter . '%')
+        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
+        ->orWhere('slug', $filter)
+        ->paginate(10);
     }
 
-    public function search($filter)
-    {
-        return Township::where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
-    }
 
     public function getTownshipsByCity($slug)
     {
-        $city=City::with('townships')->where('slug', $slug)->firstOrFail();
-        return response()->json($city->townships()->paginate(10), 200);
+        return Township::whereHas('city', function ($q) use ($slug) {
+            $q->where("slug", $slug);
+        })->paginate(10);
+
     }
     /**
      * Store a newly created resource in storage.

@@ -28,7 +28,5 @@ Route::get('store-categories/{slug?}/sub-categories', 'StoreCategoryController@g
 Route::resource('tags', 'TagController');
 Route::get('tags/filter/{param}', 'TagController@search')->name('search');
 Route::resource('cities', 'CityController');
-Route::get('cities/filter/{param}', 'CityController@search')->name('search');
 Route::resource('townships', 'TownshipController');
-Route::get('townships/filter/{param}', 'TownshipController@search')->name('search');
 Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
