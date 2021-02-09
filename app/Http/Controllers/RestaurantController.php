@@ -30,6 +30,7 @@ class RestaurantController extends Controller
      */
     public function store(Request $request)
     {
+        var_dump($request);
         $request['slug'] = $this->generateUniqueSlug();
 
         $restaurant = Restaurant::create($request->validate([
