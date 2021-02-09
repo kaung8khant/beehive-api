@@ -38,5 +38,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
         Route::resource('restaurants', 'RestaurantController');
         Route::resource('shops', 'ShopController');
+        Route::resource('products', 'ProductController');
     });
 });
