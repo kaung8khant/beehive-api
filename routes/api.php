@@ -18,9 +18,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
     Route::post('login', 'Auth\UserAuthController@login');
 
     Route::middleware('auth:api')->group(function () {
-        Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
         Route::get('user-detail', 'Auth\UserAuthController@getAuthenticatedUser');
+        Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
         Route::post('logout', 'Auth\UserAuthController@logout');
+
+        Route::resource('users', 'UserController');
+        Route::resource('roles', 'RoleController');
 
         Route::resource('categories', 'CategoryController');
         Route::resource('sub-categories', 'SubCategoryController');
