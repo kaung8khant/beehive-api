@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StringHelper;
 use App\Models\Restaurant;
 use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
@@ -9,6 +10,7 @@ use Illuminate\Validation\Rule;
 
 class RestaurantController extends Controller
 {
+    use StringHelper;
     /**
      * Display a listing of the resource.
      *
