@@ -19,6 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::resource('sub-categories', 'SubCategoryController');
+Route::get('shop-categories/{slug?}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory')->name('getSubCategoriesByCategory');
 Route::resource('restaurant-categories', 'RestaurantCategoryController');
 Route::resource('shop-categories', 'ShopCategoryController');
 Route::resource('restaurant-tags', 'RestaurantTagController');

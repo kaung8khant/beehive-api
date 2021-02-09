@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ShopCategory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
