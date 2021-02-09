@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\RestaurantTag;
-use App\Models\ShopCategory;
-use App\Models\ShopTag;
+use App\Models\Restaurant;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -23,5 +21,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RestaurantCategorySeeder::class);
         $this->call(ShopCategorySeeder::class);
         $this->call(SubCategorySeeder::class);
+        $this->call(RestaurantSeeder::class);
+        $this->call(ShopSeeder::class);
     }
 }

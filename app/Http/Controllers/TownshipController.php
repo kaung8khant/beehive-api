@@ -32,7 +32,6 @@ class TownshipController extends Controller
         return Township::whereHas('city', function ($q) use ($slug) {
             $q->where("slug", $slug);
         })->paginate(10);
-
     }
     /**
      * Store a newly created resource in storage.
