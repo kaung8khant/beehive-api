@@ -15,10 +15,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], function () {
-    Route::post('login', 'Auth\ApiAuthController@login');
+    Route::post('login', 'Auth\UserAuthController@login');
 
     Route::middleware('auth:api')->group(function () {
-        Route::post('logout', 'Auth\ApiAuthController@logout');
+        Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
+        Route::get('user-detail', 'Auth\UserAuthController@getAuthenticatedUser');
+        Route::post('logout', 'Auth\UserAuthController@logout');
 
         Route::resource('categories', 'CategoryController');
         Route::resource('sub-categories', 'SubCategoryController');
