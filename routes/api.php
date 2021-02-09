@@ -21,9 +21,19 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
         Route::get('user-detail', 'Auth\UserAuthController@getAuthenticatedUser');
         Route::post('logout', 'Auth\UserAuthController@logout');
-
         Route::resource('categories', 'CategoryController');
         Route::resource('sub-categories', 'SubCategoryController');
+        Route::resource('sub-categories', 'SubCategoryController');
+        Route::get('shop-categories/{slug?}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory')->name('getSubCategoriesByCategory');
+        Route::resource('restaurant-categories', 'RestaurantCategoryController');
+        Route::resource('shop-categories', 'ShopCategoryController');
+        Route::resource('restaurant-tags', 'RestaurantTagController');
+        Route::resource('shop-tags', 'ShopTagController');
+        Route::resource('cities', 'CityController');
+        Route::resource('townships', 'TownshipController');
+        Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
+        Route::resource('restaurants', 'RestaurantContoller');
+        Route::resource('shops', 'ShopController');
     });
 });
 

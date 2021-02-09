@@ -1,0 +1,50 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Helpers\StringHelper;
+use App\Models\Township;
+use Illuminate\Database\Seeder;
+
+class TownshipSeeder extends Seeder
+{
+    use StringHelper;
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        $townships = [
+            [
+                "name" => "Latha",
+                "name_mm" => "လသာ",
+                "slug" => $this->generateUniqueSlug(),
+                "city_id" => 1
+            ],
+            [
+                "name" => "Sule",
+                "name_mm" => "ဆူးလေ",
+                "slug" => $this->generateUniqueSlug(),
+                "city_id" => 1
+            ],
+            [
+                "name" => "Kyauktada",
+                "name_mm" => "ကျောက်တံတား",
+                "slug" => $this->generateUniqueSlug(),
+                "city_id" => 1
+            ],
+            [
+                "name" => "Pyin Oo Lwin",
+                "name_mm" => "ပြင်ဦးလွင်",
+                "slug" => $this->generateUniqueSlug(),
+                "city_id" => 2
+            ],
+        ];
+
+        foreach ($townships as $township) {
+            Township::create($township);
+        }
+    }
+}

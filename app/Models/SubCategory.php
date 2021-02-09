@@ -9,10 +9,10 @@ class SubCategory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'category_id'];
+    protected $fillable = ['name','name_mm', 'slug', 'shop_category_id'];
 
-    public function category()
+    public function shop_category()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(ShopCategory::class);
     }
 }
