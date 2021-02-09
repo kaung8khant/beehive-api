@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\StringHelper;
-use App\Models\Tag;
+use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-class TagController extends Controller
+class RestaurantTagController extends Controller
 {
     use StringHelper;
     /**
@@ -15,14 +15,10 @@ class TagController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($filter)
+    public function index(Request $request)
     {
-        return Tag::paginate(10);
-    }
-
-    public function search($filter)
-    {
-        return Tag::where('name', 'LIKE', '%' . $filter . '%')
+        $filter=$request->filter;
+        return RestaurantTag::where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
     }
@@ -37,7 +33,7 @@ class TagController extends Controller
     {
         $request['slug']=$this->generateUniqueSlug();
 
-        $tag=Tag::create($request->validate(
+        $tag=RestaurantTag::create($request->validate(
             [
                 'name'=>'required|unique:tags',
                 'name_mm'=>'unique:tags',
@@ -50,29 +46,29 @@ class TagController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Tag  $tag
+     * @param  \App\Models\RestaurantTag  $tag
      * @return \Illuminate\Http\Response
      */
     public function show($slug)
     {
-        return response()->json(Tag::where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(RestaurantTag::where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Tag  $tag
+     * @param  \App\Models\RestaurantTag  $slug
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $slug)
     {
-        $tag=Tag::where('slug', $slug)->firstOrFail();
+        $tag=RestaurantTag::where('slug', $slug)->firstOrFail();
 
         $tag->update($request->validate([
-            'name'=>'required|unique:tags',
-            'name_mm'=>'unique:tags',
-            Rule::unique('tags')->ignore($tag->id),
+            'name'=>'required|unique:shop_tags',
+            'name_mm'=>'unique:shop_tags',
+            Rule::unique('shop_tags')->ignore($tag->id),
         ]));
 
         return response()->json($tag, 200);
@@ -81,12 +77,12 @@ class TagController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Tag  $tag
+     * @param  \App\Models\RestaurantTag  $slug
      * @return \Illuminate\Http\Response
      */
     public function destroy($slug)
     {
-        Tag::where('slug', $slug)->firstOrFail()->delete();
+        RestaurantTag::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message'=>'successfully deleted'], 200);
     }
 }

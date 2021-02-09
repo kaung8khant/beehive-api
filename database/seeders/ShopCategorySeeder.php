@@ -3,10 +3,10 @@
 namespace Database\Seeders;
 
 use App\Helpers\StringHelper;
-use App\Models\StoreCategory;
+use App\Models\ShopCategory;
 use Illuminate\Database\Seeder;
 
-class StoreCategorySeeder extends Seeder
+class ShopCategorySeeder extends Seeder
 {
     use StringHelper;
     /**
@@ -16,7 +16,7 @@ class StoreCategorySeeder extends Seeder
      */
     public function run()
     {
-        $storeCategories = [
+        $shopCategories = [
             [
                 "name" => "Health & Beauty",
                 "name_mm" => "ကျန်းမာရေးနှင့်အလှအပ",
@@ -28,8 +28,8 @@ class StoreCategorySeeder extends Seeder
                 "slug" => $this->generateUniqueSlug(),
             ],
         ];
-        foreach ($storeCategories as $storeCategory) {
-            StoreCategory::create($storeCategory);
+        foreach ($shopCategories as $shopCategory) {
+            ShopCategory::create($shopCategory);
         }
     }
 }
