@@ -27,6 +27,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
         Route::resource('categories', 'CategoryController');
         Route::resource('sub-categories', 'SubCategoryController');
+        Route::resource('sub-categories', 'SubCategoryController');
         Route::get('shop-categories/{slug?}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory')->name('getSubCategoriesByCategory');
         Route::resource('restaurant-categories', 'RestaurantCategoryController');
         Route::resource('shop-categories', 'ShopCategoryController');
@@ -35,7 +36,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::resource('cities', 'CityController');
         Route::resource('townships', 'TownshipController');
         Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
-        Route::resource('restaurants', 'RestaurantContoller');
+        Route::resource('restaurants', 'RestaurantController');
         Route::resource('shops', 'ShopController');
     });
 });
