@@ -21,7 +21,9 @@ class UserAuthController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
-        $user = User::where('username', $request->username)->first();
+        $user = User::with('roles')
+            ->where('username', $request->username)
+            ->first();
 
         if (!$token = Auth::claims($user->toArray())->attempt($validatedRequest)) {
             return response()->json(['message' => 'Username or password wrong.'], 401);
