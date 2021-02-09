@@ -28,3 +28,5 @@ Route::get('cities/filter/{param}', 'CityController@search')->name('search');
 Route::resource('townships', 'TownshipController');
 Route::get('townships/filter/{param}', 'TownshipController@search')->name('search');
 Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
+Route::resource('restaurants', 'RestaurantContoller');
+Route::resource('shops', 'ShopController');
