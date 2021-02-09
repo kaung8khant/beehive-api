@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StringHelper;
 use App\Models\Restaurant;
+use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class RestaurantController extends Controller
 {
+    use StringHelper;
     /**
      * Display a listing of the resource.
      *
@@ -39,10 +42,14 @@ class RestaurantController extends Controller
             'name_mm'=>'unique:restaurants',
             'official'=> 'requierd|boolean:restaurants',
             'enable'=> 'requierd|boolean:restaurants',
+            'restaurant_tags' => 'required|array',
+            'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
      ]));
 
+        $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
+        $restaurant->restaurant_tags()->attach($restaurantTags);
 
-        return response()->json($restaurant, 201);
+        return response()->json($restaurant->load('restaurant_tags'), 201);
     }
 
     /**
@@ -73,9 +80,14 @@ class RestaurantController extends Controller
             'official'=> 'requierd|boolean:restaurants',
             'enable'=> 'requierd|boolean:restaurants',
             Rule::unique('restaurants')->ignore($restaurant->id),
+            'restaurant_tags' => 'required|array',
+            'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
         ]));
+        $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
+        $restaurant->restaurant_tags()->detach();
+        $restaurant->restaurant_tags()->attach($restaurantTags);
 
-        return response()->json($restaurant, 200);
+        return response()->json($restaurant->load('restaurant_tags'), 200);
     }
 
     /**

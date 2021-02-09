@@ -50,7 +50,7 @@ class SubCategoryController extends Controller
         $subCategory = SubCategory::create($request->validate([
             'name' => 'required|unique:sub_categories',
             'slug' => 'required|unique:sub_categories',
-            'category_id' => 'required|exists:App\Models\Category,id',
+            'shop_category_id' => 'required|exists:App\Models\ShopCategory,id',
         ]));
 
         return response()->json($subCategory, 201);
@@ -64,7 +64,7 @@ class SubCategoryController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(SubCategory::with('store_category')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(SubCategory::with('shop_category')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -83,7 +83,7 @@ class SubCategoryController extends Controller
                 'required',
                 Rule::unique('sub_categories')->ignore($subCategory->id),
             ],
-            'category_id' => 'required|exists:App\Models\Category,id',
+            'shop_category_id' => 'required|exists:App\Models\ShopCategory,id',
         ]));
 
         return response()->json($subCategory, 200);
