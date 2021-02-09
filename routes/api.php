@@ -26,8 +26,6 @@ Route::resource('restaurant-tags', 'RestaurantTagController');
 Route::resource('shop-tags', 'ShopTagController');
 Route::resource('cities', 'CityController');
 Route::resource('townships', 'TownshipController');
-Route::get('townships/filter/{param}', 'TownshipController@search')->name('search');
 Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
 Route::resource('restaurants', 'RestaurantContoller');
 Route::resource('shops', 'ShopController');
-Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
