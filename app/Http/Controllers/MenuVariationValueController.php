@@ -106,6 +106,7 @@ class MenuVariationValueController extends Controller
      */
     public function destroy(MenuVariationValue $menuVariationValue)
     {
-        //
+        MenuVariationValue::where('slug', $slug)->firstOrFail()->delete();
+        return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 }

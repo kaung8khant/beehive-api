@@ -14,4 +14,9 @@ class MenuTopping extends Model
     {
         return $this->belongsTo(Menu::class);
     }
+
+    public function menu_topping_values()
+    {
+        return $this->hasMany(MenuToppingValue::class);
+    }
 }
