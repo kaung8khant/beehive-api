@@ -21,7 +21,10 @@ class CreateProductsTable extends Migration
             $table->string('description');
             $table->string('description_mm');
             $table->decimal('price', $precision = 10, $scale = 2);
+            $table->unsignedBigInteger('shop_id');
             $table->timestamps();
+            $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
+
         });
     }
 

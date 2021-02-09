@@ -16,9 +16,13 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Product::paginate(10);
+        $filter=$request->filter;
+        return Product::with('shop')
+        ->where('name', 'LIKE', '%' . $filter . '%')
+        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
+        ->orWhere('slug', $filter)->paginate(10);
     }
 
     /**
@@ -34,7 +38,8 @@ class ProductController extends Controller
         $request->validate([
             'slug' => 'required|unique:products',
             'name'=>'required',
-            'price'=>'required|integer|max:99999999'
+            'price'=>'required|integer|max:99999999',
+            'shop_id' => 'required|exists:App\Models\Shop,id'
         ]);
 
         $product = Product::create($request->all());
@@ -50,7 +55,7 @@ class ProductController extends Controller
      */
     public function show($slug)
     {
-        return Product::where('slug', $slug)->firstOrFail();
+        return response()->json(Product::with('shop')->where('slug', $slug)->firstOrFail(), 200);
     }
 
 
@@ -64,15 +69,15 @@ class ProductController extends Controller
      */
     public function update(Request $request, $slug)
     {
+
         $product = Product::where('slug', $slug)->firstOrFail();
 
         $product->update($request->validate([
-            'name' => [
-                'required',
-                Rule::unique('products')->ignore($product->id),
-            ],
+            'name' => ['required',
+            Rule::unique('products')->ignore($product->id),
+        ],
+            'shop_id' => 'required|exists:App\Models\Shop,id',
         ]));
-
         return response()->json($product, 200);
     }
 
@@ -86,5 +91,6 @@ class ProductController extends Controller
     {
         Product::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+
     }
 }
