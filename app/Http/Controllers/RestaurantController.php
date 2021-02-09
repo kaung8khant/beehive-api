@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RestaurantController extends Controller
 {
@@ -29,11 +30,11 @@ class RestaurantController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $restaurant = Restaurant::create($request->validate([
-            'slug' => 'required|unique:restaurant_vendors',
-            'name' => 'required|unique:restaurant_vendors',
-            'name_mm'=>'unique:restaurant_vendors',
-            'official'=> 'requierd|boolean:restaurant_vendors',
-            'enable'=> 'requierd|boolean:restaurant_vendors',
+            'slug' => 'required|unique:restaurants',
+            'name' => 'required|unique:restaurants',
+            'name_mm'=>'unique:restaurants',
+            'official'=> 'requierd|boolean:restaurants',
+            'enable'=> 'requierd|boolean:restaurants',
      ]));
 
 
@@ -46,9 +47,9 @@ class RestaurantController extends Controller
      * @param  \App\Models\Restaurant  $restaurant
      * @return \Illuminate\Http\Response
      */
-    public function show(Restaurant $restaurant)
+    public function show($slug)
     {
-        Restaurant::where('slug', $slug)->firstOrFail();
+        return response()->json(Restaurant::where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -58,9 +59,19 @@ class RestaurantController extends Controller
        * @param  \App\Models\Restaurant  $restaurant
        * @return \Illuminate\Http\Response
        */
-    public function update(Request $request, Restaurant $restaurant)
+    public function update(Request $request, $slug)
     {
-        //
+        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+
+        $restaurant->update($request->validate([
+            'name'=>'required|unique:restaurants',
+            'name_mm'=>'unique:restaurants',
+            'official'=> 'requierd|boolean:restaurants',
+            'enable'=> 'requierd|boolean:restaurants',
+            Rule::unique('restaurants')->ignore($restaurant->id),
+        ]));
+
+        return response()->json($restaurant, 200);
     }
 
     /**
@@ -69,8 +80,9 @@ class RestaurantController extends Controller
      * @param  \App\Models\Restaurant  $restaurant
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Restaurant $restaurant)
+    public function destroy($slug)
     {
-        //
+        Restaurant::where('slug', $slug)->firstOrFail()->delete;
+        return response()->json(['message'=>'successfully deleted'], 200);
     }
 }
