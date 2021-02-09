@@ -25,3 +25,4 @@ class Menu extends Model
     {
         return $this->hasMany(MenuTopping::class);
     }
+}

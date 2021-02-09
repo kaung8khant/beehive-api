@@ -15,4 +15,8 @@ class MenuVariation extends Model
     {
         return $this->belongsTo(Menu::class);
     }
+    public function menu_variation_values()
+    {
+        return $this->hasMany(MenuVariation::class);
+    }
 }

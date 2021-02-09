@@ -14,7 +14,7 @@ class MenuController extends Controller
      */
     public function index()
     {
-        return Menu::with('restaurantCategory')->paginate(10);
+        return Menu::with('restaurant_category')->paginate(10);
     }
 
     /**
