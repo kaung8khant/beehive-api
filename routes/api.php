@@ -18,23 +18,26 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
     Route::post('login', 'Auth\UserAuthController@login');
 
     Route::middleware('auth:api')->group(function () {
-        Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
         Route::get('user-detail', 'Auth\UserAuthController@getAuthenticatedUser');
+        Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
         Route::post('logout', 'Auth\UserAuthController@logout');
+
+        Route::resource('users', 'UserController');
+        Route::resource('roles', 'RoleController');
 
         Route::resource('categories', 'CategoryController');
         Route::resource('sub-categories', 'SubCategoryController');
+        Route::resource('sub-categories', 'SubCategoryController');
+        Route::get('shop-categories/{slug?}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory')->name('getSubCategoriesByCategory');
+        Route::resource('restaurant-categories', 'RestaurantCategoryController');
+        Route::resource('shop-categories', 'ShopCategoryController');
+        Route::resource('restaurant-tags', 'RestaurantTagController');
+        Route::resource('shop-tags', 'ShopTagController');
+        Route::resource('cities', 'CityController');
+        Route::resource('townships', 'TownshipController');
+        Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
+        Route::resource('restaurants', 'RestaurantController');
+        Route::resource('shops', 'ShopController');
         Route::resource('products', 'ProductController');
     });
 });
-
-// Route::group([
-//     'prefix'=> 'categories',
-//     'namespace'=> 'App\Http\Controllers',
-// ], function () {
-//     Route::get('/', 'CategoryController@index');
-//     Route::get('/{id}', 'CategoryController@view');
-//     Route::post('/', 'CategoryController@create');
-//     Route::put('/{id}', 'CategoryController@update');
-//     Route::delete('/{id}', 'CategoryController@destroy');
-// });

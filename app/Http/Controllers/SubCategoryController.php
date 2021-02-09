@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 
 class SubCategoryController extends Controller
@@ -16,9 +17,24 @@ class SubCategoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return SubCategory::with('category')->paginate(10);
+        $filter = $request->filter;
+        return SubCategory::with('shop_category')->where('name', 'LIKE', '%' . $filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
+            ->orWhere('slug', $filter)->paginate(10);
+    }
+
+    /**
+    * Display a listing of the resource.
+    *
+    * @return \Illuminate\Http\Response
+    */
+    public function getSubCategoriesByCategory($slug)
+    {
+        return SubCategory::whereHas('shop_category', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
     }
 
     /**
@@ -34,7 +50,7 @@ class SubCategoryController extends Controller
         $subCategory = SubCategory::create($request->validate([
             'name' => 'required|unique:sub_categories',
             'slug' => 'required|unique:sub_categories',
-            'category_id' => 'required|exists:App\Models\Category,id',
+            'shop_category_id' => 'required|exists:App\Models\ShopCategory,id',
         ]));
 
         return response()->json($subCategory, 201);
@@ -48,7 +64,7 @@ class SubCategoryController extends Controller
      */
     public function show($slug)
     {
-        return SubCategory::with('category')->where('slug', $slug)->firstOrFail();
+        return response()->json(SubCategory::with('shop_category')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -67,7 +83,7 @@ class SubCategoryController extends Controller
                 'required',
                 Rule::unique('sub_categories')->ignore($subCategory->id),
             ],
-            'category_id' => 'required|exists:App\Models\Category,id',
+            'shop_category_id' => 'required|exists:App\Models\ShopCategory,id',
         ]));
 
         return response()->json($subCategory, 200);

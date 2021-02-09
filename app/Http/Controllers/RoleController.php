@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use Illuminate\Validation\Rule;
 
-class CategoryController extends Controller
+class RoleController extends Controller
 {
     use StringHelper;
 
@@ -18,7 +18,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        return Category::with('sub_categories')->paginate(10);
+        return Role::paginate(10);
     }
 
     /**
@@ -31,55 +31,55 @@ class CategoryController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $category = Category::create($request->validate([
-            'name' => 'required|unique:categories',
-            'slug' => 'required|unique:categories'
+        $role = Role::create($request->validate([
+            'name' => 'required|unique:roles',
+            'slug' => 'required|unique:roles',
         ]));
 
-        return response()->json($category, 201);
+        return response()->json($role, 201);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  string  $slug
+     * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
     public function show($slug)
     {
-        return Category::with('sub_categories')->where('slug', $slug)->firstOrFail();
+        return Role::where('slug', $slug)->firstOrFail();
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  string  $slug
+     * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $slug)
     {
-        $category = Category::where('slug', $slug)->firstOrFail();
+        $role = Role::where('slug', $slug)->firstOrFail();
 
-        $category->update($request->validate([
+        $role->update($request->validate([
             'name' => [
                 'required',
-                Rule::unique('categories')->ignore($category->id),
+                Rule::unique('roles')->ignore($role->id),
             ],
         ]));
 
-        return response()->json($category, 200);
+        return response()->json($role, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  string  $slug
+     * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
     public function destroy($slug)
     {
-        Category::where('slug', $slug)->firstOrFail()->delete();
+        Role::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 }
