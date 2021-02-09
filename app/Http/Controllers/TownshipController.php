@@ -16,13 +16,21 @@ class TownshipController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($filter)
+    public function index()
     {
-        return Township::with('city')
-        ->where('name', 'LIKE', '%' . $filter . '%')
+        return Township::with('city')->paginate(10);
+        // return Township::with('city')
+        // ->where('name', 'LIKE', '%' . $filter . '%')
+        // ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
+        // ->orWhere('slug', $filter)
+        // ->paginate(10);
+    }
+
+    public function search($filter)
+    {
+        return Township::where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)
-        ->paginate(10);
+        ->orWhere('slug', $filter)->paginate(10);
     }
 
     public function getTownshipsByCity($slug)

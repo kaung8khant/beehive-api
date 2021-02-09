@@ -19,8 +19,8 @@ class CreateAddressesTable extends Migration
             $table->integer('house_number');
             $table->integer('floor');
             $table->string('street_name');
-            $table->string('latitude');
-            $table->string('longitude');
+            $table->double('latitude');
+            $table->double('longitude');
             // $table->unsignedBigInteger('township_id');
             // $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
             $table->timestamps();
