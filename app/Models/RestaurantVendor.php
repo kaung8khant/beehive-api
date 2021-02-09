@@ -9,5 +9,10 @@ class RestaurantVendor extends Model
 {
     use HasFactory;
 
-    protected $fillable = [ 'slug' , 'name' , 'name_mm' , 'address' , 'contactNumber' , 'openingTime' , 'closingTime' , 'enable'] ;
+    protected $fillable = [ 'slug' , 'name' , 'name_mm' , 'address' , 'contactNumber' , 'openingTime' , 'closingTime' , 'enable', 'township_id'] ;
+
+    public function township()
+    {
+        return $this->hasOne(Township::class);
+    }
 }

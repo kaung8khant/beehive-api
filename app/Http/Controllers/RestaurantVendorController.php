@@ -46,6 +46,7 @@ class RestaurantVendorController extends Controller
             'openingTime'=> 'required|timezone:restaurant_vendors',
             'closingTime'=> 'required|timezone:restaurant_vendors',
             'enable'=> 'requierd|boolean:restaurant_vendors',
+            'township_id' => 'required|exists:App\Models\Township,id',
      ]));
 
 
@@ -86,6 +87,7 @@ class RestaurantVendorController extends Controller
                 'required',
                 Rule::unique('restaurant_vendors')->ignore($restaurantVendor->id),
             ],
+            'township_id' => 'required|exists:App\Models\Township,id',
         ]));
 
         return response()->json($restaurantVendor, 200);
