@@ -15,20 +15,16 @@ class CityController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return City::paginate(10);
-        // return City::with('townships')
-        // ->where('name', 'LIKE', '%' . $name . '%')
-        // ->orWhere('slug', $name)->paginate(10);
-    }
+        $filter= $request->filter;
 
-    public function search($filter)
-    {
-        return City::where('name', 'LIKE', '%' . $filter . '%')
+        return City::with('townships')
+        ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
     }
+
     /**
      * Store a newly created resource in storage.
      *

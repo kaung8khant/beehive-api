@@ -19,14 +19,15 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::resource('sub-categories', 'SubCategoryController');
+Route::get('shop-categories/{slug?}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory')->name('getSubCategoriesByCategory');
 Route::resource('restaurant-categories', 'RestaurantCategoryController');
 Route::resource('shop-categories', 'ShopCategoryController');
 Route::resource('restaurant-tags', 'RestaurantTagController');
 Route::resource('shop-tags', 'ShopTagController');
 Route::resource('cities', 'CityController');
-Route::get('cities/filter/{param}', 'CityController@search')->name('search');
 Route::resource('townships', 'TownshipController');
 Route::get('townships/filter/{param}', 'TownshipController@search')->name('search');
 Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
 Route::resource('restaurants', 'RestaurantContoller');
 Route::resource('shops', 'ShopController');
+Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');

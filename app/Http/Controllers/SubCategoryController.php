@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 
 class SubCategoryController extends Controller
@@ -19,9 +20,21 @@ class SubCategoryController extends Controller
     public function index(Request $request)
     {
         $filter = $request->filter;
-        return SubCategory::with('store-category')->where('name', 'LIKE', '%' . $filter . '%')
+        return SubCategory::with('shop_category')->where('name', 'LIKE', '%' . $filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
             ->orWhere('slug', $filter)->paginate(10);
+    }
+
+    /**
+    * Display a listing of the resource.
+    *
+    * @return \Illuminate\Http\Response
+    */
+    public function getSubCategoriesByCategory($slug)
+    {
+        return SubCategory::whereHas('shop_category', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
     }
 
     /**
