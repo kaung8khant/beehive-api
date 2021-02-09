@@ -21,25 +21,25 @@ class SubCategorySeeder extends Seeder
                 "name" => "Bath & Body",
                 "name_mm" => "ရေချိုး & ကိုယ်ခန္ဓာ",
                 "slug" => $this->generateUniqueSlug(),
-                "store_category_id"=>1,
+                "shop_category_id"=>1,
             ],
             [
                 "name" => "Skin Care",
                 "name_mm" => "အရေပြားထိန်းသိမ်းမှု",
                 "slug" => $this->generateUniqueSlug(),
-                "store_category_id"=>1,
+                "shop_category_id"=>1,
             ],
             [
                 "name" => "Clothing",
                 "name_mm" => "အဝတ်အစား",
                 "slug" => $this->generateUniqueSlug(),
-                "store_category_id"=>2,
+                "shop_category_id"=>2,
             ],
             [
                 "name" => "Women's Bags",
                 "name_mm" => "အမျိုးသမီးအိတ်များ",
                 "slug" => $this->generateUniqueSlug(),
-                "store_category_id"=>2,
+                "shop_category_id"=>2,
             ],
         ];
         foreach ($subCategories as $subCategory) {
