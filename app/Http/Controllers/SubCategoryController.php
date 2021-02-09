@@ -16,16 +16,12 @@ class SubCategoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return SubCategory::with('category')->paginate(10);
-    }
-
-    public function search($filter)
-    {
-        return SubCategory::where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
+        $filter = $request->filter;
+        return SubCategory::with('store-category')->where('name', 'LIKE', '%' . $filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
+            ->orWhere('slug', $filter)->paginate(10);
     }
 
     /**

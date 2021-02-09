@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\StringHelper;
-use App\Models\RestaurantCategory;
+use App\Models\ShopTag;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-class RestaurantCategoryController extends Controller
+class ShopTagController extends Controller
 {
     use StringHelper;
     /**
@@ -17,8 +17,8 @@ class RestaurantCategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $filter = $request->filter;
-        return RestaurantCategory::where('name', 'LIKE', '%' . $filter . '%')
+        $filter=$request->filter;
+        return ShopTag::where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
     }
@@ -33,56 +33,56 @@ class RestaurantCategoryController extends Controller
     {
         $request['slug']=$this->generateUniqueSlug();
 
-        $restaurantCategory=RestaurantCategory::create($request->validate(
+        $tag=ShopTag::create($request->validate(
             [
-                'name'=>'required|unique:restaurant_categories',
-                'name_mm'=>'unique:restaurant_categories',
-                'slug'=>'required|unique:restaurant_categories',
+                'name'=>'required|unique:tags',
+                'name_mm'=>'unique:tags',
+                'slug'=>'required|unique:tags',
             ]
         ));
-        return response()->json($restaurantCategory, 201);
+        return response()->json($tag, 201);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\RestaurantCategory  $restaurantCategory
+     * @param  \App\Models\ShopTag  $tag
      * @return \Illuminate\Http\Response
      */
     public function show($slug)
     {
-        return response()->json(RestaurantCategory::where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(ShopTag::where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\RestaurantCategory  $restaurantCategory
+     * @param  \App\Models\ShopTag  $tag
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $slug)
     {
-        $restaurantCategory=RestaurantCategory::where('slug', $slug)->firstOrFail();
+        $tag=ShopTag::where('slug', $slug)->firstOrFail();
 
-        $restaurantCategory->update($request->validate([
-            'name'=>'required|unique:restaurant_categories',
-            'name_mm'=>'unique:restaurant_categories',
-            Rule::unique('restaurant_categories')->ignore($restaurantCategory->id),
+        $tag->update($request->validate([
+            'name'=>'required|unique:shop_tags',
+            'name_mm'=>'unique:shop_tags',
+            Rule::unique('shop_tags')->ignore($tag->id),
         ]));
 
-        return response()->json($restaurantCategory, 200);
+        return response()->json($tag, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\RestaurantCategory  $restaurantCategory
+     * @param  \App\Models\ShopTag  $tag
      * @return \Illuminate\Http\Response
      */
     public function destroy($slug)
     {
-        RestaurantCategory::where('slug', $slug)->firstOrFail()->delete();
+        ShopTag::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message'=>'successfully deleted'], 200);
     }
 }
