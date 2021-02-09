@@ -20,4 +20,8 @@ class Menu extends Model
     {
         return $this->hasMany(MenuVariation::class);
     }
-}
+    
+    public function menu_toppings()
+    {
+        return $this->hasMany(MenuTopping::class);
+    }
