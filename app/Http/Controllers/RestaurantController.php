@@ -40,10 +40,12 @@ class RestaurantController extends Controller
             'slug' => 'required|unique:restaurants',
             'name' => 'required|unique:restaurants',
             'name_mm'=>'unique:restaurants',
-            'official'=> 'requierd|boolean:restaurants',
-            'enable'=> 'requierd|boolean:restaurants',
+            'official'=> 'required|boolean:restaurants',
+            'enable'=> 'required|boolean:restaurants',
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
+            'restaurant_categories'=>'required|array',
+
      ]));
 
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
