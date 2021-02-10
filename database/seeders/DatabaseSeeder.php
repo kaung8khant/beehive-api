@@ -28,5 +28,6 @@ class DatabaseSeeder extends Seeder
         $this->call(TagRestaurantSeeder::class);
         $this->call(ProductSeeder::class);
         $this->call(ProductVariationSeeder::class);
+        $this->call(MenuSeeder::class);
     }
 }

@@ -11,15 +11,15 @@ class Menu extends Model
 
     protected $fillable =["slug","name","name_mm","description","description_mm","price"];
 
-    public function restaurants()
-    {
-        return $this->belongsTo(Restaurant::class);
-    }
+    // public function restaurants()
+    // {
+    //     return $this->belongsTo(Restaurant::class);
+    // }
 
-    public function restaurant_category()
-    {
-        return $this->belongsTo(RestaurantCategory::class);
-    }
+    // public function restaurant_category()
+    // {
+    //     return $this->belongsTo(RestaurantCategory::class);
+    // }
 
     public function menu_variations()
     {
