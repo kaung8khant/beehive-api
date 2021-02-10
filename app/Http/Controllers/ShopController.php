@@ -68,10 +68,10 @@ class ShopController extends Controller
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
         $shop->update($request->validate([
-            'name'=>'required|unique:shops',
+            'name' => 'required|unique:shops',
             'name_mm'=>'unique:shops',
-            'official'=> 'requierd|boolean:shops',
-            'enable'=> 'requierd|boolean:shops',
+            'official'=> 'required|boolean:shops',
+            'enable'=> 'required|boolean:shops',
             Rule::unique('shops')->ignore($shop->id),
         ]));
 
