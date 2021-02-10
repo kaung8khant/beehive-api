@@ -15,4 +15,10 @@ class Product extends Model
     {
         return $this->belongsTo(Shop::class);
     }
+
+    public function ProductVariation()
+    {
+        return $this->hasMany(ProductVariation::class);
+    }
+
 }

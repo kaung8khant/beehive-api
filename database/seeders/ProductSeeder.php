@@ -40,7 +40,7 @@ class ProductSeeder extends Seeder
             ],
         ];
         foreach ($products as $product) {
-            City::create($product);
+            Product::create($product);
         }
     }
 }
