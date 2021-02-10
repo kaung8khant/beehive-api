@@ -43,5 +43,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::resource('shops', 'ShopController');
         Route::resource('products', 'ProductController');
         Route::resource('addresses', 'AddressController');
+        Route::resource('product_variations', 'ProductVariationController');
     });
 });

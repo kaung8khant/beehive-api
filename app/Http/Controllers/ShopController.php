@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\StringHelper;
 use App\Models\Shop;
+use App\Models\ShopTag;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -18,8 +19,7 @@ class ShopController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Shop::with('products')
-        ->where('name', 'LIKE', '%' . $filter . '%')
+        return Shop::where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
     }
@@ -39,10 +39,13 @@ class ShopController extends Controller
             'name_mm'=>'unique:shops',
             'official'=> 'required|boolean:shops',
             'enable'=> 'required|boolean:shops',
-     ]));
+            'shop_tags' => 'required|array',
+            'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
+        ]));
+        $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
+        $shop->shop_tags()->attach($shopTags);
 
-
-        return response()->json($shop, 201);
+        return response()->json($shop->load('shop_tags'), 201);
     }
 
     /**
@@ -73,9 +76,15 @@ class ShopController extends Controller
             'official'=> 'required|boolean:shops',
             'enable'=> 'required|boolean:shops',
             Rule::unique('shops')->ignore($shop->id),
+            'shop_tags' => 'required|array',
+            'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
         ]));
 
-        return response()->json($shop, 200);
+        $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
+        $shop->shop_tags()->detach();
+        $shop->shop_tags()->attach($shopTags);
+
+        return response()->json($shop->load('shop_tags'), 201);
     }
 
     /**

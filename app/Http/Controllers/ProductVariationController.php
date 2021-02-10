@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
+use App\Models\ProductVariation;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use Illuminate\Validation\Rule;
 
-class ProductController extends Controller
+class ProductVariationController extends Controller
 {
     use StringHelper;
 
@@ -19,11 +19,11 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Product ::with('shop','productVariation')
+        return ProductVariation::with('product')
         ->where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -36,64 +36,60 @@ class ProductController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $request->validate([
-            'slug' => 'required|unique:products',
+            'slug' => 'required|unique:product_variations',
             'name'=>'required',
-            'price'=>'required|integer|max:99999999',
-            'shop_id' => 'required|exists:App\Models\Shop,id'
+            'product_id' => 'required|exists:App\Models\Product,id'
         ]);
 
-        $product = Product::create($request->all());
+        $productVariation = ProductVariation::create($request->all());
 
-        return response()->json($product, 201);
+        return response()->json($productVariation, 201);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Product  $product
+     * @param  \App\Models\ProductVariation  $productVariation
      * @return \Illuminate\Http\Response
      */
     public function show($slug)
     {
-        return response()->json(Product::with('shop','productVariation')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(ProductVariation::with('product')->where('slug', $slug)->firstOrFail(), 200);
     }
-
 
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Product  $product
+     * @param  \App\Models\ProductVariation  $productVariation
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $slug)
     {
-
-        $product = Product::where('slug', $slug)->firstOrFail();
+        $productVariation = ProductVariation::where('slug', $slug)->firstOrFail();
 
         $request->validate([
             'name' => ['required',
-            Rule::unique('products')->ignore($product->id),
+            Rule::unique('product_variations')->ignore($productVariation->id),
         ],
-            'shop_id' => 'required|exists:App\Models\Shop,id',
+            'product_id' => 'required|exists:App\Models\Product,id',
         ]);
 
-        $product = Product::where('slug', $slug)->update($request->all());
+        $productVariation = ProductVariation::where('slug', $slug)->update($request->all());
 
-        return response()->json($product, 200);
+        return response()->json($productVariation, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Product  $product
+     * @param  \App\Models\ProductVariation  $productVariation
      * @return \Illuminate\Http\Response
      */
     public function destroy($slug)
     {
-        Product::where('slug', $slug)->firstOrFail()->delete();
+        ProductVariation::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
-
     }
 }
