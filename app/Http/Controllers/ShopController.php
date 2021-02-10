@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StringHelper;
 use App\Models\Shop;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ShopController extends Controller
 {
+    use StringHelper;
     /**
      * Display a listing of the resource.
      *
@@ -35,8 +37,8 @@ class ShopController extends Controller
             'slug' => 'required|unique:shops',
             'name' => 'required|unique:shops',
             'name_mm'=>'unique:shops',
-            'official'=> 'requierd|boolean:shops',
-            'enable'=> 'requierd|boolean:shops',
+            'official'=> 'required|boolean:shops',
+            'enable'=> 'required|boolean:shops',
      ]));
 
 
@@ -66,10 +68,10 @@ class ShopController extends Controller
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
         $shop->update($request->validate([
-            'name'=>'required|unique:shops',
+            'name' => 'required|unique:shops',
             'name_mm'=>'unique:shops',
-            'official'=> 'requierd|boolean:shops',
-            'enable'=> 'requierd|boolean:shops',
+            'official'=> 'required|boolean:shops',
+            'enable'=> 'required|boolean:shops',
             Rule::unique('shops')->ignore($shop->id),
         ]));
 
