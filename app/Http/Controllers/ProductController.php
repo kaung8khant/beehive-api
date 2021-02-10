@@ -19,7 +19,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Product::with('shop')
+        return Product ::with('shop','productVariation')
         ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
@@ -55,7 +55,7 @@ class ProductController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Product::with('shop')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(Product::with('shop','productVariation')->where('slug', $slug)->firstOrFail(), 200);
     }
 
 
@@ -72,12 +72,15 @@ class ProductController extends Controller
 
         $product = Product::where('slug', $slug)->firstOrFail();
 
-        $product->update($request->validate([
+        $request->validate([
             'name' => ['required',
             Rule::unique('products')->ignore($product->id),
         ],
             'shop_id' => 'required|exists:App\Models\Shop,id',
-        ]));
+        ]);
+
+        $product = Product::where('slug', $slug)->update($request->all());
+
         return response()->json($product, 200);
     }
 

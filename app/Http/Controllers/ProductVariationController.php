@@ -69,12 +69,15 @@ class ProductVariationController extends Controller
     {
         $productVariation = ProductVariation::where('slug', $slug)->firstOrFail();
 
-        $productVariation->update($request->validate([
+        $request->validate([
             'name' => ['required',
             Rule::unique('product_variations')->ignore($productVariation->id),
         ],
             'product_id' => 'required|exists:App\Models\Product,id',
-        ]));
+        ]);
+
+        $productVariation = ProductVariation::where('slug', $slug)->update($request->all());
+
         return response()->json($productVariation, 200);
     }
 
