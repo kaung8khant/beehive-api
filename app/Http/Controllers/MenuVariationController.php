@@ -88,7 +88,7 @@ class MenuVariationController extends Controller
 
         $menuVariation->update($request->validate([
             'name'=>'required|unique:menu_variations',
-            'slug' => 'required|unique:menu_variations',
+            // 'slug' => 'required|unique:menu_variations',
             'description'=>'required',
             'menu_id' => 'required|exists:App\Models\Menu,id',
             Rule::unique('menu_variations')->ignore($menuVariation->id),
