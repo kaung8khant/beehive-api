@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -40,7 +39,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::resource('cities', 'CityController');
         Route::resource('townships', 'TownshipController');
         Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
-        // Route::resource('restaurants', 'RestaurantContoller');
+        Route::resource('restaurants', 'RestaurantController');
         Route::resource('shops', 'ShopController');
+        Route::resource('products', 'ProductController');
+        Route::resource('addresses', 'AddressController');
     });
 });

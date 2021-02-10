@@ -21,8 +21,9 @@ class CreateAddressesTable extends Migration
             $table->string('street_name');
             $table->double('latitude');
             $table->double('longitude');
-            // $table->unsignedBigInteger('township_id');
-            // $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
+            $table->boolean('is_primary')->default(false);
+            $table->unsignedBigInteger('township_id');
+            $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
             $table->timestamps();
         });
     }
