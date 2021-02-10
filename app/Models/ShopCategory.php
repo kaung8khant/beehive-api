@@ -15,4 +15,9 @@ class ShopCategory extends Model
     {
         return $this->hasMany(SubCategory::class);
     }
+
+    public function shops()
+    {
+        return $this->belongsToMany(Shop::class, 'category_shop');
+    }
 }
