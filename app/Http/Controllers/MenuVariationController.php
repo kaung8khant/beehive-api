@@ -4,19 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\MenuVariation;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Helpers\StringHelper;
 
 class MenuVariationController extends Controller
 {
+    use StringHelper;
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return MenuVariation::with('menu')->paginate(10);
-    }
+        $filter= $request->filter;
 
+        return MenuVariation::
+        where('name', 'LIKE', '%' . $filter . '%')
+        ->orWhere('slug', $filter)->paginate(10);
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -39,11 +45,12 @@ class MenuVariationController extends Controller
 
         $menuVariation = MenuVariation::create($request->validate([
             'name' => 'required|unique:menu_variations',
+            'description' => 'required',
             'slug' => 'required|unique:menu_variations',
             'menu_id' => 'required|exists:App\Models\Menu,id',
         ]));
 
-        return response()->json($menu, 201);
+        return response()->json($menuVariation, 201);
     }
 
     /**
@@ -52,9 +59,9 @@ class MenuVariationController extends Controller
      * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
      */
-    public function show(MenuVariation $menuVariation)
+    public function show($slug)
     {
-        return MenuVariation::with('menu')->where('slug', $slug)->firstOrFail();
+        return response()->json(MenuVariation::with('menu')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -75,16 +82,16 @@ class MenuVariationController extends Controller
      * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, MenuVariation $menuVariation)
+    public function update(Request $request, $slug)
     {
         $menuVariation = MenuVariation::where('slug', $slug)->firstOrFail();
 
         $menuVariation->update($request->validate([
-            'name' => [
-                'required',
-                Rule::unique('menu_variations')->ignore($menuVariation->id),
-            ],
-             'menu_id' => 'required|exists:App\Models\Menu,id',
+            'name'=>'required|unique:menu_variations',
+            'slug' => 'required|unique:menu_variations',
+            'description'=>'required',
+            'menu_id' => 'required|exists:App\Models\Menu,id',
+            Rule::unique('menu_variations')->ignore($menuVariation->id),
         ]));
 
         return response()->json($menuVariation, 200);
@@ -96,7 +103,7 @@ class MenuVariationController extends Controller
      * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
      */
-    public function destroy(MenuVariation $menuVariation)
+    public function destroy($slug)
     {
         MenuVariation::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);

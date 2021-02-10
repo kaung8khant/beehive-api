@@ -104,7 +104,7 @@ class MenuVariationValueController extends Controller
      * @param  \App\Models\MenuVariationValue  $menuVariationValue
      * @return \Illuminate\Http\Response
      */
-    public function destroy(MenuVariationValue $menuVariationValue)
+    public function destroy($slug)
     {
         MenuVariationValue::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
