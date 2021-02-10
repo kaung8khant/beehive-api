@@ -19,7 +19,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Product ::with('shop','product_variation')
+        return Product ::with('shop','shop_category','product_variation')
         ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
@@ -39,7 +39,8 @@ class ProductController extends Controller
             'slug' => 'required|unique:products',
             'name'=>'required',
             'price'=>'required|max:99999999',
-            'shop_id' => 'required|exists:App\Models\Shop,id'
+            'shop_id' => 'required|exists:App\Models\Shop,id',
+            'shop_category_id' => 'required|exists:App\Models\ShopCategory,id'
         ]);
 
         $product = Product::create($request->all());
@@ -78,6 +79,8 @@ class ProductController extends Controller
         ],
             'price'=>'required|max:99999999',
             'shop_id' => 'required|exists:App\Models\Shop,id',
+            'shop_category_id' => 'required|exists:App\Models\ShopCategory,id'
+
         ]);
 
         $product = Product::where('slug', $slug)->update($request->all());

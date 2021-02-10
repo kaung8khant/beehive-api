@@ -25,7 +25,8 @@ class ProductSeeder extends Seeder
                 "description_mm" => "Description_MM",
                 "price" => 30000,
                 "slug" => $this->generateUniqueSlug(),
-                "shop_id" => 1
+                "shop_id" => 1,
+                "shop_category_id"=>1
 
             ],
             [
@@ -35,7 +36,8 @@ class ProductSeeder extends Seeder
                 "description_mm" => "Description_MM",
                 "price" => 60000,
                 "slug" => $this->generateUniqueSlug(),
-                "shop_id" => 1
+                "shop_id" => 1,
+                "shop_category_id"=>2
 
             ],
         ];
