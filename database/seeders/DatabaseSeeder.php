@@ -29,5 +29,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ProductSeeder::class);
         $this->call(ProductVariationSeeder::class);
         $this->call(ProductVariationValueSeeder::class);
+        $this->call(MenuSeeder::class);
+        $this->call(TagShopSeeder::class);
     }
 }

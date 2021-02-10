@@ -3,9 +3,12 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Helpers\StringHelper;
+use App\Models\Menu;
 
 class MenuSeeder extends Seeder
 {
+    use StringHelper;
     /**
      * Run the database seeds.
      *
@@ -21,6 +24,8 @@ class MenuSeeder extends Seeder
                 "description"=>"Testing",
                 "description_mm"=>"Testing",
                 "slug" => $this->generateUniqueSlug(),
+                "restaurant_id" => 1,
+                "restaurant_category_id" => 1
             ],
             [
                 "name" => "Pork Curry",
@@ -29,6 +34,8 @@ class MenuSeeder extends Seeder
                 "description"=>"Testing",
                 "description_mm"=>"Testing",
                 "slug" => $this->generateUniqueSlug(),
+                "restaurant_id" => 1,
+                "restaurant_category_id" => 1
             ],
         ];
         foreach ($menus as $menu) {
