@@ -14,7 +14,7 @@ class MenuController extends Controller
      */
     public function index()
     {
-        return Menu::with('restaurant_category')->paginate(10);
+        // return Menu::with('restaurant_category')->paginate(10);
     }
 
     /**
@@ -42,7 +42,8 @@ class MenuController extends Controller
             'name_mm' => 'required|unique:menus',
             'price' => 'required|unique:menus',
             'slug' => 'required|unique:menus',
-            // 'restaurantCategoy_id' => 'required|exists:App\Models\RestaurantCategory,id',
+            'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
+            'restaurantCategoy_id' => 'required|exists:App\Models\RestaurantCategory,id',
         ]));
 
         return response()->json($menu, 201);
@@ -56,7 +57,7 @@ class MenuController extends Controller
      */
     public function show(Menu $menu)
     {
-        return Menu::with('restaurantCategory')->where('slug', $slug)->firstOrFail();
+        return Menu::with('restaurant')->where('slug', $slug)->firstOrFail();
     }
     /**
      * Show the form for editing the specified resource.
@@ -89,8 +90,8 @@ class MenuController extends Controller
                 'required',
                 Rule::unique('menus')->ignore($menu->id),
             ],
-           
-            // 'restaurantCategory_id' => 'required|exists:App\Models\RestaurantCategory,id',
+            'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
+            'restaurantCategory_id' => 'required|exists:App\Models\RestaurantCategory,id',
         ]));
 
         return response()->json($menu, 200);
