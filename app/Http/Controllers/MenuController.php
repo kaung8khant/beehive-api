@@ -19,12 +19,13 @@ class MenuController extends Controller
     public function index()
     {
         return Menu::paginate(10);
-        // $filter=$request->filter;
-        // return Menu::where('name', 'LIKE', '%' . $filter . '%')
+        // $filter= $request->filter;
+
+        // return Menu::with('restaurants')
+        // ->where('name', 'LIKE', '%' . $filter . '%')
         // ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         // ->orWhere('slug', $filter)->paginate(10);
     }
-
     /**
      * Show the form for creating a new resource.
      *
