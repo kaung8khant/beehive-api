@@ -10,4 +10,9 @@ class Shop extends Model
     use HasFactory;
 
     protected $fillable = [ 'slug' , 'name' , 'name_mm' , 'official' , 'enable'] ;
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

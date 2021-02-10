@@ -27,4 +27,9 @@ class Restaurant extends Model
     {
         return $this->belongsToMany(RestaurantTag::class, 'tag_restaurant');
     }
+
+    public function restaurant_categories()
+    {
+        return $this->belongsToMany(RestaurantCategory::class, 'category_restaurant');
+    }
 }

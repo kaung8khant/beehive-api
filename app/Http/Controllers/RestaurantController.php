@@ -33,6 +33,7 @@ class RestaurantController extends Controller
      */
     public function store(Request $request)
     {
+        var_dump($request);
         $request['slug'] = $this->generateUniqueSlug();
 
         $restaurant = Restaurant::create($request->validate([
@@ -42,6 +43,8 @@ class RestaurantController extends Controller
             'official'=> 'required|boolean:restaurants',
             'enable'=> 'required|boolean:restaurants',
             'restaurant_tags' => 'required|array',
+            'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
+            'restaurant_categories'=>'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
      ]));
 
@@ -74,7 +77,7 @@ class RestaurantController extends Controller
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
         $restaurant->update($request->validate([
-            'name'=>'required|unique:restaurants',
+            'name' => 'required|unique:restaurants',
             'name_mm'=>'unique:restaurants',
             'official'=> 'required|boolean:restaurants',
             'enable'=> 'required|boolean:restaurants',
