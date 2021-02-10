@@ -11,6 +11,23 @@ class Shop extends Model
 
     protected $fillable = [ 'slug' , 'name' , 'name_mm' , 'official' , 'enable'] ;
 
+    /**
+    * The attributes that should be hidden for arrays.
+    *
+    * @var array
+    */
+    protected $hidden = [
+        'id',
+        'created_at',
+        'updated_at',
+        'pivot',
+    ];
+
+    public function shop_tags()
+    {
+        return $this->belongsToMany(ShopTag::class, 'tag_shop');
+    }
+
     public function products()
     {
         return $this->hasMany(Product::class);

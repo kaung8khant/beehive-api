@@ -10,4 +10,21 @@ class ShopTag extends Model
     use HasFactory;
 
     protected $fillable = ['name','name_mm', 'slug'];
+
+    /**
+    * The attributes that should be hidden for arrays.
+    *
+    * @var array
+    */
+    protected $hidden = [
+        'id',
+        'created_at',
+        'updated_at',
+        'pivot',
+    ];
+
+    public function shops()
+    {
+        return $this->belongsToMany(Shop::class, 'tag_shop');
+    }
 }
