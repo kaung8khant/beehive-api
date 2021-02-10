@@ -31,6 +31,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::resource('restaurant-categories', 'RestaurantCategoryController');
         Route::resource('shop-categories', 'ShopCategoryController');
         Route::resource('restaurant-tags', 'RestaurantTagController');
+        Route::get('restaurants/{slug?}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant')->name('getTagsByRestaurant');
         Route::resource('shop-tags', 'ShopTagController');
         Route::resource('cities', 'CityController');
         Route::resource('townships', 'TownshipController');
