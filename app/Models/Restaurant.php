@@ -18,8 +18,6 @@ class Restaurant extends Model
     */
     protected $hidden = [
         'id',
-        'password',
-        'remember_token',
         'created_at',
         'updated_at',
         'pivot',
