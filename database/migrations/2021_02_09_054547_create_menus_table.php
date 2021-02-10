@@ -22,8 +22,10 @@ class CreateMenusTable extends Migration
             $table->string('price');
             $table->string('description');
             $table->string('description_mm');
-            // $table->unsignedBigInteger('restaurantCategory_id');
-            // $table->foreign('restaurantCategory_id')->references('id')->on('restaurantCategories')->onDelete('cascade');
+            $table->unsignedBigInteger('restaurant_id')->nullable();
+            $table->unsignedBigInteger('restaurant_category_id');
+            $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
+            $table->foreign('restaurant_category_id')->references('id')->on('restaurant_categories')->onDelete('cascade');
         });
     }
 

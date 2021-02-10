@@ -49,12 +49,12 @@ class MenuController extends Controller
         $menu = Menu::create($request->validate([
             'name' => 'required|unique:menus',
             'name_mm' => 'required|unique:menus',
-            'description' => 'required|unique:menus',
-            'description_mm' => 'required|unique:menus',
-            'price' => 'required|unique:menus',
+            'description' => 'required',
+            'description_mm' => 'required',
+            'price' => 'required',
             'slug' => 'required|unique:menus',
-            // 'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
-            // 'restaurantCategoy_id' => 'required|exists:App\Models\RestaurantCategory,id',
+            'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
+            'restaurant_category_id' => 'required|exists:App\Models\RestaurantCategory,id',
         ]));
 
         return response()->json($menu, 201);
@@ -98,8 +98,8 @@ class MenuController extends Controller
             'name_mm'=>'required',
             'description'=>'required',
             'description_mm'=>'required',
-            // 'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
-            // 'restaurantCategory_id' => 'required|exists:App\Models\RestaurantCategory,id',
+            'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
+            'restaurant_category_id' => 'required|exists:App\Models\RestaurantCategory,id',
             Rule::unique('menus')->ignore($menu->id),
         ]));
 

@@ -9,17 +9,17 @@ class Menu extends Model
 {
     use HasFactory;
 
-    protected $fillable =["slug","name","name_mm","description","description_mm","price"];
+    protected $fillable =["slug","name","name_mm","description","description_mm","price","restaurant_id","restaurant_category_id"];
 
-    // public function restaurants()
-    // {
-    //     return $this->belongsTo(Restaurant::class);
-    // }
+    public function restaurants()
+    {
+        return $this->belongsTo(Restaurant::class);
+    }
 
-    // public function restaurant_category()
-    // {
-    //     return $this->belongsTo(RestaurantCategory::class);
-    // }
+    public function restaurant_category()
+    {
+        return $this->belongsTo(RestaurantCategory::class);
+    }
 
     public function menu_variations()
     {
