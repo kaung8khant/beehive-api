@@ -57,7 +57,8 @@ class MenuController extends Controller
      */
     public function show(Menu $menu)
     {
-        return Menu::with('restaurant')->where('slug', $slug)->firstOrFail();
+        // return Menu::with('restaurant')->where('slug', $slug)->firstOrFail();
+        return response()->json(Menu::where('slug', $slug)->firstOrFail(), 200);
     }
     /**
      * Show the form for editing the specified resource.
