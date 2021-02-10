@@ -97,7 +97,7 @@ class RestaurantController extends Controller
         $restaurant->restaurant_categories()->detach();
         $restaurant->restaurant_categories()->attach($restaurantCategories);
 
-        return response()->json($restaurant->load('restaurant_tags'), 200);
+        return response()->json($restaurant->load(['restaurant_tags','restaurant_categories']), 200);
     }
 
     /**
