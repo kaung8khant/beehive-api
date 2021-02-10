@@ -24,6 +24,18 @@ class ShopTagController extends Controller
     }
 
     /**
+    * Display a listing of the resource.
+    *
+    * @return \Illuminate\Http\Response
+    */
+    public function getTagsByShop($slug)
+    {
+        return ShopTag::whereHas('shops', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
