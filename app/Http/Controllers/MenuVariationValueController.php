@@ -94,7 +94,7 @@ class MenuVariationValueController extends Controller
             'price'=>'required',
             'value'=>'required|unique:menu_variation_values',
             'menu_variation_id' => 'required|exists:App\Models\MenuVariation,id',
-            Rule::unique('menu_variations_values')->ignore($menuVariationValue->id),
+            Rule::unique('menu_variation_values')->ignore($menuVariationValue->id),
         ]));
 
         return response()->json($menuVariationValue, 200);
