@@ -3,10 +3,12 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Helpers\StringHelper;
 use App\Models\Menu;
 
 class MenuSeeder extends Seeder
 {
+    use StringHelper;
     /**
      * Run the database seeds.
      *

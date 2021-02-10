@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Menu;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Helpers\StringHelper;
 
 class MenuController extends Controller
 {
+    use StringHelper;
+
     /**
      * Display a listing of the resource.
      *
@@ -14,7 +18,11 @@ class MenuController extends Controller
      */
     public function index()
     {
-        // return Menu::with('restaurant_category')->paginate(10);
+        return Menu::paginate(10);
+        // $filter=$request->filter;
+        // return Menu::where('name', 'LIKE', '%' . $filter . '%')
+        // ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
+        // ->orWhere('slug', $filter)->paginate(10);
     }
 
     /**
@@ -40,10 +48,12 @@ class MenuController extends Controller
         $menu = Menu::create($request->validate([
             'name' => 'required|unique:menus',
             'name_mm' => 'required|unique:menus',
+            'description' => 'required|unique:menus',
+            'description_mm' => 'required|unique:menus',
             'price' => 'required|unique:menus',
             'slug' => 'required|unique:menus',
-            'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
-            'restaurantCategoy_id' => 'required|exists:App\Models\RestaurantCategory,id',
+            // 'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
+            // 'restaurantCategoy_id' => 'required|exists:App\Models\RestaurantCategory,id',
         ]));
 
         return response()->json($menu, 201);
@@ -78,21 +88,18 @@ class MenuController extends Controller
      * @param  \App\Models\Menu  $menu
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Menu $menu)
+    public function update(Request $request, $slug)
     {
         $menu = Menu::where('slug', $slug)->firstOrFail();
 
         $menu->update($request->validate([
-            'name' => [
-                'required',
-                Rule::unique('menus')->ignore($menu->id),
-            ],
-            'name_mm' => [
-                'required',
-                Rule::unique('menus')->ignore($menu->id),
-            ],
-            'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
-            'restaurantCategory_id' => 'required|exists:App\Models\RestaurantCategory,id',
+            'name'=>'required',
+            'name_mm'=>'required',
+            'description'=>'required',
+            'description_mm'=>'required',
+            // 'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
+            // 'restaurantCategory_id' => 'required|exists:App\Models\RestaurantCategory,id',
+            Rule::unique('menus')->ignore($menu->id),
         ]));
 
         return response()->json($menu, 200);
@@ -104,7 +111,7 @@ class MenuController extends Controller
      * @param  \App\Models\Menu  $menu
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Menu $menu)
+    public function destroy($slug)
     {
         Menu::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
