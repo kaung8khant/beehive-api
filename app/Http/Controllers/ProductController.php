@@ -19,7 +19,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Product ::with('shop','productVariation')
+        return Product ::with('shop','product_variation')
         ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
@@ -38,7 +38,7 @@ class ProductController extends Controller
         $request->validate([
             'slug' => 'required|unique:products',
             'name'=>'required',
-            'price'=>'required|integer|max:99999999',
+            'price'=>'required|max:99999999',
             'shop_id' => 'required|exists:App\Models\Shop,id'
         ]);
 
@@ -55,7 +55,7 @@ class ProductController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Product::with('shop','productVariation')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(Product::with('shop','product_variation')->where('slug', $slug)->firstOrFail(), 200);
     }
 
 
@@ -76,6 +76,7 @@ class ProductController extends Controller
             'name' => ['required',
             Rule::unique('products')->ignore($product->id),
         ],
+            'price'=>'required|max:99999999',
             'shop_id' => 'required|exists:App\Models\Shop,id',
         ]);
 
