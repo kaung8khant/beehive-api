@@ -20,4 +20,9 @@ class ShopCategory extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function shops()
+    {
+        return $this->belongsToMany(Shop::class, 'category_shop');
+    }
 }

@@ -28,6 +28,11 @@ class Shop extends Model
         return $this->belongsToMany(ShopTag::class, 'tag_shop');
     }
 
+    public function shop_categories()
+    {
+        return $this->belongsToMany(ShopCategory::class, 'category_shop');
+    }
+
     public function products()
     {
         return $this->hasMany(Product::class);

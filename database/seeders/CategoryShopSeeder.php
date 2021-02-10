@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Restaurant;
+use App\Models\Shop;
 use Illuminate\Database\Seeder;
 
-class CategoryRestaurantSeeder extends Seeder
+class CategoryShopSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,10 +14,10 @@ class CategoryRestaurantSeeder extends Seeder
      */
     public function run()
     {
-        $restaurant = Restaurant::find(1);
+        $shop = Shop::find(1);
         $categoryIdArrays = [1,2];
         foreach ($categoryIdArrays as $id) {
-            $restaurant->restaurant_categories()->attach($id);
+            $shop->shop_categories()->attach($id);
         }
     }
 }

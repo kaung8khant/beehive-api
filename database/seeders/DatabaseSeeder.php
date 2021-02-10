@@ -31,5 +31,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ProductVariationValueSeeder::class);
         $this->call(MenuSeeder::class);
         $this->call(TagShopSeeder::class);
+        $this->call(CategoryRestaurantSeeder::class);
+        $this->call(CategoryShopSeeder::class);
     }
 }
