@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StringHelper;
 use App\Models\RestaurantBranch;
+use App\Models\Township;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RestaurantBranchController extends Controller
 {
+    use StringHelper;
     /**
      * Display a listing of the resource.
      *
@@ -22,6 +26,31 @@ class RestaurantBranchController extends Controller
     }
 
     /**
+    * Display a listing of the resource.
+    *
+    * @return \Illuminate\Http\Response
+    */
+    public function getBranchesByRestaurant($slug)
+    {
+        return RestaurantBranch::whereHas('restaurant', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
+    }
+
+    /**
+    * Display a listing of the resource.
+    *
+    * @return \Illuminate\Http\Response
+    */
+    public function getBranchesByTownship($slug)
+    {
+        return RestaurantBranch::whereHas('township', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
+    }
+
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -29,7 +58,6 @@ class RestaurantBranchController extends Controller
      */
     public function store(Request $request)
     {
-        var_dump($request);
         $request['slug'] = $this->generateUniqueSlug();
 
         $restaurantBranch = RestaurantBranch::create($request->validate([
@@ -37,8 +65,9 @@ class RestaurantBranchController extends Controller
             'name' => 'required|unique:restaurant_branches',
             'name_mm'=>'unique:restaurant_branches',
             'contact_number'=>'required|unique:restaurant_branches',
-            'opening_time'=>'required',
-            'closing_time'=>'required',
+            'opening_time'=>'required|date_format:H:i',
+            'closing_time'=>'required|date_format:H:i',
+            'address'=>'required',
             'latitude'=>'required',
             'longitude'=>'required',
             'township_id' => 'required|exists:App\Models\Township,id',
@@ -55,20 +84,9 @@ class RestaurantBranchController extends Controller
      * @param  \App\Models\RestaurantBranch  $restaurantBranch
      * @return \Illuminate\Http\Response
      */
-    public function show(RestaurantBranch $restaurantBranch)
+    public function show($slug)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\RestaurantBranch  $restaurantBranch
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(RestaurantBranch $restaurantBranch)
-    {
-        //
+        return response()->json(RestaurantBranch::with(['restaurant','township'])->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -78,9 +96,26 @@ class RestaurantBranchController extends Controller
      * @param  \App\Models\RestaurantBranch  $restaurantBranch
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, RestaurantBranch $restaurantBranch)
+    public function update(Request $request, $slug)
     {
-        //
+        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
+
+        $restaurantBranch->update($request->validate([
+            'name' =>'required|unique:restaurant_branches',
+            'name_mm'=>'unique:restaurant_branches',
+            'contact_number'=>'required|unique:restaurant_branches',
+            'address'=>'required',
+            'opening_time'=>'required|date_format:H:i',
+            'closing_time'=>'required|date_format:H:i',
+            'latitude'=>'required',
+            'longitude'=>'required',
+            'enable'=> 'required|boolean:restaurant_branches',
+             Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
+            'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
+            'township_id' => 'required|exists:App\Models\Township,id',
+        ]));
+
+        return response()->json($restaurantBranch, 200);
     }
 
     /**
@@ -89,8 +124,9 @@ class RestaurantBranchController extends Controller
      * @param  \App\Models\RestaurantBranch  $restaurantBranch
      * @return \Illuminate\Http\Response
      */
-    public function destroy(RestaurantBranch $restaurantBranch)
+    public function destroy($slug)
     {
-        //
+        RestaurantBranch::where('slug', $slug)->firstOrFail()->delete();
+        return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 }

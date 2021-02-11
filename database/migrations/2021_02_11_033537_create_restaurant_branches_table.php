@@ -21,10 +21,14 @@ class CreateRestaurantBranchesTable extends Migration
             $table->boolean("enable");
             $table->string("address");
             $table->string("contact_number");
-            $table->timestamps("opening_time");
-            $table->timestamps("closing_time");
+            $table->time("opening_time");
+            $table->time("closing_time");
             $table->double('latitude');
             $table->double('longitude');
+            $table->unsignedBigInteger('restaurant_id');
+            $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
+            $table->unsignedBigInteger('township_id');
+            $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
             $table->timestamps();
         });
     }

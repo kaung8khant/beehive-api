@@ -9,7 +9,7 @@ class RestaurantBranch extends Model
 {
     use HasFactory;
 
-    protected $fillable = [ 'slug' , 'name' , 'name_mm' , 'enable','address','contact_number' ,'openning_time','closing_time','latitude','longitude','restaurant_id','township_id'] ;
+    protected $fillable = [ 'slug' , 'name' , 'name_mm' , 'enable','address','contact_number' ,'opening_time','closing_time','latitude','longitude','restaurant_id','township_id'] ;
 
     public function restaurant()
     {
