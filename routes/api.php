@@ -29,6 +29,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::resource('menus', 'MenuController');
         Route::resource('menuVariations', 'MenuVariationController');
         Route::resource('menuVariationValues', 'MenuVariationValueController');
+        Route::resource('menuToppings', 'MenuToppingController');
         Route::resource('menuToppingValues', 'MenuToppingValueController');
         Route::resource('sub-categories', 'SubCategoryController');
         Route::get('shop-categories/{slug?}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory')->name('getSubCategoriesByCategory');

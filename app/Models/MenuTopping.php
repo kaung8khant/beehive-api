@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class MenuTopping extends Model
 {
     use HasFactory;
-    protected $fillable = ['slug',"name","description"];
+    protected $fillable = ['slug',"name","description","menu_id"];
 
-    public function menu()
+    public function menus()
     {
         return $this->belongsTo(Menu::class);
     }

@@ -30,6 +30,10 @@ class DatabaseSeeder extends Seeder
         $this->call(ProductVariationSeeder::class);
         $this->call(ProductVariationValueSeeder::class);
         $this->call(MenuSeeder::class);
+        $this->call(MenuVariationSeeder::class);
+        $this->call(MenuToppingSeeder::class);
+        $this->call(MenuVariationValueSeeder::class);
+        $this->call(MenuToppingValueSeeder::class);
         $this->call(TagShopSeeder::class);
         $this->call(CategoryRestaurantSeeder::class);
         $this->call(CategoryShopSeeder::class);
