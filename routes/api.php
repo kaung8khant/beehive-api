@@ -33,7 +33,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::resource('sub-categories', 'SubCategoryController');
         Route::get('shop-categories/{slug?}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory')->name('getSubCategoriesByCategory');
         Route::resource('restaurant-categories', 'RestaurantCategoryController');
-        Route::get('restaurant/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant')->name('getCategoriesByRestaurant');
+        Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant')->name('getCategoriesByRestaurant');
         Route::resource('shop-categories', 'ShopCategoryController');
         Route::get('shop/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop')->name('getCategoriesByShop');
         Route::resource('restaurant-tags', 'RestaurantTagController');
@@ -50,5 +50,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::resource('product-variations', 'ProductVariationController');
         Route::resource('product-variation-values', 'ProductVariationValueController');
         Route::resource('shop-branches', 'ShopBranchController');
+        Route::get('shops/{slug?}/shop-branches', 'ShopBranchController@getBranchesByShop')->name('getBranchesByShop');
+        Route::get('townships/{slug?}/shop-branches', 'ShopBranchController@getBranchesByTownship')->name('getBranchesByTownship');
     });
 });
