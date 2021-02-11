@@ -19,14 +19,13 @@ class Township extends Model
         return $this->belongsTo(City::class);
     }
 
-<<<<<<< HEAD
     public function shop_branches()
     {
         return $this->hasMany(ShopBranch::class);
-=======
+    }
+
     public function restaurant_branches()
     {
         return $this->hasMany(RestaurantBranch::class);
->>>>>>> d235fc1e28bf61d232a6f0638f8eaa6e3416ef86
     }
 }
