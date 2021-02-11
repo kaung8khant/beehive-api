@@ -15,4 +15,9 @@ class Township extends Model
     {
         return $this->belongsTo(City::class);
     }
+
+    public function shop_branches()
+    {
+        return $this->hasMany(ShopBranch::class);
+    }
 }

@@ -37,4 +37,9 @@ class Shop extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function shop_branches()
+    {
+        return $this->hasMany(ShopBranch::class);
+    }
 }

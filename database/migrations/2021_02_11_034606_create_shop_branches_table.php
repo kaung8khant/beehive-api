@@ -13,20 +13,21 @@ class CreateShopBranchesTable extends Migration
      */
     public function up()
     {
-        // 'address', 'contact_number', 'opening_time', 'closing_time', 'latitude', 'longitude'
         Schema::create('shop_branches', function (Blueprint $table) {
             $table->id();
             $table->string("name")->unique();
             $table->string('name_mm')->unique()->nullable();
             $table->string("slug")->unique();
             $table->boolean("enable");
-            $table->String("address");
-            $table->String("contact_number");
+            $table->string("address");
+            $table->string("contact_number");
             $table->timestamps("opening_time");
             $table->timestamps("closing_time");
             $table->double('latitude');
             $table->double('longitude');
             $table->timestamps();
+            $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
+            $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
         });
     }
 

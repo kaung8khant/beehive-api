@@ -2,31 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StringHelper;
 use App\Models\ShopBranch;
 use Illuminate\Http\Request;
 
 class ShopBranchController extends Controller
 {
+    use StringHelper;
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $filter=$request->filter;
+        return ShopBranch::where('name', 'LIKE', '%' . $filter . '%')
+        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
+        ->orWhere('slug', $filter)->paginate(10);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -35,51 +29,74 @@ class ShopBranchController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request['slug']=$this->generateUniqueSlug();
+        $shopBranch=ShopBranch::create($request->validate(
+            [
+                'slug' => 'required|unique:shop_branches',
+                'name' => 'required|unique:shop_branches',
+                'name_mm'=>'unique:shop_branches',
+                'enable'=> 'required|boolean:shop_branches',
+                'address'=> 'required',
+                'contact_number' => 'required',
+                'opening_time' => 'required|timezone:shop_branches',
+                'closing_time' => 'required|timezone:shop_branches',
+                'latitude' => 'required',
+                'longitude' => 'required',
+                'township_id' => 'required|exists:App\Models\Township,id',
+                'shop_id' => 'required|exists:App\Models\Shop,id',
+            ]
+        ));
+        return response()->json($shopBranch, 201);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\ShopBranch  $shopBranch
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(ShopBranch $shopBranch)
+    public function show($slug)
     {
-        //
+        response()->json(ShopBranch::where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\ShopBranch  $shopBranch
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(ShopBranch $shopBranch)
+        * Update the specified resource in storage.
+        *
+        * @param  \Illuminate\Http\Request  $request
+        * @param  int  $id
+        * @return \Illuminate\Http\Response
+        */
+    public function update(Request $request, $slug)
     {
-        //
-    }
+        $shopBranch = ShopBranch::where('slug', $slug)->firstOrFail();
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\ShopBranch  $shopBranch
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, ShopBranch $shopBranch)
-    {
-        //
+        $shopBranch->update($request->validate([
+            'slug' => 'required|unique:shop_branches',
+            'name' => 'required|unique:shop_branches',
+            'name_mm'=>'unique:shop_branches',
+            'enable'=> 'required|boolean:shop_branches',
+            'address'=> 'required',
+            'contact_number' => 'required',
+            'opening_time' => 'required|timezone:shop_branches',
+            'closing_time' => 'required|timezone:shop_branches',
+            'latitude' => 'required',
+            'longitude' => 'required',
+            'township_id' => 'required|exists:App\Models\Township,id',
+            'shop_id' => 'required|exists:App\Models\Shop,id',
+        ]));
+        return response()->json($shopBranch, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\ShopBranch  $shopBranch
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ShopBranch $shopBranch)
+    public function destroy($slug)
     {
-        //
+        ShopBranch::where('slug', $slug)->firstOrFail()->delete();
+        return response()->json(['message'=>'successfully deleted'], 200);
     }
 }
