@@ -39,5 +39,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::resource('shops', 'ShopController');
         Route::resource('products', 'ProductController');
         Route::resource('addresses', 'AddressController');
+        Route::get('settings', 'SettingController@index');
+        Route::get('settings/{key?}', 'SettingController@show');
+        Route::put('settings/update', 'SettingController@update_setting');
+        Route::get('profile', 'ProfileController@index');
+        Route::put('profile/update', 'ProfileController@update_profile');
     });
 });
