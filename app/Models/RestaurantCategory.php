@@ -9,13 +9,22 @@ class RestaurantCategory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name','name_mm', 'slug'];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name',
+        'name_mm',
+        'slug',
+    ];
 
     /**
-    * The attributes that should be hidden for arrays.
-    *
-    * @var array
-    */
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
     protected $hidden = [
         'id',
         'created_at',
@@ -26,5 +35,9 @@ class RestaurantCategory extends Model
     public function restaurants()
     {
         return $this->belongsToMany(Restaurant::class, 'category_restaurant');
+    }
+    public function menus()
+    {
+        return $this->hasMany(Menu::class);
     }
 }

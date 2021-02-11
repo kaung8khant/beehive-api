@@ -38,7 +38,7 @@ class AddressController extends Controller
                 'street_name' => 'required',
                 'latitude' => 'required',
                 'longitude' => 'required',
-                'is_primary' => 'boolean',
+                'is_primary' => 'required|boolean:addresses',
                 'township_id' => 'required|exists:App\Models\Township,id'
             ]
         ));
@@ -74,7 +74,7 @@ class AddressController extends Controller
             'street_name' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',
-            'is_primary' => 'boolean',
+            'is_primary' => 'required|boolean:addresses',
             'township_id' => 'required|exists:App\Models\Township,id'
         ]));
         return response()->json($address, 200);

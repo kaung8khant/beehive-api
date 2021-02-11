@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Restaurant;
 use Illuminate\Database\Seeder;
 
 class CategoryRestaurantSeeder extends Seeder
@@ -13,6 +14,10 @@ class CategoryRestaurantSeeder extends Seeder
      */
     public function run()
     {
-        //
+        $restaurant = Restaurant::find(1);
+        $categoryIdArrays = [1,2];
+        foreach ($categoryIdArrays as $id) {
+            $restaurant->restaurant_categories()->attach($id);
+        }
     }
 }

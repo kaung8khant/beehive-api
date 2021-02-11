@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Helpers\StringHelper;
 use App\Models\Shop;
+use App\Models\ShopCategory;
+use App\Models\ShopTag;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -18,7 +20,7 @@ class ShopController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Shop::with('products')
+        return Shop::with('shop_categories')
         ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
@@ -39,10 +41,17 @@ class ShopController extends Controller
             'name_mm'=>'unique:shops',
             'official'=> 'required|boolean:shops',
             'enable'=> 'required|boolean:shops',
-     ]));
+            'shop_tags' => 'required|array',
+            'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
+        ]));
+        $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
+        $shop->shop_tags()->attach($shopTags);
+
+        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shop->shop_categories()->attach($shopCategories);
 
 
-        return response()->json($shop, 201);
+        return response()->json($shop->load(['shop_tags','shop_categories']), 201);
     }
 
     /**
@@ -53,7 +62,7 @@ class ShopController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Shop::with('products')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(Shop::with('products', 'shop_categories')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -73,9 +82,19 @@ class ShopController extends Controller
             'official'=> 'required|boolean:shops',
             'enable'=> 'required|boolean:shops',
             Rule::unique('shops')->ignore($shop->id),
+            'shop_tags' => 'required|array',
+            'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
         ]));
 
-        return response()->json($shop, 200);
+        $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
+        $shop->shop_tags()->detach();
+        $shop->shop_tags()->attach($shopTags);
+
+        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shop->shop_categories()->detach();
+        $shop->shop_categories()->attach($shopCategories);
+
+        return response()->json($shop->load(['shop_tags','shop_categories']), 201);
     }
 
     /**

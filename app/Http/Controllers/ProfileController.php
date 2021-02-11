@@ -15,7 +15,7 @@ class ProfileController extends Controller
      */
     public function index()
     {
-           return response()->json(Auth::user());
+        return response()->json(Auth::guard('users')->user());
     }
 
 
@@ -29,7 +29,6 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        //Need to implement
         $user->update($request->validate([
             'name' => ['required',
             Rule::unique('users')->ignore($user->id),
@@ -40,9 +39,10 @@ class ProfileController extends Controller
             'phone_number' => ['required',
             Rule::unique('users')->ignore($user->id),
             ],
-            'enable' => 'required|boolean:users',
-            'locked' => 'required|boolean:users',
+            'is_enable' => 'required|boolean:users',
+            'is_locked' => 'required|boolean:users',
         ]));
+
         return response()->json($user, 200);
     }
 }

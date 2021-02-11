@@ -14,35 +14,72 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], function () {
-    Route::post('login', 'Auth\UserAuthController@login');
+    Route::group(['prefix' => 'admin'], function () {
+        Route::post('login', 'Auth\UserAuthController@login');
 
-    Route::middleware('auth:api')->group(function () {
-        Route::get('user-detail', 'Auth\UserAuthController@getAuthenticatedUser');
-        Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
-        Route::post('logout', 'Auth\UserAuthController@logout');
+        Route::middleware('auth:users')->group(function () {
+            Route::get('user-detail', 'Auth\UserAuthController@getAuthenticatedUser');
+            Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
+            Route::post('logout', 'Auth\UserAuthController@logout');
 
-        Route::resource('users', 'UserController');
-        Route::resource('roles', 'RoleController');
+            Route::resource('roles', 'RoleController');
+            Route::resource('users', 'UserController');
+            Route::post('users/toggle-enable/{slug}', 'UserController@toggleEnable');
 
-        Route::resource('categories', 'CategoryController');
-        Route::resource('sub-categories', 'SubCategoryController');
-        Route::resource('sub-categories', 'SubCategoryController');
-        Route::get('shop-categories/{slug?}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory')->name('getSubCategoriesByCategory');
-        Route::resource('restaurant-categories', 'RestaurantCategoryController');
-        Route::resource('shop-categories', 'ShopCategoryController');
-        Route::resource('restaurant-tags', 'RestaurantTagController');
-        Route::resource('shop-tags', 'ShopTagController');
-        Route::resource('cities', 'CityController');
-        Route::resource('townships', 'TownshipController');
-        Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
-        Route::resource('restaurants', 'RestaurantController');
-        Route::resource('shops', 'ShopController');
-        Route::resource('products', 'ProductController');
-        Route::resource('addresses', 'AddressController');
-        Route::get('settings', 'SettingController@index');
-        Route::get('settings/{key?}', 'SettingController@show');
-        Route::put('settings/update', 'SettingController@update_setting');
-        Route::get('profile', 'ProfileController@index');
-        Route::put('profile/update', 'ProfileController@update_profile');
+            Route::resource('addresses', 'AddressController');
+            Route::resource('townships', 'TownshipController');
+            Route::resource('cities', 'CityController');
+            Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
+
+            Route::resource('sub-categories', 'SubCategoryController');
+
+            Route::resource('restaurant-categories', 'RestaurantCategoryController');
+            Route::resource('shop-categories', 'ShopCategoryController');
+            Route::get('shop-categories/{slug}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory');
+
+            Route::resource('restaurant-tags', 'RestaurantTagController');
+            Route::resource('shop-tags', 'ShopTagController');
+            Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
+
+            Route::resource('restaurants', 'RestaurantController');
+            Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
+            Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
+
+            Route::resource('shops', 'ShopController');
+            Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
+
+            Route::resource('products', 'ProductController');
+
+            Route::resource('menus', 'MenuController');
+            Route::resource('menu-variations', 'MenuVariationController');
+            Route::resource('menu-variation-values', 'MenuVariationValueController');
+            Route::resource('menu-toppings', 'MenuToppingController');
+            Route::resource('menu-topping-values', 'MenuToppingValueController');
+
+            Route::resource('product-variations', 'ProductVariationController');
+            Route::resource('product-variation-values', 'ProductVariationValueController');
+
+            Route::resource('restaurant-branches', 'RestaurantBranchController');
+            Route::get('restaurants/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByRestaurant');
+            Route::get('townships/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');
+
+            Route::resource('shop-branches', 'ShopBranchController');
+            Route::get('shops/{slug?}/shop-branches', 'ShopBranchController@getBranchesByShop')->name('getBranchesByShop');
+            Route::get('townships/{slug?}/shop-branches', 'ShopBranchController@getBranchesByTownship')->name('getBranchesByTownship');
+
+            Route::get('settings', 'SettingController@index');
+            Route::get('settings/{key?}', 'SettingController@show');
+            Route::put('settings/update', 'SettingController@update_setting');
+
+            Route::get('profile', 'ProfileController@index');
+            Route::put('profile/update', 'ProfileController@update_profile');
+        });
     });
+
+    /*
+     * -----------
+     * Customer API
+     * -----------
+     */
+    require __DIR__ . '/customer-api.php';
 });

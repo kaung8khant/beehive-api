@@ -9,10 +9,23 @@ class Township extends Model
 {
     use HasFactory;
 
-    protected $fillable= ['name','name_mm', 'slug','city_id' , 'restaurant_vendor_id'];
+    protected $fillable= ['name','name_mm', 'slug','city_id'];
 
+    /**
+     * Get the city that owns the township.
+     */
     public function city()
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function shop_branches()
+    {
+        return $this->hasMany(ShopBranch::class);
+    }
+
+    public function restaurant_branches()
+    {
+        return $this->hasMany(RestaurantBranch::class);
     }
 }
