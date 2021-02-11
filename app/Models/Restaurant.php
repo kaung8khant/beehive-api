@@ -42,4 +42,9 @@ class Restaurant extends Model
     {
         return $this->hasMany(Menu::class);
     }
+
+    public function restaurant_branches()
+    {
+        return $this->hasMany(RestaurantBranch::class);
+    }
 }

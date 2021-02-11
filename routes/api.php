@@ -58,6 +58,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('product-variations', 'ProductVariationController');
             Route::resource('product-variation-values', 'ProductVariationValueController');
+
+            Route::resource('restaurant-branches', 'RestaurantBranchController');
+            Route::get('restaurants/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByRestaurant');
+            Route::get('townships/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');
         });
     });
 
