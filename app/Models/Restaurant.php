@@ -23,8 +23,6 @@ class Restaurant extends Model
      */
     protected $hidden = [
         'id',
-        'password',
-        'remember_token',
         'created_at',
         'updated_at',
         'pivot',
@@ -38,5 +36,10 @@ class Restaurant extends Model
     public function restaurant_categories()
     {
         return $this->belongsToMany(RestaurantCategory::class, 'category_restaurant');
+    }
+
+    public function menus()
+    {
+        return $this->hasMany(Menu::class);
     }
 }

@@ -23,6 +23,16 @@ class ShopCategoryController extends Controller
     }
 
     /**
+    * Display a listing of the shop categories by one shop.
+    */
+    public function getCategoriesByShop($slug)
+    {
+        return ShopCategory::whereHas('shops', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\StringHelper;
 use App\Models\Restaurant;
+use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -19,7 +20,8 @@ class RestaurantController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Restaurant::where('name', 'LIKE', '%' . $filter . '%')
+        return Restaurant::with('restaurant_categories')
+        ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
     }
@@ -45,13 +47,16 @@ class RestaurantController extends Controller
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
             'restaurant_categories'=>'required|array',
-
+            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
      ]));
 
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
         $restaurant->restaurant_tags()->attach($restaurantTags);
 
-        return response()->json($restaurant->load('restaurant_tags'), 201);
+        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
+        $restaurant->restaurant_categories()->attach($restaurantCategories);
+
+        return response()->json($restaurant->load(['restaurant_tags','restaurant_categoires']), 201);
     }
 
     /**
@@ -62,7 +67,7 @@ class RestaurantController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Restaurant::where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(Restaurant::with('restaurant_categories')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -89,7 +94,11 @@ class RestaurantController extends Controller
         $restaurant->restaurant_tags()->detach();
         $restaurant->restaurant_tags()->attach($restaurantTags);
 
-        return response()->json($restaurant->load('restaurant_tags'), 200);
+        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
+        $restaurant->restaurant_categories()->detach();
+        $restaurant->restaurant_categories()->attach($restaurantCategories);
+
+        return response()->json($restaurant->load(['restaurant_tags','restaurant_categories']), 200);
     }
 
     /**

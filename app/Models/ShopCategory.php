@@ -21,10 +21,29 @@ class ShopCategory extends Model
     ];
 
     /**
-     * Get the sub categories for the shop category.
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
      */
+    protected $hidden = [
+        'id',
+        'created_at',
+        'updated_at',
+        'pivot',
+    ];
+
     public function sub_categories()
     {
         return $this->hasMany(SubCategory::class);
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function shops()
+    {
+        return $this->belongsToMany(Shop::class, 'category_shop');
     }
 }

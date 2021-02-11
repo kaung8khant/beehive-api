@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], function () {
-
     Route::group(['prefix' => 'admin'], function () {
         Route::post('login', 'Auth\UserAuthController@login');
 
@@ -32,7 +31,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('cities', 'CityController');
             Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
 
-            Route::resource('categories', 'CategoryController');
             Route::resource('sub-categories', 'SubCategoryController');
 
             Route::resource('restaurant-categories', 'RestaurantCategoryController');
@@ -41,10 +39,25 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('restaurant-tags', 'RestaurantTagController');
             Route::resource('shop-tags', 'ShopTagController');
+            Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
 
             Route::resource('restaurants', 'RestaurantController');
+            Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
+            Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
+
             Route::resource('shops', 'ShopController');
+            Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
+
             Route::resource('products', 'ProductController');
+
+            Route::resource('menus', 'MenuController');
+            Route::resource('menu-variations', 'MenuVariationController');
+            Route::resource('menu-variation-values', 'MenuVariationValueController');
+            Route::resource('menu-toppings', 'MenuToppingController');
+            Route::resource('menu-topping-values', 'MenuToppingValueController');
+
+            Route::resource('product-variations', 'ProductVariationController');
+            Route::resource('product-variation-values', 'ProductVariationValueController');
         });
     });
 
