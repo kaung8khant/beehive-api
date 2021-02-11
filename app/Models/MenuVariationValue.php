@@ -9,10 +9,10 @@ class MenuVariationValue extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['slug',"name","value","price"];
+    protected $fillable = ['slug',"name","value","price","menu_variation_id"];
 
     public function menu_variations()
     {
-        return $this->belongsTo(MennVariation::class);
+        return $this->belongsTo(MenuVariation::class);
     }
 }

@@ -16,15 +16,14 @@ class MenuController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Menu::paginate(10);
-        // $filter= $request->filter;
+        $filter= $request->filter;
 
-        // return Menu::with('restaurants')
-        // ->where('name', 'LIKE', '%' . $filter . '%')
-        // ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
-        // ->orWhere('slug', $filter)->paginate(10);
+        return Menu::with('restaurants')
+        ->where('name', 'LIKE', '%' . $filter . '%')
+        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
+        ->orWhere('slug', $filter)->paginate(10);
     }
     /**
      * Show the form for creating a new resource.
@@ -68,7 +67,6 @@ class MenuController extends Controller
      */
     public function show(Menu $menu)
     {
-        // return Menu::with('restaurant')->where('slug', $slug)->firstOrFail();
         return response()->json(Menu::where('slug', $slug)->firstOrFail(), 200);
     }
     /**
@@ -94,8 +92,8 @@ class MenuController extends Controller
         $menu = Menu::where('slug', $slug)->firstOrFail();
 
         $menu->update($request->validate([
-            'name'=>'required',
-            'name_mm'=>'required',
+            'name'=>'required|unique:menus',
+            'name_mm'=>'required|unique:menus',
             'description'=>'required',
             'description_mm'=>'required',
             'restaurant_id' => 'required|exists:App\Models\Restaurant,id',

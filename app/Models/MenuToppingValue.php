@@ -9,7 +9,7 @@ class MenuToppingValue extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['slug',"name","value","price"];
+    protected $fillable = ['slug',"name","value","price","menu_topping_id"];
 
     public function menu_toppings()
     {

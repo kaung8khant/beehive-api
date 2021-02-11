@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UserSeeder::class);
         $this->call(RoleSeeder::class);
         $this->call(UserRoleSeeder::class);
+        $this->call(CustomerSeeder::class);
         $this->call(CitySeeder::class);
         $this->call(TownshipSeeder::class);
         $this->call(RestaurantTagSeeder::class);
@@ -30,6 +31,10 @@ class DatabaseSeeder extends Seeder
         $this->call(ProductVariationSeeder::class);
         $this->call(ProductVariationValueSeeder::class);
         $this->call(MenuSeeder::class);
+        $this->call(MenuVariationSeeder::class);
+        $this->call(MenuToppingSeeder::class);
+        $this->call(MenuVariationValueSeeder::class);
+        $this->call(MenuToppingValueSeeder::class);
         $this->call(TagShopSeeder::class);
         $this->call(CategoryRestaurantSeeder::class);
         $this->call(CategoryShopSeeder::class);
