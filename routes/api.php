@@ -24,15 +24,22 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::resource('users', 'UserController');
         Route::resource('roles', 'RoleController');
 
-        Route::resource('categories', 'CategoryController');
+        // Route::resource('categories', 'CategoryController');
         Route::resource('sub-categories', 'SubCategoryController');
+        Route::resource('menus', 'MenuController');
+        Route::resource('menuVariations', 'MenuVariationController');
+        Route::resource('menuVariationValues', 'MenuVariationValueController');
+        Route::resource('menuToppingValues', 'MenuToppingValueController');
         Route::resource('sub-categories', 'SubCategoryController');
         Route::get('shop-categories/{slug?}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory')->name('getSubCategoriesByCategory');
         Route::resource('restaurant-categories', 'RestaurantCategoryController');
+        Route::get('restaurant/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant')->name('getCategoriesByRestaurant');
         Route::resource('shop-categories', 'ShopCategoryController');
+        Route::get('shop/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop')->name('getCategoriesByShop');
         Route::resource('restaurant-tags', 'RestaurantTagController');
         Route::get('restaurants/{slug?}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant')->name('getTagsByRestaurant');
         Route::resource('shop-tags', 'ShopTagController');
+        Route::get('shops/{slug?}/shop-tags', 'ShopTagController@getTagsByShop')->name('getTagsByShop');
         Route::resource('cities', 'CityController');
         Route::resource('townships', 'TownshipController');
         Route::get('cities/{slug?}/townships', 'TownshipController@getTownshipsByCity')->name('getTownshipsByCity');
@@ -40,5 +47,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::resource('shops', 'ShopController');
         Route::resource('products', 'ProductController');
         Route::resource('addresses', 'AddressController');
+        Route::resource('product-variations', 'ProductVariationController');
+        Route::resource('product-variation-values', 'ProductVariationValueController');
     });
 });

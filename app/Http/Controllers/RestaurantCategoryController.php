@@ -24,6 +24,16 @@ class RestaurantCategoryController extends Controller
     }
 
     /**
+      * Display a listing of the restaurant categories by one restaurant.
+      */
+    public function getCategoriesByRestaurant($slug)
+    {
+        return RestaurantCategory::whereHas('restaurants', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
