@@ -108,4 +108,18 @@ class UserController extends Controller
         User::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
+
+    /**
+     * Toggle the is_enable column for users table.
+     *
+     * @param  int  $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function toggleEnable($slug)
+    {
+        $user = User::where('slug', $slug)->firstOrFail();
+        $user->is_enable = !$user->is_enable;
+        $user->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
 }

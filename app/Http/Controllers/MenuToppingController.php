@@ -4,17 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\MenuTopping;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Helpers\StringHelper;
 
 class MenuToppingController extends Controller
 {
+    use StringHelper;
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return MenuTopping::with('menu')->paginate(10);
+        $filter= $request->filter;
+
+        return MenuTopping::
+        where('name', 'LIKE', '%' . $filter . '%')
+        ->orWhere('slug', $filter)->paginate(10);
     }
 
     /**
@@ -37,13 +44,14 @@ class MenuToppingController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $menuVariation = MenuTopping::create($request->validate([
+        $menuTopping = MenuTopping::create($request->validate([
             'name' => 'required|unique:menu_toppings',
+            'description' => 'required',
             'slug' => 'required|unique:menu_toppings',
             'menu_id' => 'required|exists:App\Models\Menu,id',
         ]));
 
-        return response()->json($menu, 201);
+        return response()->json($menuTopping, 201);
     }
 
     /**
@@ -52,9 +60,9 @@ class MenuToppingController extends Controller
      * @param  \App\Models\MenuTopping  $menuTopping
      * @return \Illuminate\Http\Response
      */
-    public function show(MenuTopping $menuTopping)
+    public function show($slug)
     {
-        return MenuTopping::with('menu')->where('slug', $slug)->firstOrFail();
+        return response()->json(MneuTopping::with('menu')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -75,16 +83,15 @@ class MenuToppingController extends Controller
      * @param  \App\Models\MenuTopping  $menuTopping
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, MenuTopping $menuTopping)
+    public function update(Request $request, $slug)
     {
-        $menuTopping = MenuVariation::where('slug', $slug)->firstOrFail();
+        $menuTopping = MenuTopping::where('slug', $slug)->firstOrFail();
 
         $menuTopping->update($request->validate([
-            'name' => [
-                'required',
-                Rule::unique('menu_toppings')->ignore($menuTopping->id),
-            ],
-             'menu_id' => 'required|exists:App\Models\Menu,id',
+            'name'=>'required|unique:menu_toppings',
+            'description'=>'required',
+            'menu_id' => 'required|exists:App\Models\Menu,id',
+            Rule::unique('menu_toppings')->ignore($menuTopping->id),
         ]));
 
         return response()->json($menuTopping, 200);
@@ -96,7 +103,7 @@ class MenuToppingController extends Controller
      * @param  \App\Models\MenuTopping  $menuTopping
      * @return \Illuminate\Http\Response
      */
-    public function destroy(MenuTopping $menuTopping)
+    public function destroy($slug)
     {
         MenuTopping::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);

@@ -20,6 +20,7 @@ class ShopBranchController extends Controller
         return ShopBranch::with('shop', 'township')
         ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
+        ->orWhere('contact_number', $filter)
         ->orWhere('slug', $filter)->paginate(10);
     }
 
@@ -60,8 +61,8 @@ class ShopBranchController extends Controller
                 'enable'=> 'required|boolean:shop_branches',
                 'address'=> 'required',
                 'contact_number' => 'required',
-                'opening_time' => 'required',
-                'closing_time' => 'required',
+                'opening_time'=>'required|date_format:H:i',
+                'closing_time'=>'required|date_format:H:i',
                 'latitude' => 'required',
                 'longitude' => 'required',
                 'township_id' => 'required|exists:App\Models\Township,id',
@@ -100,8 +101,8 @@ class ShopBranchController extends Controller
             'enable'=> 'required|boolean:shop_branches',
             'address'=> 'required',
             'contact_number' => 'required',
-            'opening_time' => 'required',
-            'closing_time' => 'required',
+            'opening_time'=>'required|date_format:H:i',
+            'closing_time'=>'required|date_format:H:i',
             'latitude' => 'required',
             'longitude' => 'required',
             'township_id' => 'required|exists:App\Models\Township,id',

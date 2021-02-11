@@ -16,20 +16,35 @@ class UserAuthController extends Controller
      */
     public function login(Request $request)
     {
-        $validatedRequest = $request->validate([
+        $request->validate([
             'username' => 'required|string|max:100',
             'password' => 'required|string|min:6',
         ]);
 
-        $user = User::with('roles')
-            ->where('username', $request->username)
-            ->first();
-
-        if (!$token = Auth::claims($user->toArray())->attempt($validatedRequest)) {
-            return response()->json(['message' => 'Username or password wrong.'], 401);
+        if ($result = $this->attemptLogin($request)) {
+            return response()->json(['token' => $result], 200);
         }
 
-        return response()->json(['token' => $token], 200);
+        return response()->json(['message' => 'Username or password wrong.'], 401);
+    }
+
+    /**
+     * Attempt login the user via username and password.
+     *
+     * @return mixed
+     */
+    private function attemptLogin(Request $request)
+    {
+        $user = User::with('roles')->where('username', $request->username)->first();
+
+        if ($user) {
+            return Auth::guard('users')->claims($user->toArray())->attempt([
+                'username' => $request->username,
+                'password' => $request->password,
+            ]);
+        }
+
+        return false;
     }
 
     /**
@@ -39,7 +54,7 @@ class UserAuthController extends Controller
      */
     public function logout()
     {
-        Auth::logout();
+        Auth::guard('users')->logout();
         return response()->json(['message' => 'User successfully logged out.'], 200);
     }
 
@@ -50,7 +65,7 @@ class UserAuthController extends Controller
      */
     public function refreshToken()
     {
-        return response()->json(['token' => Auth::refresh()], 200);
+        return response()->json(['token' => Auth::guard('users')->refresh()], 200);
     }
 
     /**
@@ -60,6 +75,6 @@ class UserAuthController extends Controller
      */
     public function getAuthenticatedUser()
     {
-        return response()->json(Auth::user());
+        return response()->json(Auth::guard('users')->user());
     }
 }

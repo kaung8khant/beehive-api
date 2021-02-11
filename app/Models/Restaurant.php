@@ -9,13 +9,18 @@ class Restaurant extends Model
 {
     use HasFactory;
 
-    protected $fillable = [ 'slug' , 'name' , 'name_mm' , 'official' , 'enable'] ;
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = ['slug', 'name', 'name_mm', 'official', 'enable'];
 
     /**
-    * The attributes that should be hidden for arrays.
-    *
-    * @var array
-    */
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
     protected $hidden = [
         'id',
         'created_at',
@@ -36,5 +41,10 @@ class Restaurant extends Model
     public function menus()
     {
         return $this->hasMany(Menu::class);
+    }
+
+    public function restaurant_branches()
+    {
+        return $this->hasMany(RestaurantBranch::class);
     }
 }

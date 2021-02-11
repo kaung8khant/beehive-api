@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateShopBranchesTable extends Migration
+class CreateRestaurantBranchesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateShopBranchesTable extends Migration
      */
     public function up()
     {
-        Schema::create('shop_branches', function (Blueprint $table) {
+        Schema::create('restaurant_branches', function (Blueprint $table) {
             $table->id();
             $table->string("name")->unique();
             $table->string('name_mm')->unique()->nullable();
@@ -25,22 +25,21 @@ class CreateShopBranchesTable extends Migration
             $table->time("closing_time");
             $table->double('latitude');
             $table->double('longitude');
-            $table->timestamps();
+            $table->unsignedBigInteger('restaurant_id');
+            $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
             $table->unsignedBigInteger('township_id');
-            $table->unsignedBigInteger('shop_id');
             $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
-            $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
      *
-     *
      * @return void
      */
     public function down()
     {
-        Schema::dropIfExists('shop_branches');
+        Schema::dropIfExists('restaurant_branches');
     }
 }

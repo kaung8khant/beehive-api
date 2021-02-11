@@ -26,7 +26,6 @@ class RestaurantController extends Controller
         ->orWhere('slug', $filter)->paginate(10);
     }
 
-
     /**
      * Store a newly created resource in storage.
      *
