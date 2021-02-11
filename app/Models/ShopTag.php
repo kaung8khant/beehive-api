@@ -9,5 +9,14 @@ class ShopTag extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name','name_mm', 'slug'];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name',
+        'name_mm',
+        'slug',
+    ];
 }

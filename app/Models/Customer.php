@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notifiable;
 
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+class Customer extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
@@ -20,9 +20,11 @@ class User extends Authenticatable implements JWTSubject
     protected $fillable = [
         'slug',
         'username',
+        'email',
         'name',
         'phone_number',
         'password',
+        'gender',
     ];
 
     /**
@@ -57,13 +59,5 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
-    }
-
-    /**
-     * The roles that belong to the user.
-     */
-    public function roles()
-    {
-        return $this->belongsToMany(Role::class, 'user_role');
     }
 }

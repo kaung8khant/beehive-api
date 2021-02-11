@@ -9,8 +9,20 @@ class ShopCategory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name','name_mm', 'slug'];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name',
+        'name_mm',
+        'slug',
+    ];
 
+    /**
+     * Get the sub categories for the shop category.
+     */
     public function sub_categories()
     {
         return $this->hasMany(SubCategory::class);
