@@ -17,18 +17,20 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
     Route::group(['prefix' => 'admin'], function () {
         Route::post('login', 'Auth\UserAuthController@login');
 
-        Route::middleware('auth:users')->group(function () {
+        Route::middleware(['auth:users', 'user.enable'])->group(function () {
             Route::get('user-detail', 'Auth\UserAuthController@getAuthenticatedUser');
             Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
             Route::post('logout', 'Auth\UserAuthController@logout');
 
             Route::resource('roles', 'RoleController');
             Route::resource('users', 'UserController');
-            Route::post('users/toggle-enable/{slug}', 'UserController@toggleEnable');
+            Route::patch('users/toggle-enable/{slug}', 'UserController@toggleEnable');
 
-            Route::resource('addresses', 'AddressController');
-            Route::resource('townships', 'TownshipController');
+            Route::resource('customers', 'CustomerController');
+            Route::patch('customers/toggle-enable/{slug}', 'CustomerController@toggleEnable');
+
             Route::resource('cities', 'CityController');
+            Route::resource('townships', 'TownshipController');
             Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
 
             Route::resource('sub-categories', 'SubCategoryController');
