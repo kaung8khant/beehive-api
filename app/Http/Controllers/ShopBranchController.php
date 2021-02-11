@@ -17,10 +17,32 @@ class ShopBranchController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return ShopBranch::where('name', 'LIKE', '%' . $filter . '%')
+        return ShopBranch::with('shop', 'township')
+        ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
     }
+
+    /**
+     * Display a listing of the shop branches by one shop.
+     */
+    public function getBranchesByShop($slug)
+    {
+        return ShopBranch::whereHas('shop', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
+    }
+
+    /**
+     * Display a listing of the shop branches by one township.
+     */
+    public function getBranchesByTownship($slug)
+    {
+        return ShopBranch::whereHas('township', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -57,7 +79,7 @@ class ShopBranchController extends Controller
      */
     public function show($slug)
     {
-        response()->json(ShopBranch::where('slug', $slug)->firstOrFail(), 200);
+        response()->json(ShopBranch::with('shop', 'township')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**

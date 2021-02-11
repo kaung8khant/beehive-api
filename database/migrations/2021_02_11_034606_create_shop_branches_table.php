@@ -21,11 +21,13 @@ class CreateShopBranchesTable extends Migration
             $table->boolean("enable");
             $table->string("address");
             $table->string("contact_number");
-            $table->timestamps("opening_time");
-            $table->timestamps("closing_time");
+            $table->string("opening_time");
+            $table->string("closing_time");
             $table->double('latitude');
             $table->double('longitude');
             $table->timestamps();
+            $table->unsignedBigInteger('township_id');
+            $table->unsignedBigInteger('shop_id');
             $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
             $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
         });
@@ -33,6 +35,7 @@ class CreateShopBranchesTable extends Migration
 
     /**
      * Reverse the migrations.
+     *
      *
      * @return void
      */
