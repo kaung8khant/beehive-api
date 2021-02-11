@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 class RestaurantCategoryController extends Controller
 {
     use StringHelper;
+
     /**
      * Display a listing of the resource.
      *
@@ -17,20 +18,10 @@ class RestaurantCategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $filter = $request->filter;
-        return RestaurantCategory::where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
-    }
-
-    /**
-      * Display a listing of the restaurant categories by one restaurant.
-      */
-    public function getCategoriesByRestaurant($slug)
-    {
-        return RestaurantCategory::whereHas('restaurants', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->paginate(10);
+        return RestaurantCategory::where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     /**
@@ -41,44 +32,48 @@ class RestaurantCategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $request['slug']=$this->generateUniqueSlug();
+        $request['slug'] = $this->generateUniqueSlug();
 
-        $restaurantCategory=RestaurantCategory::create($request->validate(
-            [
-                'name'=>'required|unique:restaurant_categories',
-                'name_mm'=>'unique:restaurant_categories',
-                'slug'=>'required|unique:restaurant_categories',
-            ]
-        ));
+        $restaurantCategory = RestaurantCategory::create($request->validate([
+            'name' => 'required|unique:restaurant_categories',
+            'name_mm' => 'unique:restaurant_categories',
+            'slug' => 'required|unique:restaurant_categories',
+        ]));
+
         return response()->json($restaurantCategory, 201);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\RestaurantCategory  $restaurantCategory
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
     public function show($slug)
     {
-        return response()->json(RestaurantCategory::where('slug', $slug)->firstOrFail(), 200);
+        $restaurantCategory = RestaurantCategory::where('slug', $slug)->firstOrFail();
+        return response()->json($restaurantCategory, 200);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\RestaurantCategory  $restaurantCategory
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $slug)
     {
-        $restaurantCategory=RestaurantCategory::where('slug', $slug)->firstOrFail();
+        $restaurantCategory = RestaurantCategory::where('slug', $slug)->firstOrFail();
 
         $restaurantCategory->update($request->validate([
-            'name'=>'required|unique:restaurant_categories',
-            'name_mm'=>'unique:restaurant_categories',
-            Rule::unique('restaurant_categories')->ignore($restaurantCategory->id),
+            'name' => [
+                'required',
+                Rule::unique('restaurant_categories')->ignore($restaurantCategory->id),
+            ],
+            'name_mm' => [
+                Rule::unique('restaurant_categories')->ignore($restaurantCategory->id),
+            ]
         ]));
 
         return response()->json($restaurantCategory, 200);
@@ -87,12 +82,25 @@ class RestaurantCategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\RestaurantCategory  $restaurantCategory
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
     public function destroy($slug)
     {
         RestaurantCategory::where('slug', $slug)->firstOrFail()->delete();
-        return response()->json(['message'=>'successfully deleted'], 200);
+        return response()->json(['message' => 'successfully deleted'], 200);
+    }
+
+    /**
+     * Display a listing of the restaurant categories by one restaurant.
+     * 
+     * @param  int  $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function getCategoriesByRestaurant($slug)
+    {
+        return RestaurantCategory::whereHas('restaurants', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
     }
 }

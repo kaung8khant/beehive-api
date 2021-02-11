@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 class CityController extends Controller
 {
     use StringHelper;
+
     /**
      * Display a listing of the resource.
      *
@@ -17,12 +18,11 @@ class CityController extends Controller
      */
     public function index(Request $request)
     {
-        $filter= $request->filter;
-
         return City::with('townships')
-        ->where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     /**
@@ -33,22 +33,21 @@ class CityController extends Controller
      */
     public function store(Request $request)
     {
-        $request['slug']=$this->generateUniqueSlug();
+        $request['slug'] = $this->generateUniqueSlug();
 
-        $city=City::create($request->validate(
-            [
-                'name'=>'required|unique:cities',
-                'name_mm'=>'unique:cities',
-                'slug'=>'required|unique:cities',
-            ]
-        ));
+        $city = City::create($request->validate([
+            'name' => 'required|unique:cities',
+            'name_mm' => 'unique:cities',
+            'slug' => 'required|unique:cities',
+        ]));
+
         return response()->json($city, 201);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\City  $city
+     * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
     public function show($slug)
@@ -60,16 +59,16 @@ class CityController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\City  $city
+     * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $slug)
     {
-        $city=City::where('slug', $slug)->firstOrFail();
+        $city = City::where('slug', $slug)->firstOrFail();
 
         $city->update($request->validate([
-            'name'=>'required',
-            'name_mm'=>'unique:cities',
+            'name' => 'required',
+            'name_mm' => 'unique:cities',
             Rule::unique('cities')->ignore($city->id),
         ]));
 
@@ -79,12 +78,12 @@ class CityController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\City  $city
+     * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
     public function destroy($slug)
     {
         City::where('slug', $slug)->firstOrFail()->delete();
-        return response()->json(['message'=>'successfully deleted'], 200);
+        return response()->json(['message' => 'successfully deleted'], 200);
     }
 }

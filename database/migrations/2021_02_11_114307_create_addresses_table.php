@@ -17,13 +17,15 @@ class CreateAddressesTable extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->integer('house_number');
-            $table->integer('floor');
+            $table->string('floor')->nullable();
             $table->string('street_name');
             $table->double('latitude');
             $table->double('longitude');
-            $table->boolean('is_primary')->default(false);
+            $table->boolean('is_primary')->default(0);
             $table->unsignedBigInteger('township_id');
+            $table->unsignedBigInteger('customer_id');
             $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
+            $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
             $table->timestamps();
         });
     }

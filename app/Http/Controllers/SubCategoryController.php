@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 
 class SubCategoryController extends Controller
@@ -19,22 +18,11 @@ class SubCategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $filter = $request->filter;
-        return SubCategory::with('shop_category')->where('name', 'LIKE', '%' . $filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
-            ->orWhere('slug', $filter)->paginate(10);
-    }
-
-    /**
-    * Display a listing of the resource.
-    *
-    * @return \Illuminate\Http\Response
-    */
-    public function getSubCategoriesByCategory($slug)
-    {
-        return SubCategory::whereHas('shop_category', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->paginate(10);
+        return SubCategory::with('shop_category')
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     /**
@@ -64,7 +52,8 @@ class SubCategoryController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(SubCategory::with('shop_category')->where('slug', $slug)->firstOrFail(), 200);
+        $subCategory = SubCategory::with('shop_category')->where('slug', $slug)->firstOrFail();
+        return response()->json($subCategory, 200);
     }
 
     /**
@@ -99,5 +88,18 @@ class SubCategoryController extends Controller
     {
         SubCategory::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+    }
+
+    /**
+     * Display a listing of the sub categories by a category.
+     *
+     * @param  int  $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function getSubCategoriesByCategory($slug)
+    {
+        return SubCategory::whereHas('shop_category', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
     }
 }

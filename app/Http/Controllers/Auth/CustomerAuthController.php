@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Helpers\StringHelper;
 use App\Models\Customer;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CustomerAuthController extends Controller
 {
@@ -26,7 +27,13 @@ class CustomerAuthController extends Controller
             'type' => 'required|in:username,phone_number',
         ]);
 
-        if ($result = $this->attemptLogin($request)) {
+        $result = $this->attemptLogin($request);
+
+        if ($result) {
+            if ($result === 'disabled') {
+                return response()->json(['message' => 'Your accout is disabled. Contact support for more information.'], 403);
+            }
+
             return response()->json(['token' => $result], 200);
         }
 
@@ -44,6 +51,10 @@ class CustomerAuthController extends Controller
         $customer = Customer::where($credential, $request->credential)->first();
 
         if ($customer) {
+            if (!$customer->is_enable) {
+                return 'disabled';
+            }
+
             return Auth::guard('customers')->claims($customer->toArray())->attempt([
                 $credential => $request->credential,
                 'password' => $request->password,
@@ -62,22 +73,22 @@ class CustomerAuthController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validator = $request->validate([
+        $validatedData = $request->validate([
             'slug' => 'required|unique:customers',
             'username' => 'required|string|min:3|max:100|unique:customers',
             'email' => 'required|email|unique:customers',
             'name' => 'required|max:255',
-            'phone_number' => 'required',
+            'phone_number' => 'required|unique:customers',
             'password' => 'required|string|confirmed|min:6',
             'gender' => 'required|in:male,female',
         ]);
 
-        $customer = Customer::create(array_merge(
-            $validator,
-            ['password' => Hash::make($request->password)]
-        ));
+        $validatedData['password'] = Hash::make($validatedData['password']);
 
-        return response()->json($customer, 201);
+        $customer = Customer::create($validatedData);
+        $token = JWTAuth::claims($customer->toArray())->fromUser($customer);
+
+        return response()->json(['token' => $token], 201);
     }
 
     /**

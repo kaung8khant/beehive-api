@@ -21,7 +21,13 @@ class UserAuthController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
-        if ($result = $this->attemptLogin($request)) {
+        $result = $this->attemptLogin($request);
+
+        if ($result) {
+            if ($result === 'disabled') {
+                return response()->json(['message' => 'Your accout is disabled. Contact admin for more information.'], 403);
+            }
+
             return response()->json(['token' => $result], 200);
         }
 
@@ -38,6 +44,10 @@ class UserAuthController extends Controller
         $user = User::with('roles')->where('username', $request->username)->first();
 
         if ($user) {
+            if (!$user->is_enable) {
+                return 'disabled';
+            }
+
             return Auth::guard('users')->claims($user->toArray())->attempt([
                 'username' => $request->username,
                 'password' => $request->password,

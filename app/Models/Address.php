@@ -23,5 +23,17 @@ class Address extends Model
         'longitude',
         'is_primary',
         'township_id',
+        'customer_id',
+    ];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'id',
+        'created_at',
+        'updated_at',
     ];
 }
