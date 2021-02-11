@@ -9,7 +9,18 @@ class Shop extends Model
 {
     use HasFactory;
 
-    protected $fillable = [ 'slug' , 'name' , 'name_mm' , 'official' , 'enable'] ;
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'slug',
+        'name',
+        'name_mm',
+        'official',
+        'enable',
+    ];
 
     /**
     * The attributes that should be hidden for arrays.
