@@ -12,9 +12,11 @@ class OrderStatusController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $filter=$request->filter;
         return OrderStatus::with('order')
+            ->where('created_by', 'LIKE', '%' . $filter . '%')
             ->paginate(10);
     }
 
@@ -37,9 +39,6 @@ class OrderStatusController extends Controller
      */
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-
-
         $validatedData = $request->validate([
             'created_date' => 'required|date_format:Y-m-d',
             'created_by' => 'required',
@@ -70,9 +69,9 @@ class OrderStatusController extends Controller
      * @param  \App\Models\OrderStatus  $orderStatus
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, $id)
     {
-        $orderStatus = OrderStatus::where('slug', $slug)->firstOrFail();
+        $orderStatus = OrderStatus::where('id', $id)->firstOrFail();
 
         $validatedData = $request->validate([
             'created_date' => 'required|date_format:Y-m-d',
