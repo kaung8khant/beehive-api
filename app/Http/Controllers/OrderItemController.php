@@ -119,6 +119,6 @@ class OrderItemController extends Controller
         $orderItem->isDeleted = true;
         $orderItem->save();
 
-        return response()->json($orderItem, 200);
+        return response()->json(['message' => 'Successfully Deleted.'], 200);
     }
 }
