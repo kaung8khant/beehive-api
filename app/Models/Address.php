@@ -36,4 +36,8 @@ class Address extends Model
         'created_at',
         'updated_at',
     ];
+
+    protected $casts = [
+        'is_primary' => 'boolean',
+    ];
 }
