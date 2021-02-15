@@ -77,6 +77,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::put('profile/update', 'ProfileController@update_profile');
 
             Route::resource('orders', 'OrderController');
+            Route::resource('orderContacts', 'OrderContactController');
         });
     });
 

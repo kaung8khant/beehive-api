@@ -18,11 +18,12 @@ class OrderContactController extends Controller
      */
     public function index(Request $request)
     {
-        $filter= $request->filter;
+        return OrderContact::paginate(10);
+        // $filter= $request->filter;
 
-        return OrderContact::where('customerName', 'LIKE', '%' . $filter . '%')
-        ->where('phoneNumber', 'LIKE', '%' . $filter . '%')
-        ->paginate(10);
+        // return OrderContact::where('customerName', 'LIKE', '%' . $filter . '%')
+        // ->where('phoneNumber', 'LIKE', '%' . $filter . '%')
+        // ->paginate(10);
     }
 
     /**
@@ -52,7 +53,7 @@ class OrderContactController extends Controller
             'streetName' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',
-            'order_id' => 'required|exists:App\Models\Order,id',
+            // 'order_id' => 'required|exists:App\Models\Order,id',
         ]));
 
         return response()->json($orderContact, 201);
@@ -100,7 +101,7 @@ class OrderContactController extends Controller
             'streetNumber' => 'required',
             'latitude' => 'required',
             'logitude' => 'required',
-            'order_id' => 'required|exists:App\Models\Order,id',
+            // 'order_id' => 'required|exists:App\Models\Order,id',
             Rule::unique('order_contacts')->ignore($orderContact->id),
         ]));
 
