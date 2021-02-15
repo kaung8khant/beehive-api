@@ -114,7 +114,11 @@ class OrderItemController extends Controller
      */
     public function destroy($id)
     {
-        OrderItem::where('id', $id)->firstOrFail()->delete();
-        return response()->json(['message' => 'Successfully deleted.'], 200);
+        $orderItem= OrderItem::where('id', $id)->firstOrFail();
+        
+        $orderItem->isDeleted = true;
+        $orderItem->save();
+
+        return response()->json($orderItem, 200);
     }
 }
