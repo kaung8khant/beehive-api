@@ -35,6 +35,15 @@ class OrderSeeder extends Seeder
                 'delivery_mode' => 'delivery',
                 'rating_status' => 'three',
             ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'order_date' => '2021-2-17',
+                'special_instruction' => 'Testing',
+                'order_type' => 'shop',
+                'payment_mode' => 'CBPay',
+                'delivery_mode' => 'delivery',
+                'rating_status' => 'three',
+            ],
         ];
         foreach ($orders as $order) {
             Order::create($order);

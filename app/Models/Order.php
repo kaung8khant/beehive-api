@@ -29,6 +29,11 @@ class Order extends Model
         return $this->hasOne(orderContact::class);
     }
 
+    public function orderStatus()
+    {
+        return $this->hasMany(OrderStatus::class);
+    }
+
     public function order_items()
     {
         return $this->hasMany(OrderItem::class);
