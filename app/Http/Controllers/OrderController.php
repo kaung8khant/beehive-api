@@ -33,11 +33,11 @@ class OrderController extends Controller
 
         $validatedData = $request->validate([
             'slug' => 'required|unique:orders',
-            'special_instruction' => 'required|string:orders',
+            'special_instruction' => 'required',
             'order_type' => 'required|in:restaurant,shop',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
-            'delivery_mode' => 'required|package,delivery',
-            'rating_status' => 'required|one,two,three,four,five'
+            'delivery_mode' => 'required|in:package,delivery',
+            'rating_status' => 'required|in:one,two,three,four,five'
         ]);
 
 
@@ -67,12 +67,11 @@ class OrderController extends Controller
         $order = Order::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate([
-            'slug' => 'required|unique:orders',
-            'special_instruction' => 'required|string:orders',
+            'special_instruction' => 'required',
             'order_type' => 'required|in:restaurant,shop',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
-            'delivery_mode' => 'required|package,delivery',
-            'rating_status' => 'required|one,two,three,four,five',
+            'delivery_mode' => 'required|in:package,delivery',
+            'rating_status' => 'required|in:one,two,three,four,five',
              Rule::unique('orders')->ignore($order->id),
         ]);
 
@@ -88,7 +87,7 @@ class OrderController extends Controller
      */
     public function destroy($slug)
     {
-        $order = Order::where('slug', $slug)->firstOrFail();
-        return response()->json(['message' => 'Success.'], 200);
+        Order::where('slug', $slug)->firstOrFail();
+        return response()->json(['message'=>'successfully deleted'], 200);
     }
 }
