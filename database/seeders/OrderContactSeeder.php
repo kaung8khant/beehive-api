@@ -27,7 +27,7 @@ class OrderContactSeeder extends Seeder
                 "streetName"=>"Testing",
                 "latitude" => 14.97934543,
                 "longitude" => 30.34534,
-                // "order_id" => 1
+                "order_id" => 1
             ],
             [
                 
@@ -39,7 +39,7 @@ class OrderContactSeeder extends Seeder
                 "streetName"=>"Testing",
                 "latitude" => 14.97934543,
                 "longitude" => 30.34534,
-                // "order_id" => 2
+                "order_id" => 2
             ],
         ];
         foreach ($orderContacts as $orderContact) {

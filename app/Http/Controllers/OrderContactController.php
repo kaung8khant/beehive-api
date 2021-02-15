@@ -53,7 +53,7 @@ class OrderContactController extends Controller
             'streetName' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',
-            // 'order_id' => 'required|exists:App\Models\Order,id',
+            'order_id' => 'required|exists:App\Models\Order,id',
         ]));
 
         return response()->json($orderContact, 201);
@@ -93,15 +93,15 @@ class OrderContactController extends Controller
         $orderContact = OrderContact::where('order_id', $orderId)->firstOrFail();
 
         $orderContact->update($request->validate([
-            'customerId'=>'required|unique:menus',
+            'customerId'=>'required|unique:order_contacts',
             'customerName'=>'required',
             'phoneNumber'=>'required',
             'houseNumber'=>'required',
             'floor' => 'required',
-            'streetNumber' => 'required',
+            'streetName' => 'required',
             'latitude' => 'required',
-            'logitude' => 'required',
-            // 'order_id' => 'required|exists:App\Models\Order,id',
+            'longitude' => 'required',
+            'order_id' => 'required|exists:App\Models\Order,id',
             Rule::unique('order_contacts')->ignore($orderContact->id),
         ]));
 
