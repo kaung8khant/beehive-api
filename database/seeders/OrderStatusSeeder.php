@@ -27,6 +27,12 @@ class OrderStatusSeeder extends Seeder
                 'status' => 'preparing',
                 'order_id' => 2,
             ],
+            [
+                'created_date' => '2021-2-17',
+                'created_by' => 'Test',
+                'status' => 'preparing',
+                'order_id' => 3,
+            ],
 
         ];
         foreach ($orderStatus as $status) {
