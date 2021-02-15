@@ -52,7 +52,7 @@ class SubCategoryController extends Controller
      */
     public function show($slug)
     {
-        $subCategory = SubCategory::with('shop_category')->where('slug', $slug)->firstOrFail();
+        $subCategory = SubCategory::with('shop_category',"product")->where('slug', $slug)->firstOrFail();
         return response()->json($subCategory, 200);
     }
 
