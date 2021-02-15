@@ -38,8 +38,8 @@ class ProductSeeder extends Seeder
                 "price" => 60000,
                 "slug" => $this->generateUniqueSlug(),
                 "shop_id" => 1,
-                "shop_category_id"=>2,
-                "sub_category_id"=>2
+                "shop_category_id"=>1,
+                "sub_category_id"=>1
 
             ],
         ];
