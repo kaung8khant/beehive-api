@@ -24,7 +24,7 @@ class Order extends Model
         'rating_status',
     ];
 
-    public function orderContact()
+    public function order_contact()
     {
         return $this->hasOne(orderContact::class);
     }
@@ -32,5 +32,10 @@ class Order extends Model
     public function orderStatus()
     {
         return $this->hasMany(OrderStatus::class);
+    }
+
+    public function order_items()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }

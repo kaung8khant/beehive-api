@@ -78,7 +78,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('orders', 'OrderController');
             Route::resource('orderContacts', 'OrderContactController');
-            Route::resource('order-status', 'OrderStatusController');
+            Route::resource('orderStatus', 'OrderStatusController');
+            Route::resource('orderItems', 'OrderItemController');
         });
     });
 
