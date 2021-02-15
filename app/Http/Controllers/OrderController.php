@@ -33,7 +33,6 @@ class OrderController extends Controller
 
         $validatedData = $request->validate([
             'slug' => 'required|unique:orders',
-            'phone_number' => 'required|unique:orders',
             'special_instruction' => 'required|string:orders',
             'order_type' => 'required|in:restaurant,shop',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
@@ -69,7 +68,6 @@ class OrderController extends Controller
 
         $validatedData = $request->validate([
             'slug' => 'required|unique:orders',
-            'phone_number' => 'required|unique:orders',
             'special_instruction' => 'required|string:orders',
             'order_type' => 'required|in:restaurant,shop',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
