@@ -47,9 +47,9 @@ class ShopTagController extends Controller
 
         $tag=ShopTag::create($request->validate(
             [
-                'name'=>'required|unique:tags',
-                'name_mm'=>'unique:tags',
-                'slug'=>'required|unique:tags',
+                'name'=>'required|unique:shop_tags',
+                'name_mm'=>'unique:shop_tags',
+                'slug'=>'required|unique:shop_tags',
             ]
         ));
         return response()->json($tag, 201);

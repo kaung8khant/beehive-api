@@ -95,7 +95,6 @@ class ShopBranchController extends Controller
         $shopBranch = ShopBranch::where('slug', $slug)->firstOrFail();
 
         $shopBranch->update($request->validate([
-            'slug' => 'required|unique:shop_branches',
             'name' => 'required|unique:shop_branches',
             'name_mm'=>'unique:shop_branches',
             'enable'=> 'required|boolean:shop_branches',
