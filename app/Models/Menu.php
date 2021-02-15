@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Menu extends Model
 {
     use HasFactory;
+    /**
+    * The attributes that are mass assignable.
+    *
+    * @var array
+    */
 
     protected $fillable =["slug","name","name_mm","description","description_mm","price","restaurant_id","restaurant_category_id"];
 

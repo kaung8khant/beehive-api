@@ -65,7 +65,7 @@ class MenuController extends Controller
      * @param  \App\Models\Menu  $menu
      * @return \Illuminate\Http\Response
      */
-    public function show(Menu $menu)
+    public function show($slug)
     {
         return response()->json(Menu::where('slug', $slug)->firstOrFail(), 200);
     }
