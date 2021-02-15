@@ -5,19 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MenuToppingValue extends Model
+class OrderContact extends Model
 {
     use HasFactory;
+
     /**
     * The attributes that are mass assignable.
     *
     * @var array
     */
 
-    protected $fillable = ['slug',"name","value","price","menu_topping_id"];
+    protected $fillable =["order_id","customerId","customerName","phoneNumber","houseNumber","floor","streetName","latitude","longitude"];
 
-    public function menu_toppings()
+    public function order()
     {
-        return $this->belongsTo(MenuTopping::class);
+        return $this->hasOne(Order::class);
     }
 }

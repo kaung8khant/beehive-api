@@ -23,4 +23,9 @@ class Order extends Model
         'delivery_mode',
         'rating_status',
     ];
+
+    public function orderContact()
+    {
+        return $this->hasOne(orderContact::class);
+    }
 }
