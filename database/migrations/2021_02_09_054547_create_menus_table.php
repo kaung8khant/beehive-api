@@ -19,7 +19,7 @@ class CreateMenusTable extends Migration
             $table->string('slug')->unique();
             $table->string('name')->unique();
             $table->string('name_mm')->unique();
-            $table->string('price');
+            $table->decimal('price', 12, 2);
             $table->string('description');
             $table->string('description_mm');
             $table->unsignedBigInteger('restaurant_id')->nullable();

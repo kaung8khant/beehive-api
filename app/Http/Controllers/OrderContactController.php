@@ -18,12 +18,11 @@ class OrderContactController extends Controller
      */
     public function index(Request $request)
     {
-        return OrderContact::paginate(10);
-        // $filter= $request->filter;
+        $filter= $request->filter;
 
-        // return OrderContact::where('customerName', 'LIKE', '%' . $filter . '%')
-        // ->where('phoneNumber', 'LIKE', '%' . $filter . '%')
-        // ->paginate(10);
+        return OrderContact::where('customerName', 'LIKE', '%' . $filter . '%')
+        ->where('phoneNumber', 'LIKE', '%' . $filter . '%')
+        ->paginate(10);
     }
 
     /**
