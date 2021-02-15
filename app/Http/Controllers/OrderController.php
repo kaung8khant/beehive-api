@@ -33,6 +33,7 @@ class OrderController extends Controller
 
         $validatedData = $request->validate([
             'slug' => 'required|unique:orders',
+            'order_date' => 'required|date_format:Y-m-d',
             'special_instruction' => 'required',
             'order_type' => 'required|in:restaurant,shop',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
@@ -68,6 +69,7 @@ class OrderController extends Controller
 
         $validatedData = $request->validate([
             'special_instruction' => 'required',
+            'order_date' => 'required|date_format:Y-m-d',
             'order_type' => 'required|in:restaurant,shop',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:package,delivery',
@@ -87,7 +89,7 @@ class OrderController extends Controller
      */
     public function destroy($slug)
     {
-        Order::where('slug', $slug)->firstOrFail();
+        Order::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message'=>'successfully deleted'], 200);
     }
 }
