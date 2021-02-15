@@ -66,8 +66,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('townships/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');
 
             Route::resource('shop-branches', 'ShopBranchController');
-            Route::get('shops/{slug?}/shop-branches', 'ShopBranchController@getBranchesByShop')->name('getBranchesByShop');
-            Route::get('townships/{slug?}/shop-branches', 'ShopBranchController@getBranchesByTownship')->name('getBranchesByTownship');
+            Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop')->name('getBranchesByShop');
+            Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship')->name('getBranchesByTownship');
 
             Route::get('settings', 'SettingController@index');
             Route::get('settings/{key?}', 'SettingController@show');
@@ -79,6 +79,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('orders', 'OrderController');
             Route::resource('orderContacts', 'OrderContactController');
             Route::resource('orderStatus', 'OrderStatusController');
+            Route::get('orders/{status}/orderStatus', 'OrderStatusController@getStatusByOrder')->name('getStatusByOrder');
             Route::resource('orderItems', 'OrderItemController');
         });
     });

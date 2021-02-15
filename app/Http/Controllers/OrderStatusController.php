@@ -18,6 +18,16 @@ class OrderStatusController extends Controller
             ->paginate(10);
     }
 
+    /**
+    * Display a listing of the shop branches by one shop.
+    */
+    public function getStatusByOrder($status)
+    {
+        return OrderStatus::whereHas('order', function ($q) use ($status) {
+            $q->where('status', $status);
+        })->paginate(10);
+    }
+
 
     /**
      * Store a newly created resource in storage.
