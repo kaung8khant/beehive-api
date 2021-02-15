@@ -24,8 +24,8 @@ class CreateOrderContactsTable extends Migration
             $table->string('streetName');
             $table->decimal('latitude');
             $table->decimal('longitude');
-            // $table->unsignedBigInteger('order_id');
-            // $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+            $table->unsignedBigInteger('order_id');
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
     }
 
