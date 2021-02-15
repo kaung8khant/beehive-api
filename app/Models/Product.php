@@ -23,6 +23,7 @@ class Product extends Model
         'price',
         'shop_id',
         'shop_category_id',
+        'sub_category_id',
     ];
 
     public function shop()
@@ -33,6 +34,11 @@ class Product extends Model
     public function shop_category()
     {
         return $this->belongsTo(ShopCategory::class);
+    }
+
+    public function sub_category()
+    {
+        return $this->belongsTo(SubCategory::class);
     }
 
     public function product_variation()
