@@ -78,8 +78,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('orders', 'OrderController');
             Route::resource('orderContacts', 'OrderContactController');
-            Route::resource('orderStatus', 'OrderStatusController');
-            Route::get('orders/{status}/orderStatus', 'OrderStatusController@getStatusByOrder')->name('getStatusByOrder');
+            Route::resource('order-status', 'OrderStatusController');
+            Route::get('orders/{status}/order-status', 'OrderStatusController@getStatusByOrder')->name('getStatusByOrder');
             Route::resource('orderItems', 'OrderItemController');
         });
     });
