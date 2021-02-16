@@ -65,6 +65,19 @@ class Customer extends Authenticatable implements JWTSubject
         return [];
     }
 
+
+    public function shops()
+    {
+        return $this->belongsToMany(Shop::class, 'favorite_shop');
+    }
+
+
+    public function restaurants()
+    {
+        return $this->belongsToMany(Restaurant::class, 'favorite_restaurant');
+    }
+
+
     /**
      * Get the rating that owns customer.
      */

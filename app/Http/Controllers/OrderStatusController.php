@@ -22,7 +22,7 @@ class OrderStatusController extends Controller
     }
 
     /**
-    * Display a listing of the shop branches by one shop.
+    * Display order list depending on status
     */
     public function getStatusByOrder($status)
     {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Rating;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -83,8 +84,18 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('order-items', 'OrderItemController');
 
             Route::resource('ratings', 'RatingController');
+            Route::get('orders/{receiverType}/ratings', 'RatingController@getReceiverTypeByOrder')->name('getReceiverTypeByOrder');
         });
     });
+
+    Route::post('upload-file', 'File\UploadController@upload');
+    Route::get('files/{source}/{sourceSlug}', 'File\FileController@getFilesBySource');
+    Route::get('files/{slug}', 'File\FileController@getFile');
+
+    Route::get('images/{source}/{sourceSlug}', 'File\FileController@getImagesBySource');
+    Route::get('images/{slug}', 'File\FileController@getImage');
+
+    Route::delete('files/{slug}', 'File\FileController@deleteFile');
 
     /*
      * -----------
