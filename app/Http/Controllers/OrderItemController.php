@@ -43,14 +43,14 @@ class OrderItemController extends Controller
     public function store(Request $request)
     {
         $orderItem = OrderItem::create($request->validate([
-            'itemId' => 'required',
-            'itemName' => 'required',
-            'itemType' => 'required|in:product,menu',
+            'item_id' => 'required',
+            'item_name' => 'required',
+            'item_type' => 'required|in:product,menu',
             'amount' => 'required',
             'quantity' => 'required',
             'tax' => 'required',
             'discount' => 'required',
-            'isDeleted' => 'required',
+            'is_deleted' => 'required',
             'order_id' => 'required|exists:App\Models\Order,id',
         ]));
 
@@ -91,14 +91,14 @@ class OrderItemController extends Controller
         $orderItem = OrderItem::where('order_id', $orderId)->firstOrFail();
 
         $orderItem->update($request->validate([
-            'itemId' => 'required',
-            'itemName' => 'required',
-            'itemType' => 'required|in:product,menu',
+            'item_id' => 'required',
+            'item_name' => 'required',
+            'item_type' => 'required|in:product,menu',
             'amount' => 'required',
             'quantity' => 'required',
             'tax' => 'required',
             'discount' => 'required',
-            'isDeleted' => 'required',
+            'is_deleted' => 'required',
             'order_id' => 'required|exists:App\Models\Order,id',
             Rule::unique('order_items')->ignore($orderItem->id),
         ]));
@@ -115,7 +115,7 @@ class OrderItemController extends Controller
     public function destroy($id)
     {
         $orderItem= OrderItem::where('id', $id)->firstOrFail();
-        
+
         $orderItem->isDeleted = true;
         $orderItem->save();
 

@@ -18,28 +18,28 @@ class OrderItemSeeder extends Seeder
     {
         $orderItems = [
             [
-                "itemId" => "IT0002",
-                "itemName" => "Chicken Pizza",
-                "itemType" => "menu",
+                "item_id" => "IT0002",
+                "item_name" => "Chicken Pizza",
+                "item_type" => "menu",
                 "amount"=>6000,
                 "quantity"=>2,
                 "tax"=>5,
                 "discount"=>200,
-                "isDeleted" => false,
+                "is_deleted" => false,
                 "order_id" => 1
             ],
             [
-                "itemId" => "IT0003",
-                "itemName" => "Seafood Pizza",
-                "itemType" => "menu",
+                "item_id" => "IT0003",
+                "item_name" => "Seafood Pizza",
+                "item_type" => "menu",
                 "amount"=>8000,
                 "quantity"=>2,
                 "tax"=>5,
                 "discount"=>200,
-                "isDeleted" => false,
+                "is_deleted" => false,
                 "order_id" => 1
             ],
-           
+
         ];
         foreach ($orderItems as $orderItem) {
             OrderItem::create($orderItem);
