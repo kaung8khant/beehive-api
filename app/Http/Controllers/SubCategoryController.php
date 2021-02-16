@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SubCategory;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use Illuminate\Validation\Rule;
@@ -52,7 +53,7 @@ class SubCategoryController extends Controller
      */
     public function show($slug)
     {
-        $subCategory = SubCategory::with('shop_category',"product")->where('slug', $slug)->firstOrFail();
+        $subCategory = SubCategory::with('shop_category')->where('slug', $slug)->firstOrFail();
         return response()->json($subCategory, 200);
     }
 
@@ -65,7 +66,17 @@ class SubCategoryController extends Controller
      */
     public function update(Request $request, $slug)
     {
-        $subCategory = SubCategory::where('slug', $slug)->firstOrFail();
+
+        $subCategory = SubCategory::with("products")->where('slug', $slug)->firstOrFail();
+
+        $products = $subCategory->products;
+
+        foreach ($products as $product) {
+            $product = Product::where('slug', $product->slug)->firstOrFail();
+            Product::where('slug', $product->slug)->update([
+                'shop_category_id' => $request->shop_category_id,
+            ]);
+        }
 
         $subCategory->update($request->validate([
             'name' => [
