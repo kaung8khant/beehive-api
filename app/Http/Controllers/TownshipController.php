@@ -39,7 +39,7 @@ class TownshipController extends Controller
             'name' => 'required|unique:townships',
             'name_mm' => 'unique:townships',
             'slug' => 'required|unique:townships',
-            'city_id' => 'required|exists:App\Models\City,slug'
+            'city_id' => 'required|exists:App\Models\City,id'
         ]));
 
         return response()->json($township, 201);
@@ -74,7 +74,7 @@ class TownshipController extends Controller
                 Rule::unique('townships')->ignore('$township_id'),
             ],
             'name_mm' => 'unique:townships',
-            'city_id' => 'required|exists:App\Models\City,slug',
+            'city_id' => 'required|exists:App\Models\City,id',
         ]));
 
         return response()->json($township, 200);
