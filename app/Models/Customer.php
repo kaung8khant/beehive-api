@@ -64,4 +64,13 @@ class Customer extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    /**
+     * Get the rating that owns customer.
+     */
+
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
+    }
 }
