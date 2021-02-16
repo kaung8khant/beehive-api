@@ -5,22 +5,22 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Shop;
+use App\Models\Restaurant;
 
-class ShopController extends Controller
+class RestaurantController extends Controller
 {
     protected $customer_id;
-/**
+     /**
      * Create a new ShopController instance.
      *
      * @return void
      */
-    public function __construct()
-    {
-        if (Auth::guard('customers')->check()) {
-            $this->customer_id = Auth::guard('customers')->user()->id;
+     public function __construct()
+        {
+            if (Auth::guard('customers')->check()) {
+                $this->customer_id = Auth::guard('customers')->user()->id;
+            }
         }
-    }
 
      /**
      * Set the favorite shop  for favorite_shop table.
@@ -28,16 +28,14 @@ class ShopController extends Controller
      * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
-    public function setFavoriteShop($slug)
+    public function setFavoriteRestaurant($slug)
     {
         $customer = Customer::where('slug', $customer_id)->firstOrFail();
 
-        $shopId = Shop::where('slug', $slug)->firstOrFail();
+        $restaurantId = Restaurant::where('slug', $slug)->firstOrFail();
 
-        $customer->shops()->attach($shopId);
+        $customer->shops()->attach($restaurantId);
 
         return response()->json(['message' => 'Success.'], 200);
     }
-
-
 }

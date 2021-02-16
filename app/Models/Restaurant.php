@@ -52,4 +52,9 @@ class Restaurant extends Model
     {
         return $this->hasMany(RestaurantBranch::class);
     }
+
+    public function customers()
+    {
+        return $this->belongsToMany(Customer::class, 'favorite_restaurant');
+    }
 }

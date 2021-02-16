@@ -14,5 +14,8 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('addresses/get-primary', 'Customer\AddressController@getPrimaryAddress');
         Route::patch('addresses/{slug}/set-primary', 'Customer\AddressController@setPrimaryAddress');
         Route::resource('addresses', 'Customer\AddressController');
+
+        Route::post('shop/{slug}/set-favorite', 'Customer\ShopController@setFavoriteShop');
+
     });
 });
