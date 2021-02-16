@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\OrderStatus;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class OrderStatusController extends Controller
 {
@@ -21,7 +22,7 @@ class OrderStatusController extends Controller
     }
 
     /**
-    * Display a listing of the shop branches by one shop.
+    * Display order list depending on status
     */
     public function getStatusByOrder($status)
     {
@@ -56,9 +57,9 @@ class OrderStatusController extends Controller
      * @param  \App\Models\OrderStatus  $orderStatus
      * @return \Illuminate\Http\Response
      */
-    public function show($slug)
+    public function show($orderId)
     {
-        return response()->json(OrderStatus::with('order')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(OrderStatus::with('order')->where('order_id', $orderId)->firstOrFail(), 200);
     }
 
     /**
@@ -68,29 +69,18 @@ class OrderStatusController extends Controller
      * @param  \App\Models\OrderStatus  $orderStatus
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $orderId)
     {
-        $orderStatus = OrderStatus::where('id', $id)->firstOrFail();
+        $orderStatus = OrderStatus::with('order')->where('order_id', $orderId)->firstOrFail();
 
         $validatedData = $request->validate([
             'created_by' => 'required',
             'status' => 'required|in:pending,preparing,pickUp,onRoute,delivered,cancelled',
             'order_id' => 'required|exists:App\Models\order,id',
+            Rule::unique('order_status')->ignore($orderStatus->id),
         ]);
 
         $orderStatus->update($validatedData);
         return response()->json($orderStatus, 200);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\OrderStatus  $orderStatus
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        OrderStatus::where('id', $id)->firstOrFail()->delete();
-        return response()->json(['message' => 'successfully deleted'], 200);
     }
 }

@@ -67,9 +67,13 @@ class CityController extends Controller
         $city = City::where('slug', $slug)->firstOrFail();
 
         $city->update($request->validate([
-            'name' => 'required',
-            'name_mm' => 'unique:cities',
-            Rule::unique('cities')->ignore($city->id),
+            'name' => [
+                'required',
+                Rule::unique('cities')->ignore($city->id),
+            ],
+            'name_mm' => [
+                Rule::unique('cities')->ignore($city->id),
+            ],
         ]));
 
         return response()->json($city, 200);
