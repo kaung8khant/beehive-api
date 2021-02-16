@@ -11,6 +11,10 @@ class RestaurantBranch extends Model
 
     protected $fillable = [ 'slug' , 'name' , 'name_mm' , 'enable','address','contact_number' ,'opening_time','closing_time','latitude','longitude','restaurant_id','township_id'] ;
 
+    protected $casts = [
+        'enable' => 'boolean',
+    ];
+
     public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);

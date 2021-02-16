@@ -15,10 +15,10 @@ class OrderItem extends Model
     * @var array
     */
 
-    protected $fillable =["order_id","itemId","itemName","itemType","amount","quantity","tax","discount","isDeleted"];
+    protected $fillable =["order_id","item_id","item_name","item_type","amount","quantity","tax","discount","is_deleted"];
 
     protected $casts = [
-        'isDeleted' => 'boolean',
+        'is_deleted' => 'boolean',
     ];
 
     public function order()

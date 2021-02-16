@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\StringHelper;
 use App\Models\ShopBranch;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ShopBranchController extends Controller
 {
@@ -106,6 +107,7 @@ class ShopBranchController extends Controller
             'longitude' => 'required',
             'township_id' => 'required|exists:App\Models\Township,id',
             'shop_id' => 'required|exists:App\Models\Shop,id',
+             Rule::unique('shop_branches')->ignore($shopBranch->id),
         ]));
         return response()->json($shopBranch, 200);
     }
