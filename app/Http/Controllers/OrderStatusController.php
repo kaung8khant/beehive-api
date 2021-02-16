@@ -88,9 +88,9 @@ class OrderStatusController extends Controller
      * @param  \App\Models\OrderStatus  $orderStatus
      * @return \Illuminate\Http\Response
      */
-    public function destroy($slug)
+    public function destroy($id)
     {
-        OrderStatus::where('slug', $slug)->firstOrFail()->delete();
-        return response()->json(['message', 'successfully deleted'], 200);
+        OrderStatus::where('id', $id)->firstOrFail()->delete();
+        return response()->json(['message' => 'successfully deleted'], 200);
     }
 }
