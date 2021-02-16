@@ -10,9 +10,28 @@ use App\Models\User;
 class UserAuthController extends Controller
 {
     /**
-     * Get JWT token via username and password.
-     *
-     * @return \Illuminate\Http\JsonResponse
+     * @OA\Post(
+     *      path="/api/v2/admin/login",
+     *      operationId="adminLogin",
+     *      tags={"UserAuth"},
+     *      summary="User login",
+     *      description="Login as a system user",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Login credentials",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(
+     *                  @OA\Property(property="username", type="string", example="admin"),
+     *                  @OA\Property(property="password", type="string", example="password")
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      )
+     *)
      */
     public function login(Request $request)
     {

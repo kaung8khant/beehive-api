@@ -2,32 +2,238 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Beehive commerce API",
+        "description": "This API is used by Beehive Mobile Apps and web application",
+        "contact": {
+            "email": "aungthu.moe@hiveinnovate.com"
+        },
         "version": "2.0.0"
     },
     "paths": {
-        "/api/categories": {
-            "get": {
+        "/api/v2/admin/login": {
+            "post": {
                 "tags": [
-                    "Categories"
+                    "UserAuth"
                 ],
-                "summary": "Get list of categories",
-                "description": "Returns list of categories",
-                "operationId": "getCategoryList",
+                "summary": "User login",
+                "description": "Login as a system user",
+                "operationId": "adminLogin",
+                "requestBody": {
+                    "description": "Login credentials",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "example": "admin"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Successful operation"
                     }
                 }
             }
+        },
+        "/api/v2/admin/cities": {
+            "get": {
+                "tags": [
+                    "Cities"
+                ],
+                "summary": "Get list of cities",
+                "description": "Returns list of cities",
+                "operationId": "getCityLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Cities"
+                ],
+                "summary": "Create a city",
+                "description": "Returns newly created city",
+                "operationId": "storeCity",
+                "requestBody": {
+                    "description": "Created city object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/City"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/cities/{slug}": {
+            "get": {
+                "tags": [
+                    "Cities"
+                ],
+                "summary": "Get One City",
+                "description": "Returns a requested city",
+                "operationId": "showCity",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested city",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Cities"
+                ],
+                "summary": "Update a city",
+                "description": "Update a requested city",
+                "operationId": "updateCity",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a city",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New city data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/City"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cities"
+                ],
+                "summary": "Delete One City",
+                "description": "Delete one specific city",
+                "operationId": "showCity",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested city",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
-        "responses": {
-            "401": {
-                "description": "Unauthenticated"
-            },
-            "403": {
-                "description": "Forbidden"
+        "schemas": {
+            "City": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "City Name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "မြို့အမည်"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "City"
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "in": "header",
+                "scheme": "bearer"
             }
         }
     },
