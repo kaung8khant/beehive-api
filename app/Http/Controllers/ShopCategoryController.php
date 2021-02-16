@@ -75,9 +75,13 @@ class ShopCategoryController extends Controller
         $shopCategory=ShopCategory::where('slug', $slug)->firstOrFail();
 
         $shopCategory->update($request->validate([
-            'name'=>'required|unique:shop_categories',
-            'name_mm'=>'unique:shop_categories',
-            Rule::unique('shop_categories')->ignore($shopCategory->id),
+            'name' => [
+                'required',
+                Rule::unique('shop_categories')->ignore($shopCategory->id),
+            ],
+            'name_mm' => [
+                Rule::unique('shop_categories')->ignore($shopCategory->id),
+            ],
         ]));
 
         return response()->json($shopCategory, 200);
