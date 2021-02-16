@@ -71,9 +71,11 @@ class TownshipController extends Controller
         $township->update($request->validate([
             'name' => [
                 'required',
-                Rule::unique('townships')->ignore('$township_id'),
+                Rule::unique('townships')->ignore($township->id),
             ],
-            'name_mm' => 'unique:townships',
+            'name_mm' => [
+                Rule::unique('townships')->ignore($township->id),
+            ],
             'city_id' => 'required|exists:App\Models\City,id',
         ]));
 
