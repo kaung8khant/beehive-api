@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Rating;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -83,6 +84,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('order-items', 'OrderItemController');
 
             Route::resource('ratings', 'RatingController');
+            Route::get('orders/{receiverType}/ratings', 'RatingController@getReceiverTypeByOrder')->name('getReceiverTypeByOrder');
         });
     });
 

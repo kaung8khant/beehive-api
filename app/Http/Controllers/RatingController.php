@@ -19,6 +19,16 @@ class RatingController extends Controller
         ->paginate(10);
     }
 
+    /**
+    * Display order list depending on receiver_type
+    */
+    public function getReceiverTypeByOrder($receiverType)
+    {
+        return Rating::whereHas('order', function ($q) use ($receiverType) {
+            $q->where('receiver_type', $receiverType);
+        })->paginate(10);
+    }
+
 
     /**
      * Store a newly created resource in storage.
