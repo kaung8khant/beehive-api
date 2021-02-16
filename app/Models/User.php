@@ -39,6 +39,10 @@ class User extends Authenticatable implements JWTSubject
         'pivot',
     ];
 
+    protected $casts = [
+        'is_enable' => 'boolean',
+    ];
+
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *

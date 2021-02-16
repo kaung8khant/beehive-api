@@ -78,9 +78,13 @@ class ShopTagController extends Controller
         $tag=ShopTag::where('slug', $slug)->firstOrFail();
 
         $tag->update($request->validate([
-            'name'=>'required|unique:shop_tags',
-            'name_mm'=>'unique:shop_tags',
-            Rule::unique('shop_tags')->ignore($tag->id),
+            'name' => [
+                'required',
+                Rule::unique('shop_tags')->ignore($tag->id),
+            ],
+            'name_mm' => [
+                Rule::unique('shop_tags')->ignore($tag->id),
+            ],
         ]));
 
         return response()->json($tag, 200);

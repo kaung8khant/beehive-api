@@ -34,6 +34,11 @@ class Shop extends Model
         'pivot',
     ];
 
+    protected $casts = [
+        'enable' => 'boolean',
+        'official' => 'boolean',
+    ];
+
     public function shop_tags()
     {
         return $this->belongsToMany(ShopTag::class, 'tag_shop');

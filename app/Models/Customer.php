@@ -27,6 +27,10 @@ class Customer extends Authenticatable implements JWTSubject
         'gender',
     ];
 
+    protected $casts = [
+        'is_enable' => 'boolean',
+    ];
+
     /**
      * The attributes that should be hidden for arrays.
      *

@@ -101,16 +101,23 @@ class RestaurantBranchController extends Controller
         $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
 
         $restaurantBranch->update($request->validate([
-            'name' =>'required|unique:restaurant_branches',
-            'name_mm'=>'unique:restaurant_branches',
-            'contact_number'=>'required|unique:restaurant_branches',
+            'name' => [
+                'required',
+                Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
+            ],
+            'name_mm' => [
+                Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
+            ],
+            'contact_number' => [
+                'required',
+                Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
+            ],
             'address'=>'required',
             'opening_time'=>'required|date_format:H:i',
             'closing_time'=>'required|date_format:H:i',
             'latitude'=>'required',
             'longitude'=>'required',
             'enable'=> 'required|boolean:restaurant_branches',
-             Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
             'restaurant_id' => 'required|exists:App\Models\Restaurant,id',
             'township_id' => 'required|exists:App\Models\Township,id',
         ]));
