@@ -28,6 +28,11 @@ class Restaurant extends Model
         'pivot',
     ];
 
+    protected $casts = [
+        'enable' => 'boolean',
+        'official' => 'boolean',
+    ];
+
     public function restaurant_tags()
     {
         return $this->belongsToMany(RestaurantTag::class, 'tag_restaurant');
