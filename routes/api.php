@@ -77,10 +77,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::put('profile/update', 'ProfileController@update_profile');
 
             Route::resource('orders', 'OrderController');
-            Route::resource('orderContacts', 'OrderContactController');
+            Route::resource('order-contacts', 'OrderContactController');
             Route::resource('order-status', 'OrderStatusController');
             Route::get('orders/{status}/order-status', 'OrderStatusController@getStatusByOrder')->name('getStatusByOrder');
-            Route::resource('orderItems', 'OrderItemController');
+            Route::resource('order-items', 'OrderItemController');
         });
     });
 
