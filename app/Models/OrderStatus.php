@@ -18,7 +18,6 @@ class OrderStatus extends Model
         'slug',
         'status',
         'created_by',
-        'created_at',
         'order_id'
     ];
 
