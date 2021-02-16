@@ -40,7 +40,6 @@ class OrderStatusController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'created_date' => 'required|date_format:Y-m-d',
             'created_by' => 'required',
             'status' => 'required|in:pending,preparing,pickUp,onRoute,delivered,cancelled',
             'order_id' => 'required|exists:App\Models\order,id',
@@ -74,7 +73,6 @@ class OrderStatusController extends Controller
         $orderStatus = OrderStatus::where('id', $id)->firstOrFail();
 
         $validatedData = $request->validate([
-            'created_date' => 'required|date_format:Y-m-d',
             'created_by' => 'required',
             'status' => 'required|in:pending,preparing,pickUp,onRoute,delivered,cancelled',
             'order_id' => 'required|exists:App\Models\order,id',

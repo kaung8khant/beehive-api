@@ -15,7 +15,6 @@ class CreateOrderStatusesTable extends Migration
     {
         Schema::create('order_statuses', function (Blueprint $table) {
             $table->id();
-            $table->date('created_date')->nullable();
             $table->string('created_by');
             $table->enum('status', ['pending', 'preparing', 'pickUp', 'onRoute', 'delivered', 'cancelled']);
             $table->unsignedBigInteger('order_id');
