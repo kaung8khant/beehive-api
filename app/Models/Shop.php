@@ -58,4 +58,9 @@ class Shop extends Model
     {
         return $this->hasMany(ShopBranch::class);
     }
+
+    public function customers()
+    {
+        return $this->belongsToMany(Customer::class, 'favorite_shop');
+    }
 }

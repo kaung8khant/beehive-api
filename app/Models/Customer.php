@@ -64,4 +64,9 @@ class Customer extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    public function shops()
+    {
+        return $this->belongsToMany(Shop::class, 'favorite_shop');
+    }
 }
