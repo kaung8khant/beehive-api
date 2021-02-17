@@ -33,17 +33,16 @@ class RestaurantController extends Controller
      */
     public function store(Request $request)
     {
-        var_dump($request);
         $request['slug'] = $this->generateUniqueSlug();
 
         $restaurant = Restaurant::create($request->validate([
             'slug' => 'required|unique:restaurants',
             'name' => 'required|unique:restaurants',
             'name_mm'=>'unique:restaurants',
-            'official'=> 'required|boolean:restaurants',
+            'official'=> 'boolean:restaurants',
             'enable'=> 'required|boolean:restaurants',
             'restaurant_tags' => 'required|array',
-            'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
+            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
             'restaurant_categories'=>'required|array',
             'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
      ]));
@@ -54,7 +53,7 @@ class RestaurantController extends Controller
         $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
         $restaurant->restaurant_categories()->attach($restaurantCategories);
 
-        return response()->json($restaurant->load('restaurant_tags', 'restaurant_categoires'), 201);
+        return response()->json($restaurant->load(['restaurant_tags', 'restaurant_categories']), 201);
     }
 
     /**
@@ -80,13 +79,18 @@ class RestaurantController extends Controller
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
         $restaurant->update($request->validate([
-            'name' => 'required|unique:restaurants',
-            'name_mm'=>'unique:restaurants',
-            'official'=> 'required|boolean:restaurants',
+            'name' => [
+                'required',
+                Rule::unique('restaurants')->ignore($restaurant->id),
+            ],
+            'name_mm' => [
+                Rule::unique('restaurants')->ignore($restaurant->id),
+            ],
+            'official'=> 'boolean:restaurants',
             'enable'=> 'required|boolean:restaurants',
             Rule::unique('restaurants')->ignore($restaurant->id),
             'restaurant_tags' => 'required|array',
-            'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
+            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
             'restaurant_categories'=>'required|array',
             'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]));
