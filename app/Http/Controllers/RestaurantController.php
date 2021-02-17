@@ -20,7 +20,8 @@ class RestaurantController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Restaurant::where('name', 'LIKE', '%' . $filter . '%')
+        return Restaurant::with('restaurant_categories')
+        ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
     }
@@ -33,16 +34,17 @@ class RestaurantController extends Controller
      */
     public function store(Request $request)
     {
+        var_dump($request);
         $request['slug'] = $this->generateUniqueSlug();
 
         $restaurant = Restaurant::create($request->validate([
             'slug' => 'required|unique:restaurants',
             'name' => 'required|unique:restaurants',
             'name_mm'=>'unique:restaurants',
-            'official'=> 'boolean:restaurants',
+            'official'=> 'required|boolean:restaurants',
             'enable'=> 'required|boolean:restaurants',
             'restaurant_tags' => 'required|array',
-            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
+            'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
             'restaurant_categories'=>'required|array',
             'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
      ]));
@@ -53,7 +55,7 @@ class RestaurantController extends Controller
         $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
         $restaurant->restaurant_categories()->attach($restaurantCategories);
 
-        return response()->json($restaurant->load(['restaurant_tags', 'restaurant_categories']), 201);
+        return response()->json($restaurant->load(['restaurant_tags','restaurant_categoires']), 201);
     }
 
     /**
@@ -64,7 +66,7 @@ class RestaurantController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Restaurant::where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(Restaurant::with('restaurant_categories')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -79,20 +81,13 @@ class RestaurantController extends Controller
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
         $restaurant->update($request->validate([
-            'name' => [
-                'required',
-                Rule::unique('restaurants')->ignore($restaurant->id),
-            ],
-            'name_mm' => [
-                Rule::unique('restaurants')->ignore($restaurant->id),
-            ],
-            'official'=> 'boolean:restaurants',
+            'name' => 'required|unique:restaurants',
+            'name_mm'=>'unique:restaurants',
+            'official'=> 'required|boolean:restaurants',
             'enable'=> 'required|boolean:restaurants',
             Rule::unique('restaurants')->ignore($restaurant->id),
             'restaurant_tags' => 'required|array',
-            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
-            'restaurant_categories'=>'required|array',
-            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+            'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
         ]));
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
         $restaurant->restaurant_tags()->detach();
@@ -113,7 +108,7 @@ class RestaurantController extends Controller
      */
     public function destroy($slug)
     {
-        Restaurant::where('slug', $slug)->firstOrFail()->delete();
+        Restaurant::where('slug', $slug)->firstOrFail()->delete;
         return response()->json(['message'=>'successfully deleted'], 200);
     }
 }
