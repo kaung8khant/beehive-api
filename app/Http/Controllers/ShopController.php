@@ -43,6 +43,8 @@ class ShopController extends Controller
             'enable'=> 'required|boolean:shops',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
+            'shop_categories' => 'required|array',
+            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]));
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->shop_tags()->attach($shopTags);
@@ -84,6 +86,8 @@ class ShopController extends Controller
             Rule::unique('shops')->ignore($shop->id),
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
+            'shop_categories' => 'required|array',
+            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]));
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');

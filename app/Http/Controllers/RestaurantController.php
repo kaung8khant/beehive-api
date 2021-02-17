@@ -20,8 +20,7 @@ class RestaurantController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Restaurant::with('restaurant_categories')
-        ->where('name', 'LIKE', '%' . $filter . '%')
+        return Restaurant::where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
     }
@@ -66,7 +65,7 @@ class RestaurantController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Restaurant::with('restaurant_categories')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(Restaurant::where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -88,6 +87,8 @@ class RestaurantController extends Controller
             Rule::unique('restaurants')->ignore($restaurant->id),
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
+            'restaurant_categories'=>'required|array',
+            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]));
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
         $restaurant->restaurant_tags()->detach();
@@ -108,7 +109,7 @@ class RestaurantController extends Controller
      */
     public function destroy($slug)
     {
-        Restaurant::where('slug', $slug)->firstOrFail()->delete;
+        Restaurant::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message'=>'successfully deleted'], 200);
     }
 }
