@@ -20,8 +20,7 @@ class RestaurantController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Restaurant::with('restaurant_categories')
-        ->where('name', 'LIKE', '%' . $filter . '%')
+        return Restaurant::where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
     }
@@ -66,7 +65,7 @@ class RestaurantController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Restaurant::with('restaurant_categories')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(Restaurant::where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
