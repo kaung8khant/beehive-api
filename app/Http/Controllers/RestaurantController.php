@@ -110,7 +110,7 @@ class RestaurantController extends Controller
      */
     public function destroy($slug)
     {
-        Restaurant::where('slug', $slug)->firstOrFail()->delete;
+        Restaurant::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message'=>'successfully deleted'], 200);
     }
 }
