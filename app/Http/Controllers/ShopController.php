@@ -20,7 +20,7 @@ class ShopController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Shop::with('shop_categories')
+        return Shop::with('shop_categories', 'shop_tags')
         ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
