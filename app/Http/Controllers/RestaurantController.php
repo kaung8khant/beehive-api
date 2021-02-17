@@ -55,7 +55,7 @@ class RestaurantController extends Controller
         $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
         $restaurant->restaurant_categories()->attach($restaurantCategories);
 
-        return response()->json($restaurant->load(['restaurant_tags','restaurant_categoires']), 201);
+        return response()->json($restaurant->load('restaurant_tags', 'restaurant_categoires'), 201);
     }
 
     /**
