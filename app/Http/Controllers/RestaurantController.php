@@ -88,6 +88,8 @@ class RestaurantController extends Controller
             Rule::unique('restaurants')->ignore($restaurant->id),
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
+            'restaurant_categories'=>'required|array',
+            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]));
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
         $restaurant->restaurant_tags()->detach();
