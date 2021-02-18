@@ -62,7 +62,7 @@ class MenuToppingController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(MneuTopping::with('menu')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(MenuTopping::with('menu')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**

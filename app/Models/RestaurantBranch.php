@@ -11,6 +11,11 @@ class RestaurantBranch extends Model
 
     protected $fillable = [ 'slug' , 'name' , 'name_mm' , 'enable','address','contact_number' ,'opening_time','closing_time','latitude','longitude','restaurant_id','township_id'] ;
 
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
     protected $casts = [
         'enable' => 'boolean',
     ];

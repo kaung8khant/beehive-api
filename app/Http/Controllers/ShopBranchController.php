@@ -60,7 +60,7 @@ class ShopBranchController extends Controller
                 'name_mm'=>'unique:shop_branches',
                 'enable'=> 'required|boolean:shop_branches',
                 'address'=> 'required',
-                'contact_number' => 'required',
+                'contact_number' => 'required|unique:restaurant_branches',
                 'opening_time'=>'required|date_format:H:i',
                 'closing_time'=>'required|date_format:H:i',
                 'latitude' => 'required',
@@ -84,29 +84,35 @@ class ShopBranchController extends Controller
     }
 
     /**
-        * Update the specified resource in storage.
-        *
-        * @param  \Illuminate\Http\Request  $request
-        * @param  int  $id
-        * @return \Illuminate\Http\Response
-        */
+    * Update the specified resource in storage.
+    *
+    * @param  \Illuminate\Http\Request  $request
+    * @return \Illuminate\Http\Response
+    */
     public function update(Request $request, $slug)
     {
         $shopBranch = ShopBranch::where('slug', $slug)->firstOrFail();
 
         $shopBranch->update($request->validate([
-            'name' => 'required|unique:shop_branches',
-            'name_mm'=>'unique:shop_branches',
+            'name' => [
+                'required',
+                Rule::unique('shop_branches')->ignore($shopBranch->id),
+            ],
+            'name_mm' => [
+                Rule::unique('shop_branches')->ignore($shopBranch->id),
+            ],
+            'contact_number' => [
+                'required',
+                Rule::unique('shop_branches')->ignore($shopBranch->id),
+            ],
             'enable'=> 'required|boolean:shop_branches',
             'address'=> 'required',
-            'contact_number' => 'required',
             'opening_time'=>'required|date_format:H:i',
             'closing_time'=>'required|date_format:H:i',
             'latitude' => 'required',
             'longitude' => 'required',
             'township_id' => 'required|exists:App\Models\Township,id',
             'shop_id' => 'required|exists:App\Models\Shop,id',
-             Rule::unique('shop_branches')->ignore($shopBranch->id),
         ]));
         return response()->json($shopBranch, 200);
     }
