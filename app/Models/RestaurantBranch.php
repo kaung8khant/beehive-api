@@ -32,6 +32,11 @@ class RestaurantBranch extends Model
         'updated_at',
     ];
 
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
     protected $casts = [
         'is_enable' => 'boolean',
     ];
