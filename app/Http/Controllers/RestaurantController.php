@@ -20,7 +20,8 @@ class RestaurantController extends Controller
      */
     public function index(Request $request)
     {
-        return Restaurant::where('name', 'LIKE', '%' . $request->filter . '%')
+        return Restaurant::with('restaurant_categories', 'restaurant_tags')
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
@@ -40,10 +41,10 @@ class RestaurantController extends Controller
             'slug' => 'required|unique:restaurants',
             'name' => 'required|unique:restaurants',
             'name_mm' => 'unique:restaurants',
-            'official' => 'required|boolean',
+            'official' => 'boolean',
             'enable' => 'required|boolean',
             'restaurant_tags' => 'required|array',
-            'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
+            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
             'restaurant_categories' => 'required|array',
             'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]));
@@ -54,7 +55,7 @@ class RestaurantController extends Controller
         $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
         $restaurant->restaurant_categories()->attach($restaurantCategories);
 
-        return response()->json($restaurant->load(['restaurant_tags', 'restaurant_categoires']), 201);
+        return response()->json($restaurant->load(['restaurant_tags', 'restaurant_categories']), 201);
     }
 
     /**
@@ -65,7 +66,7 @@ class RestaurantController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Restaurant::where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(Restaurant::with('restaurant_categories', )->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -80,16 +81,17 @@ class RestaurantController extends Controller
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
         $restaurant->update($request->validate([
-            'name' => 'required|unique:restaurants',
-            'name_mm' => 'unique:restaurants',
-            'official' => 'required|boolean',
-            'enable' => [
+            'name' => [
                 'required',
-                'boolean',
                 Rule::unique('restaurants')->ignore($restaurant->id),
             ],
+            'name_mm' => [
+                Rule::unique('restaurants')->ignore($restaurant->id),
+            ],
+            'official' => 'boolean',
+            'enable' => 'required|boolean',
             'restaurant_tags' => 'required|array',
-            'restaurant_tags.*' => 'exists:App\Models\RestautrantTag,slug',
+            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
             'restaurant_categories' => 'required|array',
             'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]));

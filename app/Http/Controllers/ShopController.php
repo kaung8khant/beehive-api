@@ -20,7 +20,7 @@ class ShopController extends Controller
     public function index(Request $request)
     {
         $filter=$request->filter;
-        return Shop::with('shop_categories')
+        return Shop::with('shop_categories', 'shop_tags')
         ->where('name', 'LIKE', '%' . $filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
         ->orWhere('slug', $filter)->paginate(10);
@@ -79,9 +79,14 @@ class ShopController extends Controller
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
         $shop->update($request->validate([
-            'name' => 'required|unique:shops',
-            'name_mm'=>'unique:shops',
-            'official'=> 'required|boolean:shops',
+            'name' => [
+                'required',
+                Rule::unique('shops')->ignore($shop->id),
+            ],
+            'name_mm' => [
+                Rule::unique('shops')->ignore($shop->id),
+            ],
+            'official'=> 'boolean:shops',
             'enable'=> 'required|boolean:shops',
             Rule::unique('shops')->ignore($shop->id),
             'shop_tags' => 'required|array',
