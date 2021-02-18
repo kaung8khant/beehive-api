@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\StringHelper;
-use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Helpers\StringHelper;
+use App\Models\Township;
+use App\Models\City;
 
 class TownshipController extends Controller
 {
@@ -35,13 +36,16 @@ class TownshipController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $township = Township::create($request->validate([
+        $validatedData = $request->validate([
+            'slug' => 'required|unique:townships',
             'name' => 'required|unique:townships',
             'name_mm' => 'unique:townships',
-            'slug' => 'required|unique:townships',
-            'city_id' => 'required|exists:App\Models\City,id'
-        ]));
+            'city_slug' => 'required|exists:App\Models\City,slug'
+        ]);
 
+        $validatedData['city_id'] = $this->getCityIdBySlug($request->city_slug);
+
+        $township = Township::create($validatedData);
         return response()->json($township, 201);
     }
 
@@ -68,7 +72,7 @@ class TownshipController extends Controller
     {
         $township = Township::where('slug', $slug)->firstOrFail();
 
-        $township->update($request->validate([
+        $validatedData = $request->validate([
             'name' => [
                 'required',
                 Rule::unique('townships')->ignore($township->id),
@@ -76,8 +80,11 @@ class TownshipController extends Controller
             'name_mm' => [
                 Rule::unique('townships')->ignore($township->id),
             ],
-            'city_id' => 'required|exists:App\Models\City,id',
-        ]));
+            'city_slug' => 'required|exists:App\Models\City,slug',
+        ]);
+
+        $validatedData['city_id'] = $this->getCityIdBySlug($request->city_slug);
+        $township->update($validatedData);
 
         return response()->json($township, 200);
     }
@@ -94,12 +101,11 @@ class TownshipController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-     * Display a listing of the townships by a city.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
+    private function getCityIdBySlug($slug)
+    {
+        return City::where('slug', $slug)->first()->id;
+    }
+
     public function getTownshipsByCity($slug)
     {
         return Township::whereHas('city', function ($q) use ($slug) {

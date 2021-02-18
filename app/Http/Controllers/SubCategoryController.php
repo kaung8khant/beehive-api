@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SubCategory;
-use App\Models\Product;
 use Illuminate\Http\Request;
-use App\Helpers\StringHelper;
 use Illuminate\Validation\Rule;
+use App\Helpers\StringHelper;
+use App\Models\ShopCategory;
+use App\Models\SubCategory;
 
 class SubCategoryController extends Controller
 {
@@ -36,13 +36,16 @@ class SubCategoryController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $subCategory = SubCategory::create($request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|unique:sub_categories',
             'name_mm' => 'unique:sub_categories',
             'slug' => 'required|unique:sub_categories',
-            'shop_category_id' => 'required|exists:App\Models\ShopCategory,id',
-        ]));
+            'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
+        ]);
 
+        $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
+
+        $subCategory = SubCategory::create($validatedData);
         return response()->json($subCategory, 201);
     }
 
@@ -67,18 +70,9 @@ class SubCategoryController extends Controller
      */
     public function update(Request $request, $slug)
     {
-        $subCategory = SubCategory::with("products")->where('slug', $slug)->firstOrFail();
+        $subCategory = SubCategory::where('slug', $slug)->firstOrFail();
 
-        $products = $subCategory->products;
-
-        foreach ($products as $product) {
-            $product = Product::where('slug', $product->slug)->firstOrFail();
-            Product::where('slug', $product->slug)->update([
-                'shop_category_id' => $request->shop_category_id,
-            ]);
-        }
-
-        $subCategory->update($request->validate([
+        $validatedData = $request->validate([
             'name' => [
                 'required',
                 Rule::unique('sub_categories')->ignore($subCategory->id),
@@ -86,10 +80,20 @@ class SubCategoryController extends Controller
             'name_mm' => [
                 Rule::unique('sub_categories')->ignore($subCategory->id),
             ],
-            'shop_category_id' => 'required|exists:App\Models\ShopCategory,id',
-        ]));
+            'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
+        ]);
 
-        return response()->json($subCategory, 200);
+        $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
+        $subCategory->update($validatedData);
+
+        // Update the category ids of related products
+        foreach ($subCategory->products as $product) {
+            $product->update([
+                'shop_category_id' => $validatedData['shop_category_id']
+            ]);
+        }
+
+        return response()->json($subCategory->load('shop_category')->unsetRelation('products'), 200);
     }
 
     /**
@@ -104,12 +108,11 @@ class SubCategoryController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-     * Display a listing of the sub categories by a category.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
+    private function getShopCategoryId($slug)
+    {
+        return ShopCategory::where('slug', $slug)->first()->id;
+    }
+
     public function getSubCategoriesByCategory($slug)
     {
         return SubCategory::whereHas('shop_category', function ($q) use ($slug) {

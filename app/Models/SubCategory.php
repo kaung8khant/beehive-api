@@ -9,11 +9,6 @@ class SubCategory extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'name',
         'name_mm',
@@ -21,9 +16,13 @@ class SubCategory extends Model
         'shop_category_id',
     ];
 
-    /**
-     * Get the shop category that owns the sub category.
-     */
+    protected $hidden = [
+        'id',
+        'created_at',
+        'updated_at',
+        'shop_category_id',
+    ];
+
     public function shop_category()
     {
         return $this->belongsTo(ShopCategory::class);
@@ -33,5 +32,4 @@ class SubCategory extends Model
     {
         return $this->hasMany(Product::class);
     }
-
 }

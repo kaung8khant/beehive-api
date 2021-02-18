@@ -23,6 +23,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
             Route::post('logout', 'Auth\UserAuthController@logout');
 
+            Route::get('settings', 'SettingController@index');
+            Route::get('settings/{key}', 'SettingController@show');
+            Route::put('settings/update', 'SettingController@updateSetting');
+
             Route::resource('roles', 'RoleController');
             Route::resource('users', 'UserController');
             Route::patch('users/toggle-enable/{slug}', 'UserController@toggleEnable');
@@ -34,21 +38,19 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('townships', 'TownshipController');
             Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
 
-            Route::resource('sub-categories', 'SubCategoryController');
-
             Route::resource('restaurant-categories', 'RestaurantCategoryController');
             Route::resource('shop-categories', 'ShopCategoryController');
+            Route::resource('sub-categories', 'SubCategoryController');
             Route::get('shop-categories/{slug}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory');
 
-            Route::resource('restaurant-tags', 'RestaurantTagController');
-            Route::resource('shop-tags', 'ShopTagController');
-            Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
-
             Route::resource('restaurants', 'RestaurantController');
+            Route::resource('restaurant-tags', 'RestaurantTagController');
             Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
             Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
 
+            Route::resource('shop-tags', 'ShopTagController');
             Route::resource('shops', 'ShopController');
+            Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
             Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
 
             Route::resource('products', 'ProductController');
@@ -69,10 +71,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('shop-branches', 'ShopBranchController');
             Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop')->name('getBranchesByShop');
             Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship')->name('getBranchesByTownship');
-
-            Route::get('settings', 'SettingController@index');
-            Route::get('settings/{key?}', 'SettingController@show');
-            Route::put('settings/update', 'SettingController@update_setting');
 
             Route::get('profile', 'ProfileController@index');
             Route::put('profile/update', 'ProfileController@update_profile');

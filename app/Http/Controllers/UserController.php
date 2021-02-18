@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -16,11 +17,17 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return User::with('roles')->paginate(10);
+        return User::with('roles')
+            ->where('username', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     /**
@@ -118,6 +125,11 @@ class UserController extends Controller
     public function toggleEnable($slug)
     {
         $user = User::where('slug', $slug)->firstOrFail();
+
+        if ($user->id === Auth::guard('users')->user()->id) {
+            return response()->json(['message' => 'You cannot change your own status.'], 406);
+        }
+
         $user->is_enable = !$user->is_enable;
         $user->save();
         return response()->json(['message' => 'Success.'], 200);

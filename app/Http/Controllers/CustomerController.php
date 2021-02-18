@@ -15,11 +15,17 @@ class CustomerController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Customer::paginate(10);
+        return Customer::where('username', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('email', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     /**

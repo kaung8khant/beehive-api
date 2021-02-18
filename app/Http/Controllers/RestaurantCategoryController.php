@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\StringHelper;
-use App\Models\RestaurantCategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Helpers\StringHelper;
+use App\Models\RestaurantCategory;
 
 class RestaurantCategoryController extends Controller
 {

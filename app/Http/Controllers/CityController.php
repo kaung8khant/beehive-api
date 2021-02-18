@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\City;
-use Illuminate\Validation\Rule;
-use Illuminate\Http\Request;
 
 class CityController extends Controller
 {
