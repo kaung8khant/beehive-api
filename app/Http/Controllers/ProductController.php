@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
-use Illuminate\Validation\Rule;
+use App\Models\Product;
+use App\Models\Shop;
+use App\Models\SubCategory;
 
 class ProductController extends Controller
 {
@@ -18,11 +19,11 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $filter=$request->filter;
-        return Product ::with('shop','shop_category','product_variation')
-        ->where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
+        return Product::with('shop', 'shop_category', 'product_variation')
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     /**
@@ -35,16 +36,15 @@ class ProductController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $request->validate([
-            'slug' => 'required|unique:products',
-            'name'=>'required',
-            'price'=>'required|max:99999999',
-            'shop_id' => 'required|exists:App\Models\Shop,id',
-            'shop_category_id' => 'required|exists:App\Models\ShopCategory,id'
-        ]);
+        $validatedData = $request->validate($this->getParamsToValidate(TRUE));
 
-        $product = Product::create($request->all());
+        $subCategory = $this->getSubCategory($request->sub_category_slug);
 
+        $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
+        $validatedData['shop_category_id'] = $subCategory->shop_category->id;
+        $validatedData['sub_category_id'] = $subCategory->id;
+
+        $product = Product::create($validatedData);
         return response()->json($product, 201);
     }
 
@@ -56,10 +56,9 @@ class ProductController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Product::with('shop','product_variation')->where('slug', $slug)->firstOrFail(), 200);
+        $product = Product::with('shop', 'shop_category', 'product_variation')->where('slug', $slug)->firstOrFail();
+        return response()->json($product, 200);
     }
-
-
 
     /**
      * Update the specified resource in storage.
@@ -70,21 +69,17 @@ class ProductController extends Controller
      */
     public function update(Request $request, $slug)
     {
-
         $product = Product::where('slug', $slug)->firstOrFail();
 
-        $request->validate([
-            'name' => ['required',
-            Rule::unique('products')->ignore($product->id),
-        ],
-            'price'=>'required|max:99999999',
-            'shop_id' => 'required|exists:App\Models\Shop,id',
-            'shop_category_id' => 'required|exists:App\Models\ShopCategory,id'
+        $validatedData = $request->validate($this->getParamsToValidate());
 
-        ]);
+        $subCategory = $this->getSubCategory($request->sub_category_slug);
 
-        $product = Product::where('slug', $slug)->update($request->all());
+        $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
+        $validatedData['shop_category_id'] = $subCategory->shop_category->id;
+        $validatedData['sub_category_id'] = $subCategory->id;
 
+        $product->update($validatedData);
         return response()->json($product, 200);
     }
 
@@ -98,6 +93,34 @@ class ProductController extends Controller
     {
         Product::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+    }
 
+    private function getParamsToValidate($slug = FALSE)
+    {
+        $params = [
+            'name' => 'required|string',
+            'name_mm' => 'nullable|string',
+            'description' => 'required|string',
+            'description_mm' => 'nullable|string',
+            'price' => 'required|max:99999999',
+            'shop_slug' => 'required|exists:App\Models\Shop,slug',
+            'sub_category_slug' => 'required|exists:App\Models\SubCategory,slug',
+        ];
+
+        if ($slug) {
+            $params['slug'] = 'required|unique:products';
+        }
+
+        return $params;
+    }
+
+    private function getShopId($slug)
+    {
+        return Shop::where('slug', $slug)->first()->id;
+    }
+
+    private function getSubCategory($slug)
+    {
+        return SubCategory::where('slug', $slug)->first();
     }
 }

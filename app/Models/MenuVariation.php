@@ -8,18 +8,28 @@ use Illuminate\Database\Eloquent\Model;
 class MenuVariation extends Model
 {
     use HasFactory;
-    /**
-    * The attributes that are mass assignable.
-    *
-    * @var array
-    */
 
-    protected $fillable = ['slug',"name","description","menu_id"];
+    protected $fillable = [
+        'slug',
+        'name',
+        'name_mm',
+        'description',
+        'description_mm',
+        'menu_id',
+    ];
 
-    public function menus()
+    protected $hidden = [
+        'id',
+        'menu_id',
+        'created_at',
+        'updated_at',
+    ];
+
+    public function menu()
     {
         return $this->belongsTo(Menu::class);
     }
+
     public function menu_variation_values()
     {
         return $this->hasMany(MenuVariationValue::class);

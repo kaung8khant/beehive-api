@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\StringHelper;
-use App\Models\ShopTag;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Helpers\StringHelper;
+use App\Models\ShopTag;
 
 class ShopTagController extends Controller
 {
     use StringHelper;
+
     /**
      * Display a listing of the resource.
      *
@@ -17,22 +18,10 @@ class ShopTagController extends Controller
      */
     public function index(Request $request)
     {
-        $filter=$request->filter;
-        return ShopTag::where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
-    }
-
-    /**
-    * Display a listing of the resource.
-    *
-    * @return \Illuminate\Http\Response
-    */
-    public function getTagsByShop($slug)
-    {
-        return ShopTag::whereHas('shops', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->paginate(10);
+        return ShopTag::where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     /**
@@ -43,13 +32,13 @@ class ShopTagController extends Controller
      */
     public function store(Request $request)
     {
-        $request['slug']=$this->generateUniqueSlug();
+        $request['slug'] = $this->generateUniqueSlug();
 
-        $tag=ShopTag::create($request->validate(
+        $tag = ShopTag::create($request->validate(
             [
-                'name'=>'required|unique:shop_tags',
-                'name_mm'=>'unique:shop_tags',
-                'slug'=>'required|unique:shop_tags',
+                'name' => 'required|unique:shop_tags',
+                'name_mm' => 'unique:shop_tags',
+                'slug' => 'required|unique:shop_tags',
             ]
         ));
         return response()->json($tag, 201);
@@ -75,7 +64,7 @@ class ShopTagController extends Controller
      */
     public function update(Request $request, $slug)
     {
-        $tag=ShopTag::where('slug', $slug)->firstOrFail();
+        $tag = ShopTag::where('slug', $slug)->firstOrFail();
 
         $tag->update($request->validate([
             'name' => [
@@ -99,6 +88,18 @@ class ShopTagController extends Controller
     public function destroy($slug)
     {
         ShopTag::where('slug', $slug)->firstOrFail()->delete();
-        return response()->json(['message'=>'successfully deleted'], 200);
+        return response()->json(['message' => 'successfully deleted'], 200);
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getTagsByShop($slug)
+    {
+        return ShopTag::whereHas('shops', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
     }
 }

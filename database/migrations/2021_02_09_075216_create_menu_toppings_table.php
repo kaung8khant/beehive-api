@@ -15,11 +15,13 @@ class CreateMenuToppingsTable extends Migration
     {
         Schema::create('menu_toppings', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
             $table->string('slug')->unique();
-            $table->string('name')->unique();
+            $table->string('name');
+            $table->string('name_mm')->nullable();
             $table->string('description');
+            $table->string('description_mm')->nullable();
             $table->unsignedBigInteger('menu_id');
+            $table->timestamps();
             $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
         });
     }

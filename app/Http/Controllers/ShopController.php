@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopTag;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class ShopController extends Controller
 {
     use StringHelper;
+
     /**
      * Display a listing of the resource.
      *
@@ -19,12 +20,12 @@ class ShopController extends Controller
      */
     public function index(Request $request)
     {
-        $filter=$request->filter;
         return Shop::with('shop_categories', 'shop_tags')
-        ->where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)->paginate(10);
     }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -38,22 +39,21 @@ class ShopController extends Controller
         $shop = Shop::create($request->validate([
             'slug' => 'required|unique:shops',
             'name' => 'required|unique:shops',
-            'name_mm'=>'unique:shops',
-            'official'=> 'required|boolean:shops',
-            'enable'=> 'required|boolean:shops',
+            'name_mm' => 'unique:shops',
+            'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
             'shop_categories' => 'required|array',
             'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]));
+
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->shop_tags()->attach($shopTags);
 
         $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
         $shop->shop_categories()->attach($shopCategories);
 
-
-        return response()->json($shop->load(['shop_tags','shop_categories']), 201);
+        return response()->json($shop->load(['shop_tags', 'shop_categories']), 201);
     }
 
     /**
@@ -64,7 +64,8 @@ class ShopController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Shop::with('products', 'shop_categories')->where('slug', $slug)->firstOrFail(), 200);
+        $shop = Shop::with('shop_categories', 'shop_categories')->where('slug', $slug)->firstOrFail();
+        return response()->json($shop, 200);
     }
 
     /**
@@ -86,9 +87,7 @@ class ShopController extends Controller
             'name_mm' => [
                 Rule::unique('shops')->ignore($shop->id),
             ],
-            'official'=> 'boolean:shops',
-            'enable'=> 'required|boolean:shops',
-            Rule::unique('shops')->ignore($shop->id),
+            'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
             'shop_categories' => 'required|array',
@@ -103,7 +102,7 @@ class ShopController extends Controller
         $shop->shop_categories()->detach();
         $shop->shop_categories()->attach($shopCategories);
 
-        return response()->json($shop->load(['shop_tags','shop_categories']), 201);
+        return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
     }
 
     /**
@@ -115,6 +114,6 @@ class ShopController extends Controller
     public function destroy($slug)
     {
         Shop::where('slug', $slug)->firstOrFail()->delete();
-        return response()->json(['message'=>'successfully deleted'], 200);
+        return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 }

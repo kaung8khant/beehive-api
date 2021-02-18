@@ -8,15 +8,27 @@ use Illuminate\Database\Eloquent\Model;
 class Menu extends Model
 {
     use HasFactory;
-    /**
-    * The attributes that are mass assignable.
-    *
-    * @var array
-    */
 
-    protected $fillable =["slug","name","name_mm","description","description_mm","price","restaurant_id","restaurant_category_id"];
+    protected $fillable = [
+        'slug',
+        'name',
+        'name_mm',
+        'description',
+        'description_mm',
+        'price',
+        'restaurant_id',
+        'restaurant_category_id',
+    ];
 
-    public function restaurants()
+    protected $hidden = [
+        'id',
+        'restaurant_id',
+        'restaurant_category_id',
+        'created_at',
+        'updated_at',
+    ];
+
+    public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);
     }
@@ -30,7 +42,7 @@ class Menu extends Model
     {
         return $this->hasMany(MenuVariation::class);
     }
-    
+
     public function menu_toppings()
     {
         return $this->hasMany(MenuTopping::class);

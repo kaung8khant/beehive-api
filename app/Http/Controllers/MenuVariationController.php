@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MenuVariation;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
+use App\Models\MenuVariation;
+use App\Models\Menu;
 
 class MenuVariationController extends Controller
 {
     use StringHelper;
+
     /**
      * Display a listing of the resource.
      *
@@ -17,20 +19,10 @@ class MenuVariationController extends Controller
      */
     public function index(Request $request)
     {
-        $filter= $request->filter;
-
-        return MenuVariation::
-        where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
-    }
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return MenuVariation::with('menu')
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     /**
@@ -43,14 +35,11 @@ class MenuVariationController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $menuVariation = MenuVariation::create($request->validate([
-            'name' => 'required|unique:menu_variations',
-            'description' => 'required',
-            'slug' => 'required|unique:menu_variations',
-            'menu_id' => 'required|exists:App\Models\Menu,id',
-        ]));
+        $validatedData = $request->validate($this->getParamsToValidate(TRUE));
+        $validatedData['menu_id'] = $this->getMenuId($request->menu_slug);
 
-        return response()->json($menuVariation, 201);
+        $menuVariation = MenuVariation::create($validatedData);
+        return response()->json($menuVariation->load('menu'), 201);
     }
 
     /**
@@ -61,18 +50,8 @@ class MenuVariationController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(MenuVariation::with('menu')->where('slug', $slug)->firstOrFail(), 200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\MenuVariation  $menuVariation
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(MenuVariation $menuVariation)
-    {
-        //
+        $menu = MenuVariation::with('menu')->where('slug', $slug)->firstOrFail();
+        return response()->json($menu, 200);
     }
 
     /**
@@ -86,15 +65,11 @@ class MenuVariationController extends Controller
     {
         $menuVariation = MenuVariation::where('slug', $slug)->firstOrFail();
 
-        $menuVariation->update($request->validate([
-            'name'=>'required|unique:menu_variations',
-            // 'slug' => 'required|unique:menu_variations',
-            'description'=>'required',
-            'menu_id' => 'required|exists:App\Models\Menu,id',
-            Rule::unique('menu_variations')->ignore($menuVariation->id),
-        ]));
+        $validatedData = $request->validate($this->getParamsToValidate());
+        $validatedData['menu_id'] = $this->getMenuId($request->menu_slug);
 
-        return response()->json($menuVariation, 200);
+        $menuVariation->update($validatedData);
+        return response()->json($menuVariation->load('menu'), 200);
     }
 
     /**
@@ -107,5 +82,27 @@ class MenuVariationController extends Controller
     {
         MenuVariation::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+    }
+
+    private function getParamsToValidate($slug = FALSE)
+    {
+        $params = [
+            'name' => 'required|string',
+            'name_mm' => 'nullable|string',
+            'description' => 'required|string',
+            'description_mm' => 'nullable|string',
+            'menu_slug' => 'required|exists:App\Models\Menu,slug',
+        ];
+
+        if ($slug) {
+            $params['slug'] = 'required|unique:menu_variations';
+        }
+
+        return $params;
+    }
+
+    private function getMenuId($slug)
+    {
+        return Menu::where('slug', $slug)->first()->id;
     }
 }

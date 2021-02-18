@@ -41,8 +41,7 @@ class RestaurantController extends Controller
             'slug' => 'required|unique:restaurants',
             'name' => 'required|unique:restaurants',
             'name_mm' => 'unique:restaurants',
-            'official' => 'boolean',
-            'enable' => 'required|boolean',
+            'is_official' => 'required|boolean',
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
             'restaurant_categories' => 'required|array',
@@ -66,7 +65,8 @@ class RestaurantController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Restaurant::with('restaurant_categories', )->where('slug', $slug)->firstOrFail(), 200);
+        $restaurant = Restaurant::with('restaurant_categories', 'restaurant_tags')->where('slug', $slug)->firstOrFail();
+        return response()->json($restaurant, 200);
     }
 
     /**
@@ -88,8 +88,7 @@ class RestaurantController extends Controller
             'name_mm' => [
                 Rule::unique('restaurants')->ignore($restaurant->id),
             ],
-            'official' => 'boolean',
-            'enable' => 'required|boolean',
+            'is_official' => 'required|boolean',
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
             'restaurant_categories' => 'required|array',
@@ -104,7 +103,7 @@ class RestaurantController extends Controller
         $restaurant->restaurant_categories()->detach();
         $restaurant->restaurant_categories()->attach($restaurantCategories);
 
-        return response()->json($restaurant->load(['restaurant_tags', 'restaurant_categories']), 200);
+        return response()->json($restaurant->load(['restaurant_categories', 'restaurant_tags',]), 200);
     }
 
     /**
@@ -116,6 +115,6 @@ class RestaurantController extends Controller
     public function destroy($slug)
     {
         Restaurant::where('slug', $slug)->firstOrFail()->delete();
-        return response()->json(['message' => 'successfully deleted'], 200);
+        return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 }
