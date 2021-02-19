@@ -50,6 +50,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('product-variations', 'ProductVariationController');
             Route::resource('product-variation-values', 'ProductVariationValueController');
             Route::resource('shop-branches', 'ShopBranchController');
+            Route::patch('shop-branches/toggle-enable/{slug}', 'ShopBranchController@toggleEnable');
             Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop')->name('getBranchesByShop');
             Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship')->name('getBranchesByTownship');
             /* Shop */

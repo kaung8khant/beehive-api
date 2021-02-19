@@ -8,6 +8,7 @@ use App\Helpers\StringHelper;
 use App\Models\ShopBranch;
 use App\Models\Shop;
 use App\Models\Township;
+use Illuminate\Support\Facades\Auth;
 
 class ShopBranchController extends Controller
 {
@@ -150,5 +151,24 @@ class ShopBranchController extends Controller
         return ShopBranch::whereHas('township', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->paginate(10);
+    }
+
+    /**
+    * Toggle the is_enable column for shop_branches table.
+    *
+    * @param  int  $slug
+    * @return \Illuminate\Http\Response
+    */
+    public function toggleEnable($slug)
+    {
+        $shopBranch = ShopBranch::where('slug', $slug)->firstOrFail();
+        // if (Auth::guard('users')->user()->roles->filter(function ($role) {
+        //     return $role->name != "Admin";
+        // })) {
+        //     return response()->json(['message' => 'You cannot change your own status.'], 406);
+        // }
+        $shopBranch->is_enable = !$shopBranch->is_enable;
+        $shopBranch->save();
+        return response()->json(['message' => 'Success.'], 200);
     }
 }
