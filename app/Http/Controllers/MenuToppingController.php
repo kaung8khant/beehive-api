@@ -108,4 +108,11 @@ class MenuToppingController extends Controller
         MenuTopping::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
+
+    public function getToppingsByMenus($slug)
+    {
+        return MenuTopping::whereHas('menus', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
+    }
 }
