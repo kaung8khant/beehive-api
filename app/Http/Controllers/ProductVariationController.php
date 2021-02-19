@@ -73,7 +73,7 @@ class ProductVariationController extends Controller
     {
         $productVariation = ProductVariation::where('slug', $slug)->firstOrFail();
 
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string',
             'name_mm' => 'nullable|string',
             'description' => 'required|string',
