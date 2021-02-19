@@ -68,9 +68,9 @@ class RatingController extends Controller
      * @param  \App\Models\Rating  $rating
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $orderSlug)
+    public function update(Request $request, $id)
     {
-        $rating = Rating::where('order_id', $orderSlug)->firstOrFail();
+        $rating = Rating::where('id', $id)->firstOrFail();
 
         $validatedData = $request->validate($this->getParamsToValidate());
 
