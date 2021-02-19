@@ -19,7 +19,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::post('login', 'Auth\UserAuthController@login');
 
         Route::middleware(['auth:users', 'user.enable'])->group(function () {
-            Route::get('user-detail', 'Auth\UserAuthController@getAuthenticatedUser');
+            Route::get('profile', 'Auth\UserAuthController@getProfile');
+            Route::put('profile/update', 'Auth\UserAuthController@updateProfile');
             Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
             Route::post('logout', 'Auth\UserAuthController@logout');
 
@@ -50,8 +51,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('product-variations', 'ProductVariationController');
             Route::resource('product-variation-values', 'ProductVariationValueController');
             Route::resource('shop-branches', 'ShopBranchController');
-            Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop')->name('getBranchesByShop');
-            Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship')->name('getBranchesByTownship');
+            Route::patch('shop-branches/toggle-enable/{slug}', 'ShopBranchController@toggleEnable');
+            Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop');
+            Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship');
             /* Shop */
 
             /* Restaurant */
@@ -61,7 +63,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
             Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
             Route::resource('menus', 'MenuController');
-            Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenus');
+            Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
             Route::resource('menu-variations', 'MenuVariationController');
             Route::resource('menu-variation-values', 'MenuVariationValueController');
             Route::resource('menu-toppings', 'MenuToppingController');
@@ -71,17 +73,14 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('townships/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');
             /* Restaurant */
 
-            Route::get('profile', 'ProfileController@index');
-            Route::put('profile/update', 'ProfileController@update_profile');
-
             Route::resource('orders', 'OrderController');
             Route::resource('order-contacts', 'OrderContactController');
             Route::resource('order-status', 'OrderStatusController');
-            Route::get('orders/{status}/order-status', 'OrderStatusController@getStatusByOrder')->name('getStatusByOrder');
+            Route::get('orders/{status}/order-status', 'OrderStatusController@getStatusByOrder');
             Route::resource('order-items', 'OrderItemController');
 
             Route::resource('ratings', 'RatingController');
-            Route::get('orders/{receiverType}/ratings', 'RatingController@getReceiverTypeByOrder')->name('getReceiverTypeByOrder');
+            Route::get('orders/{receiverType}/ratings', 'RatingController@getReceiverTypeByOrder');
         });
     });
 

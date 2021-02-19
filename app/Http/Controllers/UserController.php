@@ -56,7 +56,7 @@ class UserController extends Controller
         $roles = Role::whereIn('slug', $request->roles)->pluck('id');
         $user->roles()->attach($roles);
 
-        return response()->json($user->load('roles'), 201);
+        return response()->json($user->refresh()->load('roles'), 201);
     }
 
     /**

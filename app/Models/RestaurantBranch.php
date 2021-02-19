@@ -13,7 +13,7 @@ class RestaurantBranch extends Model
         'slug',
         'name',
         'name_mm',
-        'enable',
+        'is_enable',
         'address',
         'contact_number',
         'opening_time',

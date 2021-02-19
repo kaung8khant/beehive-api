@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use App\Models\User;
 
 class UserAuthController extends Controller
@@ -53,11 +54,6 @@ class UserAuthController extends Controller
         return response()->json(['message' => 'Username or password wrong.'], 401);
     }
 
-    /**
-     * Attempt login the user via username and password.
-     *
-     * @return mixed
-     */
     private function attemptLogin(Request $request)
     {
         $user = User::with('roles')->where('username', $request->username)->first();
@@ -76,34 +72,38 @@ class UserAuthController extends Controller
         return false;
     }
 
-    /**
-     * Log the user out (Invalidate the token).
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function logout()
     {
         Auth::guard('users')->logout();
         return response()->json(['message' => 'User successfully logged out.'], 200);
     }
 
-    /**
-     * Refresh the token.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function refreshToken()
     {
         return response()->json(['token' => Auth::guard('users')->refresh()], 200);
     }
 
-    /**
-     * Get the authenticated user.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getAuthenticatedUser()
+    public function getProfile()
     {
         return response()->json(Auth::guard('users')->user());
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::guard('users')->user();
+
+        $user->update($request->validate([
+            'username' => [
+                'required',
+                Rule::unique('users')->ignore($user->id),
+            ],
+            'name' => 'required',
+            'phone_number' => [
+                'required',
+                Rule::unique('users')->ignore($user->id),
+            ],
+        ]));
+
+        return response()->json($user, 200);
     }
 }
