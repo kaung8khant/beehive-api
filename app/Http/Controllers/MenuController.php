@@ -43,7 +43,7 @@ class MenuController extends Controller
         $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
 
         $menu = Menu::create($validatedData);
-        return response()->json($menu->load('restaurant'), 201);
+        return response()->json($menu->refresh()->load('restaurant'), 201);
     }
 
     /**

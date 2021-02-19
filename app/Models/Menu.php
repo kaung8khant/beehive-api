@@ -18,6 +18,7 @@ class Menu extends Model
         'price',
         'restaurant_id',
         'restaurant_category_id',
+        'is_enable',
     ];
 
     protected $hidden = [
@@ -26,6 +27,10 @@ class Menu extends Model
         'restaurant_category_id',
         'created_at',
         'updated_at',
+    ];
+
+    protected $casts = [
+        'is_enable' => 'boolean',
     ];
 
     public function restaurant()
