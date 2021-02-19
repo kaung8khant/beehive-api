@@ -84,13 +84,6 @@ class MenuToppingController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    public function getToppingsByMenus($slug)
-    {
-        return MenuTopping::whereHas('menus', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->paginate(10);
-    }
-
     private function getParamsToValidate($slug = false)
     {
         $params = [
@@ -111,5 +104,12 @@ class MenuToppingController extends Controller
     private function getMenuId($slug)
     {
         return Menu::where('slug', $slug)->first()->id;
+    }
+
+    public function getToppingsByMenu($slug)
+    {
+        return MenuTopping::whereHas('menu', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
     }
 }
