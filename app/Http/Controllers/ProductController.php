@@ -56,7 +56,7 @@ class ProductController extends Controller
      */
     public function show($slug)
     {
-        $product = Product::with('shop', 'shop_category', 'product_variation')->where('slug', $slug)->firstOrFail();
+        $product = Product::with('shop', 'shop_category', 'product_variation',"sub_category")->where('slug', $slug)->firstOrFail();
         return response()->json($product, 200);
     }
 
