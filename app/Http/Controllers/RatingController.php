@@ -92,10 +92,6 @@ class RatingController extends Controller
             'customer_slug' => 'required|exists:App\Models\Customer,slug',
         ];
 
-        if ($slug) {
-            $params['slug'] = 'required|unique:products';
-        }
-
         return $params;
     }
 

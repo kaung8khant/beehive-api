@@ -12,7 +12,7 @@ class Rating extends Model
     /**
     * The attributes that are mass assignable.
     *
-    * @var array
+    * @var arrayzz,
     */
     protected $fillable = ['receiver_id', 'receiver_type', 'rating', 'review', 'order_id', 'customer_id'] ;
 
