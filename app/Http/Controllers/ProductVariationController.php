@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductVariation;
 use Illuminate\Http\Request;
-use App\Helpers\StringHelper;
 use Illuminate\Validation\Rule;
+use App\Helpers\StringHelper;
+use App\Models\ProductVariation;
+use App\Models\Product;
 
 class ProductVariationController extends Controller
 {
@@ -18,12 +19,11 @@ class ProductVariationController extends Controller
      */
     public function index(Request $request)
     {
-        $filter=$request->filter;
-        return ProductVariation::with('product','product_variation_value')
-        ->where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
+        return ProductVariation::with('product')
+            ->where('name', 'LIKE', '%' . $request->filterr . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -35,15 +35,19 @@ class ProductVariationController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $request->validate([
+        $validatedData = $request->validate([
             'slug' => 'required|unique:product_variations',
-            'name'=>'required',
-            'product_id' => 'required|exists:App\Models\Product,id'
+            'name' => 'required|string',
+            'name_mm' => 'nullable|string',
+            'description' => 'required|string',
+            'description_mm' => 'nullable|string',
+            'product_slug' => 'required|exists:App\Models\Product,slug',
         ]);
 
-        $productVariation = ProductVariation::create($request->all());
+        $validatedData['product_id'] = $this->getProductId($request->product_slug);
 
-        return response()->json($productVariation, 201);
+        $productVariation = ProductVariation::create($validatedData);
+        return response()->json($productVariation->load('product'), 201);
     }
 
     /**
@@ -54,9 +58,9 @@ class ProductVariationController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(ProductVariation::with('product,product_variation_value')->where('slug', $slug)->firstOrFail(), 200);
+        $productVariation = ProductVariation::with('product')->where('slug', $slug)->firstOrFail();
+        return response()->json($productVariation, 200);
     }
-
 
     /**
      * Update the specified resource in storage.
@@ -70,15 +74,17 @@ class ProductVariationController extends Controller
         $productVariation = ProductVariation::where('slug', $slug)->firstOrFail();
 
         $request->validate([
-            'name' => ['required',
-            Rule::unique('product_variations')->ignore($productVariation->id),
-        ],
-            'product_id' => 'required|exists:App\Models\Product,id',
+            'name' => 'required|string',
+            'name_mm' => 'nullable|string',
+            'description' => 'required|string',
+            'description_mm' => 'nullable|string',
+            'product_slug' => 'required|exists:App\Models\Product,slug',
         ]);
 
-        $productVariation = ProductVariation::where('slug', $slug)->update($request->all());
+        $validatedData['product_id'] = $this->getProductId($request->product_slug);
 
-        return response()->json($productVariation, 200);
+        $productVariation->update($validatedData);
+        return response()->json($productVariation->load('product'), 200);
     }
 
     /**
@@ -91,5 +97,10 @@ class ProductVariationController extends Controller
     {
         ProductVariation::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+    }
+
+    private function getProductId($slug)
+    {
+        return Product::where('slug', $slug)->first()->id;
     }
 }

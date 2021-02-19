@@ -19,27 +19,28 @@ class MenuToppingValueSeeder extends Seeder
     {
         $menuToppingValues = [
             [
-                "name" => "Baby Corn",
-                "value"=>1,
-                "price"=>300,
-                "slug" => $this->generateUniqueSlug(),
-                "menu_topping_id" => 1,
+                'name' => 'Baby Corn',
+                'value' => 1,
+                'price' => 300,
+                'slug' => $this->generateUniqueSlug(),
+                'menu_topping_id' => 1,
             ],
             [
-                "name" => "Mushroom",
-                "value"=>2,
-                "price"=>500,
-                "slug" => $this->generateUniqueSlug(),
-                "menu_topping_id" => 1,
+                'name' => 'Mushroom',
+                'value' => 2,
+                'price' => 500,
+                'slug' => $this->generateUniqueSlug(),
+                'menu_topping_id' => 1,
             ],
             [
-                "name" => "Carrot",
-                "value"=>3,
-                "price"=>300,
-                "slug" => $this->generateUniqueSlug(),
-                "menu_topping_id" => 1,
+                'name' => 'Carrot',
+                'value' => 3,
+                'price' => 300,
+                'slug' => $this->generateUniqueSlug(),
+                'menu_topping_id' => 1,
             ],
         ];
+
         foreach ($menuToppingValues as $menuToppingValue) {
             MenuToppingValue::create($menuToppingValue);
         }

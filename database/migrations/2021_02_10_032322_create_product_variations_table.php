@@ -16,8 +16,10 @@ class CreateProductVariationsTable extends Migration
         Schema::create('product_variations', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique();
-            $table->string('name')->unique();
+            $table->string('name');
+            $table->string('name_mm')->nullable();
             $table->string('description');
+            $table->string('description_mm')->nullable();
             $table->unsignedBigInteger('product_id');
             $table->timestamps();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');

@@ -8,15 +8,23 @@ use Illuminate\Database\Eloquent\Model;
 class MenuToppingValue extends Model
 {
     use HasFactory;
-    /**
-    * The attributes that are mass assignable.
-    *
-    * @var array
-    */
 
-    protected $fillable = ['slug',"name","value","price","menu_topping_id"];
+    protected $fillable = [
+        'slug',
+        'name',
+        'value',
+        'price',
+        'menu_topping_id',
+    ];
 
-    public function menu_toppings()
+    protected $hidden = [
+        'id',
+        'menu_topping_id',
+        'created_at',
+        'updated_at',
+    ];
+
+    public function menu_topping()
     {
         return $this->belongsTo(MenuTopping::class);
     }

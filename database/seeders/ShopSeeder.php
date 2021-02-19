@@ -9,6 +9,7 @@ use Illuminate\Database\Seeder;
 class ShopSeeder extends Seeder
 {
     use StringHelper;
+
     /**
      * Run the database seeds.
      *
@@ -18,18 +19,18 @@ class ShopSeeder extends Seeder
     {
         $shops = [
             [
-                "name" => "Impact Myanmar",
-                "name_mm" => "Impact Myanmar",
-                "official" => true ,
-                "enable" => true ,
-                "slug" => $this->generateUniqueSlug(),
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Impact Myanmar',
+                'name_mm' => 'Impact Myanmar',
+                'is_official' => true,
+                'is_enable' => true,
             ],
             [
-                "name" => "Marigold",
-                "name_mm" => "Marigold",
-                "official" => true ,
-                "enable" => true ,
-                "slug" => $this->generateUniqueSlug(),
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Marigold',
+                'name_mm' => 'Marigold',
+                'is_official' => true,
+                'is_enable' => true,
             ],
         ];
         foreach ($shops as $shop) {

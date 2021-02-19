@@ -9,27 +9,24 @@ class Restaurant extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = ['slug', 'name', 'name_mm', 'official', 'enable'];
+    protected $fillable = [
+        'slug',
+        'name',
+        'name_mm',
+        'is_official',
+        'is_enable',
+    ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
+        'id',
         'created_at',
         'updated_at',
         'pivot',
     ];
 
     protected $casts = [
-        'enable' => 'boolean',
-        'official' => 'boolean',
+        'is_enable' => 'boolean',
+        'is_official' => 'boolean',
     ];
 
     public function restaurant_tags()

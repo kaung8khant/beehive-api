@@ -19,18 +19,19 @@ class MenuToppingSeeder extends Seeder
     {
         $menuToppings = [
             [
-                "name" => "Vegetables",
-                "description"=>"vegetables",
-                "slug" => $this->generateUniqueSlug(),
-                "menu_id" => 1,
+                'name' => 'Vegetables',
+                'description' => 'vegetables',
+                'slug' => $this->generateUniqueSlug(),
+                'menu_id' => 1,
             ],
             [
-                "name" => "Meat",
-                "description"=>"meat",
-                "slug" => $this->generateUniqueSlug(),
-                "menu_id" => 2,
+                'name' => 'Meat',
+                'description' => 'meat',
+                'slug' => $this->generateUniqueSlug(),
+                'menu_id' => 2,
             ],
         ];
+
         foreach ($menuToppings as $menuTopping) {
             MenuTopping::create($menuTopping);
         }

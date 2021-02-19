@@ -9,15 +9,31 @@ class ShopBranch extends Model
 {
     use HasFactory;
 
-    protected $fillable = [ 'slug', 'name', 'name_mm', 'enable', 'address', 'contact_number', 'opening_time', 'closing_time', 'latitude', 'longitude', 'shop_id', 'township_id'] ;
+    protected $fillable = [
+        'slug',
+        'name',
+        'name_mm',
+        'address',
+        'contact_number',
+        'opening_time',
+        'closing_time',
+        'latitude',
+        'longitude',
+        'shop_id',
+        'township_id',
+        'is_enable',
+    ];
 
     protected $hidden = [
+        'id',
+        'shop_id',
+        'township_id',
         'created_at',
         'updated_at',
     ];
 
     protected $casts = [
-        'enable' => 'boolean',
+        'is_enable' => 'boolean',
     ];
 
     public function shop()

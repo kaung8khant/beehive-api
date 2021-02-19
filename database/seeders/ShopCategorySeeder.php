@@ -9,6 +9,7 @@ use Illuminate\Database\Seeder;
 class ShopCategorySeeder extends Seeder
 {
     use StringHelper;
+
     /**
      * Run the database seeds.
      *
@@ -18,16 +19,17 @@ class ShopCategorySeeder extends Seeder
     {
         $shopCategories = [
             [
-                "name" => "Health & Beauty",
-                "name_mm" => "ကျန်းမာရေးနှင့်အလှအပ",
-                "slug" => $this->generateUniqueSlug(),
+                'name' => 'Health & Beauty',
+                'name_mm' => 'ကျန်းမာရေးနှင့်အလှအပ',
+                'slug' => $this->generateUniqueSlug(),
             ],
             [
-                "name" => "Women's Fashion",
-                "name_mm" => "အမျိုးသမီးဖက်ရှင်",
-                "slug" => $this->generateUniqueSlug(),
+                'name' => "Women's Fashion",
+                'name_mm' => 'အမျိုးသမီးဖက်ရှင်',
+                'slug' => $this->generateUniqueSlug(),
             ],
         ];
+
         foreach ($shopCategories as $shopCategory) {
             ShopCategory::create($shopCategory);
         }

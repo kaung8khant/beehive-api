@@ -9,11 +9,6 @@ class Product extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'slug',
         'name',
@@ -24,6 +19,15 @@ class Product extends Model
         'shop_id',
         'shop_category_id',
         'sub_category_id',
+    ];
+
+    protected $hidden = [
+        'id',
+        'shop_id',
+        'shop_category_id',
+        'sub_category_id',
+        'created_at',
+        'updated_at',
     ];
 
     public function shop()

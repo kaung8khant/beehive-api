@@ -38,40 +38,38 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('townships', 'TownshipController');
             Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
 
-            Route::resource('restaurant-categories', 'RestaurantCategoryController');
+            /* Shop */
             Route::resource('shop-categories', 'ShopCategoryController');
             Route::resource('sub-categories', 'SubCategoryController');
-            Route::get('shop-categories/{slug}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory');
-
-            Route::resource('restaurants', 'RestaurantController');
-            Route::resource('restaurant-tags', 'RestaurantTagController');
-            Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
-            Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
-
             Route::resource('shop-tags', 'ShopTagController');
             Route::resource('shops', 'ShopController');
-            Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
+            Route::get('shop-categories/{slug}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory');
             Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
-
+            Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
             Route::resource('products', 'ProductController');
+            Route::resource('product-variations', 'ProductVariationController');
+            Route::resource('product-variation-values', 'ProductVariationValueController');
+            Route::resource('shop-branches', 'ShopBranchController');
+            Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop')->name('getBranchesByShop');
+            Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship')->name('getBranchesByTownship');
+            /* Shop */
 
+            /* Restaurant */
+            Route::resource('restaurant-categories', 'RestaurantCategoryController');
+            Route::resource('restaurant-tags', 'RestaurantTagController');
+            Route::resource('restaurants', 'RestaurantController');
+            Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
+            Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
             Route::resource('menus', 'MenuController');
             Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenus');
             Route::resource('menu-variations', 'MenuVariationController');
             Route::resource('menu-variation-values', 'MenuVariationValueController');
             Route::resource('menu-toppings', 'MenuToppingController');
             Route::resource('menu-topping-values', 'MenuToppingValueController');
-
-            Route::resource('product-variations', 'ProductVariationController');
-            Route::resource('product-variation-values', 'ProductVariationValueController');
-
             Route::resource('restaurant-branches', 'RestaurantBranchController');
             Route::get('restaurants/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByRestaurant');
             Route::get('townships/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');
-
-            Route::resource('shop-branches', 'ShopBranchController');
-            Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop')->name('getBranchesByShop');
-            Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship')->name('getBranchesByTownship');
+            /* Restaurant */
 
             Route::get('profile', 'ProfileController@index');
             Route::put('profile/update', 'ProfileController@update_profile');

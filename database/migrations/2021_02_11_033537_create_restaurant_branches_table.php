@@ -15,21 +15,21 @@ class CreateRestaurantBranchesTable extends Migration
     {
         Schema::create('restaurant_branches', function (Blueprint $table) {
             $table->id();
-            $table->string("name")->unique();
+            $table->string('slug')->unique();
+            $table->string('name')->unique();
             $table->string('name_mm')->unique()->nullable();
-            $table->string("slug")->unique();
-            $table->boolean("enable");
-            $table->string("address");
-            $table->string("contact_number");
-            $table->time("opening_time");
-            $table->time("closing_time");
+            $table->string('address');
+            $table->string('contact_number');
+            $table->time('opening_time');
+            $table->time('closing_time');
             $table->double('latitude');
             $table->double('longitude');
+            $table->boolean('is_enable')->default(1);
             $table->unsignedBigInteger('restaurant_id');
-            $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
             $table->unsignedBigInteger('township_id');
-            $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
             $table->timestamps();
+            $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
+            $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
         });
     }
 

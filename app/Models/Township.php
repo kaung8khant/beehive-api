@@ -9,11 +9,19 @@ class Township extends Model
 {
     use HasFactory;
 
-    protected $fillable= ['name','name_mm', 'slug','city_id'];
+    protected $fillable = [
+        'slug',
+        'name',
+        'name_mm',
+        'city_id',
+    ];
 
-    /**
-     * Get the city that owns the township.
-     */
+    protected $hidden =  [
+        'id',
+        'created_at',
+        'updated_at',
+    ];
+
     public function city()
     {
         return $this->belongsTo(City::class);

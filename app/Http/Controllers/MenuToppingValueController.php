@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MenuToppingValue;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
+use App\Models\MenuToppingValue;
+use App\Models\MenuTopping;
 
 class MenuToppingValueController extends Controller
 {
     use StringHelper;
+
     /**
      * Display a listing of the resource.
      *
@@ -17,21 +18,10 @@ class MenuToppingValueController extends Controller
      */
     public function index(Request $request)
     {
-        $filter= $request->filter;
-
-        return MenuToppingValue::
-        where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return MenuToppingValue::with('menu_topping')
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     /**
@@ -44,15 +34,11 @@ class MenuToppingValueController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $menuToppingValue = MenuToppingValue::create($request->validate([
-            'name' => 'required|unique:menu_Topping_values',
-            'slug' => 'required|unique:menu_Topping_values',
-            'value' => 'required|unique:menu_Topping_values',
-            'price' => 'required',
-            'menu_topping_id' => 'required|exists:App\Models\MenuTopping,id',
-        ]));
+        $validatedData = $request->validate($this->getParamsToValidate(TRUE));
+        $validatedData['menu_topping_id'] = $this->getMenuToppingId($request->menu_topping_slug);
 
-        return response()->json($menuToppingValue, 201);
+        $menuToppingValue = MenuToppingValue::create($validatedData);
+        return response()->json($menuToppingValue->load('menu_topping'), 201);
     }
 
     /**
@@ -63,18 +49,8 @@ class MenuToppingValueController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(MenuToppingValue::with('menu_toppings')->where('slug', $slug)->firstOrFail(), 200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\MenuToppingValue  $menuToppingValue
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(MenuToppingValue $menuToppingValue)
-    {
-        //
+        $menuToppingValue = MenuToppingValue::with('menu_topping')->where('slug', $slug)->firstOrFail();
+        return response()->json($menuToppingValue, 200);
     }
 
     /**
@@ -88,15 +64,11 @@ class MenuToppingValueController extends Controller
     {
         $menuToppingValue = MenuToppingValue::where('slug', $slug)->firstOrFail();
 
-        $menuToppingValue->update($request->validate([
-            'name'=>'required|unique:menu_topping_values',
-            'price'=>'required',
-            'value'=>'required|unique:menu_topping_values',
-            'menu_topping_id' => 'required|exists:App\Models\MenuTopping,id',
-            Rule::unique('menu_topping_values')->ignore($menuToppingValue->id),
-        ]));
+        $validatedData = $request->validate($this->getParamsToValidate());
+        $validatedData['menu_topping_id'] = $this->getMenuToppingId($request->menu_topping_slug);
 
-        return response()->json($menuToppingValue, 200);
+        $menuToppingValue->update($validatedData);
+        return response()->json($menuToppingValue->load('menu_topping'), 200);
     }
 
     /**
@@ -109,5 +81,26 @@ class MenuToppingValueController extends Controller
     {
         MenuToppingValue::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+    }
+
+    private function getParamsToValidate($slug = FALSE)
+    {
+        $params = [
+            'name' => 'required|string',
+            'value' => 'required',
+            'price' => 'required|numeric',
+            'menu_topping_slug' => 'required|exists:App\Models\MenuTopping,slug',
+        ];
+
+        if ($slug) {
+            $params['slug'] = 'required|unique:menu_topping_values';
+        }
+
+        return $params;
+    }
+
+    private function getMenuToppingId($slug)
+    {
+        return MenuTopping::where('slug', $slug)->first()->id;
     }
 }
