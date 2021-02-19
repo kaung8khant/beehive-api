@@ -117,4 +117,18 @@ class RestaurantController extends Controller
         Restaurant::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
+
+    /**
+    * Toggle the is_enable column for restaurant table.
+    *
+    * @param  int  $slug
+    * @return \Illuminate\Http\Response
+    */
+    public function toggleEnable($slug)
+    {
+        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+        $restaurant->is_enable = !$restaurant->is_enable;
+        $restaurant->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
 }

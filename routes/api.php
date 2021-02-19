@@ -44,6 +44,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('sub-categories', 'SubCategoryController');
             Route::resource('shop-tags', 'ShopTagController');
             Route::resource('shops', 'ShopController');
+            Route::patch('shops/toggle-enable/{slug}', 'ShopController@toggleEnable');
             Route::get('shop-categories/{slug}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory');
             Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
             Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
@@ -54,12 +55,14 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('shop-branches/toggle-enable/{slug}', 'ShopBranchController@toggleEnable');
             Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop');
             Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship');
+
             /* Shop */
 
             /* Restaurant */
             Route::resource('restaurant-categories', 'RestaurantCategoryController');
             Route::resource('restaurant-tags', 'RestaurantTagController');
             Route::resource('restaurants', 'RestaurantController');
+            Route::patch('restaurants/toggle-enable/{slug}', 'RestaurantController@toggleEnable');
             Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
             Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
             Route::resource('menus', 'MenuController');

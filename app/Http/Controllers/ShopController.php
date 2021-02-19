@@ -116,4 +116,18 @@ class ShopController extends Controller
         Shop::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
+
+    /**
+    * Toggle the is_enable column for shop table.
+    *
+    * @param  int  $slug
+    * @return \Illuminate\Http\Response
+    */
+    public function toggleEnable($slug)
+    {
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+        $shop->is_enable = !$shop->is_enable;
+        $shop->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
 }
