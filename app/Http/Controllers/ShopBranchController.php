@@ -162,11 +162,6 @@ class ShopBranchController extends Controller
     public function toggleEnable($slug)
     {
         $shopBranch = ShopBranch::where('slug', $slug)->firstOrFail();
-        // if (Auth::guard('users')->user()->roles->filter(function ($role) {
-        //     return $role->name != "Admin";
-        // })) {
-        //     return response()->json(['message' => 'You cannot change your own status.'], 406);
-        // }
         $shopBranch->is_enable = !$shopBranch->is_enable;
         $shopBranch->save();
         return response()->json(['message' => 'Success.'], 200);
