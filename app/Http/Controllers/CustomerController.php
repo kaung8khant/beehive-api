@@ -82,7 +82,6 @@ class CustomerController extends Controller
                 'required',
                 Rule::unique('customers')->ignore($customer->id),
             ],
-            'password' => 'required|string|min:6',
             'gender' => 'required|in:male,female',
         ]);
 
