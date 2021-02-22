@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
         $this->call(UserRoleSeeder::class);
         $this->call(CustomerSeeder::class);
         $this->call(CitySeeder::class);
-        $this->call(TownshipSeeder::class);
         $this->call(RestaurantTagSeeder::class);
         $this->call(ShopTagSeeder::class);
         $this->call(RestaurantCategorySeeder::class);

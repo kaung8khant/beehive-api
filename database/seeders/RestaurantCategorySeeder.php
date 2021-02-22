@@ -16,20 +16,6 @@ class RestaurantCategorySeeder extends Seeder
      */
     public function run()
     {
-        $restaurantCategories = [
-            [
-                "name" => "Fast food",
-                "name_mm" => "အမြန်ပြင်အစားအစာ",
-                "slug" => $this->generateUniqueSlug(),
-            ],
-            [
-                "name" => "Fine dining",
-                "name_mm" => "ကောင်းမွန်သောထမင်းစားခန်း",
-                "slug" => $this->generateUniqueSlug(),
-            ],
-        ];
-        foreach ($restaurantCategories as $restaurantCategory) {
-            RestaurantCategory::create($restaurantCategory);
-        }
+        RestaurantCategory::factory()->count(120)->create();
     }
 }

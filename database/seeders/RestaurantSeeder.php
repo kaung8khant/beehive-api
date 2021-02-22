@@ -17,25 +17,6 @@ class RestaurantSeeder extends Seeder
      */
     public function run()
     {
-        $restaurants = [
-            [
-                'slug' => $this->generateUniqueSlug(),
-                'name' => 'Shwe Myanmar Restaurant',
-                'name_mm' => 'ရွှေမြန်မာစားသောက်ဆိုင်',
-                'is_official' => true,
-                'is_enable' => true,
-            ],
-            [
-                'slug' => $this->generateUniqueSlug(),
-                'name' => 'Danuphyu Daw Saw Yee Myanmar Restaurant',
-                'name_mm' => 'ဓနုဖြူဒေါ်စောရီမြန်မာစားသောက်ဆိုင်',
-                'is_official' => true,
-                'is_enable' => true,
-            ],
-        ];
-
-        foreach ($restaurants as $restaurant) {
-            Restaurant::create($restaurant);
-        }
+        Restaurant::factory()->count(20)->create();
     }
 }
