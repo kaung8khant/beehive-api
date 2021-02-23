@@ -40,14 +40,6 @@ class RatingController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate($this->getParamsToValidate(true));
-
-
-        $validatedData['customer_id'] = $this->getCustomerId($request->customer_slug);
-        $validatedData['order_id'] = $this->getOrderId($request->order_slug);
-
-        $rating = Rating::create($validatedData);
-        return response()->json($rating, 201);
     }
 
     /**
@@ -70,38 +62,5 @@ class RatingController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $rating = Rating::where('id', $id)->firstOrFail();
-
-        $validatedData = $request->validate($this->getParamsToValidate());
-
-        $validatedData['customer_id'] = $this->getCustomerId($request->customer_slug);
-        $validatedData['order_id'] = $this->getOrderId($request->order_slug);
-
-        $rating->update($validatedData);
-        return response()->json($rating, 200);
-    }
-
-    private function getParamsToValidate($slug = false)
-    {
-        $params = [
-            'receiver_id' => 'required',
-            'receiver_type' => 'required|in:restaurant,shop,biker',
-            'rating' => 'required',
-            'review' => 'required',
-            'order_slug' => 'required|exists:App\Models\Order,slug',
-            'customer_slug' => 'required|exists:App\Models\Customer,slug',
-        ];
-
-        return $params;
-    }
-
-    private function getCustomerId($slug)
-    {
-        return Customer::where('slug', $slug)->first()->id;
-    }
-
-    private function getOrderId($slug)
-    {
-        return Order::where('slug', $slug)->first()->id;
     }
 }
