@@ -46,8 +46,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('shops', 'ShopController');
             Route::patch('shops/toggle-enable/{slug}', 'ShopController@toggleEnable');
             Route::patch('shops/toggle-official/{slug}', 'ShopController@toggleOfficial');
-            Route::post('shops/add-shop-category/{slug}', 'ShopController@addShopCategory');
-            Route::post('shops/remove-shop-category/{slug}', 'ShopController@removeShopCategory');
+            Route::post('shops/add-shop-category/{slug}', 'ShopController@addShopCategories');
+            Route::post('shops/remove-shop-category/{slug}', 'ShopController@removeShopCategories');
             Route::get('shop-categories/{slug}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory');
             Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
             Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');

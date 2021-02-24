@@ -146,14 +146,18 @@ class ShopController extends Controller
     }
 
         /**
-     * add  shop Category in Shop
+     * add  shop Categories in Shop
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Shop  $shop
      * @return \Illuminate\Http\Response
      */
-    public function addShopCategory(Request $request, $slug)
+    public function addShopCategories(Request $request, $slug)
     {
+        $shop =$request->validate([
+            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+        ]);
+
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
         $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
@@ -163,14 +167,17 @@ class ShopController extends Controller
     }
 
         /**
-     * add  shop Category in Shop
+     * remove  shop Categories in Shop
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Shop  $shop
      * @return \Illuminate\Http\Response
      */
-    public function removeShopCategory(Request $request, $slug)
+    public function removeShopCategories(Request $request, $slug)
     {
+        $shop =$request->validate([
+            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+        ]);
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
         $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
