@@ -130,4 +130,18 @@ class ShopController extends Controller
         $shop->save();
         return response()->json(['message' => 'Success.'], 200);
     }
+
+    /**
+    * Toggle the is_official column for shop table.
+    *
+    * @param  int  $slug
+    * @return \Illuminate\Http\Response
+    */
+    public function toggleOfficial($slug)
+    {
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+        $shop->is_official = !$shop->is_official;
+        $shop->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
 }

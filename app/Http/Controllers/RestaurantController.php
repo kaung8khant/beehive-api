@@ -131,4 +131,18 @@ class RestaurantController extends Controller
         $restaurant->save();
         return response()->json(['message' => 'Success.'], 200);
     }
+
+    /**
+    * Toggle the is_official column for restaurant table.
+    *
+    * @param  int  $slug
+    * @return \Illuminate\Http\Response
+    */
+    public function toggleOfficial($slug)
+    {
+        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+        $restaurant->is_official = !$restaurant->is_official;
+        $restaurant->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
 }
