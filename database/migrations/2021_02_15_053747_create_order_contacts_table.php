@@ -15,16 +15,16 @@ class CreateOrderContactsTable extends Migration
     {
         Schema::create('order_contacts', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
-            $table->string('customerId');
-            $table->string('customerName');
-            $table->string('phoneNumber');
-            $table->string('houseNumber');
-            $table->integer('floor');
-            $table->string('streetName');
-            $table->decimal('latitude');
-            $table->decimal('longitude');
             $table->unsignedBigInteger('order_id');
+            $table->string('customer_id');
+            $table->string('customer_name');
+            $table->string('phone_number');
+            $table->string('house_number');
+            $table->string('floor')->nullable();
+            $table->string('street_name');
+            $table->double('latitude')->nullable();
+            $table->double('longitude')->nullable();
+            $table->timestamps();
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
     }

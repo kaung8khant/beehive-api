@@ -74,12 +74,12 @@ class ShopBranchController extends Controller
     }
 
     /**
-    * Update the specified resource in storage.
-    *
-    * @param  \Illuminate\Http\Request  $request
-    * @param  int  $id
-    * @return \Illuminate\Http\Response
-    */
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function update(Request $request, $slug)
     {
         $shopBranch = ShopBranch::where('slug', $slug)->firstOrFail();
@@ -154,11 +154,11 @@ class ShopBranchController extends Controller
     }
 
     /**
-    * Toggle the is_enable column for shop_branches table.
-    *
-    * @param  int  $slug
-    * @return \Illuminate\Http\Response
-    */
+     * Toggle the is_enable column for shop_branches table.
+     *
+     * @param  int  $slug
+     * @return \Illuminate\Http\Response
+     */
     public function toggleEnable($slug)
     {
         $shopBranch = ShopBranch::where('slug', $slug)->firstOrFail();

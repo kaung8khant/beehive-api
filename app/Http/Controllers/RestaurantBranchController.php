@@ -156,11 +156,11 @@ class RestaurantBranchController extends Controller
     }
 
     /**
-    * Toggle the is_enable column for restaurant_branches table.
-    *
-    * @param  int  $slug
-    * @return \Illuminate\Http\Response
-    */
+     * Toggle the is_enable column for restaurant_branches table.
+     *
+     * @param  int  $slug
+     * @return \Illuminate\Http\Response
+     */
     public function toggleEnable($slug)
     {
         $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();

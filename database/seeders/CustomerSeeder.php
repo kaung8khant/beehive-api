@@ -3,13 +3,10 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Helpers\StringHelper;
 use App\Models\Customer;
 
 class CustomerSeeder extends Seeder
 {
-    use StringHelper;
-
     /**
      * Run the database seeds.
      *
@@ -18,7 +15,7 @@ class CustomerSeeder extends Seeder
     public function run()
     {
         Customer::create([
-            'slug' => $this->generateUniqueSlug(),
+            'slug' => 'A1B1C1',
             'username' => 'customer1',
             'email' => 'customer1@example.com',
             'name' => 'Test Customer',

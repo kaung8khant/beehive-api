@@ -9,13 +9,25 @@ class OrderContact extends Model
 {
     use HasFactory;
 
-    /**
-    * The attributes that are mass assignable.
-    *
-    * @var array
-    */
+    protected $fillable = [
+        'order_id',
+        'customer_id',
+        'customer_name',
+        'phone_number',
+        'house_number',
+        'floor',
+        'street_name',
+        'latitude',
+        'longitude',
+    ];
 
-    protected $fillable =["order_id","customerId","customerName","phoneNumber","houseNumber","floor","streetName","latitude","longitude"];
+    protected $hidden = [
+        'id',
+        'order_id',
+        'customer_id',
+        'created_at',
+        'updated_at',
+    ];
 
     public function order()
     {

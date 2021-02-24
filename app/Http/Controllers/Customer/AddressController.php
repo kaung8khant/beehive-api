@@ -117,8 +117,8 @@ class AddressController extends Controller
             'house_number' => 'required',
             'floor' => 'nullable|min:0|max:50',
             'street_name' => 'required',
-            'latitude' => 'required',
-            'longitude' => 'required',
+            'latitude' => 'nullable',
+            'longitude' => 'nullable',
             'township_id' => 'required|exists:App\Models\Township,slug',
         ];
 

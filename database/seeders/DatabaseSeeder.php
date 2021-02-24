@@ -39,12 +39,12 @@ class DatabaseSeeder extends Seeder
         $this->call(CategoryShopSeeder::class);
         $this->call(ShopBranchSeeder::class);
         $this->call(SettingSeeder::class);
-        $this->call(OrderSeeder::class);
-        $this->call(OrderContactSeeder::class);
-        $this->call(OrderStatusSeeder::class);
-        $this->call(OrderItemSeeder::class);
+        // $this->call(OrderSeeder::class);
+        // $this->call(OrderContactSeeder::class);
+        // $this->call(OrderStatusSeeder::class);
+        // $this->call(OrderItemSeeder::class);
         $this->call(FavoriteShopSeeder::class);
         $this->call(FavoriteRestaurantSeeder::class);
-        $this->call(RatingSeeder::class);
+        // $this->call(RatingSeeder::class);
     }
 }

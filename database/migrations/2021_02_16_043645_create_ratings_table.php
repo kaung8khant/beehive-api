@@ -15,12 +15,12 @@ class CreateRatingsTable extends Migration
     {
         Schema::create('ratings', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('order_id');
+            $table->unsignedBigInteger('customer_id');
             $table->integer('receiver_id');
             $table->enum('receiver_type', ['restaurant', 'shop', 'biker']);
             $table->integer('rating');
             $table->text('review');
-            $table->unsignedBigInteger('order_id');
-            $table->unsignedBigInteger('customer_id');
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
             $table->timestamps();

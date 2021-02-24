@@ -3,13 +3,10 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Helpers\StringHelper;
 use App\Models\Product;
 
 class ProductSeeder extends Seeder
 {
-    use StringHelper;
-
     /**
      * Run the database seeds.
      *
@@ -24,7 +21,7 @@ class ProductSeeder extends Seeder
                 'description' => 'Description',
                 'description_mm' => 'Description_MM',
                 'price' => 30000,
-                'slug' => $this->generateUniqueSlug(),
+                'slug' => 'A1B1C1',
                 'shop_id' => 1,
                 'shop_category_id' => 1,
                 'sub_category_id' => 1,
@@ -35,7 +32,7 @@ class ProductSeeder extends Seeder
                 'description' => 'Description',
                 'description_mm' => 'Description_MM',
                 'price' => 60000,
-                'slug' => $this->generateUniqueSlug(),
+                'slug' => 'A2B2C2',
                 'shop_id' => 1,
                 'shop_category_id' => 1,
                 'sub_category_id' => 1,

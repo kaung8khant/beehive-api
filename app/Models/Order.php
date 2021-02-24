@@ -9,11 +9,6 @@ class Order extends Model
 {
     use HasFactory;
 
-    /**
-    * The attributes that are mass assignable.
-    *
-    * @var array
-    */
     protected $fillable = [
         'slug',
         'order_date',
@@ -21,15 +16,23 @@ class Order extends Model
         'special_instruction',
         'payment_mode',
         'delivery_mode',
-        'rating_status',
+        'rating',
     ];
+
+    protected $hidden = [
+        'id',
+        'created_at',
+        'updated_at',
+    ];
+
+    protected $appends = array('order_status');
 
     public function order_contact()
     {
-        return $this->hasOne(orderContact::class);
+        return $this->hasOne(OrderContact::class);
     }
 
-    public function orderStatus()
+    public function order_statuses()
     {
         return $this->hasMany(OrderStatus::class);
     }
@@ -43,4 +46,18 @@ class Order extends Model
     {
         return $this->hasMany(Rating::class);
     }
+
+    public function getOrderStatusAttribute()
+    {
+        return $this->order_statuses()->latest()->first()->status;
+    }
+
+    // public function getOrderTotalAttribute()
+    // {
+    //     $total=0;
+    //     foreach ($this->order_items() as $item) {
+    //         $total=($item->amount * $item->quantity)-($item->discount + ($item->amount $item->tax);
+    //     }
+    //     return $total;
+    // }
 }
