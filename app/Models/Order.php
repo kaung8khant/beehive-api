@@ -51,4 +51,13 @@ class Order extends Model
     {
         return $this->order_statuses()->latest()->first()->status;
     }
+
+    // public function getOrderTotalAttribute()
+    // {
+    //     $total=0;
+    //     foreach ($this->order_items() as $item) {
+    //         $total=($item->amount * $item->quantity)-($item->discount + ($item->amount $item->tax);
+    //     }
+    //     return $total;
+    // }
 }
