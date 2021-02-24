@@ -64,7 +64,7 @@ class ShopController extends Controller
      */
     public function show($slug)
     {
-        $shop = Shop::with('shop_categories', 'shop_categories')->where('slug', $slug)->firstOrFail();
+        $shop = Shop::with('shop_categories','shop_tags')->where('slug', $slug)->firstOrFail();
         return response()->json($shop, 200);
     }
 
@@ -143,5 +143,46 @@ class ShopController extends Controller
         $shop->is_official = !$shop->is_official;
         $shop->save();
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+        /**
+     * add  shop Categories in Shop
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Shop  $shop
+     * @return \Illuminate\Http\Response
+     */
+    public function addShopCategories(Request $request, $slug)
+    {
+        $shop =$request->validate([
+            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+        ]);
+
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+
+        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shop->shop_categories()->attach($shopCategories);
+
+        return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
+    }
+
+        /**
+     * remove  shop Categories in Shop
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Shop  $shop
+     * @return \Illuminate\Http\Response
+     */
+    public function removeShopCategories(Request $request, $slug)
+    {
+        $shop =$request->validate([
+            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+        ]);
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+
+        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shop->shop_categories()->detach($shopCategories);
+
+        return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
     }
 }
