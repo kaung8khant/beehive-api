@@ -9,13 +9,25 @@ class OrderItem extends Model
 {
     use HasFactory;
 
-    /**
-    * The attributes that are mass assignable.
-    *
-    * @var array
-    */
+    protected $fillable = [
+        'order_id',
+        'item_id',
+        'item_name',
+        'item_type',
+        'amount',
+        'quantity',
+        'tax',
+        'discount',
+        'is_deleted'
+    ];
 
-    protected $fillable =["order_id","item_id","item_name","item_type","amount","quantity","tax","discount","is_deleted"];
+    protected $hidden = [
+        'id',
+        'order_id',
+        'item_id',
+        'created_at',
+        'updated_at',
+    ];
 
     protected $casts = [
         'is_deleted' => 'boolean',

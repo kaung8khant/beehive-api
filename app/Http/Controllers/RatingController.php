@@ -17,20 +17,18 @@ class RatingController extends Controller
      */
     public function index()
     {
-        return Rating::with('order', 'customer')
-        ->paginate(10);
+        return Rating::with('order', 'customer')->paginate(10);
     }
 
     /**
-    * Display order list depending on receiver_type
-    */
+     * Display order list depending on receiver_type
+     */
     public function getReceiverTypeByOrder($receiverType)
     {
         return Rating::whereHas('order', function ($q) use ($receiverType) {
             $q->where('receiver_type', $receiverType);
         })->paginate(10);
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -40,8 +38,7 @@ class RatingController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate($this->getParamsToValidate(true));
-
+        $validatedData = $request->validate($this->getParamsToValidate());
 
         $validatedData['customer_id'] = $this->getCustomerId($request->customer_slug);
         $validatedData['order_id'] = $this->getOrderId($request->order_slug);
@@ -81,7 +78,7 @@ class RatingController extends Controller
         return response()->json($rating, 200);
     }
 
-    private function getParamsToValidate($slug = false)
+    private function getParamsToValidate()
     {
         $params = [
             'receiver_id' => 'required',

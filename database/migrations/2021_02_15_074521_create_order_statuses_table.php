@@ -15,11 +15,11 @@ class CreateOrderStatusesTable extends Migration
     {
         Schema::create('order_statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('created_by');
-            $table->enum('status', ['pending', 'preparing', 'pickUp', 'onRoute', 'delivered', 'cancelled']);
             $table->unsignedBigInteger('order_id');
-            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+            $table->enum('status', ['pending', 'preparing', 'pickUp', 'onRoute', 'delivered', 'cancelled'])->default('pending');
+            $table->string('created_by')->nullable();
             $table->timestamps();
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
     }
 

@@ -9,16 +9,15 @@ class OrderStatus extends Model
 {
     use HasFactory;
 
-    /**
-    * The attributes that are mass assignable.
-    *
-    * @var array
-    */
     protected $fillable = [
-        'slug',
+        'order_id',
         'status',
         'created_by',
-        'order_id'
+    ];
+
+    protected $hidden = [
+        'id',
+        'order_id',
     ];
 
     public function order()

@@ -24,7 +24,7 @@ class OrderSeeder extends Seeder
                 'order_type' => 'restaurant',
                 'payment_mode' => 'KPay',
                 'delivery_mode' => 'package',
-                'rating_status' => 'two',
+                'rating' => 2,
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
@@ -33,7 +33,7 @@ class OrderSeeder extends Seeder
                 'order_type' => 'shop',
                 'payment_mode' => 'COD',
                 'delivery_mode' => 'delivery',
-                'rating_status' => 'three',
+                'rating' => 3,
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
@@ -42,7 +42,7 @@ class OrderSeeder extends Seeder
                 'order_type' => 'shop',
                 'payment_mode' => 'CBPay',
                 'delivery_mode' => 'delivery',
-                'rating_status' => 'three',
+                'rating' => 3,
             ],
         ];
         foreach ($orders as $order) {

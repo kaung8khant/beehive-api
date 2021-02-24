@@ -112,7 +112,13 @@ class UserController extends Controller
      */
     public function destroy($slug)
     {
-        User::where('slug', $slug)->firstOrFail()->delete();
+        $user = User::where('slug', $slug)->firstOrFail();
+
+        if ($user->id === Auth::guard('users')->user()->id) {
+            return response()->json(['message' => 'You cannot delete yourself.'], 406);
+        }
+
+        $user->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
