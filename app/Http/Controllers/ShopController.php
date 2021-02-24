@@ -64,7 +64,7 @@ class ShopController extends Controller
      */
     public function show($slug)
     {
-        $shop = Shop::with('shop_categories', 'shop_categories')->where('slug', $slug)->firstOrFail();
+        $shop = Shop::with('shop_categories','shop_tags')->where('slug', $slug)->firstOrFail();
         return response()->json($shop, 200);
     }
 
