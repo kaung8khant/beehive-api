@@ -144,4 +144,38 @@ class ShopController extends Controller
         $shop->save();
         return response()->json(['message' => 'Success.'], 200);
     }
+
+        /**
+     * add  shop Category in Shop
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Shop  $shop
+     * @return \Illuminate\Http\Response
+     */
+    public function addShopCategory(Request $request, $slug)
+    {
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+
+        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shop->shop_categories()->attach($shopCategories);
+
+        return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
+    }
+
+        /**
+     * add  shop Category in Shop
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Shop  $shop
+     * @return \Illuminate\Http\Response
+     */
+    public function removeShopCategory(Request $request, $slug)
+    {
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+
+        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shop->shop_categories()->detach($shopCategories);
+
+        return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
+    }
 }
