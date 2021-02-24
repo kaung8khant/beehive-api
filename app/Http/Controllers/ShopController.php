@@ -161,6 +161,7 @@ class ShopController extends Controller
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
         $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shop->shop_categories()->detach();
         $shop->shop_categories()->attach($shopCategories);
 
         return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
