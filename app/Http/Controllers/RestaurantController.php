@@ -37,8 +37,6 @@ class RestaurantController extends Controller
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
-        $branchSlug = $request->restaurant_branch;
-        $branchSlug['slug'] = $this->generateUniqueSlug();
 
         $validatedData = $request->validate($this->getParamsToValidate(true));
 
@@ -117,7 +115,7 @@ class RestaurantController extends Controller
             'restaurant_categories' => 'required|array',
             'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
             'restaurant_branch' => 'required',
-            'restaurant_branch.slug' => 'required|exists:App\Models\RestaurantBranch,slug',
+            // 'restaurant_branch.slug' => 'required',
             'restaurant_branch.name' => 'required|string',
             'restaurant_branch.name_mm' => 'required|string',
             'restaurant_branch.address' => 'required',
@@ -126,6 +124,7 @@ class RestaurantController extends Controller
             'restaurant_branch.closing_time' => 'required|date_format:H:i',
             'restaurant_branch.latitude' => 'nullable|numeric',
             'restaurant_branch.longitude' => 'nullable|numeric',
+            'restaurant_branch.township_id' => 'required|numeric',
         ];
 
         if ($slug) {
@@ -137,14 +136,9 @@ class RestaurantController extends Controller
 
     private function createRestaurantBranch($restaurantId, $restaurantBranch)
     {
-        $restaurantBranch['restaurant_branch_id'] = $this->getRestaurantBranchId($restaurantBranch['restaurant_branch_slug']);
+        $restaurantBranch['slug'] = $this->generateUniqueSlug();
         $restaurantBranch['restaurant_id'] = $restaurantId;
         RestaurantBranch::create($restaurantBranch);
-    }
-
-    private function getRestaurantBranchId($slug)
-    {
-        return RestaurantBranch::where('slug', $slug)->first()->id;
     }
 
 

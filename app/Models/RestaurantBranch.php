@@ -25,6 +25,7 @@ class RestaurantBranch extends Model
     ];
 
     protected $hidden = [
+        'id',
         'restaurant_id',
         'township_id',
         'created_at',
