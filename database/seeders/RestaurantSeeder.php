@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\Restaurant;
+use App\Models\RestaurantBranch;
 
 class RestaurantSeeder extends Seeder
 {
@@ -17,6 +18,6 @@ class RestaurantSeeder extends Seeder
      */
     public function run()
     {
-        Restaurant::factory()->count(20)->create();
+        Restaurant::factory()->count(20)->has(RestaurantBranch::factory()->count(3))->create();
     }
 }

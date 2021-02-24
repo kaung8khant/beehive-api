@@ -1,5 +1,7 @@
 <?php
 
+use App\Providers\FakerServiceProvider;
+
 return [
 
     /*
@@ -177,6 +179,7 @@ return [
         L5Swagger\L5SwaggerServiceProvider::class,
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
+        FakerServiceProvider::class,
     ],
 
     /*

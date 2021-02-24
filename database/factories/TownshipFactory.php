@@ -23,9 +23,10 @@ class TownshipFactory extends Factory
      */
     public function definition()
     {
+        $mmFaker = app('Faker');
         return [
             'name' => $this->faker->unique()->state(),
-            'name_mm' => $this->faker->unique()->state(),
+            'name_mm' => $mmFaker->name(),
             "slug" => $this->generateUniqueSlug(),
         ];
     }
