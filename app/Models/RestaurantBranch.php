@@ -30,6 +30,7 @@ class RestaurantBranch extends Model
         'township_id',
         'created_at',
         'updated_at',
+        'pivot',
     ];
 
     protected $casts = [
@@ -44,5 +45,10 @@ class RestaurantBranch extends Model
     public function township()
     {
         return $this->belongsTo(Township::class);
+    }
+
+    public function menus()
+    {
+        return $this->belongsToMany(Menu::class, 'restaurant_branch_menu');
     }
 }

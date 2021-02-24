@@ -8,6 +8,10 @@ use App\Helpers\StringHelper;
 use App\Models\Menu;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
+use App\Models\MenuVariation;
+use App\Models\MenuVariationValue;
+use App\Models\MenuTopping;
+use App\Models\MenuToppingValue;
 
 class MenuController extends Controller
 {
@@ -37,13 +41,18 @@ class MenuController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate($this->getParamsToValidate(TRUE));
+        $validatedData = $request->validate($this->getParamsToValidate(true));
 
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
         $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
 
         $menu = Menu::create($validatedData);
-        return response()->json($menu->refresh()->load('restaurant'), 201);
+        $menuId = $menu->id;
+
+        $this->createVariations($menuId, $validatedData['menu_variations'], $validatedData['menu_variations.*.menu_variation_values']);
+        $this->createToppings($menuId, $validatedData['menu_toppings'], $validatedData['menu_toppings.*.menu_topping_values']);
+
+        return response()->json($menu->refresh()->load('menu_variations', 'menu_topping'), 201);
     }
 
     /**
@@ -90,7 +99,7 @@ class MenuController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    private function getParamsToValidate($slug = FALSE)
+    private function getParamsToValidate($slug = false)
     {
         $params = [
             'name' => 'required',
@@ -100,6 +109,23 @@ class MenuController extends Controller
             'price' => 'required|numeric',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
+            'menu_variations' => 'required|array',
+            'menu_variations.*.name' => 'required|string',
+            'menu_variations.*.description' => 'required|string',
+            'menu_toppings' => 'required|array',
+            'menu_toppings.*.name' => 'required|string',
+            'menu_toppings.*.description' => 'required|string',
+
+            'menu_variations.*.menu_variation_values' => 'required|array',
+            'menu_variations.*.menu_variation_values.*.name' => 'required|string',
+            'menu_variations.*.menu_variation_values.*.value' => 'required|string',
+            'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
+
+            'menu_toppings.*.menu_topping_values' => 'required|array',
+            'menu_toppings.*.menu_topping_values.*.name' => 'required|string',
+            'menu_toppings.*.menu_topping_values.*.value' => 'required|string',
+            'menu_toppings.*.menu_topping_values.*.price' => 'required|numeric',
+
         ];
 
         if ($slug) {
@@ -107,6 +133,55 @@ class MenuController extends Controller
         }
 
         return $params;
+    }
+
+    private function createVariations($menuId, $variations, $variationValues)
+    {
+        foreach ($variations as $variation) {
+            $variation['slug'] = $this->generateUniqueSlug();
+
+
+            $variation['menu_id'] = $menuId;
+            $menuVariation= MenuVariation::create($variation);
+            $variationId=$menuVariation->id;
+
+            $this->createVariationValues($variationId, $variationValues);
+        }
+    }
+
+    private function createVariationValues($variationId, $variationValues)
+    {
+        foreach ($variationValues as $variationValue) {
+            $variationValue['slug'] = $this->generateUniqueSlug();
+
+            $variationValue['menu_variation_id'] = $variationId;
+
+            MenuVariationValue::create($variation);
+        }
+    }
+
+    private function createToppings($menuId, $toppings, $toppingValues)
+    {
+        foreach ($toppings as $topping) {
+            $topping['slug'] = $this->generateUniqueSlug();
+
+            $topping['menu_id'] = $menuId;
+
+            $topping=  MenuTopping::create($topping);
+            $toppingId=$topping->id;
+            $this->createVariationValues($toppingId, $variationValues);
+        }
+    }
+
+    private function createToppingValues($toppingId, $toppingValues)
+    {
+        foreach ($toppingValues as $toppingValue) {
+            $toppingValue['slug'] = $this->generateUniqueSlug();
+
+            $toppingValue['menu_topping_id'] = $toppingId;
+
+            MenuToppingValue::create($toppingValue);
+        }
     }
 
     private function getRestaurantId($slug)
