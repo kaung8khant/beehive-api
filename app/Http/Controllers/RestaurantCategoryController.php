@@ -97,10 +97,12 @@ class RestaurantCategoryController extends Controller
      * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
-    public function getCategoriesByRestaurant($slug)
+    public function getCategoriesByRestaurant($slug, Request $request)
     {
-        return RestaurantCategory::whereHas('restaurants', function ($q) use ($slug) {
+        return RestaurantCategory::whereHas('restaurants', function ($q) use ($slug, $request) {
             $q->where('slug', $slug);
-        })->paginate(10);
+        })
+        ->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->paginate(10);
     }
 }
