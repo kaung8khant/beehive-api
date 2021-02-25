@@ -93,7 +93,7 @@ class RestaurantCategoryController extends Controller
 
     /**
      * Display a listing of the restaurant categories by one restaurant.
-     * 
+     *
      * @param  int  $slug
      * @return \Illuminate\Http\Response
      */

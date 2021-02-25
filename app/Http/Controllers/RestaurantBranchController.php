@@ -136,11 +136,12 @@ class RestaurantBranchController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function getBranchesByRestaurant($slug)
+    public function getBranchesByRestaurant($slug, Request $request)
     {
-        return RestaurantBranch::whereHas('restaurant', function ($q) use ($slug) {
+        return RestaurantBranch::whereHas('restaurant', function ($q) use ($slug, $request) {
             $q->where('slug', $slug);
-        })->paginate(10);
+        })->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->paginate(10);
     }
 
     /**
