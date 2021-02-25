@@ -59,7 +59,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('shop-branches/toggle-enable/{slug}', 'ShopBranchController@toggleEnable');
             Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop');
             Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship');
-
+            Route::resource('brands', 'BrandController');
             /* Shop */
 
             /* Restaurant */

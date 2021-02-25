@@ -9,6 +9,7 @@ use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
+use App\Models\Township;
 
 class RestaurantController extends Controller
 {
@@ -38,7 +39,26 @@ class RestaurantController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate($this->getParamsToValidate(true));
+        $validatedData = $request->validate([
+            'slug' => 'required|unique:restaurants',
+            'name' => 'required|unique:restaurants',
+            'name_mm' => 'unique:restaurants',
+            'is_official' => 'required|boolean',
+            'restaurant_tags' => 'required|array',
+            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
+            'restaurant_categories' => 'required|array',
+            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+            'restaurant_branch' => 'required',
+            'restaurant_branch.name' => 'required|string',
+            'restaurant_branch.name_mm' => 'required|string',
+            'restaurant_branch.address' => 'required',
+            'restaurant_branch.contact_number' => 'required',
+            'restaurant_branch.opening_time' => 'required|date_format:H:i',
+            'restaurant_branch.closing_time' => 'required|date_format:H:i',
+            'restaurant_branch.latitude' => 'nullable|numeric',
+            'restaurant_branch.longitude' => 'nullable|numeric',
+            'restaurant_branch.township_id' => 'required|numeric',
+        ]);
 
         $restaurant = Restaurant::create($validatedData);
         $restaurantId= $restaurant->id;
@@ -51,7 +71,7 @@ class RestaurantController extends Controller
         $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
         $restaurant->restaurant_categories()->attach($restaurantCategories);
 
-        return response()->json($restaurant->load('restaurant_tags', 'restaurant_categories', 'restaurant_branches'), 201);
+        return response()->json($restaurant->load('restaurant_tags', 'restaurant_categories', 'restaurantBranch'), 201);
     }
 
     /**
@@ -77,7 +97,21 @@ class RestaurantController extends Controller
     {
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
-        $validatedData = $request->validate($this->getParamsToValidate());
+        $validatedData = $request->validate([
+            'name' =>  [
+                'required',
+                Rule::unique('restaurants')->ignore($restaurant->id),
+            ],
+            'name_mm' => [
+                'required',
+                Rule::unique('restaurants')->ignore($restaurant->id)
+            ],
+            'is_official' => 'required|boolean',
+            'restaurant_tags' => 'required|array',
+            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
+            'restaurant_categories' => 'required|array',
+            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+        ]);
 
         $restaurant->update($validatedData);
 
@@ -104,50 +138,12 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    private function getParamsToValidate($slug = false)
-    {
-        $params = [
-            'name' => 'required',
-            'name_mm' => 'required',
-            'is_official' => 'required|boolean',
-            'restaurant_tags' => 'required|array',
-            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
-            'restaurant_categories' => 'required|array',
-            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
-            'restaurant_branch' => 'required',
-            // 'restaurant_branch.slug' => 'required',
-            'restaurant_branch.name' => 'required|string',
-            'restaurant_branch.name_mm' => 'required|string',
-            'restaurant_branch.address' => 'required',
-            'restaurant_branch.contact_number' => 'required',
-            'restaurant_branch.opening_time' => 'required|date_format:H:i',
-            'restaurant_branch.closing_time' => 'required|date_format:H:i',
-            'restaurant_branch.latitude' => 'nullable|numeric',
-            'restaurant_branch.longitude' => 'nullable|numeric',
-            'restaurant_branch.township_id' => 'required|numeric',
-        ];
-
-        if ($slug) {
-            $params['slug'] = 'required|unique:restaurants';
-        }
-
-        return $params;
-    }
-
-    private function createRestaurantBranch($restaurantId, $restaurantBranch)
-    {
-        $restaurantBranch['slug'] = $this->generateUniqueSlug();
-        $restaurantBranch['restaurant_id'] = $restaurantId;
-        RestaurantBranch::create($restaurantBranch);
-    }
-
-
     /**
-    * Toggle the is_enable column for restaurant table.
-    *
-    * @param  int  $slug
-    * @return \Illuminate\Http\Response
-    */
+       * Toggle the is_enable column for restaurant table.
+       *
+       * @param  int  $slug
+       * @return \Illuminate\Http\Response
+       */
     public function toggleEnable($slug)
     {
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
@@ -168,5 +164,12 @@ class RestaurantController extends Controller
         $restaurant->is_official = !$restaurant->is_official;
         $restaurant->save();
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    private function createRestaurantBranch($restaurantId, $restaurantBranch)
+    {
+        $restaurantBranch['slug'] = $this->generateUniqueSlug();
+        $restaurantBranch['restaurant_id'] = $restaurantId;
+        RestaurantBranch::create($restaurantBranch);
     }
 }
