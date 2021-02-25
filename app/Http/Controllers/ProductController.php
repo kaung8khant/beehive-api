@@ -128,14 +128,16 @@ class ProductController extends Controller
         return SubCategory::where('slug', $slug)->first();
     }
 
-       /**
+    /**
      * Display a listing of the products by one shop.
      */
-    public function getProductsByShop($slug)
+    public function getProductsByShop($slug, Request $request)
     {
         return Product::whereHas('shop', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->paginate(10);
+        })->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('slug', $request->filter)->paginate(10);
     }
 
     private function getBrandId($slug)
