@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\SubCategory;
@@ -19,7 +20,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        return Product::with('shop', 'shop_category', 'product_variation')
+        return Product::with('shop', 'shop_category', 'product_variation', 'brand')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -36,13 +37,14 @@ class ProductController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate($this->getParamsToValidate(TRUE));
+        $validatedData = $request->validate($this->getParamsToValidate(true));
 
         $subCategory = $this->getSubCategory($request->sub_category_slug);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shop_category->id;
         $validatedData['sub_category_id'] = $subCategory->id;
+        $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
 
         $product = Product::create($validatedData);
         return response()->json($product, 201);
@@ -56,7 +58,7 @@ class ProductController extends Controller
      */
     public function show($slug)
     {
-        $product = Product::with('shop', 'shop_category', 'product_variation', 'sub_category')->where('slug', $slug)->firstOrFail();
+        $product = Product::with('shop', 'shop_category', 'product_variation', 'sub_category', 'brand')->where('slug', $slug)->firstOrFail();
         return response()->json($product, 200);
     }
 
@@ -78,6 +80,7 @@ class ProductController extends Controller
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shop_category->id;
         $validatedData['sub_category_id'] = $subCategory->id;
+        $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
 
         $product->update($validatedData);
         return response()->json($product, 200);
@@ -95,7 +98,7 @@ class ProductController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    private function getParamsToValidate($slug = FALSE)
+    private function getParamsToValidate($slug = false)
     {
         $params = [
             'name' => 'required|string',
@@ -105,6 +108,7 @@ class ProductController extends Controller
             'price' => 'required|max:99999999',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'sub_category_slug' => 'required|exists:App\Models\SubCategory,slug',
+            'brand_slug' => 'required|exists:App\Models\Brand,slug',
         ];
 
         if ($slug) {
@@ -122,5 +126,10 @@ class ProductController extends Controller
     private function getSubCategory($slug)
     {
         return SubCategory::where('slug', $slug)->first();
+    }
+
+    private function getBrandId($slug)
+    {
+        return Brand::where('slug', $slug)->first()->id;
     }
 }

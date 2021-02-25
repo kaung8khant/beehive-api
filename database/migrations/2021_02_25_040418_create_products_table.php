@@ -24,10 +24,12 @@ class CreateProductsTable extends Migration
             $table->unsignedBigInteger('shop_id');
             $table->unsignedBigInteger('shop_category_id');
             $table->unsignedBigInteger('sub_category_id');
+            $table->unsignedBigInteger('brand_id');
             $table->timestamps();
             $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->foreign('shop_category_id')->references('id')->on('shop_categories')->onDelete('cascade');
             $table->foreign('sub_category_id')->references('id')->on('sub_categories')->onDelete('cascade');
+            $table->foreign('brand_id')->references('id')->on('brands')->onDelete('cascade');
         });
     }
 
