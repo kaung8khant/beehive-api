@@ -17,9 +17,18 @@ class OrderController extends Controller
 {
     use StringHelper;
 
-    public function index()
+    public function index(Request $request)
     {
-        return Order::orderBy('id', 'desc')->paginate(10);
+        return Order::with('order_contact')
+            ->whereDate('order_date', '>=', $request->from)
+            ->whereDate('order_date', '<=', $request->to)
+            ->where('order_type', $request->type)
+            ->whereHas('order_contact', function ($q) use ($request) {
+                $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', $request->filter);
+            })->orWhere('slug', $request->filter)
+            ->orderBy('id', 'desc')
+            ->paginate(10);
     }
 
     public function store(Request $request)

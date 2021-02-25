@@ -23,10 +23,11 @@ class RestaurantFactory extends Factory
      */
     public function definition()
     {
+        $mmFaker = app('Faker');
         return [
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->company() . ' Restaurant',
-            'name_mm' => $this->faker->company() . ' Restaurant',
+            'name_mm' => $mmFaker->name() . 'စားသောက်ဆိုင်',
             'is_official' => $this->faker->boolean(),
             'is_enable' => $this->faker->boolean(),
         ];

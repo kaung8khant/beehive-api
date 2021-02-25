@@ -46,17 +46,20 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('shops', 'ShopController');
             Route::patch('shops/toggle-enable/{slug}', 'ShopController@toggleEnable');
             Route::patch('shops/toggle-official/{slug}', 'ShopController@toggleOfficial');
+            Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
+            Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
             Route::get('shop-categories/{slug}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory');
             Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
             Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
             Route::resource('products', 'ProductController');
+            Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
             Route::resource('product-variations', 'ProductVariationController');
             Route::resource('product-variation-values', 'ProductVariationValueController');
             Route::resource('shop-branches', 'ShopBranchController');
             Route::patch('shop-branches/toggle-enable/{slug}', 'ShopBranchController@toggleEnable');
             Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop');
             Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship');
-
+            Route::resource('brands', 'BrandController');
             /* Shop */
 
             /* Restaurant */
