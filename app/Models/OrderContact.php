@@ -11,7 +11,6 @@ class OrderContact extends Model
 
     protected $fillable = [
         'order_id',
-        'customer_id',
         'customer_name',
         'phone_number',
         'house_number',
@@ -24,13 +23,12 @@ class OrderContact extends Model
     protected $hidden = [
         'id',
         'order_id',
-        'customer_id',
         'created_at',
         'updated_at',
     ];
 
     public function order()
     {
-        return $this->hasOne(Order::class);
+        return $this->belongsTo(Order::class);
     }
 }

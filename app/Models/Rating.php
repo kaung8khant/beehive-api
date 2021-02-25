@@ -9,13 +9,22 @@ class Rating extends Model
 {
     use HasFactory;
 
-    /**
-    * The attributes that are mass assignable.
-    *
-    * @var arrayzz,
-    */
-    protected $fillable = ['receiver_id', 'receiver_type', 'rating', 'review', 'order_id', 'customer_id'] ;
+    protected $fillable = [
+        'order_id',
+        'customer_id',
+        'receiver_id',
+        'receiver_type',
+        'rating',
+        'review',
+    ];
 
+    protected $hidden = [
+        'id',
+        'order_id',
+        'customer_id',
+        'created_at',
+        'updated_at',
+    ];
 
     public function order()
     {
