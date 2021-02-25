@@ -19,6 +19,7 @@ class OrderSeeder extends Seeder
         $orders = [
             [
                 'slug' => $this->generateUniqueSlug(),
+                'customer_id' => 1,
                 'order_date' => '2021-2-16',
                 'special_instruction' => 'Testing',
                 'order_type' => 'restaurant',
@@ -28,6 +29,7 @@ class OrderSeeder extends Seeder
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
+                'customer_id' => 1,
                 'order_date' => '2021-2-15',
                 'special_instruction' => 'Testing',
                 'order_type' => 'shop',
@@ -37,6 +39,7 @@ class OrderSeeder extends Seeder
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
+                'customer_id' => 1,
                 'order_date' => '2021-2-17',
                 'special_instruction' => 'Testing',
                 'order_type' => 'shop',

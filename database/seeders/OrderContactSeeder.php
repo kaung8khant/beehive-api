@@ -19,7 +19,6 @@ class OrderContactSeeder extends Seeder
     {
         $orderContacts = [
             [
-                'customer_id' => 'CUS0002',
                 'customer_name' => 'Aye Aye Hlaing',
                 'phone_number' => '094789837832',
                 'house_number' => 'NO(60)',
@@ -30,7 +29,6 @@ class OrderContactSeeder extends Seeder
                 'order_id' => 1,
             ],
             [
-                'customer_id' => 'CUS0003',
                 'customer_name' => 'Kyaw Kyaw',
                 'phone_number' => '094789837832',
                 'house_number' => 'NO(60)',

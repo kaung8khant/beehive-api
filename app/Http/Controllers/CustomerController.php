@@ -51,7 +51,7 @@ class CustomerController extends Controller
         $validatedData['password'] = Hash::make($validatedData['password']);
 
         $customer = Customer::create($validatedData);
-        return response()->json($customer, 201);
+        return response()->json($customer->refresh(), 201);
     }
 
     /**
