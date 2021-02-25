@@ -47,7 +47,7 @@ class Product extends Model
         return $this->belongsTo(SubCategory::class);
     }
 
-    public function product_variation()
+    public function product_variations()
     {
         return $this->hasMany(ProductVariation::class);
     }

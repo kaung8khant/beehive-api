@@ -8,6 +8,7 @@ use App\Helpers\StringHelper;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopTag;
+use App\Models\Product;
 
 class ShopController extends Controller
 {
@@ -187,4 +188,26 @@ class ShopController extends Controller
 
         return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
     }
+
+    //             /**
+    //  * add  products in Shop
+    //  *
+    //  * @param  \Illuminate\Http\Request  $request
+    //  * @param  \App\Models\Shop  $shop
+    //  * @return \Illuminate\Http\Response
+    //  */
+    // public function addProductsInShop(Request $request, $slug)
+    // {
+
+
+    //     $shop = Shop::where('slug', $slug)->firstOrFail();
+
+    //     // return $request;
+    //     $products = Product::whereIn('slug', $request->products)->pluck('id');
+    //     $shop->products()->delete();
+    //     $shop->products()->attach($products);
+    //     return $shop;
+
+    //     return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
+    // }
 }

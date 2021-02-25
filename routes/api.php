@@ -51,9 +51,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('shop-categories/{slug}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory');
             Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
             Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
+
             Route::resource('products', 'ProductController');
             Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
+            Route::post('shops/add-products/{slug}', 'ShopController@addProductsInShop');
             Route::resource('product-variations', 'ProductVariationController');
+
             Route::resource('product-variation-values', 'ProductVariationValueController');
             Route::resource('shop-branches', 'ShopBranchController');
             Route::patch('shop-branches/toggle-enable/{slug}', 'ShopBranchController@toggleEnable');
