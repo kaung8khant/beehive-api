@@ -37,7 +37,7 @@ class MenuController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate($this->getParamsToValidate(TRUE));
+        $validatedData = $request->validate($this->getParamsToValidate(true));
 
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
         $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
@@ -90,7 +90,20 @@ class MenuController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    private function getParamsToValidate($slug = FALSE)
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getMenusByRestaurant($slug, Request $request)
+    {
+        return Menu::whereHas('restaurant', function ($q) use ($slug, $request) {
+            $q->where('slug', $slug);
+        })->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->paginate(10);
+    }
+
+    private function getParamsToValidate($slug = false)
     {
         $params = [
             'name' => 'required',
