@@ -19,6 +19,7 @@ class Product extends Model
         'shop_id',
         'shop_category_id',
         'sub_category_id',
+        'brand_id'
     ];
 
     protected $hidden = [
@@ -26,6 +27,7 @@ class Product extends Model
         'shop_id',
         'shop_category_id',
         'sub_category_id',
+        'brand_id',
         'created_at',
         'updated_at',
     ];
@@ -48,5 +50,10 @@ class Product extends Model
     public function product_variation()
     {
         return $this->hasMany(ProductVariation::class);
+    }
+
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
     }
 }

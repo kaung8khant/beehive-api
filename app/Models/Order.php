@@ -11,6 +11,7 @@ class Order extends Model
 
     protected $fillable = [
         'slug',
+        'customer_id',
         'order_date',
         'order_type',
         'special_instruction',
@@ -21,6 +22,7 @@ class Order extends Model
 
     protected $hidden = [
         'id',
+        'customer_id',
         'created_at',
         'updated_at',
     ];

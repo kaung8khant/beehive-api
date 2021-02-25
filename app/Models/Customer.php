@@ -12,11 +12,6 @@ class Customer extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'slug',
         'username',
@@ -27,60 +22,39 @@ class Customer extends Authenticatable implements JWTSubject
         'gender',
     ];
 
-    protected $casts = [
-        'is_enable' => 'boolean',
-    ];
-
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'id',
         'password',
         'remember_token',
+        'verified_at',
         'created_at',
         'updated_at',
         'pivot',
     ];
 
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
+    protected $casts = [
+        'is_enable' => 'boolean',
+    ];
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
     public function getJWTCustomClaims()
     {
         return [];
     }
-
 
     public function shops()
     {
         return $this->belongsToMany(Shop::class, 'favorite_shop');
     }
 
-
     public function restaurants()
     {
         return $this->belongsToMany(Restaurant::class, 'favorite_restaurant');
     }
-
-
-    /**
-     * Get the rating that owns customer.
-     */
 
     public function ratings()
     {

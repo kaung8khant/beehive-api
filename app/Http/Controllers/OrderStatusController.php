@@ -2,85 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\OrderStatus;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
+use App\Models\OrderStatus;
+use App\Models\Order;
 
 class OrderStatusController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request)
+    public function index($slug)
     {
-        $filter=$request->filter;
-        return OrderStatus::with('order')
-            ->where('created_by', 'LIKE', '%' . $filter . '%')
-            ->paginate(10);
+        $orderStatuses = OrderStatus::whereHas('order', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->latest()->get();
+
+        return $orderStatuses;
     }
 
-    /**
-    * Display order list depending on status
-    */
-    public function getStatusByOrder($status)
+    public function store(Request $request, $slug)
     {
-        return OrderStatus::whereHas('order', function ($q) use ($status) {
-            $q->where('status', $status);
-        })->paginate(10);
-    }
+        $order = Order::where('slug', $slug)->firstOrFail();
+        $latestOrderStatus = $this->getLatestOrderStatus($slug)->status;
 
+        if ($latestOrderStatus === 'delivered' || $latestOrderStatus === 'cancelled') {
+            return response()->json(['message' => 'The order has already been ' . $latestOrderStatus . '.'], 406);
+        }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'created_by' => 'required',
+        $request->validate([
             'status' => 'required|in:pending,preparing,pickUp,onRoute,delivered,cancelled',
-            'order_id' => 'required|exists:App\Models\order,id',
         ]);
 
-
-        $orderStatus = OrderStatus::create($validatedData);
-        return response()->json($orderStatus, 201);
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\OrderStatus  $orderStatus
-     * @return \Illuminate\Http\Response
-     */
-    public function show($orderId)
-    {
-        return response()->json(OrderStatus::with('order')->where('order_id', $orderId)->firstOrFail(), 200);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\OrderStatus  $orderStatus
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $orderId)
-    {
-        $orderStatus = OrderStatus::with('order')->where('order_id', $orderId)->firstOrFail();
-
-        $validatedData = $request->validate([
-            'created_by' => 'required',
-            'status' => 'required|in:pending,preparing,pickUp,onRoute,delivered,cancelled',
-            'order_id' => 'required|exists:App\Models\order,id',
-            Rule::unique('order_status')->ignore($orderStatus->id),
+        $orderStatus = OrderStatus::create([
+            'order_id' => $order->id,
+            'status' => $request->status,
+            'created_by' => Auth::guard('users')->user()->name,
         ]);
 
-        $orderStatus->update($validatedData);
         return response()->json($orderStatus, 200);
+    }
+
+    public function getLatestOrderStatus($slug)
+    {
+        $orderStatus = OrderStatus::whereHas('order', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->latest()->first();
+
+        return $orderStatus;
     }
 }

@@ -16,6 +16,7 @@ class CreateOrdersTable extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique();
+            $table->unsignedBigInteger('customer_id')->nullable();
             $table->date('order_date');
             $table->string('special_instruction')->nullable();
             $table->enum('order_type', ['restaurant', 'shop']);
@@ -23,6 +24,7 @@ class CreateOrdersTable extends Migration
             $table->enum('delivery_mode', ['package', 'delivery']);
             $table->enum('rating', [1, 2, 3, 4, 5])->nullable();
             $table->timestamps();
+            $table->foreign('customer_id')->references('id')->on('customers')->onDelete('set null');
         });
     }
 

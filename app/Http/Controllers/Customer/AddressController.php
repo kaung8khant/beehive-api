@@ -15,11 +15,6 @@ class AddressController extends Controller
 
     protected $customer_id;
 
-    /**
-     * Create a new AddressController instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         if (Auth::guard('customers')->check()) {
@@ -27,40 +22,23 @@ class AddressController extends Controller
         }
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         return Address::where('customer_id', $this->customer_id)->paginate(10);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
 
         $validatedData = $request->validate($this->getParamsToValidate(TRUE));
-        $validatedData['township_id'] = Township::where('slug', $request->township_id)->value('id');
+        $validatedData['township_id'] = Township::where('slug', $request->township_slug)->value('id');
         $validatedData['customer_id'] = $this->customer_id;
 
         $address = Address::create($validatedData);
         return response()->json($address, 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Address  $slug
-     * @return \Illuminate\Http\Response
-     */
     public function show($slug)
     {
         $address = Address::where('slug', $slug)
@@ -69,13 +47,6 @@ class AddressController extends Controller
         return response()->json($address, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Address  $slug
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $slug)
     {
         $address = Address::where('slug', $slug)
@@ -83,34 +54,22 @@ class AddressController extends Controller
             ->firstOrFail();
 
         $validatedData = $request->validate($this->getParamsToValidate());
-        $validatedData['township_id'] = Township::where('slug', $request->township_id)->value('id');
+        $validatedData['township_id'] = Township::where('slug', $request->township_slug)->value('id');
         $validatedData['customer_id'] = $this->customer_id;
 
         $address->update($validatedData);
         return response()->json($address, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Address  $slug
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($slug)
     {
         Address::where('slug', $slug)
             ->where('customer_id', $this->customer_id)
             ->firstOrFail()
             ->delete();
-        return response()->json(['message' => 'Successfully deleted'], 200);
+        return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-     * Validate the address.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     private function getParamsToValidate($slug = FALSE)
     {
         $params = [
@@ -119,7 +78,7 @@ class AddressController extends Controller
             'street_name' => 'required',
             'latitude' => 'nullable',
             'longitude' => 'nullable',
-            'township_id' => 'required|exists:App\Models\Township,slug',
+            'township_slug' => 'required|exists:App\Models\Township,slug',
         ];
 
         if ($slug) {
@@ -129,12 +88,6 @@ class AddressController extends Controller
         return $params;
     }
 
-    /**
-     * Toggle the is_primary column for addresses table.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     public function setPrimaryAddress($slug)
     {
         Address::where('customer_id', $this->customer_id)
@@ -148,12 +101,6 @@ class AddressController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    /**
-     * Get the primary address for a customer.
-     *
-     * @param  \App\Models\Address  $slug
-     * @return \Illuminate\Http\Response
-     */
     public function getPrimaryAddress()
     {
         $address = Address::where('customer_id', $this->customer_id)

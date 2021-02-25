@@ -136,11 +136,14 @@ class ShopBranchController extends Controller
     /**
      * Display a listing of the shop branches by one shop.
      */
-    public function getBranchesByShop($slug)
+    public function getBranchesByShop($slug, Request $request)
     {
         return ShopBranch::whereHas('shop', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->paginate(10);
+        })->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('contact_number', $request->filter)
+        ->orWhere('slug', $request->filter)
+        ->paginate(10);
     }
 
     /**
