@@ -95,6 +95,9 @@ class ProductController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
+
+
+
     private function getParamsToValidate($slug = FALSE)
     {
         $params = [
@@ -123,4 +126,15 @@ class ProductController extends Controller
     {
         return SubCategory::where('slug', $slug)->first();
     }
+
+       /**
+     * Display a listing of the products by one shop.
+     */
+    public function getProductsByShop($slug)
+    {
+        return Product::whereHas('shop', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->paginate(10);
+    }
+
 }
