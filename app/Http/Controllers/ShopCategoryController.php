@@ -97,10 +97,12 @@ class ShopCategoryController extends Controller
     /**
      * Display a listing of the shop categories by one shop.
      */
-    public function getCategoriesByShop($slug)
+    public function getCategoriesByShop($slug, Request $request)
     {
         return ShopCategory::whereHas('shops', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->paginate(10);
+        })->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('slug', $request->filter)
+        ->paginate(10);
     }
 }
