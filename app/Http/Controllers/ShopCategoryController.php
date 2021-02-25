@@ -102,7 +102,6 @@ class ShopCategoryController extends Controller
         return ShopCategory::whereHas('shops', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where('name', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
         ->orWhere('slug', $request->filter)
         ->paginate(10);
     }

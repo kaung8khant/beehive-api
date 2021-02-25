@@ -141,7 +141,6 @@ class ShopBranchController extends Controller
         return ShopBranch::whereHas('shop', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where('name', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
         ->orWhere('contact_number', $request->filter)
         ->orWhere('slug', $request->filter)
         ->paginate(10);

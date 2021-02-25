@@ -68,6 +68,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('restaurants', 'RestaurantController');
             Route::patch('restaurants/toggle-enable/{slug}', 'RestaurantController@toggleEnable');
             Route::patch('restaurants/toggle-official/{slug}', 'RestaurantController@toggleOfficial');
+            Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
+            Route::post('restaurants/remove-restaurant-categories/{slug}', 'RestaurantController@removeRestaurantCategories');
             Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
             Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
             Route::resource('menus', 'MenuController');

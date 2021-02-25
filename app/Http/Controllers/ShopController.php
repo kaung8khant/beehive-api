@@ -65,7 +65,7 @@ class ShopController extends Controller
      */
     public function show($slug)
     {
-        $shop = Shop::with('shop_categories','shop_tags')->where('slug', $slug)->firstOrFail();
+        $shop = Shop::with('shop_categories', 'shop_tags')->where('slug', $slug)->firstOrFail();
         return response()->json($shop, 200);
     }
 
@@ -146,7 +146,7 @@ class ShopController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-        /**
+    /**
      * add  shop Categories in Shop
      *
      * @param  \Illuminate\Http\Request  $request
@@ -168,7 +168,7 @@ class ShopController extends Controller
         return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
     }
 
-        /**
+    /**
      * remove  shop Categories in Shop
      *
      * @param  \Illuminate\Http\Request  $request

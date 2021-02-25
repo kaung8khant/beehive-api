@@ -9,7 +9,6 @@ use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
-use App\Models\Township;
 
 class RestaurantController extends Controller
 {
@@ -171,5 +170,47 @@ class RestaurantController extends Controller
         $restaurantBranch['slug'] = $this->generateUniqueSlug();
         $restaurantBranch['restaurant_id'] = $restaurantId;
         RestaurantBranch::create($restaurantBranch);
+    }
+
+    /**
+     * add  restaurant Categories in Shop
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Shop  $shop
+     * @return \Illuminate\Http\Response
+     */
+    public function addRestaurantCategories(Request $request, $slug)
+    {
+        $restaurant =$request->validate([
+            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+        ]);
+
+        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+
+        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
+        $restaurant->restaurant_categories()->detach();
+        $restaurant->restaurant_categories()->attach($restaurantCategories);
+
+        return response()->json($restaurant->load(['restaurant_categories', 'restaurant_tags']), 201);
+    }
+
+    /**
+     * remove  restaurant Categories in Shop
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Shop  $shop
+     * @return \Illuminate\Http\Response
+     */
+    public function removeRestaurantCategories(Request $request, $slug)
+    {
+        $restaurant =$request->validate([
+            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+        ]);
+        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+
+        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
+        $restaurant->restaurant_categories()->detach($restaurantCategories);
+
+        return response()->json($restaurant->load(['restaurant_categories', 'restaurant_tags']), 201);
     }
 }
