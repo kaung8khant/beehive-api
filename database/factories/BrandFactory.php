@@ -3,10 +3,10 @@
 namespace Database\Factories;
 
 use App\Helpers\StringHelper;
-use App\Models\Township;
+use App\Models\Brand;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class TownshipFactory extends Factory
+class BrandFactory extends Factory
 {
     use StringHelper;
     /**
@@ -14,7 +14,7 @@ class TownshipFactory extends Factory
      *
      * @var string
      */
-    protected $model = Township::class;
+    protected $model = Brand::class;
 
     /**
      * Define the model's default state.
@@ -25,8 +25,8 @@ class TownshipFactory extends Factory
     {
         $mmFaker = app('Faker');
         return [
-            'name' => $this->faker->unique()->state(),
-            'name_mm' => $mmFaker->name(),
+            'name' => $this->faker->text(30),
+            'name_mm' => $mmFaker->name(5),
             "slug" => $this->generateUniqueSlug(),
         ];
     }
