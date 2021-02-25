@@ -113,12 +113,10 @@ class SubCategoryController extends Controller
         return ShopCategory::where('slug', $slug)->first()->id;
     }
 
-    public function getSubCategoriesByCategory($slug, Request $request)
+    public function getSubCategoriesByCategory($slug)
     {
         return SubCategory::whereHas('shop_category', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->where('name', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('slug', $request->filter)->paginate(10);
+        })->paginate(10);
     }
 }
