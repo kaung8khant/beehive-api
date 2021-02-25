@@ -14,11 +14,6 @@ class CustomerAuthController extends Controller
 {
     use StringHelper;
 
-    /**
-     * Get JWT token via username and password.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function login(Request $request)
     {
         $request->validate([
@@ -40,11 +35,6 @@ class CustomerAuthController extends Controller
         return response()->json(['message' => 'Username or password wrong.'], 401);
     }
 
-    /**
-     * Attempt login the customer via username or phone number and password.
-     *
-     * @return mixed
-     */
     private function attemptLogin(Request $request)
     {
         $credential = $request->type == 'username' ? 'username' : 'phone_number';
@@ -64,11 +54,6 @@ class CustomerAuthController extends Controller
         return false;
     }
 
-    /**
-     * Register a customer.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function register(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -86,38 +71,23 @@ class CustomerAuthController extends Controller
         $validatedData['password'] = Hash::make($validatedData['password']);
 
         $customer = Customer::create($validatedData);
-        $token = JWTAuth::claims($customer->toArray())->fromUser($customer);
+        $token = JWTAuth::claims($customer->toArray())->fromUser($customer->refresh());
 
         return response()->json(['token' => $token], 201);
     }
 
-    /**
-     * Log the customer out (Invalidate the token).
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function logout()
     {
         Auth::guard('customers')->logout();
         return response()->json(['message' => 'Customer successfully logged out.'], 200);
     }
 
-    /**
-     * Refresh the token.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function refreshToken()
     {
         return response()->json(['token' => Auth::guard('customers')->refresh()], 200);
     }
 
-    /**
-     * Get the authenticated customer.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getAuthenticatedCustomer()
+    public function getProfile()
     {
         return response()->json(Auth::guard('customers')->user());
     }

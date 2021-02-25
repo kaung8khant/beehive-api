@@ -7,7 +7,7 @@ Route::group(['prefix' => 'user'], function () {
     Route::post('register', 'Auth\CustomerAuthController@register');
 
     Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
-        Route::get('customer-detail', 'Auth\CustomerAuthController@getAuthenticatedCustomer');
+        Route::get('profile', 'Auth\CustomerAuthController@getProfile');
         Route::post('refresh-token', 'Auth\CustomerAuthController@refreshToken');
         Route::post('logout', 'Auth\CustomerAuthController@logout');
 
@@ -15,11 +15,18 @@ Route::group(['prefix' => 'user'], function () {
         Route::patch('addresses/{slug}/set-primary', 'Customer\AddressController@setPrimaryAddress');
         Route::resource('addresses', 'Customer\AddressController');
 
-        Route::post('shop/{slug}/set-favorite', 'Customer\ShopController@setFavoriteShop');
-        Route::post('shop/{slug}/remove-favorite', 'Customer\ShopController@removeFavoriteShop');
+        Route::get('shops', 'Customer\ShopController@index');
+        Route::get('shops/favorites', 'Customer\ShopController@getFavoriteShops');
+        Route::get('shops/{slug}', 'Customer\ShopController@show');
+        Route::post('shops/{slug}/set-favorite', 'Customer\ShopController@setFavoriteShop');
+        Route::post('shops/{slug}/remove-favorite', 'Customer\ShopController@removeFavoriteShop');
 
-        Route::post('restaurant/{slug}/set-favorite', 'Customer\RestaurantController@setFavoriteRestaurant');
-        Route::post('restaurant/{slug}/remove-favorite', 'Customer\RestaurantController@removeFavoriteRestaurant');
+        Route::get('restaurants', 'Customer\RestaurantController@index');
+        Route::get('restaurants/favorites', 'Customer\RestaurantController@getFavoriteRestaurants');
+        Route::get('restaurants/{slug}', 'Customer\RestaurantController@show');
+        Route::post('restaurants/{slug}/set-favorite', 'Customer\RestaurantController@setFavoriteRestaurant');
+        Route::post('restaurants/{slug}/remove-favorite', 'Customer\RestaurantController@removeFavoriteRestaurant');
 
+        Route::resource('orders', 'Customer\OrderController');
     });
 });

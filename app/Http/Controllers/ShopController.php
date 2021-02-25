@@ -23,7 +23,8 @@ class ShopController extends Controller
         return Shop::with('shop_categories', 'shop_tags')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)->paginate(10);
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     /**

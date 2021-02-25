@@ -16,7 +16,6 @@ class CreateOrderContactsTable extends Migration
         Schema::create('order_contacts', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id');
-            $table->string('customer_id');
             $table->string('customer_name');
             $table->string('phone_number');
             $table->string('house_number');

@@ -25,6 +25,7 @@ class CreateOrderItemsTable extends Migration
             $table->decimal('discount', 12, 2);
             $table->boolean('is_deleted')->default(0);
             $table->timestamps();
+            $table->unique(['order_id', 'item_id']);
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
     }
