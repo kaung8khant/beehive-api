@@ -28,7 +28,7 @@ class RestaurantBranchFactory extends Factory
 
         return [
             'slug' => $this->generateUniqueSlug(),
-            'name' => $this->faker->company() . ' Restaurant',
+            'name' => $this->faker->unique()->company() . ' Restaurant',
             'name_mm' => $mmFaker->name() . 'ဆိုင်ခွဲ',
             'is_enable' => $this->faker->boolean(),
             'address' => $this->faker->address(),

@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Shop;
 use Illuminate\Database\Seeder;
+use App\Models\Shop;
+// use App\Models\ShopTag;
 
 class TagShopSeeder extends Seeder
 {
@@ -14,10 +15,11 @@ class TagShopSeeder extends Seeder
      */
     public function run()
     {
-        $shop = Shop::find(1);
-        $tagIdArrays = [1,2];
-        foreach ($tagIdArrays as $id) {
-            $shop->shop_tags()->attach($id);
+        $shops = Shop::all();
+        $shopTags = [1, 2];
+
+        foreach ($shops as $shop) {
+            $shop->shopTags()->attach($shopTags);
         }
     }
 }

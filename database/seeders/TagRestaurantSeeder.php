@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Restaurant;
 use Illuminate\Database\Seeder;
+use App\Models\Restaurant;
+// use App\Models\RestaurantTag;
 
 class TagRestaurantSeeder extends Seeder
 {
@@ -14,10 +15,11 @@ class TagRestaurantSeeder extends Seeder
      */
     public function run()
     {
-        $restaurant = Restaurant::find(1);
-        $tagIdArrays = [1,2];
-        foreach ($tagIdArrays as $id) {
-            $restaurant->restaurant_tags()->attach($id);
+        $restaurants = Restaurant::all();
+        $restaurantTags = [1, 2];
+
+        foreach ($restaurants as $restaurant) {
+            $restaurant->restaurantTags()->attach($restaurantTags);
         }
     }
 }

@@ -28,7 +28,7 @@ class RestaurantCategoryFactory extends Factory
 
         return [
             'slug' => $this->generateUniqueSlug(),
-            'name' => $this->faker->text(30),
+            'name' => $this->faker->unique()->text(30),
             'name_mm' => $mmFaker->name(5),
         ];
     }
