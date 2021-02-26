@@ -144,7 +144,7 @@ class RestaurantController extends Controller
 
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
+        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $restaurant->availableCategories()->detach();
         $restaurant->availableCategories()->attach($restaurantCategories);
 
@@ -158,7 +158,7 @@ class RestaurantController extends Controller
         ]);
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
+        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $restaurant->availableCategories()->detach($restaurantCategories);
 
         return response()->json($restaurant->load(['availableCategories', 'restaurantTags']), 201);
