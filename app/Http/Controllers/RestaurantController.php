@@ -9,6 +9,7 @@ use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
+use App\Models\Township;
 
 class RestaurantController extends Controller
 {
@@ -45,13 +46,14 @@ class RestaurantController extends Controller
             'restaurant_branch.closing_time' => 'required|date_format:H:i',
             'restaurant_branch.latitude' => 'nullable|numeric',
             'restaurant_branch.longitude' => 'nullable|numeric',
-            'restaurant_branch.township_id' => 'required|numeric',
+            'restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
         ]);
+        $townshipId = $this->getTownshipIdBySlug($request->restaurant_branch['township_slug']);
 
         $restaurant = Restaurant::create($validatedData);
         $restaurantId = $restaurant->id;
 
-        $this->createRestaurantBranch($restaurantId, $validatedData['restaurant_branch']);
+        $this->createRestaurantBranch($restaurantId, $townshipId, $validatedData['restaurant_branch']);
 
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
         $restaurant->restaurantTags()->attach($restaurantTags);
@@ -123,11 +125,17 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    private function createRestaurantBranch($restaurantId, $restaurantBranch)
+    private function createRestaurantBranch($restaurantId, $townshipId, $restaurantBranch)
     {
         $restaurantBranch['slug'] = $this->generateUniqueSlug();
         $restaurantBranch['restaurant_id'] = $restaurantId;
+        $restaurantBranch['township_id'] = $townshipId;
         RestaurantBranch::create($restaurantBranch);
+    }
+
+    private function getTownshipIdBySlug($slug)
+    {
+        return Township::where('slug', $slug)->first()->id;
     }
 
     public function addRestaurantCategories(Request $request, $slug)
