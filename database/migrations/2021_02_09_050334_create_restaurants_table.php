@@ -18,7 +18,6 @@ class CreateRestaurantsTable extends Migration
             $table->string('name')->unique();
             $table->string('name_mm')->unique()->nullable();
             $table->string('slug')->unique();
-            $table->boolean('is_official')->default(0);
             $table->boolean('is_enable')->default(1);
             $table->timestamps();
         });

@@ -115,14 +115,6 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function toggleOfficial($slug)
-    {
-        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-        $restaurant->is_official = !$restaurant->is_official;
-        $restaurant->save();
-        return response()->json(['message' => 'Success.'], 200);
-    }
-
     private function createRestaurantBranch($restaurantId, $townshipId, $restaurantBranch)
     {
         $restaurantBranch['slug'] = $this->generateUniqueSlug();
