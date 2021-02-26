@@ -105,7 +105,8 @@ class ProductController extends Controller
         })->with('shopCategory', 'brand')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)->paginate(10);
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     private function getBrandId($slug)
