@@ -37,7 +37,7 @@ class ShopTagController extends Controller
         $tag = ShopTag::create($request->validate(
             [
                 'name' => 'required|unique:shop_tags',
-                'name_mm' => 'unique:shop_tags',
+                'name_mm' => 'nullable|unique:shop_tags',
                 'slug' => 'required|unique:shop_tags',
             ]
         ));
@@ -72,6 +72,7 @@ class ShopTagController extends Controller
                 Rule::unique('shop_tags')->ignore($tag->id),
             ],
             'name_mm' => [
+                'nullable',
                 Rule::unique('shop_tags')->ignore($tag->id),
             ],
         ]));

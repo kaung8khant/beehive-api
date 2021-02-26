@@ -28,9 +28,10 @@ class OrderController extends Controller
 
     public function index()
     {
-        return Order::whereHas('order_contact', function ($q) {
-            $q->where('customer_id', 1);
-        })->paginate(10);
+        return Order::whereHas('orderContact', function ($q) {
+                $q->where('customer_id', 1);
+            })
+            ->paginate(10);
     }
 
     public function store(Request $request)
@@ -47,15 +48,27 @@ class OrderController extends Controller
         $this->createOrderContact($orderId, $validatedData['customer_info']);
         $this->createOrderItems($orderId, $validatedData['order_items'], $request->order_type);
 
-        return response()->json($order->refresh()->load('order_contact', 'order_statuses', 'order_items'), 201);
+        return response()->json($order->refresh()->load('orderContact', 'orderItems'), 201);
     }
 
     public function show($slug)
     {
         return Order::where('slug', $slug)
-            ->whereHas('order_contact', function ($q) {
+            ->whereHas('orderContact', function ($q) {
                 $q->where('customer_id', 1);
             })->firstOrFail();
+    }
+
+    public function destroy($slug)
+    {
+        $order = Order::where('slug', $slug)->firstOrFail();
+
+        if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
+            return response()->json(['message' => 'The order has already been ' . $order->order_status . '.'], 406);
+        }
+
+        $this->createOrderStatus($order->id, 'cancelled');
+        return response()->json(['message' => 'Successfully cancelled.'], 200);
     }
 
     private function validateOrder(Request $request)

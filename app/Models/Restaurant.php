@@ -29,12 +29,12 @@ class Restaurant extends Model
         'is_official' => 'boolean',
     ];
 
-    public function restaurant_tags()
+    public function restaurantTags()
     {
         return $this->belongsToMany(RestaurantTag::class, 'tag_restaurant');
     }
 
-    public function restaurant_categories()
+    public function restaurantCategories()
     {
         return $this->belongsToMany(RestaurantCategory::class, 'category_restaurant');
     }
@@ -44,7 +44,7 @@ class Restaurant extends Model
         return $this->hasMany(Menu::class);
     }
 
-    public function restaurantBranch()
+    public function restaurantBranches()
     {
         return $this->hasMany(RestaurantBranch::class);
     }

@@ -10,11 +10,6 @@ class File extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'slug',
         'file_name',
@@ -23,11 +18,6 @@ class File extends Model
         'source_id',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'id',
         'created_at',

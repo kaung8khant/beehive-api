@@ -18,7 +18,7 @@ class MenuVariationValueController extends Controller
      */
     public function index(Request $request)
     {
-        return MenuVariationValue::with('menu_variation')
+        return MenuVariationValue::with('menuVariation')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
@@ -38,7 +38,7 @@ class MenuVariationValueController extends Controller
         $validatedData['menu_variation_id'] = $this->getMenuVariationId($request->menu_variation_slug);
 
         $menuVariationValue = MenuVariationValue::create($validatedData);
-        return response()->json($menuVariationValue->load('menu_variation'), 201);
+        return response()->json($menuVariationValue->load('menuVariation'), 201);
     }
 
     /**
@@ -49,7 +49,7 @@ class MenuVariationValueController extends Controller
      */
     public function show($slug)
     {
-        $menuVariationValue = MenuVariationValue::with('menu_variation')->where('slug', $slug)->firstOrFail();
+        $menuVariationValue = MenuVariationValue::with('menuVariation')->where('slug', $slug)->firstOrFail();
         return response()->json($menuVariationValue, 200);
     }
 
@@ -68,7 +68,7 @@ class MenuVariationValueController extends Controller
         $validatedData['menu_variation_id'] = $this->getMenuVariationId($request->menu_variation_slug);
 
         $menuVariationValue->update($validatedData);
-        return response()->json($menuVariationValue->load('menu_variation'), 200);
+        return response()->json($menuVariationValue->load('menuVariation'), 200);
     }
 
     /**

@@ -21,10 +21,9 @@ class OrderStatusController extends Controller
     public function store(Request $request, $slug)
     {
         $order = Order::where('slug', $slug)->firstOrFail();
-        $latestOrderStatus = $this->getLatestOrderStatus($slug)->status;
 
-        if ($latestOrderStatus === 'delivered' || $latestOrderStatus === 'cancelled') {
-            return response()->json(['message' => 'The order has already been ' . $latestOrderStatus . '.'], 406);
+        if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
+            return response()->json(['message' => 'The order has already been ' . $order->order_status . '.'], 406);
         }
 
         $request->validate([
@@ -42,10 +41,6 @@ class OrderStatusController extends Controller
 
     public function getLatestOrderStatus($slug)
     {
-        $orderStatus = OrderStatus::whereHas('order', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->latest()->first();
-
-        return $orderStatus;
+        return Order::where('slug', $slug)->firstOrFail()->order_status;
     }
 }

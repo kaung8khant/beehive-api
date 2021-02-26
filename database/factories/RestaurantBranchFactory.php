@@ -2,14 +2,14 @@
 
 namespace Database\Factories;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantBranch;
-use App\Models\Township;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RestaurantBranchFactory extends Factory
 {
     use StringHelper;
+
     /**
      * The name of the factory's corresponding model.
      *
@@ -25,6 +25,7 @@ class RestaurantBranchFactory extends Factory
     public function definition()
     {
         $mmFaker = app('Faker');
+
         return [
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->company() . ' Restaurant',

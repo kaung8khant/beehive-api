@@ -19,7 +19,7 @@ class ProductVariationValueController extends Controller
      */
     public function index(Request $request)
     {
-        return ProductVariationValue::with('product_variation')
+        return ProductVariationValue::with('productVariation')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
@@ -39,7 +39,7 @@ class ProductVariationValueController extends Controller
         $validatedData['product_variation_id'] = $this->getProductVariationId($request->product_variation_slug);
 
         $productVariationValue = ProductVariationValue::create($validatedData);
-        return response()->json($productVariationValue->load('product_variation'), 201);
+        return response()->json($productVariationValue->load('productVariation'), 201);
     }
 
     /**
@@ -50,7 +50,7 @@ class ProductVariationValueController extends Controller
      */
     public function show($slug)
     {
-        $productVariationValue = ProductVariationValue::with('product_variation')->where('slug', $slug)->firstOrFail();
+        $productVariationValue = ProductVariationValue::with('productVariation')->where('slug', $slug)->firstOrFail();
         return response()->json($productVariationValue, 200);
     }
 
@@ -69,7 +69,7 @@ class ProductVariationValueController extends Controller
         $validatedData['product_variation_id'] = $this->getProductVariationId($request->product_variation_slug);
 
         $productVariationValue->update($request->all());
-        return response()->json($productVariationValue->load('product_variation'), 200);
+        return response()->json($productVariationValue->load('productVariation'), 200);
     }
 
     /**

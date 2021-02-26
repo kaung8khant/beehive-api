@@ -38,17 +38,17 @@ class Menu extends Model
         return $this->belongsTo(Restaurant::class);
     }
 
-    public function restaurant_category()
+    public function restaurantCategory()
     {
         return $this->belongsTo(RestaurantCategory::class);
     }
 
-    public function menu_variations()
+    public function menuVariations()
     {
         return $this->hasMany(MenuVariation::class);
     }
 
-    public function menu_toppings()
+    public function menuToppings()
     {
         return $this->hasMany(MenuTopping::class);
     }
