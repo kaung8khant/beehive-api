@@ -106,11 +106,11 @@ class MenuController extends Controller
      */
     public function getMenusByRestaurant(Request $request, $slug)
     {
-        $menus = Restaurant::whereHas('slug', $slug)->firstOrFail()->menus();
+        $menus = Restaurant::where('slug', $slug)->firstOrFail()->menus();
         return $menus->where('name', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('slug', $request->filter)
-        ->paginate(10);
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
         // return Menu::whereHas('restaurant', function ($q) use ($slug, $request) {
         //     $q->where('slug', $slug);
         // })->where('name', 'LIKE', '%' . $request->filter . '%')
@@ -158,11 +158,9 @@ class MenuController extends Controller
         foreach ($variations as $variation) {
             $variation['slug'] = $this->generateUniqueSlug();
             $variation['menu_id'] = $menuId;
-            $menuVariation=  MenuVariation::create($variation);
-            $variationId=$menuVariation->id;
+            $menuVariation =  MenuVariation::create($variation);
+            $variationId = $menuVariation->id;
             $this->createVariationValues($variationId, $variation['menu_variation_values']);
-
-            $menuVariation->refresh()->load('menuVariationValues');
         }
     }
 
@@ -170,9 +168,7 @@ class MenuController extends Controller
     {
         foreach ($variationValues as $variationValue) {
             $variationValue['slug'] = $this->generateUniqueSlug();
-
             $variationValue['menu_variation_id'] = $variationId;
-
             MenuVariationValue::create($variationValue);
         }
     }
@@ -181,15 +177,10 @@ class MenuController extends Controller
     {
         foreach ($toppings as $topping) {
             $topping['slug'] = $this->generateUniqueSlug();
-
             $topping['menu_id'] = $menuId;
-
-            $menuTopping=MenuTopping::create($topping);
-
-            $toppingId=$menuTopping->id;
+            $menuTopping = MenuTopping::create($topping);
+            $toppingId = $menuTopping->id;
             $this->createToppingValues($toppingId, $topping['menu_topping_values']);
-
-            $menuTopping->refresh()->load('menuToppingValues');
         }
     }
 
@@ -197,9 +188,7 @@ class MenuController extends Controller
     {
         foreach ($toppingValues as $toppingValue) {
             $toppingValue['slug'] = $this->generateUniqueSlug();
-
             $toppingValue['menu_topping_id'] = $toppingId;
-
             MenuToppingValue::create($toppingValue);
         }
     }
