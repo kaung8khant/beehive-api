@@ -24,12 +24,15 @@ class UserController extends Controller
     {
         return User::with('roles')
             ->whereHas('roles', function ($q) {
-                $q ->where('name', 'Admin');
+                $q->whereNotIn('name', ['Driver', 'Collector']);
             })
-            // ->orwhere('username', 'LIKE', '%' . $request->filter . '%')
-            // ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-            // ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-            // ->orWhere('slug', $request->filter)
+            ->where(function ($q) use ($request) {
+                $q->where('username', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+            })
+
             ->paginate(10);
     }
 

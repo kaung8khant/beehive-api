@@ -13,26 +13,22 @@ use Illuminate\Support\Facades\Hash;
 class DriverController extends Controller
 {
     use StringHelper;
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+
+    public function index(Request $request)
     {
-        return User::whereHas('roles', function ($q) {
+        return User::with('roles')
+        ->whereHas('roles', function ($q) {
             $q ->where('name', 'Driver');
+        })
+        ->where(function ($q) use ($request) {
+            $q->where('username', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
         })
         ->paginate(10);
     }
 
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -55,22 +51,11 @@ class DriverController extends Controller
         return response()->json($driver->refresh()->load('roles'), 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function show($slug)
     {
         return User::with('roles')->where('slug', $slug)->firstOrFail();
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $slug)
     {
         $driver = User::where('slug', $slug)->firstOrFail();
@@ -96,11 +81,6 @@ class DriverController extends Controller
         return response()->json($driver->refresh()->load('roles'), 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($slug)
     {
         $driver = User::where('slug', $slug)->firstOrFail();
