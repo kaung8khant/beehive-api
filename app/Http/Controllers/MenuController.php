@@ -49,10 +49,10 @@ class MenuController extends Controller
         $menu = Menu::create($validatedData);
         $menuId = $menu->id;
 
-        $this->createVariations($menuId, $validatedData['menu_variations'], $validatedData['menu_variations.*.menu_variation_values']);
-        $this->createToppings($menuId, $validatedData['menu_toppings'], $validatedData['menu_toppings.*.menu_topping_values']);
+        $this->createVariations($menuId, $validatedData['menu_variations']);
+        $this->createToppings($menuId, $validatedData['menu_toppings']);
 
-        return response()->json($menu->refresh()->load('menu_variations', 'menu_topping'), 201);
+        return response()->json($menu->refresh()->load('menuVariations', 'menuToppings'), 201);
     }
 
     /**
@@ -134,15 +134,15 @@ class MenuController extends Controller
             'menu_toppings.*.name' => 'required|string',
             'menu_toppings.*.description' => 'required|string',
 
-            'menu_variations.*.menu_variation_values' => 'required|array',
-            'menu_variations.*.menu_variation_values.*.name' => 'required|string',
-            'menu_variations.*.menu_variation_values.*.value' => 'required|string',
-            'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
+            // 'menu_variations.*.menu_variation_values' => 'required|array',
+            // 'menu_variations.*.menu_variation_values.*.name' => 'required|string',
+            // 'menu_variations.*.menu_variation_values.*.value' => 'required|string',
+            // 'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
 
-            'menu_toppings.*.menu_topping_values' => 'required|array',
-            'menu_toppings.*.menu_topping_values.*.name' => 'required|string',
-            'menu_toppings.*.menu_topping_values.*.value' => 'required|string',
-            'menu_toppings.*.menu_topping_values.*.price' => 'required|numeric',
+            // 'menu_toppings.*.menu_topping_values' => 'required|array',
+            // 'menu_toppings.*.menu_topping_values.*.name' => 'required|string',
+            // 'menu_toppings.*.menu_topping_values.*.value' => 'required|string',
+            // 'menu_toppings.*.menu_topping_values.*.price' => 'required|numeric',
 
         ];
 
@@ -153,17 +153,15 @@ class MenuController extends Controller
         return $params;
     }
 
-    private function createVariations($menuId, $variations, $variationValues)
+    private function createVariations($menuId, $variations)
     {
         foreach ($variations as $variation) {
             $variation['slug'] = $this->generateUniqueSlug();
-
-
             $variation['menu_id'] = $menuId;
-            $menuVariation= MenuVariation::create($variation);
-            $variationId=$menuVariation->id;
+            MenuVariation::create($variation);
+            // $variationId=$menuVariation->id;
 
-            $this->createVariationValues($variationId, $variationValues);
+            // $this->createVariationValues($variationId, $variationValues);
         }
     }
 
@@ -178,16 +176,16 @@ class MenuController extends Controller
         }
     }
 
-    private function createToppings($menuId, $toppings, $toppingValues)
+    private function createToppings($menuId, $toppings)
     {
         foreach ($toppings as $topping) {
             $topping['slug'] = $this->generateUniqueSlug();
 
             $topping['menu_id'] = $menuId;
 
-            $topping=  MenuTopping::create($topping);
-            $toppingId=$topping->id;
-            $this->createVariationValues($toppingId, $variationValues);
+            MenuTopping::create($topping);
+            // $toppingId=$topping->id;
+            // $this->createVariationValues($toppingId, $variationValues);
         }
     }
 
