@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\RestaurantBranch;
 use Illuminate\Database\Seeder;
+use App\Models\RestaurantBranch;
+use App\Models\Menu;
 
 class RestaurantBranchMenuSeeder extends Seeder
 {
@@ -14,10 +15,11 @@ class RestaurantBranchMenuSeeder extends Seeder
      */
     public function run()
     {
-        $restaurantBranch = RestaurantBranch::find(1);
-        $menuIdArrays = [1,2];
-        foreach ($menuIdArrays as $id) {
-            $restaurantBranch->menus()->attach($id);
+        $restaurants = RestaurantBranch::all();
+
+        foreach ($restaurants as $restaurant) {
+            $menus = Menu::where('restaurant_id', $restaurant->id)->pluck('id');
+            $restaurant->availableMenus()->attach($menus);
         }
     }
 }

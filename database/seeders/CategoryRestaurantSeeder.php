@@ -19,7 +19,7 @@ class CategoryRestaurantSeeder extends Seeder
         $restaurantCategories = RestaurantCategory::pluck('id');
 
         foreach ($restaurants as $restaurant) {
-            $restaurant->availableCategories()->attach($restaurantCategories->random(5)->all());
+            $restaurant->availableCategories()->attach($restaurantCategories->random(8)->all());
         }
     }
 }
