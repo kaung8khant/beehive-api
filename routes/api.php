@@ -35,6 +35,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('customers', 'CustomerController');
             Route::patch('customers/toggle-enable/{slug}', 'CustomerController@toggleEnable');
 
+            Route::resource('drivers', 'DriverController');
+
             Route::resource('cities', 'CityController');
             Route::resource('townships', 'TownshipController');
             Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
