@@ -104,7 +104,7 @@ class ProductController extends Controller
             $q->where('slug', $slug);
         })->with('shopCategory', 'brand')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            // ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }

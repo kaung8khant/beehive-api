@@ -35,8 +35,8 @@ class ShopController extends Controller
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-            'shop_categories' => 'required|array',
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories' => 'array',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
             'shop_branch' => 'required',
             'shop_branch.name' => 'required|string',
             'shop_branch.name_mm' => 'nullable|string',
@@ -58,9 +58,10 @@ class ShopController extends Controller
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->shopTags()->attach($shopTags);
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
-        $shop->availableCategories()->attach($shopCategories);
-
+        if ($request->available_categories) {
+            $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
+            $shop->availableCategories()->attach($shopCategories);
+        }
         return response()->json($shop->refresh()->load(['shopTags', 'availableCategories', 'shopBranches']), 201);
     }
 
@@ -85,18 +86,19 @@ class ShopController extends Controller
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-            'shop_categories' => 'required|array',
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories' => 'array',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]));
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->shopTags()->detach();
         $shop->shopTags()->attach($shopTags);
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
-        $shop->availableCategories()->detach();
-        $shop->availableCategories()->attach($shopCategories);
-
+        if ($request->available_categories) {
+            $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
+            $shop->availableCategories()->detach();
+            $shop->availableCategories()->attach($shopCategories);
+        }
         return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
     }
 
