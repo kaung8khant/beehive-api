@@ -32,6 +32,7 @@ class ShopController extends Controller
             'slug' => 'required|unique:shops',
             'name' => 'required|unique:shops',
             'name_mm' => 'unique:shops',
+            'is_enable' => 'required|boolean',
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
@@ -83,6 +84,7 @@ class ShopController extends Controller
             'name_mm' => [
                 Rule::unique('shops')->ignore($shop->id),
             ],
+            'is_enable' => 'required|boolean',
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
