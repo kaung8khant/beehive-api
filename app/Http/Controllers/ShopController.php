@@ -35,7 +35,7 @@ class ShopController extends Controller
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-            'available_categories' => 'array',
+            'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
             'shop_branch' => 'required',
             'shop_branch.name' => 'required|string',
@@ -86,7 +86,7 @@ class ShopController extends Controller
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-            'available_categories' => 'array',
+            'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]));
 
