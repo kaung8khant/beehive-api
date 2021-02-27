@@ -106,10 +106,15 @@ class MenuController extends Controller
      */
     public function getMenusByRestaurant(Request $request, $slug)
     {
-        return Menu::whereHas('restaurant', function ($q) use ($slug, $request) {
-            $q->where('slug', $slug);
-        })->where('name', 'LIKE', '%' . $request->filter . '%')
+        $menus = Restaurant::whereHas('slug', $slug)->firstOrFail()->menus();
+        return $menus->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('slug', $request->filter)
         ->paginate(10);
+        // return Menu::whereHas('restaurant', function ($q) use ($slug, $request) {
+        //     $q->where('slug', $slug);
+        // })->where('name', 'LIKE', '%' . $request->filter . '%')
+        // ->paginate(10);
     }
 
     private function getParamsToValidate($slug = false)
