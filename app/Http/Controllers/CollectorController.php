@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Helpers\StringHelper;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
-class DriverController extends Controller
+class CollectorController extends Controller
 {
     use StringHelper;
     /**
@@ -21,7 +21,7 @@ class DriverController extends Controller
     public function index()
     {
         return User::whereHas('roles', function ($q) {
-            $q ->where('name', 'Driver');
+            $q ->where('name', 'Collector');
         })
         ->paginate(10);
     }
@@ -47,12 +47,12 @@ class DriverController extends Controller
 
         $validatedData['password'] = Hash::make($validatedData['password']);
 
-        $driver = User::create($validatedData);
+        $collector = User::create($validatedData);
 
-        $driverRoleId = Role::where('name', 'Driver')->first()->id;
-        $driver->roles()->attach($driverRoleId);
+        $collectorRoleId = Role::where('name', 'Collector')->first()->id;
+        $collector->roles()->attach($collectorRoleId);
 
-        return response()->json($driver->refresh()->load('roles'), 201);
+        return response()->json($collector->refresh()->load('roles'), 201);
     }
 
     /**
@@ -73,27 +73,27 @@ class DriverController extends Controller
      */
     public function update(Request $request, $slug)
     {
-        $driver = User::where('slug', $slug)->firstOrFail();
+        $collector = User::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate([
             'username' => [
                 'required',
-                Rule::unique('users')->ignore($driver->id),
+                Rule::unique('users')->ignore($collector->id),
             ],
             'name' => 'required',
             'phone_number' => [
                 'required',
-                Rule::unique('users')->ignore($driver->id),
+                Rule::unique('users')->ignore($collector->id),
             ],
         ]);
 
-        $driver->update($validatedData);
+        $collector->update($validatedData);
 
-        $driverRoleId = Role::where('name', 'Driver')->first()->id;
-        $driver->roles()->detach();
-        $driver->roles()->attach($driverRoleId);
+        $collectorRoleId = Role::where('name', 'Collector')->first()->id;
+        $collector->roles()->detach();
+        $collector->roles()->attach($collectorRoleId);
 
-        return response()->json($driver->refresh()->load('roles'), 200);
+        return response()->json($collector->refresh()->load('roles'), 200);
     }
 
     /**
@@ -103,13 +103,13 @@ class DriverController extends Controller
      */
     public function destroy($slug)
     {
-        $driver = User::where('slug', $slug)->firstOrFail();
+        $collector = User::where('slug', $slug)->firstOrFail();
 
-        if ($driver->id === Auth::guard('users')->user()->id) {
+        if ($collector->id === Auth::guard('users')->user()->id) {
             return response()->json(['message' => 'You cannot delete yourself.'], 406);
         }
 
-        $driver->delete();
+        $collector->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 }
