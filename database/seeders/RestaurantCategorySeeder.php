@@ -2,13 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Helpers\StringHelper;
-use App\Models\RestaurantCategory;
 use Illuminate\Database\Seeder;
+use App\Models\RestaurantCategory;
 
 class RestaurantCategorySeeder extends Seeder
 {
-    use StringHelper;
     /**
      * Run the database seeds.
      *
@@ -16,6 +14,6 @@ class RestaurantCategorySeeder extends Seeder
      */
     public function run()
     {
-        RestaurantCategory::factory()->count(120)->create();
+        RestaurantCategory::factory()->count(30)->create();
     }
 }

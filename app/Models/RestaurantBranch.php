@@ -45,4 +45,9 @@ class RestaurantBranch extends Model
     {
         return $this->belongsTo(Township::class);
     }
+
+    public function availableMenus()
+    {
+        return $this->belongsToMany(Menu::class, 'restaurant_branch_menu');
+    }
 }

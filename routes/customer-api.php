@@ -21,11 +21,21 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('shops/{slug}/set-favorite', 'Customer\ShopController@setFavoriteShop');
         Route::post('shops/{slug}/remove-favorite', 'Customer\ShopController@removeFavoriteShop');
 
+        /* Restaurant */
         Route::get('restaurants', 'Customer\RestaurantController@index');
         Route::get('restaurants/favorites', 'Customer\RestaurantController@getFavoriteRestaurants');
         Route::get('restaurants/{slug}', 'Customer\RestaurantController@show');
         Route::post('restaurants/{slug}/set-favorite', 'Customer\RestaurantController@setFavoriteRestaurant');
         Route::post('restaurants/{slug}/remove-favorite', 'Customer\RestaurantController@removeFavoriteRestaurant');
+
+        Route::get('restaurants/{slug}/branches', 'Customer\RestaurantBranchController@index');
+
+        Route::get('restaurant-categories', 'Customer\RestaurantCategoryController@index');
+        Route::get('restaurant-categories/{slug}/restaurants', 'Customer\RestaurantCategoryController@getRestaurantsByCategory');
+
+        Route::get('restaurant-tags', 'Customer\RestaurantTagController@index');
+        Route::get('restaurant-tags/{slug}/restaurants', 'Customer\RestaurantTagController@getRestaurantsByTag');
+        /* Restaurant */
 
         Route::resource('orders', 'Customer\OrderController');
     });
