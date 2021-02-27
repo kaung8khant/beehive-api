@@ -32,9 +32,10 @@ class RestaurantController extends Controller
             'slug' => 'required|unique:restaurants',
             'name' => 'required|unique:restaurants',
             'name_mm' => 'unique:restaurants',
+            'is_enable' => 'required|boolean',
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
-            'available_categories' => 'array',
+            'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
             'restaurant_branch' => 'required',
             'restaurant_branch.name' => 'required|string',
@@ -82,9 +83,10 @@ class RestaurantController extends Controller
                 'required',
                 Rule::unique('restaurants')->ignore($restaurant->id)
             ],
+            'is_enable' => 'required|boolean',
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
-            'available_categories' => 'array',
+            'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]);
 
