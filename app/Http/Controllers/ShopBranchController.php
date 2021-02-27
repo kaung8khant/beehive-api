@@ -51,6 +51,7 @@ class ShopBranchController extends Controller
             'longitude' => 'required',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'township_slug' => 'required|exists:App\Models\Township,slug',
+            'is_enable' => 'required|boolean',
         ]);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
@@ -100,6 +101,7 @@ class ShopBranchController extends Controller
             'longitude' => 'required',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'township_slug' => 'required|exists:App\Models\Township,slug',
+            'is_enable' => 'required|boolean',
         ]);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);

@@ -20,6 +20,7 @@ class MenuVariationController extends Controller
     public function index(Request $request)
     {
         return MenuVariation::with('menu')
+            ->with('menuVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);

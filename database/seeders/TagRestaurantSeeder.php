@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Restaurant;
-// use App\Models\RestaurantTag;
+use App\Models\RestaurantTag;
 
 class TagRestaurantSeeder extends Seeder
 {
@@ -16,10 +16,10 @@ class TagRestaurantSeeder extends Seeder
     public function run()
     {
         $restaurants = Restaurant::all();
-        $restaurantTags = [1, 2];
+        $restaurantTags = RestaurantTag::pluck('id');
 
         foreach ($restaurants as $restaurant) {
-            $restaurant->restaurantTags()->attach($restaurantTags);
+            $restaurant->restaurantTags()->attach($restaurantTags->random(20)->all());
         }
     }
 }

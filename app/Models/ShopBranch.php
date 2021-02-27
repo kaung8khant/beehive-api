@@ -45,4 +45,9 @@ class ShopBranch extends Model
     {
         return $this->belongsTo(Township::class);
     }
+
+    public function availableProducts()
+    {
+        return $this->belongsToMany(Product::class, 'shop_branch_product');
+    }
 }

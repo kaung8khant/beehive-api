@@ -32,6 +32,7 @@ class ShopController extends Controller
             'slug' => 'required|unique:shops',
             'name' => 'required|unique:shops',
             'name_mm' => 'unique:shops',
+            'is_enable' => 'required|boolean',
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
@@ -83,6 +84,7 @@ class ShopController extends Controller
             'name_mm' => [
                 Rule::unique('shops')->ignore($shop->id),
             ],
+            'is_enable' => 'required|boolean',
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
@@ -140,12 +142,12 @@ class ShopController extends Controller
     public function addShopCategories(Request $request, $slug)
     {
         $shop =$request->validate([
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]);
 
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $shop->availableCategories()->detach();
         $shop->availableCategories()->attach($shopCategories);
 
@@ -155,11 +157,11 @@ class ShopController extends Controller
     public function removeShopCategories(Request $request, $slug)
     {
         $shop =$request->validate([
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]);
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $shop->availableCategories()->detach($shopCategories);
 
         return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
