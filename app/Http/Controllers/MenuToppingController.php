@@ -20,6 +20,7 @@ class MenuToppingController extends Controller
     public function index(Request $request)
     {
         return MenuTopping::with('menu')
+            ->with("menuToppingValues")
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);

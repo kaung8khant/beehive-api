@@ -25,6 +25,8 @@ class MenuController extends Controller
     public function index(Request $request)
     {
         return Menu::with('restaurant')
+            ->with('menuVariations')
+            ->with('menuToppings')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
