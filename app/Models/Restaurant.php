@@ -13,7 +13,6 @@ class Restaurant extends Model
         'slug',
         'name',
         'name_mm',
-        'is_official',
         'is_enable',
     ];
 
@@ -26,7 +25,6 @@ class Restaurant extends Model
 
     protected $casts = [
         'is_enable' => 'boolean',
-        'is_official' => 'boolean',
     ];
 
     public function restaurantTags()

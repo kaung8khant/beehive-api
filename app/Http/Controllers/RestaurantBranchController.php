@@ -50,7 +50,7 @@ class RestaurantBranchController extends Controller
             'longitude' => 'required',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'township_slug' => 'required|exists:App\Models\Township,slug',
-            'is_enable' => 'nullable|boolean',
+            'is_enable' => 'required|boolean',
         ]);
 
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
@@ -99,7 +99,7 @@ class RestaurantBranchController extends Controller
             'longitude' => 'required',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'township_slug' => 'required|exists:App\Models\Township,slug',
-            'is_enable' => 'nullable|boolean',
+            'is_enable' => 'required|boolean',
         ]);
 
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);

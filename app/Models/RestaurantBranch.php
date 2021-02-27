@@ -30,6 +30,7 @@ class RestaurantBranch extends Model
         'township_id',
         'created_at',
         'updated_at',
+        'pivot',
     ];
 
     protected $casts = [

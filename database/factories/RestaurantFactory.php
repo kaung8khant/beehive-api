@@ -30,7 +30,6 @@ class RestaurantFactory extends Factory
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->unique()->company() . ' Restaurant',
             'name_mm' => $mmFaker->name() . 'စားသောက်ဆိုင်',
-            'is_official' => $this->faker->boolean(),
             'is_enable' => $this->faker->boolean(),
         ];
     }

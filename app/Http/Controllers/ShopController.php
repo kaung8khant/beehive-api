@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\Shop;
+use App\Models\ShopBranch;
 use App\Models\ShopCategory;
 use App\Models\ShopTag;
+use App\Models\Township;
 
 class ShopController extends Controller
 {
@@ -26,24 +28,41 @@ class ShopController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $shop = Shop::create($request->validate([
+        $validatedData = $request->validate([
             'slug' => 'required|unique:shops',
             'name' => 'required|unique:shops',
             'name_mm' => 'unique:shops',
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-            'shop_categories' => 'required|array',
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
-        ]));
+            'available_categories' => 'nullable|array',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'shop_branch' => 'required',
+            'shop_branch.name' => 'required|string',
+            'shop_branch.name_mm' => 'nullable|string',
+            'shop_branch.address' => 'required',
+            'shop_branch.contact_number' => 'required',
+            'shop_branch.opening_time' => 'required|date_format:H:i',
+            'shop_branch.closing_time' => 'required|date_format:H:i',
+            'shop_branch.latitude' => 'required|numeric',
+            'shop_branch.longitude' => 'required|numeric',
+            'shop_branch.township_slug' => 'required|exists:App\Models\Township,slug',
+        ]);
+        $townshipId = $this->getTownshipIdBySlug($request->shop_branch['township_slug']);
+
+        $shop = Shop::create($validatedData);
+        $shopId = $shop->id;
+
+        $this->createShopBranch($shopId, $townshipId, $validatedData['shop_branch']);
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->shopTags()->attach($shopTags);
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
-        $shop->availableCategories()->attach($shopCategories);
-
-        return response()->json($shop->refresh()->load(['shopTags', 'availableCategories']), 201);
+        if ($request->available_categories) {
+            $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
+            $shop->availableCategories()->attach($shopCategories);
+        }
+        return response()->json($shop->refresh()->load(['shopTags', 'availableCategories', 'shopBranches']), 201);
     }
 
     public function show($slug)
@@ -67,18 +86,19 @@ class ShopController extends Controller
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-            'shop_categories' => 'required|array',
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories' => 'nullable|array',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]));
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->shopTags()->detach();
         $shop->shopTags()->attach($shopTags);
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
-        $shop->availableCategories()->detach();
-        $shop->availableCategories()->attach($shopCategories);
-
+        if ($request->available_categories) {
+            $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
+            $shop->availableCategories()->detach();
+            $shop->availableCategories()->attach($shopCategories);
+        }
         return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
     }
 
@@ -104,15 +124,28 @@ class ShopController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
+    private function createShopBranch($shopId, $townshipId, $shopBranch)
+    {
+        $shopBranch['slug'] = $this->generateUniqueSlug();
+        $shopBranch['shop_id'] = $shopId;
+        $shopBranch['township_id'] = $townshipId;
+        ShopBranch::create($shopBranch);
+    }
+
+    private function getTownshipIdBySlug($slug)
+    {
+        return Township::where('slug', $slug)->first()->id;
+    }
+
     public function addShopCategories(Request $request, $slug)
     {
         $shop =$request->validate([
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]);
 
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $shop->availableCategories()->detach();
         $shop->availableCategories()->attach($shopCategories);
 
@@ -122,11 +155,11 @@ class ShopController extends Controller
     public function removeShopCategories(Request $request, $slug)
     {
         $shop =$request->validate([
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]);
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $shop->availableCategories()->detach($shopCategories);
 
         return response()->json($shop->load(['availableCategories', 'shopTags']), 201);

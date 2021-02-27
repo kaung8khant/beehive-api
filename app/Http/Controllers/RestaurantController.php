@@ -9,6 +9,7 @@ use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
+use App\Models\Township;
 
 class RestaurantController extends Controller
 {
@@ -31,11 +32,11 @@ class RestaurantController extends Controller
             'slug' => 'required|unique:restaurants',
             'name' => 'required|unique:restaurants',
             'name_mm' => 'unique:restaurants',
-            'is_official' => 'required|boolean',
+            'is_enable' => 'required|boolean',
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
-            'restaurant_categories' => 'required|array',
-            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+            'available_categories' => 'nullable|array',
+            'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
             'restaurant_branch' => 'required',
             'restaurant_branch.name' => 'required|string',
             'restaurant_branch.name_mm' => 'required|string',
@@ -45,21 +46,22 @@ class RestaurantController extends Controller
             'restaurant_branch.closing_time' => 'required|date_format:H:i',
             'restaurant_branch.latitude' => 'nullable|numeric',
             'restaurant_branch.longitude' => 'nullable|numeric',
-            'restaurant_branch.township_id' => 'required|numeric',
+            'restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
         ]);
+        $townshipId = $this->getTownshipIdBySlug($request->restaurant_branch['township_slug']);
 
         $restaurant = Restaurant::create($validatedData);
         $restaurantId = $restaurant->id;
 
-        $this->createRestaurantBranch($restaurantId, $validatedData['restaurant_branch']);
+        $this->createRestaurantBranch($restaurantId, $townshipId, $validatedData['restaurant_branch']);
 
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
         $restaurant->restaurantTags()->attach($restaurantTags);
-
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
-        $restaurant->availableCategories()->attach($restaurantCategories);
-
-        return response()->json($restaurant->refresh()->load('restaurantTags', 'availableCategories', 'restaurantBranches'), 201);
+        if ($request->available_categories) {
+            $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
+            $restaurant->availableCategories()->attach($restaurantCategories);
+        }
+        return response()->json($restaurant->load('restaurantTags', 'availableCategories', 'restaurantBranches'), 201);
     }
 
     public function show($slug)
@@ -81,11 +83,11 @@ class RestaurantController extends Controller
                 'required',
                 Rule::unique('restaurants')->ignore($restaurant->id)
             ],
-            'is_official' => 'required|boolean',
+            'is_enable' => 'required|boolean',
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
-            'restaurant_categories' => 'required|array',
-            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+            'available_categories' => 'nullable|array',
+            'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]);
 
         $restaurant->update($validatedData);
@@ -93,11 +95,11 @@ class RestaurantController extends Controller
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
         $restaurant->restaurantTags()->detach();
         $restaurant->restaurantTags()->attach($restaurantTags);
-
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
-        $restaurant->availableCategories()->detach();
-        $restaurant->availableCategories()->attach($restaurantCategories);
-
+        if ($request->available_categories) {
+            $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
+            $restaurant->availableCategories()->detach();
+            $restaurant->availableCategories()->attach($restaurantCategories);
+        }
         return response()->json($restaurant->load(['availableCategories', 'restaurantTags']), 200);
     }
 
@@ -115,30 +117,28 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function toggleOfficial($slug)
-    {
-        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-        $restaurant->is_official = !$restaurant->is_official;
-        $restaurant->save();
-        return response()->json(['message' => 'Success.'], 200);
-    }
-
-    private function createRestaurantBranch($restaurantId, $restaurantBranch)
+    private function createRestaurantBranch($restaurantId, $townshipId, $restaurantBranch)
     {
         $restaurantBranch['slug'] = $this->generateUniqueSlug();
         $restaurantBranch['restaurant_id'] = $restaurantId;
+        $restaurantBranch['township_id'] = $townshipId;
         RestaurantBranch::create($restaurantBranch);
+    }
+
+    private function getTownshipIdBySlug($slug)
+    {
+        return Township::where('slug', $slug)->first()->id;
     }
 
     public function addRestaurantCategories(Request $request, $slug)
     {
         $restaurant = $request->validate([
-            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+            'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]);
 
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
+        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $restaurant->availableCategories()->detach();
         $restaurant->availableCategories()->attach($restaurantCategories);
 
@@ -148,11 +148,11 @@ class RestaurantController extends Controller
     public function removeRestaurantCategories(Request $request, $slug)
     {
         $restaurant = $request->validate([
-            'restaurant_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+            'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]);
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->restaurant_categories)->pluck('id');
+        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $restaurant->availableCategories()->detach($restaurantCategories);
 
         return response()->json($restaurant->load(['availableCategories', 'restaurantTags']), 201);

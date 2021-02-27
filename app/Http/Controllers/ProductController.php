@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
 use App\Models\Product;
+use App\Models\Restaurant;
 use App\Models\Shop;
 use App\Models\SubCategory;
 
@@ -98,15 +99,20 @@ class ProductController extends Controller
         return SubCategory::where('slug', $slug)->first();
     }
 
-    public function getProductsByShop($slug, Request $request)
+    public function getProductsByShop(Request $request, $slug)
     {
-        return Product::whereHas('shop', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->with('shopCategory', 'brand')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
+        $products = Shop::where('slug', $slug)->firstOrFail()->products();
+        return $products->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
+        // return Product::whereHas('shop', function ($q) use ($slug) {
+        //     $q->where('slug', $slug);
+        // })->with('shopCategory', 'brand')
+        //     ->where('name', 'LIKE', '%' . $request->filter . '%')
+        //     // ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+        //     ->orWhere('slug', $request->filter)
+        //     ->paginate(10);
     }
 
     private function getBrandId($slug)
