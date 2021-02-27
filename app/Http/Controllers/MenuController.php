@@ -52,7 +52,7 @@ class MenuController extends Controller
         $this->createVariations($menuId, $validatedData['menu_variations']);
         $this->createToppings($menuId, $validatedData['menu_toppings']);
 
-        return response()->json($menu->refresh()->load('menuVariations', 'menuToppings'), 201);
+        return response()->json($menu->refresh()->load('menuVariations', 'menuToppings', 'menuVariations.menuVariationValues', 'menuToppings.menuToppingValues'), 201);
     }
 
     /**
@@ -134,15 +134,15 @@ class MenuController extends Controller
             'menu_toppings.*.name' => 'required|string',
             'menu_toppings.*.description' => 'required|string',
 
-            // 'menu_variations.*.menu_variation_values' => 'required|array',
-            // 'menu_variations.*.menu_variation_values.*.name' => 'required|string',
-            // 'menu_variations.*.menu_variation_values.*.value' => 'required|string',
-            // 'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
+            'menu_variations.*.menu_variation_values' => 'required|array',
+            'menu_variations.*.menu_variation_values.*.name' => 'required|string',
+            'menu_variations.*.menu_variation_values.*.value' => 'required|string',
+            'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
 
-            // 'menu_toppings.*.menu_topping_values' => 'required|array',
-            // 'menu_toppings.*.menu_topping_values.*.name' => 'required|string',
-            // 'menu_toppings.*.menu_topping_values.*.value' => 'required|string',
-            // 'menu_toppings.*.menu_topping_values.*.price' => 'required|numeric',
+            'menu_toppings.*.menu_topping_values' => 'required|array',
+            'menu_toppings.*.menu_topping_values.*.name' => 'required|string',
+            'menu_toppings.*.menu_topping_values.*.value' => 'required|string',
+            'menu_toppings.*.menu_topping_values.*.price' => 'required|numeric',
 
         ];
 
@@ -158,10 +158,11 @@ class MenuController extends Controller
         foreach ($variations as $variation) {
             $variation['slug'] = $this->generateUniqueSlug();
             $variation['menu_id'] = $menuId;
-            MenuVariation::create($variation);
-            // $variationId=$menuVariation->id;
+            $menuVariation=  MenuVariation::create($variation);
+            $variationId=$menuVariation->id;
+            $this->createVariationValues($variationId, $variation['menu_variation_values']);
 
-            // $this->createVariationValues($variationId, $variationValues);
+            $menuVariation->refresh()->load('menuVariationValues');
         }
     }
 
@@ -172,7 +173,7 @@ class MenuController extends Controller
 
             $variationValue['menu_variation_id'] = $variationId;
 
-            MenuVariationValue::create($variation);
+            MenuVariationValue::create($variationValue);
         }
     }
 
@@ -183,9 +184,12 @@ class MenuController extends Controller
 
             $topping['menu_id'] = $menuId;
 
-            MenuTopping::create($topping);
-            // $toppingId=$topping->id;
-            // $this->createVariationValues($toppingId, $variationValues);
+            $menuTopping=MenuTopping::create($topping);
+
+            $toppingId=$menuTopping->id;
+            $this->createToppingValues($toppingId, $topping['menu_topping_values']);
+
+            $menuTopping->refresh()->load('menuToppingValues');
         }
     }
 
