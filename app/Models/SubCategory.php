@@ -23,7 +23,7 @@ class SubCategory extends Model
         'shop_category_id',
     ];
 
-    public function shop_category()
+    public function shopCategory()
     {
         return $this->belongsTo(ShopCategory::class);
     }

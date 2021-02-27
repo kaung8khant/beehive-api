@@ -24,7 +24,7 @@ class MenuVariationValue extends Model
         'updated_at',
     ];
 
-    public function menu_variation()
+    public function menuVariation()
     {
         return $this->belongsTo(MenuVariation::class);
     }

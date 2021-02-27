@@ -21,7 +21,7 @@ class OrderContactController extends Controller
     public function update(Request $request, $slug)
     {
         $order = Order::where('slug', $slug)->firstOrFail();
-        $orderContact = $order->order_contact;
+        $orderContact = $order->orderContact;
 
         $orderContact->update($request->validate([
             'customer_name' => 'required|string',

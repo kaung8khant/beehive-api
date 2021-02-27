@@ -29,12 +29,12 @@ class Shop extends Model
         'is_enable' => 'boolean',
     ];
 
-    public function shop_tags()
+    public function shopTags()
     {
         return $this->belongsToMany(ShopTag::class, 'tag_shop');
     }
 
-    public function shop_categories()
+    public function availableCategories()
     {
         return $this->belongsToMany(ShopCategory::class, 'category_shop');
     }
@@ -44,7 +44,7 @@ class Shop extends Model
         return $this->hasMany(Product::class);
     }
 
-    public function shop_branches()
+    public function shopBranches()
     {
         return $this->hasMany(ShopBranch::class);
     }

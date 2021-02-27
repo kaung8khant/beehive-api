@@ -24,7 +24,7 @@ class MenuToppingValue extends Model
         'updated_at',
     ];
 
-    public function menu_topping()
+    public function menuTopping()
     {
         return $this->belongsTo(MenuTopping::class);
     }

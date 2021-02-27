@@ -24,7 +24,7 @@ class ProductVariationValue extends Model
         'updated_at',
     ];
 
-    public function product_variation()
+    public function productVariation()
     {
         return $this->belongsTo(ProductVariation::class);
     }

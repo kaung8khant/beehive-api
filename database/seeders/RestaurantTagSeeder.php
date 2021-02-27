@@ -28,6 +28,7 @@ class RestaurantTagSeeder extends Seeder
                 "slug" => $this->generateUniqueSlug(),
             ],
         ];
+
         foreach ($tags as $tag) {
             RestaurantTag::create($tag);
         }

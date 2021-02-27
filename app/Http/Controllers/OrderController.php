@@ -19,11 +19,11 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        return Order::with('order_contact')
+        return Order::with('orderContact')
             ->whereDate('order_date', '>=', $request->from)
             ->whereDate('order_date', '<=', $request->to)
             ->where('order_type', $request->type)
-            ->whereHas('order_contact', function ($q) use ($request) {
+            ->whereHas('orderContact', function ($q) use ($request) {
                 $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('phone_number', $request->filter);
             })->orWhere('slug', $request->filter)
@@ -45,13 +45,13 @@ class OrderController extends Controller
         $this->createOrderContact($orderId, $validatedData['customer_info']);
         $this->createOrderItems($orderId, $validatedData['order_items'], $request->order_type);
 
-        return response()->json($order->refresh()->load('order_contact', 'order_statuses', 'order_items'), 201);
+        return response()->json($order->refresh()->load('orderContact', 'orderItems'), 201);
     }
 
     public function show($slug)
     {
-        $order = Order::with('order_contact')
-            ->with('order_items')
+        $order = Order::with('orderContact')
+            ->with('orderItems')
             ->where('slug', $slug)
             ->firstOrFail();
         return response()->json($order, 200);
@@ -77,10 +77,9 @@ class OrderController extends Controller
     public function destroy($slug)
     {
         $order = Order::where('slug', $slug)->firstOrFail();
-        $latestOrderStatus = $order->order_statuses()->latest()->first()->status;
 
-        if ($latestOrderStatus === 'delivered' || $latestOrderStatus === 'cancelled') {
-            return response()->json(['message' => 'The order has already been ' . $latestOrderStatus . '.'], 406);
+        if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
+            return response()->json(['message' => 'The order has already been ' . $order->order_status . '.'], 406);
         }
 
         $this->createOrderStatus($order->id, 'cancelled');

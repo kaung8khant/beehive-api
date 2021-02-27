@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Shop;
 use Illuminate\Database\Seeder;
+use App\Models\Shop;
+use App\Models\ShopCategory;
 
 class CategoryShopSeeder extends Seeder
 {
@@ -14,10 +15,11 @@ class CategoryShopSeeder extends Seeder
      */
     public function run()
     {
-        $shop = Shop::find(1);
-        $categoryIdArrays = [1,2];
-        foreach ($categoryIdArrays as $id) {
-            $shop->shop_categories()->attach($id);
+        $shops = Shop::all();
+        $shopCategories = ShopCategory::pluck('id');
+
+        foreach ($shops as $shop) {
+            $shop->availableCategories()->attach($shopCategories->random(2)->all());
         }
     }
 }

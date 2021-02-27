@@ -9,21 +9,11 @@ class Role extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'slug',
         'name',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'id',
         'created_at',
@@ -31,9 +21,6 @@ class Role extends Model
         'pivot',
     ];
 
-    /**
-     * The users that belong to the role.
-     */
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_role');

@@ -41,7 +41,7 @@ class RestaurantBranchController extends Controller
         $validatedData = $request->validate([
             'slug' => 'required|unique:restaurant_branches',
             'name' => 'required|unique:restaurant_branches',
-            'name_mm' => 'unique:restaurant_branches',
+            'name_mm' => 'nullable|unique:restaurant_branches',
             'address' => 'required',
             'contact_number' => 'required',
             'opening_time' => 'required|date_format:H:i',
@@ -50,7 +50,7 @@ class RestaurantBranchController extends Controller
             'longitude' => 'required',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'township_slug' => 'required|exists:App\Models\Township,slug',
-            'is_enable' => 'nullable|boolean',
+            'is_enable' => 'required|boolean',
         ]);
 
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
@@ -99,7 +99,7 @@ class RestaurantBranchController extends Controller
             'longitude' => 'required',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'township_slug' => 'required|exists:App\Models\Township,slug',
-            'is_enable' => 'nullable|boolean',
+            'is_enable' => 'required|boolean',
         ]);
 
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
@@ -136,11 +136,12 @@ class RestaurantBranchController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function getBranchesByRestaurant($slug)
+    public function getBranchesByRestaurant($slug, Request $request)
     {
-        return RestaurantBranch::whereHas('restaurant', function ($q) use ($slug) {
+        return RestaurantBranch::whereHas('restaurant', function ($q) use ($slug, $request) {
             $q->where('slug', $slug);
-        })->paginate(10);
+        })->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->paginate(10);
     }
 
     /**

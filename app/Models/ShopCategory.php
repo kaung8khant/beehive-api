@@ -21,7 +21,7 @@ class ShopCategory extends Model
         'pivot',
     ];
 
-    public function sub_categories()
+    public function subCategories()
     {
         return $this->hasMany(SubCategory::class);
     }

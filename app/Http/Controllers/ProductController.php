@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
 use App\Models\Product;
+use App\Models\Restaurant;
 use App\Models\Shop;
 use App\Models\SubCategory;
 use App\Models\ProductVariation;
@@ -14,26 +15,15 @@ class ProductController extends Controller
 {
     use StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
-        return Product::with('shop', 'shop_category', 'product_variations', 'brand')
+        return Product::with('shop', 'shopCategory', 'productVariation', 'brand')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -43,36 +33,19 @@ class ProductController extends Controller
         $subCategory = $this->getSubCategory($request->sub_category_slug);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
-        $validatedData['shop_category_id'] = $subCategory->shop_category->id;
+        $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
         $validatedData['sub_category_id'] = $subCategory->id;
         $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
         $product = Product::create($validatedData);
-        $productId = $product->id;
-
-        $this->createProductVariation($productId,$validatedData['product_variations']);
-
-        return response()->json($product->load('product_variations'), 201);
+        return response()->json($product->refresh()->load('shop'), 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\Http\Response
-     */
     public function show($slug)
     {
-        $product = Product::with('shop', 'shop_category', 'product_variations', 'sub_category', 'brand')->where('slug', $slug)->firstOrFail();
+        $product = Product::with('shop', 'shopCategory', 'productVariation', 'subCategory', 'brand')->where('slug', $slug)->firstOrFail();
         return response()->json($product, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $slug)
     {
         $product = Product::where('slug', $slug)->firstOrFail();
@@ -82,7 +55,7 @@ class ProductController extends Controller
         $subCategory = $this->getSubCategory($request->sub_category_slug);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
-        $validatedData['shop_category_id'] = $subCategory->shop_category->id;
+        $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
         $validatedData['sub_category_id'] = $subCategory->id;
         $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
 
@@ -90,12 +63,6 @@ class ProductController extends Controller
         return response()->json($product, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Product  $product
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($slug)
     {
         Product::where('slug', $slug)->firstOrFail()->delete();
@@ -140,14 +107,20 @@ class ProductController extends Controller
         return SubCategory::where('slug', $slug)->first();
     }
 
-       /**
-     * Display a listing of the products by one shop.
-     */
-    public function getProductsByShop($slug)
+    public function getProductsByShop(Request $request, $slug)
     {
-        return Product::whereHas('shop', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->paginate(10);
+        $products = Shop::where('slug', $slug)->firstOrFail()->products();
+        return $products->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
+        // return Product::whereHas('shop', function ($q) use ($slug) {
+        //     $q->where('slug', $slug);
+        // })->with('shopCategory', 'brand')
+        //     ->where('name', 'LIKE', '%' . $request->filter . '%')
+        //     // ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+        //     ->orWhere('slug', $request->filter)
+        //     ->paginate(10);
     }
 
     private function getBrandId($slug)

@@ -6,77 +6,71 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\Shop;
+use App\Models\ShopBranch;
 use App\Models\ShopCategory;
 use App\Models\ShopTag;
-use App\Models\Product;
+use App\Models\Township;
 
 class ShopController extends Controller
 {
     use StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
-        return Shop::with('shop_categories', 'shop_tags')
+        return Shop::with('availableCategories', 'shopTags')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $shop = Shop::create($request->validate([
+        $validatedData = $request->validate([
             'slug' => 'required|unique:shops',
             'name' => 'required|unique:shops',
             'name_mm' => 'unique:shops',
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-            'shop_categories' => 'required|array',
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
-        ]));
+            'available_categories' => 'nullable|array',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'shop_branch' => 'required',
+            'shop_branch.name' => 'required|string',
+            'shop_branch.name_mm' => 'nullable|string',
+            'shop_branch.address' => 'required',
+            'shop_branch.contact_number' => 'required',
+            'shop_branch.opening_time' => 'required|date_format:H:i',
+            'shop_branch.closing_time' => 'required|date_format:H:i',
+            'shop_branch.latitude' => 'required|numeric',
+            'shop_branch.longitude' => 'required|numeric',
+            'shop_branch.township_slug' => 'required|exists:App\Models\Township,slug',
+        ]);
+        $townshipId = $this->getTownshipIdBySlug($request->shop_branch['township_slug']);
+
+        $shop = Shop::create($validatedData);
+        $shopId = $shop->id;
+
+        $this->createShopBranch($shopId, $townshipId, $validatedData['shop_branch']);
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
-        $shop->shop_tags()->attach($shopTags);
+        $shop->shopTags()->attach($shopTags);
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
-        $shop->shop_categories()->attach($shopCategories);
-
-        return response()->json($shop->load(['shop_tags', 'shop_categories']), 201);
+        if ($request->available_categories) {
+            $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
+            $shop->availableCategories()->attach($shopCategories);
+        }
+        return response()->json($shop->refresh()->load(['shopTags', 'availableCategories', 'shopBranches']), 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Shop  $shop
-     * @return \Illuminate\Http\Response
-     */
     public function show($slug)
     {
-        $shop = Shop::with('shop_categories','shop_tags')->where('slug', $slug)->firstOrFail();
+        $shop = Shop::with('availableCategories', 'shopTags')->where('slug', $slug)->firstOrFail();
         return response()->json($shop, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Shop  $shop
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
@@ -92,39 +86,28 @@ class ShopController extends Controller
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-            'shop_categories' => 'required|array',
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories' => 'nullable|array',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]));
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
-        $shop->shop_tags()->detach();
-        $shop->shop_tags()->attach($shopTags);
+        $shop->shopTags()->detach();
+        $shop->shopTags()->attach($shopTags);
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
-        $shop->shop_categories()->detach();
-        $shop->shop_categories()->attach($shopCategories);
-
-        return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
+        if ($request->available_categories) {
+            $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
+            $shop->availableCategories()->detach();
+            $shop->availableCategories()->attach($shopCategories);
+        }
+        return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Shop  $shop
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($slug)
     {
         Shop::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-    * Toggle the is_enable column for shop table.
-    *
-    * @param  int  $slug
-    * @return \Illuminate\Http\Response
-    */
     public function toggleEnable($slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
@@ -133,12 +116,6 @@ class ShopController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    /**
-    * Toggle the is_official column for shop table.
-    *
-    * @param  int  $slug
-    * @return \Illuminate\Http\Response
-    */
     public function toggleOfficial($slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
@@ -147,67 +124,45 @@ class ShopController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-        /**
-     * add  shop Categories in Shop
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Shop  $shop
-     * @return \Illuminate\Http\Response
-     */
+    private function createShopBranch($shopId, $townshipId, $shopBranch)
+    {
+        $shopBranch['slug'] = $this->generateUniqueSlug();
+        $shopBranch['shop_id'] = $shopId;
+        $shopBranch['township_id'] = $townshipId;
+        ShopBranch::create($shopBranch);
+    }
+
+    private function getTownshipIdBySlug($slug)
+    {
+        return Township::where('slug', $slug)->first()->id;
+    }
+
     public function addShopCategories(Request $request, $slug)
     {
         $shop =$request->validate([
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]);
 
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
-        $shop->shop_categories()->detach();
-        $shop->shop_categories()->attach($shopCategories);
+        $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
+        $shop->availableCategories()->detach();
+        $shop->availableCategories()->attach($shopCategories);
 
-        return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
+        return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
     }
 
-        /**
-     * remove  shop Categories in Shop
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Shop  $shop
-     * @return \Illuminate\Http\Response
-     */
     public function removeShopCategories(Request $request, $slug)
     {
         $shop =$request->validate([
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]);
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
-        $shop->shop_categories()->detach($shopCategories);
+        $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
+        $shop->availableCategories()->detach($shopCategories);
 
-        return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
+        return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
     }
 
-    //             /**
-    //  * add  products in Shop
-    //  *
-    //  * @param  \Illuminate\Http\Request  $request
-    //  * @param  \App\Models\Shop  $shop
-    //  * @return \Illuminate\Http\Response
-    //  */
-    // public function addProductsInShop(Request $request, $slug)
-    // {
-
-
-    //     $shop = Shop::where('slug', $slug)->firstOrFail();
-
-    //     // return $request;
-    //     $products = Product::whereIn('slug', $request->products)->pluck('id');
-    //     $shop->products()->delete();
-    //     $shop->products()->attach($products);
-    //     return $shop;
-
-    //     return response()->json($shop->load(['shop_categories', 'shop_tags']), 201);
-    // }
 }

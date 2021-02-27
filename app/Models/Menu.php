@@ -27,6 +27,7 @@ class Menu extends Model
         'restaurant_category_id',
         'created_at',
         'updated_at',
+        'pivot',
     ];
 
     protected $casts = [
@@ -38,18 +39,23 @@ class Menu extends Model
         return $this->belongsTo(Restaurant::class);
     }
 
-    public function restaurant_category()
+    public function restaurantCategory()
     {
         return $this->belongsTo(RestaurantCategory::class);
     }
 
-    public function menu_variations()
+    public function menuVariations()
     {
         return $this->hasMany(MenuVariation::class);
     }
 
-    public function menu_toppings()
+    public function menuToppings()
     {
         return $this->hasMany(MenuTopping::class);
+    }
+
+    public function restaurant_branches()
+    {
+        return $this->belongsToMany(RestaurantBranch::class, 'restaurant_branch_menu');
     }
 }
