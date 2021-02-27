@@ -37,6 +37,9 @@ class ProductController extends Controller
         $validatedData['sub_category_id'] = $subCategory->id;
         $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
         $product = Product::create($validatedData);
+        $productId = $product->id;
+        $this->createProductVariation($productId, $validatedData['product_variations']);
+
         return response()->json($product->refresh()->load('shop'), 201);
     }
 
