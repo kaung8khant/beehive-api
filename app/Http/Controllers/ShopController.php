@@ -140,12 +140,12 @@ class ShopController extends Controller
     public function addShopCategories(Request $request, $slug)
     {
         $shop =$request->validate([
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]);
 
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $shop->availableCategories()->detach();
         $shop->availableCategories()->attach($shopCategories);
 
@@ -155,11 +155,11 @@ class ShopController extends Controller
     public function removeShopCategories(Request $request, $slug)
     {
         $shop =$request->validate([
-            'shop_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]);
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $shopCategories = ShopCategory::whereIn('slug', $request->shop_categories)->pluck('id');
+        $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $shop->availableCategories()->detach($shopCategories);
 
         return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
