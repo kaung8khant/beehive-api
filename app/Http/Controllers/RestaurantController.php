@@ -57,11 +57,11 @@ class RestaurantController extends Controller
 
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
         $restaurant->restaurantTags()->attach($restaurantTags);
-
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
-        $restaurant->availableCategories()->attach($restaurantCategories);
-
-        return response()->json($restaurant->refresh()->load('restaurantTags', 'availableCategories', 'restaurantBranches'), 201);
+        if ($request->available_categories) {
+            $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
+            $restaurant->availableCategories()->attach($restaurantCategories);
+        }
+        return response()->json($restaurant->load('restaurantTags', 'availableCategories', 'restaurantBranches'), 201);
     }
 
     public function show($slug)
@@ -95,11 +95,11 @@ class RestaurantController extends Controller
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
         $restaurant->restaurantTags()->detach();
         $restaurant->restaurantTags()->attach($restaurantTags);
-
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
-        $restaurant->availableCategories()->detach();
-        $restaurant->availableCategories()->attach($restaurantCategories);
-
+        if ($request->available_categories) {
+            $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
+            $restaurant->availableCategories()->detach();
+            $restaurant->availableCategories()->attach($restaurantCategories);
+        }
         return response()->json($restaurant->load(['availableCategories', 'restaurantTags']), 200);
     }
 
