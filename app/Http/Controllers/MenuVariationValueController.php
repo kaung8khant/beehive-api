@@ -19,7 +19,7 @@ class MenuVariationValueController extends Controller
     public function index(Request $request)
     {
         return MenuVariationValue::with('menuVariation')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->where('value', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -86,8 +86,7 @@ class MenuVariationValueController extends Controller
     private function getParamsToValidate($slug = FALSE)
     {
         $params = [
-            'name' => 'required|string',
-            'value' => 'required',
+            'value' => 'required|string',
             'price' => 'required|numeric',
             'menu_variation_slug' => 'required|exists:App\Models\MenuVariation,slug',
         ];

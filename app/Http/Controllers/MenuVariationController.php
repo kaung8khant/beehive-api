@@ -90,8 +90,6 @@ class MenuVariationController extends Controller
         $params = [
             'name' => 'required|string',
             'name_mm' => 'nullable|string',
-            'description' => 'required|string',
-            'description_mm' => 'nullable|string',
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
         ];
 

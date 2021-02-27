@@ -25,6 +25,7 @@ class MenuController extends Controller
     public function index(Request $request)
     {
         return Menu::with('restaurant')
+            ->with('restaurantCategory')
             ->with('menuVariations')
             ->with('menuToppings')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
@@ -65,7 +66,9 @@ class MenuController extends Controller
      */
     public function show($slug)
     {
-        $menu = Menu::with('restaurant')->where('slug', $slug)->firstOrFail();
+        $menu = Menu::with('restaurant')->with('restaurantCategory')
+            ->with('menuVariations')
+            ->with('menuToppings')->where('slug', $slug)->firstOrFail();
         return response()->json($menu, 200);
     }
 
@@ -131,18 +134,14 @@ class MenuController extends Controller
             'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
             'menu_variations' => 'required|array',
             'menu_variations.*.name' => 'required|string',
-            'menu_variations.*.description' => 'required|string',
+            'menu_variations.*.name_mm' => 'required|string',
             'menu_toppings' => 'required|array',
             'menu_toppings.*.name' => 'required|string',
-            'menu_toppings.*.description' => 'required|string',
-
+            'menu_toppings.*.name_mm' => 'required|string',
             'menu_variations.*.menu_variation_values' => 'required|array',
-            'menu_variations.*.menu_variation_values.*.name' => 'required|string',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
-
             'menu_toppings.*.menu_topping_values' => 'required|array',
-            'menu_toppings.*.menu_topping_values.*.name' => 'required|string',
             'menu_toppings.*.menu_topping_values.*.value' => 'required|string',
             'menu_toppings.*.menu_topping_values.*.price' => 'required|numeric',
 
