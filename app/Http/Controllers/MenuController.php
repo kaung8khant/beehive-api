@@ -105,21 +105,19 @@ class MenuController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
+     *  Display a listing of the menus by one restaurant.
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
     public function getMenusByRestaurant(Request $request, $slug)
     {
-        $menus = Restaurant::where('slug', $slug)->firstOrFail()->menus();
-        return $menus->where('name', 'LIKE', '%' . $request->filter . '%')
+        return Menu::with('restaurantCategory')->whereHas('restaurant', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->paginate(10);
-        // return Menu::whereHas('restaurant', function ($q) use ($slug, $request) {
-        //     $q->where('slug', $slug);
-        // })->where('name', 'LIKE', '%' . $request->filter . '%')
-        // ->paginate(10);
+            ->orWhere('slug', $request->filter);
+        })->paginate(10);
     }
 
     private function getParamsToValidate($slug = false)

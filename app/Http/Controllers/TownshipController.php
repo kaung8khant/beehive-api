@@ -106,10 +106,21 @@ class TownshipController extends Controller
         return City::where('slug', $slug)->first()->id;
     }
 
-    public function getTownshipsByCity($slug)
+    /**
+    * Display a listing of the townships by one city.
+    *
+    * @param  \Illuminate\Http\Request  $request
+    * @param  string  $slug
+    * @return \Illuminate\Http\Response
+    */
+    public function getTownshipsByCity(Request $request, $slug)
     {
         return Township::whereHas('city', function ($q) use ($slug) {
             $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 }

@@ -136,23 +136,28 @@ class ShopBranchController extends Controller
     /**
      * Display a listing of the shop branches by one shop.
      */
-    public function getBranchesByShop($slug, Request $request)
+    public function getBranchesByShop(Request $request, $slug)
     {
         return ShopBranch::whereHas('shop', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->where('name', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('contact_number', $request->filter)
-        ->orWhere('slug', $request->filter)
-        ->paginate(10);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
+        })->paginate(10);
     }
 
     /**
      * Display a listing of the shop branches by one township.
      */
-    public function getBranchesByTownship($slug)
+    public function getBranchesByTownship(Request $request, $slug)
     {
         return ShopBranch::whereHas('township', function ($q) use ($slug) {
             $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 

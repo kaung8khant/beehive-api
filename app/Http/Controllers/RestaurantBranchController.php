@@ -132,27 +132,36 @@ class RestaurantBranchController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
+     * Display a listing of the restaurant branches by one restaurant.
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
-    public function getBranchesByRestaurant($slug, Request $request)
+    public function getBranchesByRestaurant(Request $request, $slug)
     {
-        return RestaurantBranch::whereHas('restaurant', function ($q) use ($slug, $request) {
+        return RestaurantBranch::whereHas('restaurant', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->where('name', 'LIKE', '%' . $request->filter . '%')
-        ->paginate(10);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
+        })->paginate(10);
     }
 
     /**
-     * Display a listing of the resource.
-     *
+     * Display a listing of the restaurant branches by one township.
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
-    public function getBranchesByTownship($slug)
+    public function getBranchesByTownship(Request $request, $slug)
     {
         return RestaurantBranch::whereHas('township', function ($q) use ($slug) {
             $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 
