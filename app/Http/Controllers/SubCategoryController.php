@@ -19,7 +19,7 @@ class SubCategoryController extends Controller
      */
     public function index(Request $request)
     {
-        return SubCategory::with('shop_category')
+        return SubCategory::with('shopCategory')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -38,7 +38,7 @@ class SubCategoryController extends Controller
 
         $validatedData = $request->validate([
             'name' => 'required|unique:sub_categories',
-            'name_mm' => 'unique:sub_categories',
+            'name_mm' => 'nullable|unique:sub_categories',
             'slug' => 'required|unique:sub_categories',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ]);
@@ -46,7 +46,7 @@ class SubCategoryController extends Controller
         $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
 
         $subCategory = SubCategory::create($validatedData);
-        return response()->json($subCategory->load('shop_category'), 201);
+        return response()->json($subCategory->load('shopCategory'), 201);
     }
 
     /**
@@ -57,7 +57,7 @@ class SubCategoryController extends Controller
      */
     public function show($slug)
     {
-        $subCategory = SubCategory::with('shop_category')->where('slug', $slug)->firstOrFail();
+        $subCategory = SubCategory::with('shopCategory')->where('slug', $slug)->firstOrFail();
         return response()->json($subCategory, 200);
     }
 
@@ -93,7 +93,7 @@ class SubCategoryController extends Controller
             ]);
         }
 
-        return response()->json($subCategory->load('shop_category')->unsetRelation('products'), 200);
+        return response()->json($subCategory->load('shopCategory')->unsetRelation('products'), 200);
     }
 
     /**
@@ -115,10 +115,10 @@ class SubCategoryController extends Controller
 
     public function getSubCategoriesByCategory($slug, Request $request)
     {
-        return SubCategory::whereHas('shop_category', function ($q) use ($slug) {
+        return SubCategory::whereHas('shopCategory', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where('name', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('slug', $request->filter)->paginate(10);
+        ->orWhere('slug', $request->filter)
+        ->paginate(10);
     }
 }

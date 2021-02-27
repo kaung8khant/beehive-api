@@ -51,7 +51,6 @@ class ShopBranchController extends Controller
             'longitude' => 'required',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'township_slug' => 'required|exists:App\Models\Township,slug',
-            'is_enable' => 'nullable|boolean',
         ]);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
@@ -101,7 +100,6 @@ class ShopBranchController extends Controller
             'longitude' => 'required',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'township_slug' => 'required|exists:App\Models\Township,slug',
-            'is_enable' => 'nullable|boolean',
         ]);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
@@ -136,11 +134,14 @@ class ShopBranchController extends Controller
     /**
      * Display a listing of the shop branches by one shop.
      */
-    public function getBranchesByShop($slug)
+    public function getBranchesByShop($slug, Request $request)
     {
         return ShopBranch::whereHas('shop', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->paginate(10);
+        })->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('contact_number', $request->filter)
+        ->orWhere('slug', $request->filter)
+        ->paginate(10);
     }
 
     /**

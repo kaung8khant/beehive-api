@@ -30,7 +30,7 @@ class MenuVariation extends Model
         return $this->belongsTo(Menu::class);
     }
 
-    public function menu_variation_values()
+    public function menuVariationValues()
     {
         return $this->hasMany(MenuVariationValue::class);
     }

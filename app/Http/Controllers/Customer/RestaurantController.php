@@ -6,61 +6,60 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Restaurant;
-use App\Models\Customer;
 
 class RestaurantController extends Controller
 {
-    protected $customer_id;
-     /**
-     * Create a new ShopController instance.
-     *
-     * @return void
-     */
-     public function __construct()
-        {
-            if (Auth::guard('customers')->check()) {
-                $this->customer_id = Auth::guard('customers')->user()->id;
-            }
-        }
+    protected $customer;
 
-     /**
-     * Set the favorite restaurant  for favorite_restaurant table.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
+    public function __construct()
+    {
+        if (Auth::guard('customers')->check()) {
+            $this->customer = Auth::guard('customers')->user();
+        }
+    }
+
+    public function getRestaurants(Request $request)
+    {
+        return Restaurant::with('restaurantBranches', 'availableCategories', 'restaurantTags')
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
+    }
+
+    public function show($slug)
+    {
+        return Restaurant::with('restaurantBranches', 'availableCategories', 'restaurantTags')->where('slug', $slug)->first();
+    }
+
+    public function getFavoriteRestaurants()
+    {
+        return $this->customer->restaurants()->paginate(10);
+    }
+
     public function setFavoriteRestaurant($slug)
     {
-        $customer = Customer::where('id', $this->customer_id)->firstOrFail();
-
-        $restaurant = Restaurant::where("id",$slug)->firstOrFail();
+        $restaurantId = $this->getRestaurantId($slug);
 
         try {
-
-            $customer->restaurants()->attach($slug);
-
-          } catch (\Illuminate\Database\QueryException $e) {
-
-            return "Restaurant is already exit.";
-          }
+            $this->customer->restaurants()->attach($restaurantId);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'You already set favorite this restaurant.'], 409);
+        }
 
         return response()->json(['message' => 'Success.'], 200);
     }
 
-     /**
-     * remove the favorite restaurant  for favorite_restaurant table.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     public function removeFavoriteRestaurant($slug)
     {
-        $customer = Customer::where('id', $this->customer_id)->firstOrFail();
+        $restaurantId = $this->getRestaurantId($slug);
 
-        $restaurant = Restaurant::where("id",$slug)->firstOrFail();
-
-        $customer->restaurants()->detach($slug);
-
+        $this->customer->restaurants()->detach($restaurantId);
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    private function getRestaurantId($slug)
+    {
+        return Restaurant::where('slug', $slug)->firstOrFail()->id;
     }
 }

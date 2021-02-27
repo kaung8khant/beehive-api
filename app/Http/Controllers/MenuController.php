@@ -99,6 +99,19 @@ class MenuController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getMenusByRestaurant(Request $request, $slug)
+    {
+        return Menu::whereHas('restaurant', function ($q) use ($slug, $request) {
+            $q->where('slug', $slug);
+        })->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->paginate(10);
+    }
+
     private function getParamsToValidate($slug = false)
     {
         $params = [

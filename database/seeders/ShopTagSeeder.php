@@ -28,6 +28,7 @@ class ShopTagSeeder extends Seeder
                 "slug" => $this->generateUniqueSlug(),
             ],
         ];
+
         foreach ($tags as $tag) {
             ShopTag::create($tag);
         }

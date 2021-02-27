@@ -20,10 +20,10 @@ class CreateRatingsTable extends Migration
             $table->integer('receiver_id');
             $table->enum('receiver_type', ['restaurant', 'shop', 'biker']);
             $table->integer('rating');
-            $table->text('review');
+            $table->text('review')->nullable();
+            $table->timestamps();
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
-            $table->timestamps();
         });
     }
 

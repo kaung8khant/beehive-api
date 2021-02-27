@@ -23,10 +23,8 @@ class BrandFactory extends Factory
      */
     public function definition()
     {
-        $mmFaker = app('Faker');
         return [
-            'name' => $this->faker->text(30),
-            'name_mm' => $mmFaker->name(5),
+            'name' => $this->faker->unique()->text(30),
             "slug" => $this->generateUniqueSlug(),
         ];
     }

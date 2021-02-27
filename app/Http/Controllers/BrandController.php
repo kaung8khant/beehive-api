@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StringHelper;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class BrandController extends Controller
 {
+    use StringHelper;
     /**
      * Display a listing of the resource.
      *
@@ -16,7 +18,6 @@ class BrandController extends Controller
     public function index(Request $request)
     {
         return Brand::where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->paginate(10);
     }
 
@@ -33,7 +34,6 @@ class BrandController extends Controller
         $brand = Brand::create($request->validate(
             [
                 'name' => 'required|unique:brands',
-                'name_mm' => 'unique:brands',
                 'slug' => 'required|unique:brands',
             ]
         ));
@@ -67,9 +67,6 @@ class BrandController extends Controller
         $brand->update($request->validate([
             'name' => [
                 'required',
-                Rule::unique('brands')->ignore($brand->id),
-            ],
-            'name_mm' => [
                 Rule::unique('brands')->ignore($brand->id),
             ],
         ]));

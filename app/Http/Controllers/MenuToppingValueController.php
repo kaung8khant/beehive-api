@@ -18,7 +18,7 @@ class MenuToppingValueController extends Controller
      */
     public function index(Request $request)
     {
-        return MenuToppingValue::with('menu_topping')
+        return MenuToppingValue::with('menuTopping')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
@@ -38,7 +38,7 @@ class MenuToppingValueController extends Controller
         $validatedData['menu_topping_id'] = $this->getMenuToppingId($request->menu_topping_slug);
 
         $menuToppingValue = MenuToppingValue::create($validatedData);
-        return response()->json($menuToppingValue->load('menu_topping'), 201);
+        return response()->json($menuToppingValue->load('menuTopping'), 201);
     }
 
     /**
@@ -49,7 +49,7 @@ class MenuToppingValueController extends Controller
      */
     public function show($slug)
     {
-        $menuToppingValue = MenuToppingValue::with('menu_topping')->where('slug', $slug)->firstOrFail();
+        $menuToppingValue = MenuToppingValue::with('menuTopping')->where('slug', $slug)->firstOrFail();
         return response()->json($menuToppingValue, 200);
     }
 
@@ -68,7 +68,7 @@ class MenuToppingValueController extends Controller
         $validatedData['menu_topping_id'] = $this->getMenuToppingId($request->menu_topping_slug);
 
         $menuToppingValue->update($validatedData);
-        return response()->json($menuToppingValue->load('menu_topping'), 200);
+        return response()->json($menuToppingValue->load('menuTopping'), 200);
     }
 
     /**

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Customer;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Helpers\StringHelper;
@@ -9,7 +10,6 @@ use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\OrderContact;
 use App\Models\OrderItem;
-use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Menu;
 
@@ -17,17 +17,20 @@ class OrderController extends Controller
 {
     use StringHelper;
 
-    public function index(Request $request)
+    protected $customer_id;
+
+    public function __construct()
     {
-        return Order::with('orderContact')
-            ->whereDate('order_date', '>=', $request->from)
-            ->whereDate('order_date', '<=', $request->to)
-            ->where('order_type', $request->type)
-            ->whereHas('orderContact', function ($q) use ($request) {
-                $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('phone_number', $request->filter);
-            })->orWhere('slug', $request->filter)
-            ->orderBy('id', 'desc')
+        if (Auth::guard('customers')->check()) {
+            $this->customer_id = Auth::guard('customers')->user()->id;
+        }
+    }
+
+    public function index()
+    {
+        return Order::whereHas('orderContact', function ($q) {
+                $q->where('customer_id', 1);
+            })
             ->paginate(10);
     }
 
@@ -36,7 +39,7 @@ class OrderController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $validatedData = $this->validateOrder($request);
-        $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
+        $validatedData['customer_id'] = $this->customer_id;
 
         $order = Order::create($validatedData);
         $orderId = $order->id;
@@ -50,28 +53,10 @@ class OrderController extends Controller
 
     public function show($slug)
     {
-        $order = Order::with('orderContact')
-            ->with('orderItems')
-            ->where('slug', $slug)
-            ->firstOrFail();
-        return response()->json($order, 200);
-    }
-
-    public function update(Request $request, $slug)
-    {
-        // $order = Order::where('slug', $slug)->firstOrFail();
-
-        // $validatedData = $request->validate([
-        //     'special_instruction' => 'nullable',
-        //     'order_date' => 'required|date_format:Y-m-d',
-        //     'order_type' => 'required|in:restaurant,shop',
-        //     'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
-        //     'delivery_mode' => 'required|in:package,delivery',
-        //     'rating' => 'required|in:1,2,3,4,5',
-        // ]);
-
-        // $order->update($validatedData);
-        // return response()->json($order, 200);
+        return Order::where('slug', $slug)
+            ->whereHas('orderContact', function ($q) {
+                $q->where('customer_id', 1);
+            })->firstOrFail();
     }
 
     public function destroy($slug)
@@ -90,7 +75,6 @@ class OrderController extends Controller
     {
         $rules = [
             'slug' => 'required|unique:orders',
-            'customer_slug' => 'required|exists:App\Models\Customer,slug',
             'order_date' => 'required|date_format:Y-m-d',
             'special_instruction' => 'nullable',
             'order_type' => 'required|in:restaurant,shop',
@@ -128,7 +112,6 @@ class OrderController extends Controller
         OrderStatus::create([
             'order_id' => $orderId,
             'status' => $status,
-            'created_by' => Auth::guard('users')->user()->name,
         ]);
     }
 
@@ -153,11 +136,6 @@ class OrderController extends Controller
         }
     }
 
-    private function getCustomerId($slug)
-    {
-        return Customer::where('slug', $slug)->first()->id;
-    }
-
     private function getMenuId($slug)
     {
         return Menu::where('slug', $slug)->first()->id;
@@ -166,11 +144,5 @@ class OrderController extends Controller
     private function getProductId($slug)
     {
         return Product::where('slug', $slug)->first()->id;
-    }
-
-    public function getOrdersByCustomer($slug)
-    {
-        $customerId = $this->getCustomerId($slug);
-        return Order::where('customer_id', $customerId)->orderBy('id', 'desc')->paginate(10);
     }
 }

@@ -5,67 +5,61 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Customer;
 use App\Models\Shop;
 
 class ShopController extends Controller
 {
-    protected $customer_id;
-/**
-     * Create a new ShopController instance.
-     *
-     * @return void
-     */
+    protected $customer;
+
     public function __construct()
     {
         if (Auth::guard('customers')->check()) {
-            $this->customer_id = Auth::guard('customers')->user()->id;
+            $this->customer = Auth::guard('customers')->user();
         }
     }
 
+    public function index(Request $request)
+    {
+        return Shop::with('availableCategories', 'shopTags')
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
+    }
 
-     /**
-     * Set the favorite shop  for favorite_shop table.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
+    public function show($slug)
+    {
+        return Shop::with('availableCategories', 'shopTags')->where('slug', $slug)->first();
+    }
+
+    public function getFavoriteShops()
+    {
+        return $this->customer->shops()->with('availableCategories', 'shopTags')->paginate(10);
+    }
 
     public function setFavoriteShop($slug)
     {
-        $customer = Customer::where('id', $this->customer_id)->firstOrFail();
-        $shop = Shop::where("id",$slug)->firstOrFail();
+        $shopId = $this->getShopId($slug);
+
         try {
-
-            $customer->shops()->attach($slug);
-
-          } catch (\Illuminate\Database\QueryException $e) {
-
-            return "Shop is already exit.";
-          }
+            $this->customer->shops()->attach($shopId);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['message' => 'You already set favorite this shop.'], 409);
+        }
 
         return response()->json(['message' => 'Success.'], 200);
     }
-
-
-
-     /**
-     * remove the favorite shop  for favorite_shop table.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
 
     public function removeFavoriteShop($slug)
     {
-        $customer = Customer::where('id', $this->customer_id)->firstOrFail();
+        $shopId = $this->getShopId($slug);
 
-        $shop = Shop::where("id",$slug)->firstOrFail();
-
-        $customer->shops()->detach($slug);
-
+        $this->customer->shops()->detach($shopId);
         return response()->json(['message' => 'Success.'], 200);
     }
 
-
+    private function getShopId($slug)
+    {
+        return Shop::where('slug', $slug)->firstOrFail()->id;
+    }
 }

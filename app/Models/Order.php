@@ -11,6 +11,7 @@ class Order extends Model
 
     protected $fillable = [
         'slug',
+        'customer_id',
         'order_date',
         'order_type',
         'special_instruction',
@@ -21,23 +22,24 @@ class Order extends Model
 
     protected $hidden = [
         'id',
+        'customer_id',
         'created_at',
         'updated_at',
     ];
 
     protected $appends = array('order_status');
 
-    public function order_contact()
+    public function orderContact()
     {
         return $this->hasOne(OrderContact::class);
     }
 
-    public function order_statuses()
+    public function orderStatuses()
     {
         return $this->hasMany(OrderStatus::class);
     }
 
-    public function order_items()
+    public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
@@ -49,7 +51,7 @@ class Order extends Model
 
     public function getOrderStatusAttribute()
     {
-        return $this->order_statuses()->latest()->first()->status;
+        return $this->orderStatuses()->latest()->first()->status;
     }
 
     // public function getOrderTotalAttribute()
