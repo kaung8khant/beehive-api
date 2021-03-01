@@ -11,7 +11,6 @@ class MenuToppingValue extends Model
 
     protected $fillable = [
         'slug',
-        'name',
         'value',
         'price',
         'menu_topping_id',

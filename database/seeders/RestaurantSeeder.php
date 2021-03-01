@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
+use App\Models\Menu;
 
 class RestaurantSeeder extends Seeder
 {
@@ -15,6 +16,8 @@ class RestaurantSeeder extends Seeder
      */
     public function run()
     {
-        Restaurant::factory()->count(20)->has(RestaurantBranch::factory()->count(3))->create();
+        Restaurant::factory()->count(50)
+            ->has(RestaurantBranch::factory()->count(5))
+            ->create();
     }
 }

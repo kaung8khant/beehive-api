@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
+use App\Models\Product;
 use App\Models\ShopBranch;
 use App\Models\Shop;
 use App\Models\Township;
@@ -51,6 +52,7 @@ class ShopBranchController extends Controller
             'longitude' => 'required',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'township_slug' => 'required|exists:App\Models\Township,slug',
+            'is_enable' => 'required|boolean',
         ]);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
@@ -100,6 +102,7 @@ class ShopBranchController extends Controller
             'longitude' => 'required',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'township_slug' => 'required|exists:App\Models\Township,slug',
+            'is_enable' => 'required|boolean',
         ]);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
@@ -134,23 +137,28 @@ class ShopBranchController extends Controller
     /**
      * Display a listing of the shop branches by one shop.
      */
-    public function getBranchesByShop($slug, Request $request)
+    public function getBranchesByShop(Request $request, $slug)
     {
         return ShopBranch::whereHas('shop', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->where('name', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('contact_number', $request->filter)
-        ->orWhere('slug', $request->filter)
-        ->paginate(10);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
+        })->paginate(10);
     }
 
     /**
      * Display a listing of the shop branches by one township.
      */
-    public function getBranchesByTownship($slug)
+    public function getBranchesByTownship(Request $request, $slug)
     {
         return ShopBranch::whereHas('township', function ($q) use ($slug) {
             $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 
@@ -166,5 +174,34 @@ class ShopBranchController extends Controller
         $shopBranch->is_enable = !$shopBranch->is_enable;
         $shopBranch->save();
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function addAvailableProducts(Request $request, $slug)
+    {
+        $shopBranch = $request->validate([
+            'available_menus.*' => 'exists:App\Models\Menu,slug',
+        ]);
+
+        $shopBranch = ShopBranch::where('slug', $slug)->firstOrFail();
+
+        $availableProducts = Product::whereIn('slug', $request->available_products)->pluck('id');
+        $shopBranch->availableProducts()->detach();
+        $shopBranch->availableProducts()->attach($availableProducts);
+
+        return response()->json($shopBranch->load(['availableProducts', 'shop','township']), 201);
+    }
+
+    public function removeAvailableProducts(Request $request, $slug)
+    {
+        $shopBranch = $request->validate([
+            'available_menus.*' => 'exists:App\Models\Menu,slug',
+        ]);
+
+        $shopBranch = ShopBranch::where('slug', $slug)->firstOrFail();
+
+        $availableProducts = Product::whereIn('slug', $request->available_products)->pluck('id');
+        $shopBranch->availableProducts()->detach($availableProducts);
+
+        return response()->json($shopBranch->load(['availableProducts', 'shop','township']), 201);
     }
 }

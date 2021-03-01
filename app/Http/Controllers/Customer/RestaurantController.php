@@ -18,10 +18,9 @@ class RestaurantController extends Controller
         }
     }
 
-    public function getRestaurants(Request $request)
+    public function index(Request $request)
     {
-        return Restaurant::with('restaurantBranches', 'availableCategories', 'restaurantTags')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
+        return Restaurant::where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
@@ -29,7 +28,7 @@ class RestaurantController extends Controller
 
     public function show($slug)
     {
-        return Restaurant::with('restaurantBranches', 'availableCategories', 'restaurantTags')->where('slug', $slug)->first();
+        return Restaurant::with('availableCategories', 'restaurantTags')->where('slug', $slug)->first();
     }
 
     public function getFavoriteRestaurants()

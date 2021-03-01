@@ -110,20 +110,32 @@ class ProductController extends Controller
         return SubCategory::where('slug', $slug)->first();
     }
 
+    /**
+    * Display a listing of the products by one shop.
+    */
     public function getProductsByShop(Request $request, $slug)
     {
-        $products = Shop::where('slug', $slug)->firstOrFail()->products();
-        return $products->where('name', 'LIKE', '%' . $request->filter . '%')
+        return Product::with('shopCategory', 'brand')->whereHas('shop', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->paginate(10);
-        // return Product::whereHas('shop', function ($q) use ($slug) {
-        //     $q->where('slug', $slug);
-        // })->with('shopCategory', 'brand')
-        //     ->where('name', 'LIKE', '%' . $request->filter . '%')
-        //     // ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-        //     ->orWhere('slug', $request->filter)
-        //     ->paginate(10);
+            ->orWhere('slug', $request->filter);
+        })->paginate(10);
+    }
+
+    /**
+    * Display available products by one shop branch.
+    */
+    public function getAvailableProductsByShopBranch(Request $request, $slug)
+    {
+        return Product::with('shopCategory', 'brand')->whereHas('shop', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
+        })->paginate(10);
     }
 
     private function getBrandId($slug)

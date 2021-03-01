@@ -93,14 +93,16 @@ class ShopTagController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display a listing of the shop tags by one shop.
      */
-    public function getTagsByShop($slug)
+    public function getTagsByShop(Request $request, $slug)
     {
         return ShopTag::whereHas('shops', function ($q) use ($slug) {
             $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 }

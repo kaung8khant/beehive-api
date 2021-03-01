@@ -16,7 +16,6 @@ class CreateMenuToppingValuesTable extends Migration
         Schema::create('menu_topping_values', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique();
-            $table->string('name');
             $table->string('value');
             $table->decimal('price', 12, 2);
             $table->unsignedBigInteger('menu_topping_id');
