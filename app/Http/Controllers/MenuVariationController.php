@@ -73,6 +73,17 @@ class MenuVariationController extends Controller
         return response()->json($menuVariation->load('menu'), 200);
     }
 
+    public function getVariationsByMenu(Request $request, $slug)
+    {
+        return MenuVariation::with('menuVariationValues')->whereHas('menu', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })->paginate(10);
+    }
+
     /**
      * Remove the specified resource from storage.
      *
