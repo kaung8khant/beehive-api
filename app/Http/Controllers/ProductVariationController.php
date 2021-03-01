@@ -104,7 +104,7 @@ class ProductVariationController extends Controller
         return Product::where('slug', $slug)->first()->id;
     }
 
-    public function getProductVariationByProduct($slug, Request $request)
+    public function getProductVariationsByProduct($slug, Request $request)
     {
         return ProductVariation::whereHas('product', function ($q) use ($slug) {
             $q->where('slug', $slug);
@@ -112,4 +112,5 @@ class ProductVariationController extends Controller
         ->orWhere('slug', $request->filter)
         ->paginate(10);
     }
+
 }

@@ -58,9 +58,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('products', 'ProductController');
             Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
-            Route::post('shops/add-products/{slug}', 'ShopController@addProductsInShop');
 
             Route::resource('product-variations', 'ProductVariationController');
+            Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
+
 
 
             Route::resource('product-variation-values', 'ProductVariationValueController');
