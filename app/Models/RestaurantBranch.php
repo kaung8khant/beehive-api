@@ -37,6 +37,13 @@ class RestaurantBranch extends Model
         'is_enable' => 'boolean',
     ];
 
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        return '';
+    }
+
     public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);
