@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\MenuTopping;
 use App\Models\Menu;
@@ -20,7 +19,6 @@ class MenuToppingController extends Controller
     public function index(Request $request)
     {
         return MenuTopping::with('menu')
-            ->with("menuToppingValues")
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
@@ -87,7 +85,7 @@ class MenuToppingController extends Controller
 
     public function getToppingsByMenu(Request $request, $slug)
     {
-        return MenuTopping::with('menuToppingValues')->whereHas('menu', function ($q) use ($slug) {
+        return MenuTopping::whereHas('menu', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
@@ -102,6 +100,7 @@ class MenuToppingController extends Controller
         $params = [
             'name' => 'required|string',
             'name_mm' => 'nullable|string',
+            'price' => 'required|numerice',
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
         ];
 

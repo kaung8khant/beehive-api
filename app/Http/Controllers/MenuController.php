@@ -11,7 +11,6 @@ use App\Models\RestaurantCategory;
 use App\Models\MenuVariation;
 use App\Models\MenuVariationValue;
 use App\Models\MenuTopping;
-use App\Models\MenuToppingValue;
 
 class MenuController extends Controller
 {
@@ -27,7 +26,7 @@ class MenuController extends Controller
         return Menu::with('restaurant')
             ->with('restaurantCategory')
             ->with('menuVariations')->with('menuVariations.menuVariationValues')
-            ->with('menuToppings')->with('menuToppings.menuToppingValues')
+            ->with('menuToppings')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -55,7 +54,7 @@ class MenuController extends Controller
         $this->createVariations($menuId, $validatedData['menu_variations']);
         $this->createToppings($menuId, $validatedData['menu_toppings']);
 
-        return response()->json($menu->refresh()->load('menuVariations', 'menuToppings', 'menuVariations.menuVariationValues', 'menuToppings.menuToppingValues'), 201);
+        return response()->json($menu->refresh()->load('menuVariations', 'menuToppings', 'menuVariations.menuVariationValues'), 201);
     }
 
     /**
@@ -68,7 +67,7 @@ class MenuController extends Controller
     {
         $menu = Menu::with('restaurant')->with('restaurantCategory')
             ->with('menuVariations')->with('menuVariations.menuVariationValues')
-            ->with('menuToppings')->with('menuToppings.menuToppingValues')
+            ->with('menuToppings')
             ->where('slug', $slug)->firstOrFail();
         return response()->json($menu, 200);
     }
@@ -122,18 +121,18 @@ class MenuController extends Controller
     }
 
     /**
-    *  Display a available menus by one restaurant branch.
-    * @param  string  $slug
-    * @return \Illuminate\Http\Response
-    */
+     *  Display a available menus by one restaurant branch.
+     * @param  string  $slug
+     * @return \Illuminate\Http\Response
+     */
     public function getAvailableMenusByRestaurantBranch(Request $request, $slug)
     {
         return Menu::with('restaurantCategory')->whereHas('restaurant_branches', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter .'%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter);
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 
@@ -153,13 +152,10 @@ class MenuController extends Controller
             'menu_toppings' => 'required|array',
             'menu_toppings.*.name' => 'required|string',
             'menu_toppings.*.name_mm' => 'required|string',
+            'menu_toppings.*.price' => 'required|numeric',
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
-            'menu_toppings.*.menu_topping_values' => 'required|array',
-            'menu_toppings.*.menu_topping_values.*.value' => 'required|string',
-            'menu_toppings.*.menu_topping_values.*.price' => 'required|numeric',
-
         ];
 
         if ($slug) {
@@ -194,20 +190,11 @@ class MenuController extends Controller
         foreach ($toppings as $topping) {
             $topping['slug'] = $this->generateUniqueSlug();
             $topping['menu_id'] = $menuId;
-            $menuTopping = MenuTopping::create($topping);
-            $toppingId = $menuTopping->id;
-            $this->createToppingValues($toppingId, $topping['menu_topping_values']);
+            MenuTopping::create($topping);
         }
     }
 
-    private function createToppingValues($toppingId, $toppingValues)
-    {
-        foreach ($toppingValues as $toppingValue) {
-            $toppingValue['slug'] = $this->generateUniqueSlug();
-            $toppingValue['menu_topping_id'] = $toppingId;
-            MenuToppingValue::create($toppingValue);
-        }
-    }
+
 
     private function getRestaurantId($slug)
     {
