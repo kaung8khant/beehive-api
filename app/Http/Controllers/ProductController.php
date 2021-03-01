@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Restaurant;
 use App\Models\Shop;
 use App\Models\SubCategory;
+use App\Models\ProductVariation;
 
 class ProductController extends Controller
 {
@@ -35,8 +36,10 @@ class ProductController extends Controller
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
         $validatedData['sub_category_id'] = $subCategory->id;
         $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
-
         $product = Product::create($validatedData);
+        $productId = $product->id;
+        $this->createProductVariation($productId, $validatedData['product_variations']);
+
         return response()->json($product->refresh()->load('shop'), 201);
     }
 
@@ -80,6 +83,14 @@ class ProductController extends Controller
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'sub_category_slug' => 'required|exists:App\Models\SubCategory,slug',
             'brand_slug' => 'required|exists:App\Models\Brand,slug',
+
+            'product_variations' => 'required|array',
+            'product_variations.*.slug' => '',
+            'product_variations.*.name' => 'required|string',
+            'product_variations.*.name_mm' => 'nullable|string',
+            'product_variations.*.description' => 'required|string',
+            'product_variations.*.description_mm' => 'nullable|string',
+
         ];
 
         if ($slug) {
@@ -130,5 +141,15 @@ class ProductController extends Controller
     private function getBrandId($slug)
     {
         return Brand::where('slug', $slug)->first()->id;
+    }
+
+    private function createProductVariation($productId, $productVariations)
+    {
+
+        foreach ($productVariations as $productVariation) {
+            $productVariation['slug'] = $this->generateUniqueSlug();
+            $productVariation['product_id'] = $productId;
+            ProductVariation::create($productVariation);
+        }
     }
 }
