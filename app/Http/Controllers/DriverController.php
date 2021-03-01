@@ -92,4 +92,17 @@ class DriverController extends Controller
         $driver->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
+
+    public function toggleEnable($slug)
+    {
+        $driver = User::where('slug', $slug)->firstOrFail();
+
+        if ($driver->id === Auth::guard('users')->user()->id) {
+            return response()->json(['message' => 'You cannot change your own status.'], 406);
+        }
+
+        $driver->is_enable = !$driver->is_enable;
+        $driver->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
 }

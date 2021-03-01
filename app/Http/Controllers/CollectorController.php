@@ -93,4 +93,17 @@ class CollectorController extends Controller
         $collector->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
+
+    public function toggleEnable($slug)
+    {
+        $collector = User::where('slug', $slug)->firstOrFail();
+
+        if ($collector->id === Auth::guard('users')->user()->id) {
+            return response()->json(['message' => 'You cannot change your own status.'], 406);
+        }
+
+        $collector->is_enable = !$collector->is_enable;
+        $collector->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
 }

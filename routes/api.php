@@ -36,8 +36,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('customers/toggle-enable/{slug}', 'CustomerController@toggleEnable');
 
             Route::resource('drivers', 'DriverController');
+            Route::patch('drivers/toggle-enable/{slug}', 'DriverController@toggleEnable');
 
             Route::resource('collectors', 'CollectorController');
+            Route::patch('collectors/toggle-enable/{slug}', 'CollectorController@toggleEnable');
 
             Route::resource('cities', 'CityController');
             Route::resource('townships', 'TownshipController');
@@ -67,8 +69,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('product-variation-values', 'ProductVariationValueController');
             Route::resource('shop-branches', 'ShopBranchController');
             Route::get('shop-branches/{slug}/products', 'ProductController@getAvailableProductsByShopBranch');
-            Route::post('shop-branches/add-shop-products/{slug}', 'ShopBranchController@addAvailableProducts');
-            Route::post('shop-branches/remove-shop-products/{slug}', 'ShopBranchController@removeAvailableProducts');
+            Route::post('shop-branches/add-available-products/{slug}', 'ShopBranchController@addAvailableProducts');
+            Route::post('shop-branches/remove-available-products/{slug}', 'ShopBranchController@removeAvailableProducts');
             Route::patch('shop-branches/toggle-enable/{slug}', 'ShopBranchController@toggleEnable');
             Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop');
             Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship');
@@ -86,16 +88,16 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
             Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
             Route::resource('menus', 'MenuController');
-            Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
             Route::resource('menu-variations', 'MenuVariationController');
             Route::resource('menu-variation-values', 'MenuVariationValueController');
             Route::resource('menu-toppings', 'MenuToppingController');
-            Route::resource('menu-topping-values', 'MenuToppingValueController');
             Route::get('restaurants/{slug}/menus', 'MenuController@getMenusByRestaurant');
+            Route::get('menus/{slug}/menu-variations', 'MenuVariationController@getVariationsByMenu');
+            Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
             Route::resource('restaurant-branches', 'RestaurantBranchController');
             Route::get('restaurant-branches/{slug}/menus', 'MenuController@getAvailableMenusByRestaurantBranch');
-            Route::post('restaurant-branches/add-restaurant-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
-            Route::post('restaurant-branches/remove-restaurant-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
+            Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
+            Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
             Route::patch('restaurant-branches/toggle-enable/{slug}', 'RestaurantBranchController@toggleEnable');
             Route::get('restaurants/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByRestaurant');
             Route::get('townships/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');
