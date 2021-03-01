@@ -4,34 +4,41 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Helpers\StringHelper;
+use App\Helpers\ResponseHelper;
 use App\Models\Customer;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CustomerAuthController extends Controller
 {
     use StringHelper;
+    use ResponseHelper;
 
     public function login(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'phone_number' => 'required|string',
             'password' => 'required|string|min:6',
         ]);
+
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+        }
 
         $result = $this->attemptLogin($request);
 
         if ($result) {
             if ($result === 'disabled') {
-                return response()->json(['message' => 'Your accout is disabled. Contact support for more information.'], 403);
+                return $this->generateResponse('Your accout is disabled. Contact support for more information.', 403, TRUE);
             }
 
-            return response()->json(['token' => $result], 200);
+            return $this->generateResponse(['token' => $result], 200);
         }
 
-        return response()->json(['message' => 'Your phone number or password is incorrect.'], 401);
+        return $this->generateResponse('Your phone number or password is incorrect.', 401, TRUE);
     }
 
     private function attemptLogin(Request $request)
@@ -56,7 +63,7 @@ class CustomerAuthController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate([
+        $validator = Validator::make($request->all(), [
             'slug' => 'required|unique:customers',
             'username' => 'required|string|min:3|max:100|unique:customers',
             'email' => 'nullable|email|unique:customers',
@@ -66,27 +73,34 @@ class CustomerAuthController extends Controller
             'gender' => 'required|in:male,female',
         ]);
 
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+        }
+
+        $validatedData = $validator->validated();
         $validatedData['password'] = Hash::make($validatedData['password']);
 
         $customer = Customer::create($validatedData);
         $token = JWTAuth::claims($customer->toArray())->fromUser($customer->refresh());
 
-        return response()->json(['token' => $token], 201);
+        return $this->generateResponse(['token' => $token], 200);
     }
 
     public function logout()
     {
         Auth::guard('customers')->logout();
-        return response()->json(['message' => 'Customer successfully logged out.'], 200);
+        return $this->generateResponse('Customer successfully logged out.', 200, TRUE);
     }
 
     public function refreshToken()
     {
-        return response()->json(['token' => Auth::guard('customers')->refresh()], 200);
+        $token = Auth::guard('customers')->refresh();
+        return $this->generateResponse(['token' => $token], 200);
     }
 
     public function getProfile()
     {
-        return response()->json(Auth::guard('customers')->user());
+        $user = Auth::guard('customers')->user();
+        return $this->generateResponse($user, 200);
     }
 }

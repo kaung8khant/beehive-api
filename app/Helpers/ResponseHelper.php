@@ -4,11 +4,11 @@ namespace App\Helpers;
 
 trait ResponseHelper
 {
-    protected function generateResponse($data, $status, $error = FALSE)
+    protected function generateResponse($data, $status, $message = FALSE)
     {
         $response['status'] = $status;
 
-        if ($error) {
+        if ($message) {
             $response['message'] = $data;
         } else {
             $response['data'] = $data;
