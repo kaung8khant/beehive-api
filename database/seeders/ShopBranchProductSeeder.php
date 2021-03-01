@@ -15,11 +15,11 @@ class ShopBranchProductSeeder extends Seeder
      */
     public function run()
     {
-        $branches = ShopBranch::all();
+        // $branches = ShopBranch::all();
 
-        foreach ($branches as $b) {
-            $products = Product::where('shop_id', $b->shop_id)->pluck('id');
-            $b->availableProducts()->attach($products);
-        }
+        // foreach ($branches as $b) {
+        //     $products = Product::where('shop_id', $b->shop_id)->pluck('id');
+        //     $b->availableProducts()->attach($products);
+        // }
     }
 }

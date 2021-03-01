@@ -118,7 +118,7 @@ class ProductController extends Controller
     */
     public function getAvailableProductsByShopBranch(Request $request, $slug)
     {
-        return Product::with('shopCategory', 'brand')->whereHas('shop', function ($q) use ($slug) {
+        return Product::with('shopCategory', 'brand')->whereHas('shop_branches', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
