@@ -121,6 +121,22 @@ class MenuController extends Controller
         })->paginate(10);
     }
 
+    /**
+    *  Display a available menus by one restaurant branch.
+    * @param  string  $slug
+    * @return \Illuminate\Http\Response
+    */
+    public function getAvailableMenusByRestaurantBranch(Request $request, $slug)
+    {
+        return Menu::with('restaurantCategory')->whereHas('restaurant_branches', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
+        })->paginate(10);
+    }
+
     private function getParamsToValidate($slug = false)
     {
         $params = [

@@ -167,4 +167,5 @@ class ShopController extends Controller
 
         return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
     }
+
 }

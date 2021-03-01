@@ -15,11 +15,11 @@ class RestaurantBranchMenuSeeder extends Seeder
      */
     public function run()
     {
-        $restaurants = RestaurantBranch::all();
+        $branches = RestaurantBranch::all();
 
-        foreach ($restaurants as $restaurant) {
-            $menus = Menu::where('restaurant_id', $restaurant->id)->pluck('id');
-            $restaurant->availableMenus()->attach($menus);
+        foreach ($branches as $b) {
+            $menus = Menu::where('restaurant_id', $b->restaurant_id)->pluck('id');
+            $b->availableMenus()->attach($menus);
         }
     }
 }
