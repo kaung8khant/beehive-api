@@ -113,6 +113,20 @@ class ProductController extends Controller
         })->paginate(10);
     }
 
+    /**
+    * Display available products by one shop branch.
+    */
+    public function getAvailableProductsByShopBranch(Request $request, $slug)
+    {
+        return Product::with('shopCategory', 'brand')->whereHas('shop', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
+        })->paginate(10);
+    }
+
     private function getBrandId($slug)
     {
         return Brand::where('slug', $slug)->first()->id;

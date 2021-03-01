@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
+use App\Models\Product;
 use App\Models\ShopBranch;
 use App\Models\Shop;
 use App\Models\Township;
@@ -173,5 +174,34 @@ class ShopBranchController extends Controller
         $shopBranch->is_enable = !$shopBranch->is_enable;
         $shopBranch->save();
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function addAvailableProducts(Request $request, $slug)
+    {
+        $shopBranch = $request->validate([
+            'available_menus.*' => 'exists:App\Models\Menu,slug',
+        ]);
+
+        $shopBranch = ShopBranch::where('slug', $slug)->firstOrFail();
+
+        $availableProducts = Product::whereIn('slug', $request->available_products)->pluck('id');
+        $shopBranch->availableProducts()->detach();
+        $shopBranch->availableProducts()->attach($availableProducts);
+
+        return response()->json($shopBranch->load(['availableProducts', 'shop','township']), 201);
+    }
+
+    public function removeAvailableProducts(Request $request, $slug)
+    {
+        $shopBranch = $request->validate([
+            'available_menus.*' => 'exists:App\Models\Menu,slug',
+        ]);
+
+        $shopBranch = ShopBranch::where('slug', $slug)->firstOrFail();
+
+        $availableProducts = Product::whereIn('slug', $request->available_products)->pluck('id');
+        $shopBranch->availableProducts()->detach($availableProducts);
+
+        return response()->json($shopBranch->load(['availableProducts', 'shop','township']), 201);
     }
 }
