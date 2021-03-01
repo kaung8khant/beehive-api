@@ -106,7 +106,8 @@ class ProductVariationController extends Controller
 
     public function getProductVariationsByProduct($slug, Request $request)
     {
-        return ProductVariation::whereHas('product', function ($q) use ($slug) {
+        return ProductVariation::with('productVariationValues')
+        ->whereHas('product', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where('name', 'LIKE', '%' . $request->filter . '%')
         ->orWhere('slug', $request->filter)
