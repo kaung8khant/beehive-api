@@ -11,7 +11,6 @@ class ProductVariationValue extends Model
 
     protected $fillable = [
         'slug',
-        'name',
         'value',
         'price',
         'product_variation_id',

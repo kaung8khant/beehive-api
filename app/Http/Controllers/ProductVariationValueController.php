@@ -87,7 +87,6 @@ class ProductVariationValueController extends Controller
     private function getParamsToValidate($slug = FALSE)
     {
         $params = [
-            'name' => 'required|string',
             'value' => 'required',
             'price' => 'required|numeric',
             'product_variation_slug' => 'required|exists:App\Models\ProductVariation,slug',
