@@ -17,9 +17,8 @@ class CustomerAuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'credential' => 'required|string|max:100',
+            'phone_number' => 'required|string',
             'password' => 'required|string|min:6',
-            'type' => 'required|in:username,phone_number',
         ]);
 
         $result = $this->attemptLogin($request);
@@ -32,13 +31,12 @@ class CustomerAuthController extends Controller
             return response()->json(['token' => $result], 200);
         }
 
-        return response()->json(['message' => 'Username or password wrong.'], 401);
+        return response()->json(['message' => 'Your phone number or password is incorrect.'], 401);
     }
 
     private function attemptLogin(Request $request)
     {
-        $credential = $request->type == 'username' ? 'username' : 'phone_number';
-        $customer = Customer::where($credential, $request->credential)->first();
+        $customer = Customer::where('phone_number', $request->phone_number)->first();
 
         if ($customer) {
             if (!$customer->is_enable) {
@@ -46,7 +44,7 @@ class CustomerAuthController extends Controller
             }
 
             return Auth::guard('customers')->claims($customer->toArray())->attempt([
-                $credential => $request->credential,
+                'phone_number' => $request->phone_number,
                 'password' => $request->password,
             ]);
         }
@@ -61,7 +59,7 @@ class CustomerAuthController extends Controller
         $validatedData = $request->validate([
             'slug' => 'required|unique:customers',
             'username' => 'required|string|min:3|max:100|unique:customers',
-            'email' => 'required|email|unique:customers',
+            'email' => 'nullable|email|unique:customers',
             'name' => 'required|max:255',
             'phone_number' => 'required|unique:customers',
             'password' => 'required|string|confirmed|min:6',

@@ -35,8 +35,8 @@ class RestaurantBranchFactory extends Factory
             'contact_number' => $this->faker->phoneNumber(),
             'opening_time' => rand(0, 11) . ':' . rand(0, 59),
             'closing_time' => rand(12, 23) . ':' . rand(0, 59),
-            'latitude' => $this->faker->latitude(),
-            'longitude' => $this->faker->longitude(),
+            'latitude' => $this->faker->latitude(16.76, 16.93),
+            'longitude' => $this->faker->longitude(96.17, 96.2),
             'township_id' => rand(1, 19),
         ];
     }
