@@ -51,7 +51,7 @@ class MenuVariationController extends Controller
      */
     public function show($slug)
     {
-        $menu = MenuVariation::with('menu')->where('slug', $slug)->firstOrFail();
+        $menu = MenuVariation::with('menu')->with('menuVariationValues')->where('slug', $slug)->firstOrFail();
         return response()->json($menu, 200);
     }
 

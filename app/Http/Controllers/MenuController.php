@@ -26,8 +26,8 @@ class MenuController extends Controller
     {
         return Menu::with('restaurant')
             ->with('restaurantCategory')
-            ->with('menuVariations')
-            ->with('menuToppings')
+            ->with('menuVariations')->with('menuVariations.menuVariationValues')
+            ->with('menuToppings')->with('menuToppings.menuToppingValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -114,9 +114,9 @@ class MenuController extends Controller
         return Menu::with('restaurantCategory')->whereHas('restaurant', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter .'%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter);
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 
