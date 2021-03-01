@@ -67,8 +67,9 @@ class MenuController extends Controller
     public function show($slug)
     {
         $menu = Menu::with('restaurant')->with('restaurantCategory')
-            ->with('menuVariations')
-            ->with('menuToppings')->where('slug', $slug)->firstOrFail();
+            ->with('menuVariations')->with('menuVariations.menuVariationValues')
+            ->with('menuToppings')->with('menuToppings.menuToppingValues')
+            ->where('slug', $slug)->firstOrFail();
         return response()->json($menu, 200);
     }
 
