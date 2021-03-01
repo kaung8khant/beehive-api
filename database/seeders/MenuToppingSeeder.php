@@ -20,13 +20,15 @@ class MenuToppingSeeder extends Seeder
         $menuToppings = [
             [
                 'name' => 'Vegetables',
-                'description' => 'vegetables',
+                'name_mm' => 'Vegetables (MM)',
+                'price' => 400.00,
                 'slug' => $this->generateUniqueSlug(),
                 'menu_id' => 1,
             ],
             [
                 'name' => 'Meat',
-                'description' => 'meat',
+                'name_mm' => 'Meat (MM)',
+                'price' => 1200.00,
                 'slug' => $this->generateUniqueSlug(),
                 'menu_id' => 2,
             ],

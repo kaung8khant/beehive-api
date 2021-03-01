@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
+use App\Models\Menu;
 use App\Models\RestaurantBranch;
 use App\Models\Restaurant;
 use App\Models\Township;
@@ -101,18 +102,22 @@ class RestaurantBranchController extends Controller
         return Township::where('slug', $slug)->first()->id;
     }
 
-    public function getBranchesByRestaurant($slug, Request $request)
+    public function getBranchesByRestaurant(Request $request, $slug)
     {
-        return RestaurantBranch::whereHas('restaurant', function ($q) use ($slug, $request) {
+        return RestaurantBranch::whereHas('restaurant', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where('name', 'LIKE', '%' . $request->filter . '%')
             ->paginate(10);
     }
 
-    public function getBranchesByTownship($slug)
+    public function getBranchesByTownship(Request $request, $slug)
     {
         return RestaurantBranch::whereHas('township', function ($q) use ($slug) {
             $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 
@@ -122,5 +127,33 @@ class RestaurantBranchController extends Controller
         $restaurantBranch->is_enable = !$restaurantBranch->is_enable;
         $restaurantBranch->save();
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function addAvailableMenus(Request $request, $slug)
+    {
+        $restaurantBranch = $request->validate([
+            'available_menus.*' => 'exists:App\Models\Menu,slug',
+        ]);
+
+        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
+
+        $availableMenus = Menu::whereIn('slug', $request->available_menus)->pluck('id');
+        $restaurantBranch->availableMenus()->detach();
+        $restaurantBranch->availableMenus()->attach($availableMenus);
+
+        return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
+    }
+
+    public function removeAvailableMenus(Request $request, $slug)
+    {
+        $restaurantBranch = $request->validate([
+            'available_menus.*' => 'exists:App\Models\Menu,slug',
+        ]);
+        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
+
+        $availableMenus = Menu::whereIn('slug', $request->available_menus)->pluck('id');
+        $restaurantBranch->availableMenus()->detach($availableMenus);
+
+        return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
     }
 }

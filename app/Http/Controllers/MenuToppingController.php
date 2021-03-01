@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\MenuTopping;
 use App\Models\Menu;
@@ -20,7 +19,6 @@ class MenuToppingController extends Controller
     public function index(Request $request)
     {
         return MenuTopping::with('menu')
-            ->with("menuToppingValues")
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
@@ -85,13 +83,24 @@ class MenuToppingController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
+    public function getToppingsByMenu(Request $request, $slug)
+    {
+        return MenuTopping::whereHas('menu', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })->paginate(10);
+    }
+
+
     private function getParamsToValidate($slug = false)
     {
         $params = [
             'name' => 'required|string',
             'name_mm' => 'nullable|string',
-            'description' => 'required|string',
-            'description_mm' => 'nullable|string',
+            'price' => 'required|numerice',
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
         ];
 
@@ -105,12 +114,5 @@ class MenuToppingController extends Controller
     private function getMenuId($slug)
     {
         return Menu::where('slug', $slug)->first()->id;
-    }
-
-    public function getToppingsByMenu($slug)
-    {
-        return MenuTopping::whereHas('menu', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->paginate(10);
     }
 }

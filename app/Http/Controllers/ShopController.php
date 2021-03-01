@@ -31,7 +31,7 @@ class ShopController extends Controller
         $validatedData = $request->validate([
             'slug' => 'required|unique:shops',
             'name' => 'required|unique:shops',
-            'name_mm' => 'unique:shops',
+            'name_mm' => 'nullable|unique:shops',
             'is_enable' => 'required|boolean',
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
@@ -82,6 +82,7 @@ class ShopController extends Controller
                 Rule::unique('shops')->ignore($shop->id),
             ],
             'name_mm' => [
+                'nullable',
                 Rule::unique('shops')->ignore($shop->id),
             ],
             'is_enable' => 'required|boolean',
@@ -166,4 +167,5 @@ class ShopController extends Controller
 
         return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
     }
+
 }

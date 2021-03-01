@@ -17,9 +17,22 @@ class RoleSeeder extends Seeder
      */
     public function run()
     {
-        Role::create([
-            'slug' => $this->generateUniqueSlug(),
-            'name' => 'Admin',
-        ]);
+        $roles = [
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Admin',
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Driver',
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Collector',
+            ],
+        ];
+        foreach ($roles as $role) {
+            Role::create($role);
+        }
     }
 }

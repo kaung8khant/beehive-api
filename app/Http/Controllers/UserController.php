@@ -23,10 +23,16 @@ class UserController extends Controller
     public function index(Request $request)
     {
         return User::with('roles')
-            ->where('username', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
+            ->whereHas('roles', function ($q) {
+                $q->whereNotIn('name', ['Driver', 'Collector']);
+            })
+            ->where(function ($q) use ($request) {
+                $q->where('username', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+            })
+
             ->paginate(10);
     }
 

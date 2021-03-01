@@ -13,8 +13,7 @@ class MenuTopping extends Model
         'slug',
         'name',
         'name_mm',
-        'description',
-        'description_mm',
+        'price',
         'menu_id',
     ];
 
@@ -28,10 +27,5 @@ class MenuTopping extends Model
     public function menu()
     {
         return $this->belongsTo(Menu::class);
-    }
-
-    public function menuToppingValues()
-    {
-        return $this->hasMany(MenuToppingValue::class);
     }
 }
