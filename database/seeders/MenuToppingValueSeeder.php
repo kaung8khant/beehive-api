@@ -19,22 +19,19 @@ class MenuToppingValueSeeder extends Seeder
     {
         $menuToppingValues = [
             [
-                'name' => 'Baby Corn',
-                'value' => 1,
+                'value' => 'Baby Corn',
                 'price' => 300,
                 'slug' => $this->generateUniqueSlug(),
                 'menu_topping_id' => 1,
             ],
             [
-                'name' => 'Mushroom',
-                'value' => 2,
+                'value' => 'Mushroom',
                 'price' => 500,
                 'slug' => $this->generateUniqueSlug(),
                 'menu_topping_id' => 1,
             ],
             [
-                'name' => 'Carrot',
-                'value' => 3,
+                'value' => 'Carrot',
                 'price' => 300,
                 'slug' => $this->generateUniqueSlug(),
                 'menu_topping_id' => 1,

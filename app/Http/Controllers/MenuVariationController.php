@@ -51,7 +51,7 @@ class MenuVariationController extends Controller
      */
     public function show($slug)
     {
-        $menu = MenuVariation::with('menu')->where('slug', $slug)->firstOrFail();
+        $menu = MenuVariation::with('menu')->with('menuVariationValues')->where('slug', $slug)->firstOrFail();
         return response()->json($menu, 200);
     }
 
@@ -73,6 +73,17 @@ class MenuVariationController extends Controller
         return response()->json($menuVariation->load('menu'), 200);
     }
 
+    public function getVariationsByMenu(Request $request, $slug)
+    {
+        return MenuVariation::with('menuVariationValues')->whereHas('menu', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })->paginate(10);
+    }
+
     /**
      * Remove the specified resource from storage.
      *
@@ -90,8 +101,6 @@ class MenuVariationController extends Controller
         $params = [
             'name' => 'required|string',
             'name_mm' => 'nullable|string',
-            'description' => 'required|string',
-            'description_mm' => 'nullable|string',
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
         ];
 

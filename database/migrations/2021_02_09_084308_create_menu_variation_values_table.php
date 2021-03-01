@@ -16,7 +16,6 @@ class CreateMenuVariationValuesTable extends Migration
         Schema::create('menu_variation_values', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique();
-            $table->string('name');
             $table->string('value');
             $table->decimal('price', 12, 2);
             $table->unsignedBigInteger('menu_variation_id');

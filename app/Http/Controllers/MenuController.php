@@ -25,8 +25,9 @@ class MenuController extends Controller
     public function index(Request $request)
     {
         return Menu::with('restaurant')
-            ->with('menuVariations')
-            ->with('menuToppings')
+            ->with('restaurantCategory')
+            ->with('menuVariations')->with('menuVariations.menuVariationValues')
+            ->with('menuToppings')->with('menuToppings.menuToppingValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -65,7 +66,10 @@ class MenuController extends Controller
      */
     public function show($slug)
     {
-        $menu = Menu::with('restaurant')->where('slug', $slug)->firstOrFail();
+        $menu = Menu::with('restaurant')->with('restaurantCategory')
+            ->with('menuVariations')->with('menuVariations.menuVariationValues')
+            ->with('menuToppings')->with('menuToppings.menuToppingValues')
+            ->where('slug', $slug)->firstOrFail();
         return response()->json($menu, 200);
     }
 
@@ -102,21 +106,35 @@ class MenuController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
+     *  Display a listing of the menus by one restaurant.
+     * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
     public function getMenusByRestaurant(Request $request, $slug)
     {
-        $menus = Restaurant::where('slug', $slug)->firstOrFail()->menus();
-        return $menus->where('name', 'LIKE', '%' . $request->filter . '%')
+        return Menu::with('restaurantCategory')->whereHas('restaurant', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })->paginate(10);
+    }
+
+    /**
+    *  Display a available menus by one restaurant branch.
+    * @param  string  $slug
+    * @return \Illuminate\Http\Response
+    */
+    public function getAvailableMenusByRestaurantBranch(Request $request, $slug)
+    {
+        return Menu::with('restaurantCategory')->whereHas('restaurant_branches', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->paginate(10);
-        // return Menu::whereHas('restaurant', function ($q) use ($slug, $request) {
-        //     $q->where('slug', $slug);
-        // })->where('name', 'LIKE', '%' . $request->filter . '%')
-        // ->paginate(10);
+            ->orWhere('slug', $request->filter);
+        })->paginate(10);
     }
 
     private function getParamsToValidate($slug = false)
@@ -131,18 +149,14 @@ class MenuController extends Controller
             'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
             'menu_variations' => 'required|array',
             'menu_variations.*.name' => 'required|string',
-            'menu_variations.*.description' => 'required|string',
+            'menu_variations.*.name_mm' => 'required|string',
             'menu_toppings' => 'required|array',
             'menu_toppings.*.name' => 'required|string',
-            'menu_toppings.*.description' => 'required|string',
-
+            'menu_toppings.*.name_mm' => 'required|string',
             'menu_variations.*.menu_variation_values' => 'required|array',
-            'menu_variations.*.menu_variation_values.*.name' => 'required|string',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
-
             'menu_toppings.*.menu_topping_values' => 'required|array',
-            'menu_toppings.*.menu_topping_values.*.name' => 'required|string',
             'menu_toppings.*.menu_topping_values.*.value' => 'required|string',
             'menu_toppings.*.menu_topping_values.*.price' => 'required|numeric',
 

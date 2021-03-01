@@ -92,14 +92,16 @@ class RestaurantTagController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display a listing of the restaurant tags by one restaurant.
      */
-    public function getTagsByRestaurant($slug)
+    public function getTagsByRestaurant(Request $request, $slug)
     {
         return RestaurantTag::whereHas('restaurants', function ($q) use ($slug) {
             $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 }

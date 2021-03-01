@@ -13,8 +13,6 @@ class MenuVariation extends Model
         'slug',
         'name',
         'name_mm',
-        'description',
-        'description_mm',
         'menu_id',
     ];
 
