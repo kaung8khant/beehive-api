@@ -29,7 +29,7 @@ class ProductVariationSeeder extends Seeder
                 "name" => "ProductVariation2",
                 "description" => "Description",
                 "slug" => $this->generateUniqueSlug(),
-                "product_id" => 2
+                "product_id" => 1
 
             ],
         ];
