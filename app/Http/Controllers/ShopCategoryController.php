@@ -75,6 +75,7 @@ class ShopCategoryController extends Controller
                 Rule::unique('shop_categories')->ignore($shopCategory->id),
             ],
             'name_mm' => [
+                'nullable',
                 Rule::unique('shop_categories')->ignore($shopCategory->id),
             ],
         ]));
