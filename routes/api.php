@@ -126,6 +126,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /* Promocode */
             Route::resource('promocodes', 'PromocodeController');
+            Route::post('promocodes/add-rules/{slug}', 'PromocodeController@addRules');
+            Route::delete('rules/{id}', 'PromocodeController@removeRule');
             /* Promocode */
         });
     });

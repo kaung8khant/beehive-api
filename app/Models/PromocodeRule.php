@@ -5,26 +5,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Promocode extends Model
+class PromocodeRule extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'slug',
-        'code',
-        'type',
-        'usage',
-        'amount',
+        'name',
+        'value',
+        'data_type',
+        'operator',
+        'promocode_id',
     ];
 
     protected $hidden = [
-        'id',
+        'promocode_id',
         'created_at',
         'updated_at',
     ];
 
-    public function rules()
+    public function promocode()
     {
-        return $this->hasMany(PromocodeRule::class);
+        return $this->belongsTo(Promocode::class);
     }
 }

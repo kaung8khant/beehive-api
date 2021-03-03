@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Helpers\StringHelper;
 use App\Models\Promocode;
+use App\Models\PromocodeRule;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class PromocodeController extends Controller
 {
+    use StringHelper;
+
     /**
      * Display a listing of the resource.
      *
@@ -16,7 +18,8 @@ class PromocodeController extends Controller
      */
     public function index(Request $request)
     {
-        return Promocode::orWhere('code', $request->filter)
+        return Promocode::where('slug', $request->filter)
+            ->orWhere('code', $request->filter)
             ->paginate(10);
     }
 
@@ -28,14 +31,14 @@ class PromocodeController extends Controller
      */
     public function store(Request $request)
     {
-        $promocode = Promocode::create($request->validate(
-            [
-                'code' => 'required|unique:promocodes',
-                'type' => 'required|in:fix,percentage',
-                'usage' => 'required|in:restaurant,shop,both',
-                'amount' => 'required|numeric',
-            ]
-        ));
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $validatedData = $request->validate($this->getParamsToValidate(true));
+
+        $promocode = Promocode::create($validatedData);
+        $promocodeId = $promocode->id;
+
+        $this->createRules($promocodeId, $validatedData['rules']);
 
         return response()->json($promocode, 201);
     }
@@ -46,9 +49,9 @@ class PromocodeController extends Controller
      * @param  \App\Models\Promocode  $promocode
      * @return \Illuminate\Http\Response
      */
-    public function show($code)
+    public function show($slug)
     {
-        return response()->json(Promocode::where('code', $code)->firstOrFail(), 200);
+        return response()->json(Promocode::where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
@@ -58,22 +61,83 @@ class PromocodeController extends Controller
      * @param  \App\Models\Promocode  $promocode
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $code)
+    public function update(Request $request, $slug)
     {
-        $promocode = Promocode::where('code', $code)->firstOrFail();
+        $promocode = Promocode::where('slug', $slug)->firstOrFail();
 
-        $validatedData = $request->validate([
-            'code' => [
-                'required',
-                Rule::unique('promocodes')->ignore($promocode->id),
-            ],
+        $validatedData = $request->validate($this->getParamsToValidate());
+        $promocode->update($validatedData);
+        // $this->createAndUpdateRules($promocode->id, $validatedData['rules']);
+        return response()->json($promocode, 200);
+    }
+
+    private function getParamsToValidate($slug = false)
+    {
+        $params = [
+            'code' => 'required',
             'type' => 'required|in:fix,percentage',
             'usage' => 'required|in:restaurant,shop,both',
             'amount' => 'required|numeric',
+            'rules' => 'required|array',
+            'rules.*.name' => 'required|string',
+            'rules.*.value' => 'required|string',
+            'rules.*.data_type' => 'required|in:happy hour,date period,birthday,user limit',
+            'rules.*.operator' => 'required|in:equal,less than,greater than,less than equal,greater than equal',
+        ];
+
+        if ($slug) {
+            $params['slug'] = 'required|unique:promocodes';
+        } else {
+            $params['rules.*.id'] = 'nullable';
+        }
+
+        return $params;
+    }
+
+    private function createRules($promocodeId, $rules)
+    {
+        foreach ($rules as $rule) {
+            $rule['promocode_id'] = $promocodeId;
+            PromocodeRule::create($rule);
+        }
+    }
+
+    private function createAndUpdateRules($promocodeId, $rules)
+    {
+        foreach ($rules as $rule) {
+            // PromocodeRule::whereIn('slug', $request->rules)->pluck('id');
+            $existingRule= PromocodeRule::where('id', $rule['id'])->firstOrFail();
+            if ($rule['id']===null) {
+                $rule['promocode_id'] = $promocodeId;
+                PromocodeRule::create($rule);
+            } else {
+                $rule::update($rule);
+            }
+        }
+    }
+
+    public function addRules(Request $request, $slug)
+    {
+        $rules = $request->validate([
+            'rules' => 'required|array',
+            'rules.*.name' => 'required|string',
+            'rules.*.value' => 'required|string',
+            'rules.*.data_type' => 'required|in:happy hour,date period,birthday,user limit',
+            'rules.*.operator' => 'required|in:equal,less than,greater than,less than equal,greater than equal',
         ]);
 
-        $promocode->update($validatedData);
-        return response()->json($promocode, 200);
+        $promocode = Promocode::where('slug', $slug)->firstOrFail();
+        foreach ($rules as $rule) {
+            $rule['promocode_id'] = $promocode->id;
+            PromocodeRule::create($rule);
+        }
+        return response()->json($promocode, 201);
+    }
+
+    public function removeRule($slug)
+    {
+        PromocodeRule::where('slug', $slug)->firstOrFail()->delete();
+        return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
     /**
@@ -82,9 +146,9 @@ class PromocodeController extends Controller
      * @param  \App\Models\Promocode  $promocode
      * @return \Illuminate\Http\Response
      */
-    public function destroy($code)
+    public function destroy($slug)
     {
-        Promocode::where('code', $code)->firstOrFail()->delete();
+        Promocode::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 }
