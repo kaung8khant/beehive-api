@@ -67,6 +67,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
 
             Route::resource('product-variation-values', 'ProductVariationValueController');
+            Route::get('product-variation/{slug}/product-variation-values', 'ProductVariationValueController@getProductVariationValuesByProductVariation');
+
             Route::resource('shop-branches', 'ShopBranchController');
             Route::get('shop-branches/{slug}/products', 'ProductController@getAvailableProductsByShopBranch');
             Route::post('shop-branches/add-available-products/{slug}', 'ShopBranchController@addAvailableProducts');
@@ -123,6 +125,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('ratings', 'RatingController');
             Route::get('orders/{receiverType}/ratings', 'RatingController@getReceiverTypeByOrder');
             /* Order */
+
+            /* Promocode */
+            Route::resource('promocodes', 'PromocodeController');
+            Route::post('promocodes/add-rules/{slug}', 'PromocodeController@addRules');
+            Route::delete('rules/{id}', 'PromocodeController@removeRule');
+            /* Promocode */
         });
     });
 

@@ -72,6 +72,7 @@ class RestaurantCategoryController extends Controller
                 Rule::unique('restaurant_categories')->ignore($restaurantCategory->id),
             ],
             'name_mm' => [
+                'nullable',
                 Rule::unique('restaurant_categories')->ignore($restaurantCategory->id),
             ]
         ]));

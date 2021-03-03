@@ -75,7 +75,7 @@ class CityController extends Controller
 
         $city = City::create($request->validate([
             'name' => 'required|unique:cities',
-            'name_mm' => 'unique:cities',
+            'name_mm' => 'nullable|unique:cities',
             'slug' => 'required|unique:cities',
         ]));
 
@@ -155,6 +155,7 @@ class CityController extends Controller
                 Rule::unique('cities')->ignore($city->id),
             ],
             'name_mm' => [
+                'nullable',
                 Rule::unique('cities')->ignore($city->id),
             ],
         ]));

@@ -31,7 +31,7 @@ class RestaurantController extends Controller
         $validatedData = $request->validate([
             'slug' => 'required|unique:restaurants',
             'name' => 'required|unique:restaurants',
-            'name_mm' => 'unique:restaurants',
+            'name_mm' => 'nullable|unique:restaurants',
             'is_enable' => 'required|boolean',
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
@@ -39,7 +39,7 @@ class RestaurantController extends Controller
             'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
             'restaurant_branch' => 'required',
             'restaurant_branch.name' => 'required|string',
-            'restaurant_branch.name_mm' => 'required|string',
+            'restaurant_branch.name_mm' => 'nullable',
             'restaurant_branch.address' => 'required',
             'restaurant_branch.contact_number' => 'required',
             'restaurant_branch.opening_time' => 'required|date_format:H:i',
@@ -81,7 +81,7 @@ class RestaurantController extends Controller
                 Rule::unique('restaurants')->ignore($restaurant->id),
             ],
             'name_mm' => [
-                'required',
+                'nullable',
                 Rule::unique('restaurants')->ignore($restaurant->id)
             ],
             'is_enable' => 'required|boolean',

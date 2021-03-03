@@ -66,6 +66,7 @@ class RestaurantBranchController extends Controller
                 Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
             ],
             'name_mm' => [
+                'nullable',
                 Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
             ],
             'address' => 'required',

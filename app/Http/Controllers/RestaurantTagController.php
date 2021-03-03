@@ -37,7 +37,7 @@ class RestaurantTagController extends Controller
         $tag = RestaurantTag::create($request->validate(
             [
                 'name' => 'required|unique:restaurant_tags',
-                'name_mm' => 'unique:restaurant_tags',
+                'name_mm' => 'nullable|unique:restaurant_tags',
                 'slug' => 'required|unique:restaurant_tags',
             ]
         ));
@@ -72,6 +72,7 @@ class RestaurantTagController extends Controller
                 Rule::unique('restaurant_tags')->ignore($tag->id),
             ],
             'name_mm' => [
+                'nullable',
                 Rule::unique('restaurant_tags')->ignore($tag->id),
             ],
         ]));

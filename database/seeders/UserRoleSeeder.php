@@ -16,8 +16,15 @@ class UserRoleSeeder extends Seeder
     public function run()
     {
         $user = User::find(1);
-        $roleId = Role::find(1)->value('id');
+        $roleId = Role::find(1)->id;
+        $user->roles()->attach($roleId);
 
+        $user = User::find(2);
+        $roleId = Role::find(2)->id;
+        $user->roles()->attach($roleId);
+
+        $user = User::find(3);
+        $roleId = Role::find(3)->id;
         $user->roles()->attach($roleId);
     }
 }

@@ -103,4 +103,13 @@ class ProductVariationValueController extends Controller
     {
         return ProductVariation::where('slug', $slug)->first()->id;
     }
+
+    public function getProductVariationValuesByProductVariation($slug, Request $request)
+    {
+        return ProductVariationValue::whereHas('productVariation', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where('value', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('slug', $request->filter)
+        ->paginate(10);
+    }
 }
