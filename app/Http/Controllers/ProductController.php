@@ -18,7 +18,8 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        return Product::with('shop', 'shopCategory', 'productVariation', 'brand')
+        return Product::with('shop', 'shopCategory', 'brand')
+            ->with('productVariations')->with('productVariations.productVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -37,18 +38,20 @@ class ProductController extends Controller
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
         $validatedData['sub_category_id'] = $subCategory->id;
         $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
+
         $product = Product::create($validatedData);
         $productId = $product->id;
 
-        $productV=$validatedData['product_variations'];
         $this->createProductVariation($productId, $validatedData['product_variations']);
 
-        return response()->json($product->refresh()->load('shop',"productVariation"), 201);
+        return response()->json($product->refresh()->load('shop',"productVariations"), 201);
     }
 
     public function show($slug)
     {
-        $product = Product::with('shop', 'shopCategory', 'productVariation', 'subCategory', 'brand')->where('slug', $slug)->firstOrFail();
+        $product = Product::with('shop', 'shopCategory', 'subCategory', 'brand')
+        ->with('productVariations')->with('productVariations.productVariationValues')
+        ->where('slug', $slug)->firstOrFail();
         return response()->json($product, 200);
     }
 
@@ -96,7 +99,6 @@ class ProductController extends Controller
             'product_variations.*.product_variation_values' => 'required|array',
             'product_variations.*.product_variation_values.*.value' => 'required|string',
             'product_variations.*.product_variation_values.*.price' => 'required|numeric',
-
 
         ];
 
