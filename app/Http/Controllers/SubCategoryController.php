@@ -78,6 +78,7 @@ class SubCategoryController extends Controller
                 Rule::unique('sub_categories')->ignore($subCategory->id),
             ],
             'name_mm' => [
+                'nullable',
                 Rule::unique('sub_categories')->ignore($subCategory->id),
             ],
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',

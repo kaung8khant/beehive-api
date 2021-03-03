@@ -5,26 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProductVariationValue extends Model
+class Promocode extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'slug',
-        'value',
-        'price',
-        'product_variation_id',
+        'code',
+        'type',
+        'usage',
+        'amount',
     ];
 
     protected $hidden = [
         'id',
-        'product_variation_id',
         'created_at',
         'updated_at',
     ];
-
-    public function productVariation()
-    {
-        return $this->belongsTo(ProductVariation::class);
-    }
 }

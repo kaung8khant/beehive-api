@@ -36,7 +36,7 @@ class RestaurantCategoryController extends Controller
 
         $restaurantCategory = RestaurantCategory::create($request->validate([
             'name' => 'required|unique:restaurant_categories',
-            'name_mm' => 'unique:restaurant_categories',
+            'name_mm' => 'nullable|unique:restaurant_categories',
             'slug' => 'required|unique:restaurant_categories',
         ]));
 
@@ -72,6 +72,7 @@ class RestaurantCategoryController extends Controller
                 Rule::unique('restaurant_categories')->ignore($restaurantCategory->id),
             ],
             'name_mm' => [
+                'nullable',
                 Rule::unique('restaurant_categories')->ignore($restaurantCategory->id),
             ]
         ]));

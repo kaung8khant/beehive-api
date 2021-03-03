@@ -20,14 +20,12 @@ class ProductVariationSeeder extends Seeder
         $productVariations = [
             [
                 "name" => "ProductVariation1",
-                "description" => "Description",
                 "slug" => $this->generateUniqueSlug(),
                 "product_id" => 1
 
             ],
             [
                 "name" => "ProductVariation2",
-                "description" => "Description",
                 "slug" => $this->generateUniqueSlug(),
                 "product_id" => 1
 

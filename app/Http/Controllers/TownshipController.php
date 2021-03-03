@@ -39,7 +39,7 @@ class TownshipController extends Controller
         $validatedData = $request->validate([
             'slug' => 'required|unique:townships',
             'name' => 'required|unique:townships',
-            'name_mm' => 'unique:townships',
+            'name_mm' => 'nullable|unique:townships',
             'city_slug' => 'required|exists:App\Models\City,slug'
         ]);
 
@@ -78,6 +78,7 @@ class TownshipController extends Controller
                 Rule::unique('townships')->ignore($township->id),
             ],
             'name_mm' => [
+                'nullable',
                 Rule::unique('townships')->ignore($township->id),
             ],
             'city_slug' => 'required|exists:App\Models\City,slug',

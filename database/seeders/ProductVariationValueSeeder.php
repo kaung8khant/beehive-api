@@ -18,14 +18,12 @@ class ProductVariationValueSeeder extends Seeder
     {
         $productVariationVlaues = [
             [
-                "name" => "ProductVariationValue1",
                 "value" => "Value1",
                 "slug" => $this->generateUniqueSlug(),
                 "price" => 3000,
                 "product_variation_id" => 1
             ],
             [
-                "name" => "ProductVariationValue2",
                 "value" => "Value2",
                 "slug" => $this->generateUniqueSlug(),
                 "price" => 4000,

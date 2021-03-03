@@ -100,7 +100,7 @@ class MenuToppingController extends Controller
         $params = [
             'name' => 'required|string',
             'name_mm' => 'nullable|string',
-            'price' => 'required|numerice',
+            'price' => 'required|numeric',
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
         ];
 
