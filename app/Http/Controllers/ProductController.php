@@ -10,6 +10,7 @@ use App\Models\Restaurant;
 use App\Models\Shop;
 use App\Models\SubCategory;
 use App\Models\ProductVariation;
+use App\Models\ProductVariationValue;
 
 class ProductController extends Controller
 {
@@ -38,9 +39,11 @@ class ProductController extends Controller
         $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
         $product = Product::create($validatedData);
         $productId = $product->id;
+
+        $productV=$validatedData['product_variations'];
         $this->createProductVariation($productId, $validatedData['product_variations']);
 
-        return response()->json($product->refresh()->load('shop'), 201);
+        return response()->json($product->refresh()->load('shop',"productVariation"), 201);
     }
 
     public function show($slug)
@@ -88,8 +91,12 @@ class ProductController extends Controller
             'product_variations.*.slug' => '',
             'product_variations.*.name' => 'required|string',
             'product_variations.*.name_mm' => 'nullable|string',
-            'product_variations.*.description' => 'required|string',
-            'product_variations.*.description_mm' => 'nullable|string',
+
+
+            'product_variations.*.product_variation_values' => 'required|array',
+            'product_variations.*.product_variation_values.*.value' => 'required|string',
+            'product_variations.*.product_variation_values.*.price' => 'required|numeric',
+
 
         ];
 
@@ -146,10 +153,22 @@ class ProductController extends Controller
     private function createProductVariation($productId, $productVariations)
     {
 
-        foreach ($productVariations as $productVariation) {
-            $productVariation['slug'] = $this->generateUniqueSlug();
-            $productVariation['product_id'] = $productId;
-            ProductVariation::create($productVariation);
+        foreach ($productVariations as $variation) {
+            $variation['slug'] = $this->generateUniqueSlug();
+            $variation['product_id'] = $productId;
+            $productVariation = ProductVariation::create($variation);
+            $variationId = $productVariation->id;
+            $this->createVariationValues($variationId, $variation['product_variation_values']);
+
+        }
+    }
+
+    private function createVariationValues($variationId, $variationValues)
+    {
+        foreach ($variationValues as $variationValue) {
+            $variationValue['slug'] = $this->generateUniqueSlug();
+            $variationValue['product_variation_id'] = $variationId;
+            ProductVariationValue::create($variationValue);
         }
     }
 }
