@@ -67,6 +67,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
 
             Route::resource('product-variation-values', 'ProductVariationValueController');
+            Route::get('product-variation/{slug}/product-variation-values', 'ProductVariationValueController@getProductVariationValuesByProductVariation');
+
             Route::resource('shop-branches', 'ShopBranchController');
             Route::get('shop-branches/{slug}/products', 'ProductController@getAvailableProductsByShopBranch');
             Route::post('shop-branches/add-available-products/{slug}', 'ShopBranchController@addAvailableProducts');
