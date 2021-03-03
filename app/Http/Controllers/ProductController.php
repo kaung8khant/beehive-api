@@ -171,5 +171,4 @@ class ProductController extends Controller
             ProductVariationValue::create($variationValue);
         }
     }
-
 }
