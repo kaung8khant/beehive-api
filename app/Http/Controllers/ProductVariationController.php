@@ -7,6 +7,7 @@ use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ProductVariation;
 use App\Models\Product;
+use App\Models\ProductVariationValue;
 
 class ProductVariationController extends Controller
 {
@@ -40,12 +41,23 @@ class ProductVariationController extends Controller
             'name' => 'required|string',
             'name_mm' => 'nullable|string',
             'product_slug' => 'required|exists:App\Models\Product,slug',
+
+            'product_variation_values' => 'required|array',
+            'product_variation_values.*.value' => 'required|string',
+            'product_variation_values.*.price' => 'required|numeric',
+
+
         ]);
 
         $validatedData['product_id'] = $this->getProductId($request->product_slug);
 
         $productVariation = ProductVariation::create($validatedData);
-        return response()->json($productVariation->load('product'), 201);
+
+        $variationId = $productVariation->id;
+
+        $this->createVariationValues($variationId, $validatedData['product_variation_values']);
+
+        return response()->json($productVariation->load('product','productVariationValues'), 201);
     }
 
     /**
@@ -108,6 +120,15 @@ class ProductVariationController extends Controller
         })->where('name', 'LIKE', '%' . $request->filter . '%')
         ->orWhere('slug', $request->filter)
         ->paginate(10);
+    }
+
+    private function createVariationValues($variationId, $variationValues)
+    {
+        foreach ($variationValues as $variationValue) {
+            $variationValue['slug'] = $this->generateUniqueSlug();
+            $variationValue['product_variation_id'] = $variationId;
+            ProductVariationValue::create($variationValue);
+        }
     }
 
 }
