@@ -25,10 +25,14 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('restaurants', 'Customer\RestaurantController@index');
         Route::get('restaurants/favorites', 'Customer\RestaurantController@getFavoriteRestaurants');
         Route::get('restaurants/{slug}', 'Customer\RestaurantController@show');
-        Route::post('restaurants/{slug}/set-favorite', 'Customer\RestaurantController@setFavoriteRestaurant');
-        Route::post('restaurants/{slug}/remove-favorite', 'Customer\RestaurantController@removeFavoriteRestaurant');
+        Route::post('restaurants/{slug}/favorites', 'Customer\RestaurantController@setFavoriteRestaurant');
+        Route::delete('restaurants/{slug}/favorites', 'Customer\RestaurantController@removeFavoriteRestaurant');
 
-        Route::get('restaurants/{slug}/branches', 'Customer\RestaurantBranchController@index');
+        Route::get('restaurants/{slug}/branches', 'Customer\RestaurantBranchController@getRestaurantBranchesByRestaurant');
+
+        Route::get('restaurant-branches', 'Customer\RestaurantBranchController@index');
+        Route::get('restaurant-branches/{slug}', 'Customer\RestaurantBranchController@show');
+        Route::get('restaurant-branches/{slug}/menus', 'Customer\RestaurantBranchController@getAvailableMenusByBranch');
 
         Route::get('restaurant-categories', 'Customer\RestaurantCategoryController@index');
         Route::get('restaurant-categories/{slug}/restaurants', 'Customer\RestaurantCategoryController@getRestaurantsByCategory');

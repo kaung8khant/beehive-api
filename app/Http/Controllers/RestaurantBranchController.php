@@ -14,11 +14,6 @@ class RestaurantBranchController extends Controller
 {
     use StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
         return RestaurantBranch::with('restaurant', 'township')
@@ -29,12 +24,6 @@ class RestaurantBranchController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -61,25 +50,12 @@ class RestaurantBranchController extends Controller
         return response()->json($restaurantBranch->load('restaurant', 'township'), 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\RestaurantBranch  $restaurantBranch
-     * @return \Illuminate\Http\Response
-     */
     public function show($slug)
     {
         $restaurantBranch = RestaurantBranch::with('restaurant', 'township')->where('slug', $slug)->firstOrFail();
         return response()->json($restaurantBranch, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\RestaurantBranch  $restaurantBranch
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $slug)
     {
         $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
@@ -110,12 +86,6 @@ class RestaurantBranchController extends Controller
         return response()->json($restaurantBranch->load('restaurant', 'township'), 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\RestaurantBranch  $restaurantBranch
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($slug)
     {
         RestaurantBranch::where('slug', $slug)->firstOrFail()->delete();
@@ -132,46 +102,25 @@ class RestaurantBranchController extends Controller
         return Township::where('slug', $slug)->first()->id;
     }
 
-    /**
-     * Display a listing of the restaurant branches by one restaurant.
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
     public function getBranchesByRestaurant(Request $request, $slug)
     {
         return RestaurantBranch::whereHas('restaurant', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter .'%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        })->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->paginate(10);
     }
 
-    /**
-     * Display a listing of the restaurant branches by one township.
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
     public function getBranchesByTownship(Request $request, $slug)
     {
         return RestaurantBranch::whereHas('township', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter .'%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter);
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 
-    /**
-     * Toggle the is_enable column for restaurant_branches table.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     public function toggleEnable($slug)
     {
         $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
@@ -192,7 +141,7 @@ class RestaurantBranchController extends Controller
         $restaurantBranch->availableMenus()->detach();
         $restaurantBranch->availableMenus()->attach($availableMenus);
 
-        return response()->json($restaurantBranch->load(['availableMenus', 'restaurant','township']), 201);
+        return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
     }
 
     public function removeAvailableMenus(Request $request, $slug)
@@ -205,6 +154,6 @@ class RestaurantBranchController extends Controller
         $availableMenus = Menu::whereIn('slug', $request->available_menus)->pluck('id');
         $restaurantBranch->availableMenus()->detach($availableMenus);
 
-        return response()->json($restaurantBranch->load(['availableMenus', 'restaurant','township']), 201);
+        return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
     }
 }

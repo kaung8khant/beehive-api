@@ -14,6 +14,6 @@ class MenuSeeder extends Seeder
      */
     public function run()
     {
-        Menu::factory()->count(200)->create();
+        Menu::factory()->count(300)->create();
     }
 }
