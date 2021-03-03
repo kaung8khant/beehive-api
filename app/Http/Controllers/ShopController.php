@@ -40,7 +40,7 @@ class ShopController extends Controller
             'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
             'shop_branch' => 'required',
             'shop_branch.name' => 'required|string',
-            'shop_branch.name_mm' => 'nullable|string',
+            'shop_branch.name_mm' => 'nullable',
             'shop_branch.address' => 'required',
             'shop_branch.contact_number' => 'required',
             'shop_branch.opening_time' => 'required|date_format:H:i',
@@ -167,5 +167,4 @@ class ShopController extends Controller
 
         return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
     }
-
 }
