@@ -158,7 +158,7 @@ class ProductController extends Controller
             $variation['product_id'] = $productId;
             $productVariation = ProductVariation::create($variation);
             $variationId = $productVariation->id;
-            $this->createVariationValues($variationId, $productVariation['product_variation_values']);
+            $this->createVariationValues($variationId, $variation['product_variation_values']);
 
         }
     }
@@ -171,5 +171,4 @@ class ProductController extends Controller
             ProductVariationValue::create($variationValue);
         }
     }
-
 }
