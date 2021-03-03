@@ -13,8 +13,6 @@ class ProductVariation extends Model
         'slug',
         'name',
         'name_mm',
-        'description',
-        'description_mm',
         'product_id',
     ];
 

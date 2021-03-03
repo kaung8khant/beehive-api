@@ -16,7 +16,6 @@ class CreateProductVariationValuesTable extends Migration
         Schema::create('product_variation_values', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique();
-            $table->string('name');
             $table->string('value');
             $table->decimal('price', 12, 2);
             $table->unsignedBigInteger('product_variation_id');
