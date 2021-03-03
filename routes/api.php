@@ -125,6 +125,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('ratings', 'RatingController');
             Route::get('orders/{receiverType}/ratings', 'RatingController@getReceiverTypeByOrder');
             /* Order */
+
+            /* Promocode */
+            Route::resource('promocodes', 'PromocodeController');
+            /* Promocode */
         });
     });
 
