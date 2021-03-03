@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Helpers\ResponseHelper;
-use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
+use App\Models\Restaurant;
 
 class RestaurantBranchController extends Controller
 {

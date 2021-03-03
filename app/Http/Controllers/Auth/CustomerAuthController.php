@@ -7,15 +7,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Propaganistas\LaravelPhone\PhoneNumber;
 use App\Helpers\StringHelper;
 use App\Helpers\ResponseHelper;
 use App\Models\Customer;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Models\OneTimePassword;
 
 class CustomerAuthController extends Controller
 {
-    use StringHelper;
-    use ResponseHelper;
+    use StringHelper, ResponseHelper;
 
     public function login(Request $request)
     {
@@ -63,15 +64,7 @@ class CustomerAuthController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validator = Validator::make($request->all(), [
-            'slug' => 'required|unique:customers',
-            'username' => 'required|string|min:3|max:100|unique:customers',
-            'email' => 'nullable|email|unique:customers',
-            'name' => 'required|max:255',
-            'phone_number' => 'required|unique:customers',
-            'password' => 'required|string|confirmed|min:6',
-            'gender' => 'required|in:male,female',
-        ]);
+        $validator = $this->validateRegister($request);
 
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, TRUE);
@@ -79,9 +72,16 @@ class CustomerAuthController extends Controller
 
         $validatedData = $validator->validated();
         $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
+
+        $otp = OneTimePassword::where('phone_number', $validatedData['phone_number'])->latest()->first();
+
+        if (!$otp || $otp->otp_code !== $validatedData['otp_code']) {
+            return $this->generateResponse('The OTP code is incorrect.', 406, TRUE);
+        }
 
         $customer = Customer::create($validatedData);
-        $token = JWTAuth::claims($customer->toArray())->fromUser($customer->refresh());
+        $token = JWTAuth::claims($customer->refresh()->toArray())->fromUser($customer);
 
         return $this->generateResponse(['token' => $token], 200);
     }
@@ -102,5 +102,18 @@ class CustomerAuthController extends Controller
     {
         $user = Auth::guard('customers')->user();
         return $this->generateResponse($user, 200);
+    }
+
+    private function validateRegister($request)
+    {
+        return Validator::make($request->all(), [
+            'slug' => 'required|unique:customers',
+            'email' => 'nullable|email|unique:customers',
+            'name' => 'required|max:255',
+            'phone_number' => 'required|unique:customers',
+            'password' => 'required|string|min:6',
+            'gender' => 'required|in:male,female',
+            'otp_code' => 'required|integer',
+        ]);
     }
 }

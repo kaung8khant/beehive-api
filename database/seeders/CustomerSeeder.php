@@ -16,7 +16,6 @@ class CustomerSeeder extends Seeder
     {
         Customer::create([
             'slug' => 'A1B1C1',
-            'username' => 'customer1',
             'email' => 'customer1@example.com',
             'name' => 'Test Customer',
             'phone_number' => '09123456789',

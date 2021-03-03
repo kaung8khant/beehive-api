@@ -36,7 +36,7 @@ class RestaurantCategoryController extends Controller
 
         $restaurantCategory = RestaurantCategory::create($request->validate([
             'name' => 'required|unique:restaurant_categories',
-            'name_mm' => 'unique:restaurant_categories',
+            'name_mm' => 'nullable|unique:restaurant_categories',
             'slug' => 'required|unique:restaurant_categories',
         ]));
 
