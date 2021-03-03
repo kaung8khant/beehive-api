@@ -37,26 +37,29 @@ class ProductVariationController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $validatedData = $request->validate([
-            'slug' => 'required|unique:product_variations',
-            'name' => 'required|string',
-            'name_mm' => 'nullable|string',
+            'product_variations' => 'required|array',
+            'product_variations.*.slug' => '',
+            'product_variations.*.name' => 'required|string',
+            'product_variations.*.name_mm' => 'nullable|string',
             'product_slug' => 'required|exists:App\Models\Product,slug',
 
-            'product_variation_values' => 'required|array',
-            'product_variation_values.*.value' => 'required|string',
-            'product_variation_values.*.price' => 'required|numeric',
-
+            'product_variations.*.product_variation_values' => 'required|array',
+            'product_variations.*.product_variation_values.*.value' => 'required|string',
+            'product_variations.*.product_variation_values.*.price' => 'required|numeric',
 
         ]);
 
-        $validatedData['product_id'] = $this->getProductId($request->product_slug);
+        $productId = $this->getProductId($request->product_slug);
+        $productVariations = $validatedData["product_variations"];
 
-        $productVariation = ProductVariation::create($validatedData);
+        foreach ($productVariations as $variation) {
+            $variation['slug'] = $this->generateUniqueSlug();
+            $variation['product_id'] = $productId;
+            $productVariation = ProductVariation::create($variation);
+            $variationId = $productVariation->id;
+            $this->createVariationValues($variationId, $variation['product_variation_values']);
 
-        $variationId = $productVariation->id;
-
-        $this->createVariationValues($variationId, $validatedData['product_variation_values']);
-
+        }
         return response()->json($productVariation->load('product','productVariationValues'), 201);
     }
 
