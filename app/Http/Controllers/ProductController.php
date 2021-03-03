@@ -100,7 +100,6 @@ class ProductController extends Controller
             'product_variations.*.product_variation_values.*.value' => 'required|string',
             'product_variations.*.product_variation_values.*.price' => 'required|numeric',
 
-
         ];
 
         if ($slug) {
