@@ -18,8 +18,8 @@ class PromocodeController extends Controller
      */
     public function index(Request $request)
     {
-        return Promocode::where('slug', $request->filter)
-            ->orWhere('code', $request->filter)
+        return Promocode::where('code', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
 
@@ -51,7 +51,7 @@ class PromocodeController extends Controller
      */
     public function show($slug)
     {
-        return response()->json(Promocode::where('slug', $slug)->firstOrFail(), 200);
+        return response()->json(Promocode::with('rules')->where('slug', $slug)->firstOrFail(), 200);
     }
 
     /**
