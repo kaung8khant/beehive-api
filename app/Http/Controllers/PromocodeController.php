@@ -67,7 +67,7 @@ class PromocodeController extends Controller
 
         $validatedData = $request->validate($this->getParamsToValidate());
         $promocode->update($validatedData);
-        // $this->createAndUpdateRules($promocode->id, $validatedData['rules']);
+        $this->createAndUpdateRules($promocode, $validatedData['rules']);
         return response()->json($promocode, 200);
     }
 
@@ -87,8 +87,6 @@ class PromocodeController extends Controller
 
         if ($slug) {
             $params['slug'] = 'required|unique:promocodes';
-        } else {
-            $params['rules.*.id'] = 'nullable';
         }
 
         return $params;
@@ -102,17 +100,12 @@ class PromocodeController extends Controller
         }
     }
 
-    private function createAndUpdateRules($promocodeId, $rules)
+    private function createAndUpdateRules($promocode, $rules)
     {
+        $promocode->rules()->delete();
         foreach ($rules as $rule) {
-            // PromocodeRule::whereIn('slug', $request->rules)->pluck('id');
-            $existingRule= PromocodeRule::where('id', $rule['id'])->firstOrFail();
-            if ($rule['id']===null) {
-                $rule['promocode_id'] = $promocodeId;
-                PromocodeRule::create($rule);
-            } else {
-                $rule::update($rule);
-            }
+            $rule['promocode_id'] = $promocode->id;
+            PromocodeRule::create($rule);
         }
     }
 
@@ -127,6 +120,7 @@ class PromocodeController extends Controller
         ]);
 
         $promocode = Promocode::where('slug', $slug)->firstOrFail();
+        $promocode->rules()->delete();
         foreach ($rules as $rule) {
             $rule['promocode_id'] = $promocode->id;
             PromocodeRule::create($rule);
