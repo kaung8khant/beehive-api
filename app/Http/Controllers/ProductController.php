@@ -18,7 +18,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        return Product::with('shop', 'shopCategory', 'brand','subCategory')
+        return Product::with('shop', 'shopCategory', 'brand')
             ->with('productVariations')->with('productVariations.productVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
@@ -59,6 +59,7 @@ class ProductController extends Controller
     {
         $product = Product::where('slug', $slug)->firstOrFail();
 
+
         $validatedData = $request->validate($this->getParamsToValidate());
 
         $subCategory = $this->getSubCategory($request->sub_category_slug);
@@ -68,7 +69,15 @@ class ProductController extends Controller
         $validatedData['sub_category_id'] = $subCategory->id;
         $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
 
+
         $product->update($validatedData);
+
+        $productId = $product->id;
+
+        $product->productVariations()->delete();
+
+        $this->createProductVariation($productId, $validatedData['product_variations']);
+
         return response()->json($product, 200);
     }
 
