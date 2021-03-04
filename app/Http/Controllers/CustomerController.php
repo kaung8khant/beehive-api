@@ -20,8 +20,7 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        return Customer::where('username', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('email', 'LIKE', '%' . $request->filter . '%')
+        return Customer::where('email', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -40,7 +39,6 @@ class CustomerController extends Controller
 
         $validatedData = $request->validate([
             'slug' => 'required|unique:customers',
-            'username' => 'required|string|min:3|max:100|unique:customers',
             'email' => 'nullable|email|unique:customers',
             'name' => 'required|max:255',
             'phone_number' => 'required|unique:customers',
