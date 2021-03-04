@@ -16,7 +16,7 @@ class CreateOneTimePasswordsTable extends Migration
         Schema::create('one_time_passwords', function (Blueprint $table) {
             $table->id();
             $table->string('phone_number');
-            $table->integer('otp_code');
+            $table->string('otp_code');
             $table->string('status')->nullable();
             $table->string('message_id')->nullable();
             $table->timestamps();
