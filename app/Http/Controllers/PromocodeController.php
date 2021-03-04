@@ -67,7 +67,7 @@ class PromocodeController extends Controller
 
         $validatedData = $request->validate($this->getParamsToValidate());
         $promocode->update($validatedData);
-        // $this->createAndUpdateRules($promocode->id, $validatedData['rules']);
+        $this->createAndUpdateRules($promocode, $validatedData['rules']);
         return response()->json($promocode, 200);
     }
 
@@ -87,8 +87,6 @@ class PromocodeController extends Controller
 
         if ($slug) {
             $params['slug'] = 'required|unique:promocodes';
-        } else {
-            $params['rules.*.id'] = 'nullable';
         }
 
         return $params;
@@ -102,23 +100,18 @@ class PromocodeController extends Controller
         }
     }
 
-    private function createAndUpdateRules($promocodeId, $rules)
+    private function createAndUpdateRules($promocode, $rules)
     {
+        $promocode->rules()->delete();
         foreach ($rules as $rule) {
-            // PromocodeRule::whereIn('slug', $request->rules)->pluck('id');
-            $existingRule= PromocodeRule::where('id', $rule['id'])->firstOrFail();
-            if ($rule['id']===null) {
-                $rule['promocode_id'] = $promocodeId;
-                PromocodeRule::create($rule);
-            } else {
-                $rule::update($rule);
-            }
+            $rule['promocode_id'] = $promocode->id;
+            PromocodeRule::create($rule);
         }
     }
 
     public function addRules(Request $request, $slug)
     {
-        $rules = $request->validate([
+        $validatedData = $request->validate([
             'rules' => 'required|array',
             'rules.*.name' => 'required|string',
             'rules.*.value' => 'required|string',
@@ -127,10 +120,12 @@ class PromocodeController extends Controller
         ]);
 
         $promocode = Promocode::where('slug', $slug)->firstOrFail();
-        foreach ($rules as $rule) {
+        $promocode->rules()->delete();
+        foreach ($validatedData['rules'] as $rule) {
             $rule['promocode_id'] = $promocode->id;
             PromocodeRule::create($rule);
         }
+
         return response()->json($promocode, 201);
     }
 
