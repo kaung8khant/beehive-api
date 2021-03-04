@@ -7,6 +7,7 @@ use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\MenuVariation;
 use App\Models\Menu;
+use App\Models\MenuVariationValue;
 
 class MenuVariationController extends Controller
 {
@@ -34,13 +35,40 @@ class MenuVariationController extends Controller
      */
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
+        $validatedData = $request->validate([
+            'menu_slug' => 'required|exists:App\Models\Menu,slug',
+            'menu_variations.*.name' => 'required|string',
+            'menu_variations.*.name_mm' => 'nullable|string',
+            'menu_variations.*.menu_variation_values' => 'required|array',
+            'menu_variations.*.menu_variation_values.*.value' => 'required|string',
+            'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
+        ]);
 
-        $validatedData = $request->validate($this->getParamsToValidate(TRUE));
-        $validatedData['menu_id'] = $this->getMenuId($request->menu_slug);
+        $menu = $this->getMenu($validatedData['menu_slug']);
 
-        $menuVariation = MenuVariation::create($validatedData);
-        return response()->json($menuVariation->load('menu'), 201);
+        foreach ($validatedData['menu_variations'] as $menuVariation) {
+            $menuVariation['slug'] = $this->generateUniqueSlug();
+            $menuVariation['menu_id'] = $menu->id;
+
+            $menuVariationId = MenuVariation::create($menuVariation)->id;
+
+            foreach ($menuVariation['menu_variation_values'] as $menuVariationValue) {
+
+                $menuVariationValue['slug'] = $this->generateUniqueSlug();
+                $menuVariationValue['menu_variation_id'] = $menuVariationId;
+
+                MenuVariationValue::create($menuVariationValue);
+            }
+        }
+
+        // $menu = $this->getMenu();
+        // return $menu->slug;
+
+        $menuVariation = MenuVariation::where('menu_id', $menu->slug);
+
+        // return response()->json($menuVariation->with('menuVariationValues'), 200);
+
+        return response()->json($menu->load(['menuVariations', 'menuVariations.menuVariationValues']), 201);
     }
 
     /**
@@ -67,7 +95,7 @@ class MenuVariationController extends Controller
         $menuVariation = MenuVariation::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate($this->getParamsToValidate());
-        $validatedData['menu_id'] = $this->getMenuId($request->menu_slug);
+        $validatedData['menu_id'] = $this->getMenu($request->menu_slug)->id;
 
         $menuVariation->update($validatedData);
         return response()->json($menuVariation->load('menu'), 200);
@@ -111,8 +139,8 @@ class MenuVariationController extends Controller
         return $params;
     }
 
-    private function getMenuId($slug)
+    private function getMenu($slug)
     {
-        return Menu::where('slug', $slug)->first()->id;
+        return Menu::where('slug', $slug)->first();
     }
 }
