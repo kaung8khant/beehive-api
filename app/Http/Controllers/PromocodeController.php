@@ -111,7 +111,7 @@ class PromocodeController extends Controller
 
     public function addRules(Request $request, $slug)
     {
-        $rules = $request->validate([
+        $validatedData = $request->validate([
             'rules' => 'required|array',
             'rules.*.name' => 'required|string',
             'rules.*.value' => 'required|string',
@@ -121,10 +121,11 @@ class PromocodeController extends Controller
 
         $promocode = Promocode::where('slug', $slug)->firstOrFail();
         $promocode->rules()->delete();
-        foreach ($rules as $rule) {
+        foreach ($validatedData['rules'] as $rule) {
             $rule['promocode_id'] = $promocode->id;
             PromocodeRule::create($rule);
         }
+
         return response()->json($promocode, 201);
     }
 
