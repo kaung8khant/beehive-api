@@ -18,7 +18,7 @@ class CustomerSeeder extends Seeder
             'slug' => 'A1B1C1',
             'email' => 'customer1@example.com',
             'name' => 'Test Customer',
-            'phone_number' => '09123456789',
+            'phone_number' => '+959799655400',
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             'gender' => 'male',
             'date_of_birth' => '1993-11-16',
