@@ -68,6 +68,7 @@ class CustomerAuthController extends Controller
     public function register(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
+        $request['phone_number'] = PhoneNumber::make($request->phone_number, 'MM');
 
         $validator = $this->validateRegister($request);
 
@@ -77,7 +78,6 @@ class CustomerAuthController extends Controller
 
         $validatedData = $validator->validated();
         $validatedData['password'] = Hash::make($validatedData['password']);
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
 
         $otp = OneTimePassword::where('phone_number', $validatedData['phone_number'])->latest()->first();
 
@@ -111,14 +111,18 @@ class CustomerAuthController extends Controller
 
     private function validateRegister($request)
     {
-        return Validator::make($request->all(), [
-            'slug' => 'required|unique:customers',
-            'email' => 'nullable|email|unique:customers',
-            'name' => 'required|max:255',
-            'phone_number' => 'required|phone:MM|unique:customers',
-            'password' => 'required|string|min:6',
-            'gender' => 'required|in:male,female',
-            'otp_code' => 'required|integer',
-        ]);
+        return Validator::make(
+            $request->all(),
+            [
+                'slug' => 'required|unique:customers',
+                'email' => 'nullable|email|unique:customers',
+                'name' => 'required|max:255',
+                'phone_number' => 'required|phone:MM|unique:customers',
+                'password' => 'required|string|min:6',
+                'gender' => 'required|in:male,female',
+                'otp_code' => 'required|integer',
+            ],
+            ['phone_number.phone' => 'Invalid phone number.']
+        );
     }
 }
