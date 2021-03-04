@@ -20,6 +20,7 @@ class CreateProductsTable extends Migration
             $table->string('name_mm')->nullable();
             $table->string('description');
             $table->string('description_mm')->nullable();
+            $table->boolean('is_enable')->default(1);
             $table->decimal('price', 12, 2);
             $table->unsignedBigInteger('shop_id');
             $table->unsignedBigInteger('shop_category_id');

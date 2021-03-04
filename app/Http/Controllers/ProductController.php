@@ -182,4 +182,13 @@ class ProductController extends Controller
             ProductVariationValue::create($variationValue);
         }
     }
+
+    public function toggleEnable($slug)
+    {
+        $product = Product::where('slug', $slug)->firstOrFail();
+        $product->is_enable = !$product->is_enable;
+        $product->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
 }
