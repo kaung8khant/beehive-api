@@ -20,10 +20,14 @@ class CustomerAuthController extends Controller
 
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'phone_number' => 'required|string',
-            'password' => 'required|string|min:6',
-        ]);
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'phone_number' => 'required|phone:MM',
+                'password' => 'required|string|min:6',
+            ],
+            ['phone_number.phone' => 'Invalid phone number.']
+        );
 
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, TRUE);
@@ -44,7 +48,8 @@ class CustomerAuthController extends Controller
 
     private function attemptLogin(Request $request)
     {
-        $customer = Customer::where('phone_number', $request->phone_number)->first();
+        $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
+        $customer = Customer::where('phone_number', $phoneNumber)->first();
 
         if ($customer) {
             if (!$customer->is_enable) {
@@ -52,7 +57,7 @@ class CustomerAuthController extends Controller
             }
 
             return Auth::guard('customers')->claims($customer->toArray())->attempt([
-                'phone_number' => $request->phone_number,
+                'phone_number' => $phoneNumber,
                 'password' => $request->password,
             ]);
         }
@@ -110,7 +115,7 @@ class CustomerAuthController extends Controller
             'slug' => 'required|unique:customers',
             'email' => 'nullable|email|unique:customers',
             'name' => 'required|max:255',
-            'phone_number' => 'required|unique:customers',
+            'phone_number' => 'required|phone:MM|unique:customers',
             'password' => 'required|string|min:6',
             'gender' => 'required|in:male,female',
             'otp_code' => 'required|integer',
