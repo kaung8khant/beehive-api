@@ -119,8 +119,8 @@ class CustomerAuthController extends Controller
                 'name' => 'required|max:255',
                 'phone_number' => 'required|phone:MM|unique:customers',
                 'password' => 'required|string|min:6',
-                'gender' => 'required|in:male,female',
-                'otp_code' => 'required|integer',
+                'gender' => 'required|in:Male,Female',
+                'otp_code' => 'required|string',
             ],
             ['phone_number.phone' => 'Invalid phone number.']
         );
