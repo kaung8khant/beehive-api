@@ -61,14 +61,9 @@ class MenuVariationController extends Controller
             }
         }
 
-        // $menu = $this->getMenu();
-        // return $menu->slug;
-
         $menuVariation = MenuVariation::where('menu_id', $menu->slug);
 
-        // return response()->json($menuVariation->with('menuVariationValues'), 200);
-
-        return response()->json($menu->load(['menuVariations', 'menuVariations.menuVariationValues']), 201);
+        return response()->json(['message' => 'Successfully Created.'], 201);
     }
 
     /**
