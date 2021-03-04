@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\MenuTopping;
+use App\Models\MenuToppingValue;
 use App\Models\Menu;
 
 class MenuToppingController extends Controller
@@ -30,15 +31,36 @@ class MenuToppingController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    // public function store(Request $request)
+    // {
+    //     $request['slug'] = $this->generateUniqueSlug();
+
+    //     $validatedData = $request->validate($this->getParamsToValidate(true));
+    //     $validatedData['menu_id'] = $this->getMenuId($request->menu_slug);
+
+    //     $menuTopping = MenuTopping::create($validatedData);
+    //     return response()->json($menuTopping->load('menu'), 201);
+    // }
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
+        $validatedData = $request->validate([
+            'menu_slug' => 'required|exists:App\Models\Menu,slug',
+            'menu_toppings.*.name' => 'required|string',
+            'menu_toppings.*.name_mm' => 'nullable|string',
+            'menu_toppings.*.price' => 'required|numeric',
 
-        $validatedData = $request->validate($this->getParamsToValidate(true));
-        $validatedData['menu_id'] = $this->getMenuId($request->menu_slug);
+        ]);
 
-        $menuTopping = MenuTopping::create($validatedData);
-        return response()->json($menuTopping->load('menu'), 201);
+        $menuId = $this->getMenuId($validatedData['menu_slug']);
+
+        foreach ($validatedData['menu_toppings'] as $menuTopping) {
+            $menuTopping['slug'] = $this->generateUniqueSlug();
+            $menuTopping['menu_id'] = $menuId;
+
+            MenuTopping::create($menuTopping)->id;
+        }
+
+        return response()->json(['message' => 'Successfully Created.'], 201);
     }
 
     /**
