@@ -62,8 +62,5 @@ class Product extends Model
         return $this->belongsTo(Brand::class);
     }
 
-    public function shop_branches()
-    {
-        return $this->belongsToMany(ShopBranch::class, 'shop_branch_product');
-    }
+
 }
