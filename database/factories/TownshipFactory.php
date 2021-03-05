@@ -2,13 +2,14 @@
 
 namespace Database\Factories;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
 use App\Models\Township;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TownshipFactory extends Factory
 {
     use StringHelper;
+
     /**
      * The name of the factory's corresponding model.
      *
@@ -25,9 +26,9 @@ class TownshipFactory extends Factory
     {
         $mmFaker = app('Faker');
         return [
+            'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->unique()->state(),
             'name_mm' => $mmFaker->name(),
-            "slug" => $this->generateUniqueSlug(),
         ];
     }
 }

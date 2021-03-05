@@ -2,19 +2,20 @@
 
 namespace Database\Factories;
 
-use App\Helpers\StringHelper;
-use App\Models\City;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Helpers\StringHelper;
+use App\Models\SubCategory;
 
-class CityFactory extends Factory
+class SubCategoryFactory extends Factory
 {
     use StringHelper;
+
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = City::class;
+    protected $model = SubCategory::class;
 
     /**
      * Define the model's default state.
@@ -23,10 +24,12 @@ class CityFactory extends Factory
      */
     public function definition()
     {
+        $mmFaker = app('Faker');
+
         return [
             'slug' => $this->generateUniqueSlug(),
-            'name' => $this->faker->unique()->city(),
-            'name_mm' => $this->faker->unique()->city(),
+            'name' => $this->faker->unique()->text(30),
+            'name_mm' => $mmFaker->name(5),
         ];
     }
 }

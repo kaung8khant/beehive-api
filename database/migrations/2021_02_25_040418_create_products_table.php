@@ -18,10 +18,10 @@ class CreateProductsTable extends Migration
             $table->string('slug')->unique();
             $table->string('name');
             $table->string('name_mm')->nullable();
-            $table->string('description');
-            $table->string('description_mm')->nullable();
-            $table->boolean('is_enable')->default(1);
+            $table->text('description');
+            $table->text('description_mm')->nullable();
             $table->decimal('price', 12, 2);
+            $table->boolean('is_enable')->default(1);
             $table->unsignedBigInteger('shop_id');
             $table->unsignedBigInteger('shop_category_id');
             $table->unsignedBigInteger('sub_category_id');
