@@ -10,10 +10,8 @@ class PromocodeRule extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
         'value',
         'data_type',
-        'operator',
         'promocode_id',
     ];
 

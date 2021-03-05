@@ -20,6 +20,7 @@ class CreatePromocodesTable extends Migration
             $table->enum('type', ['fix', 'percentage']);
             $table->enum('usage', ['shop', 'restaurant', 'both']);
             $table->decimal('amount', 12, 2);
+            $table->string('description');
             $table->timestamps();
         });
     }

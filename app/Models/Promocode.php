@@ -15,6 +15,7 @@ class Promocode extends Model
         'type',
         'usage',
         'amount',
+        'description'
     ];
 
     protected $hidden = [

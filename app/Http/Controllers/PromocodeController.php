@@ -78,11 +78,10 @@ class PromocodeController extends Controller
             'type' => 'required|in:fix,percentage',
             'usage' => 'required|in:restaurant,shop,both',
             'amount' => 'required|numeric',
+            'description' => 'nullable|string',
             'rules' => 'required|array',
-            'rules.*.name' => 'required|string',
             'rules.*.value' => 'required|string',
-            'rules.*.data_type' => 'required|in:happy hour,date period,birthday,user limit',
-            'rules.*.operator' => 'required|in:equal,less than,greater than,less than equal,greater than equal',
+            'rules.*.data_type' => 'required|in:before date,after date,exact date,total usage,per user usage,matching',
         ];
 
         if ($slug) {
@@ -113,10 +112,8 @@ class PromocodeController extends Controller
     {
         $validatedData = $request->validate([
             'rules' => 'required|array',
-            'rules.*.name' => 'required|string',
             'rules.*.value' => 'required|string',
-            'rules.*.data_type' => 'required|in:happy hour,date period,birthday,user limit',
-            'rules.*.operator' => 'required|in:equal,less than,greater than,less than equal,greater than equal',
+            'rules.*.data_type' => 'required|in:before date,after date,exact date,total usage,per user usage,matching',
         ]);
 
         $promocode = Promocode::where('slug', $slug)->firstOrFail();
