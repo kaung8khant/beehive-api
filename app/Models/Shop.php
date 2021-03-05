@@ -15,6 +15,14 @@ class Shop extends Model
         'name_mm',
         'is_official',
         'is_enable',
+        'address',
+        'contact_number',
+        'opening_time',
+        'closing_time',
+        'latitude',
+        'longitude',
+        'shop_id',
+        'township_id',
     ];
 
     protected $hidden = [
@@ -22,6 +30,8 @@ class Shop extends Model
         'created_at',
         'updated_at',
         'pivot',
+        'shop_id',
+        'township_id',
     ];
 
     protected $casts = [
@@ -44,13 +54,13 @@ class Shop extends Model
         return $this->hasMany(Product::class);
     }
 
-    public function shopBranches()
-    {
-        return $this->hasMany(ShopBranch::class);
-    }
-
     public function customers()
     {
         return $this->belongsToMany(Customer::class, 'favorite_shop');
+    }
+
+    public function township()
+    {
+        return $this->belongsTo(Township::class);
     }
 }

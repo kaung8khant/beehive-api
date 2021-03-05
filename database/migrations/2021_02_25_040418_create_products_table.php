@@ -20,11 +20,12 @@ class CreateProductsTable extends Migration
             $table->string('name_mm')->nullable();
             $table->string('description');
             $table->string('description_mm')->nullable();
+            $table->boolean('is_enable')->default(1);
             $table->decimal('price', 12, 2);
             $table->unsignedBigInteger('shop_id');
             $table->unsignedBigInteger('shop_category_id');
             $table->unsignedBigInteger('sub_category_id');
-            $table->unsignedBigInteger('brand_id');
+            $table->unsignedBigInteger('brand_id')->nullable();
             $table->timestamps();
             $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->foreign('shop_category_id')->references('id')->on('shop_categories')->onDelete('cascade');

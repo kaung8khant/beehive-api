@@ -19,7 +19,8 @@ class Product extends Model
         'shop_id',
         'shop_category_id',
         'sub_category_id',
-        'brand_id'
+        'brand_id',
+        'is_enable'
     ];
 
     protected $hidden = [
@@ -30,6 +31,10 @@ class Product extends Model
         'brand_id',
         'created_at',
         'updated_at',
+    ];
+
+    protected $casts = [
+        'is_enable' => 'boolean',
     ];
 
     public function shop()
@@ -57,8 +62,5 @@ class Product extends Model
         return $this->belongsTo(Brand::class);
     }
 
-    public function shop_branches()
-    {
-        return $this->belongsToMany(ShopBranch::class, 'shop_branch_product');
-    }
+
 }

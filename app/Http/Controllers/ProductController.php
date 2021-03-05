@@ -37,12 +37,18 @@ class ProductController extends Controller
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
         $validatedData['sub_category_id'] = $subCategory->id;
-        $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
+
+        if($request->brand_slug){
+            $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
+        }
+
 
         $product = Product::create($validatedData);
         $productId = $product->id;
 
-        $this->createProductVariation($productId, $validatedData['product_variations']);
+        if($request->product_variations){
+            $this->createProductVariation($productId, $validatedData['product_variations']);
+        }
 
         return response()->json($product->refresh()->load('shop',"productVariations"), 201);
     }
@@ -67,17 +73,21 @@ class ProductController extends Controller
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
         $validatedData['sub_category_id'] = $subCategory->id;
-        $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
+        if($request->brand_slug){
+            $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
+        }
 
 
         $product->update($validatedData);
 
         $productId = $product->id;
 
-        $product->productVariations()->delete();
+        if($request->product_variations){
 
-        $this->createProductVariation($productId, $validatedData['product_variations']);
+            $product->productVariations()->delete();
+            $this->createProductVariation($productId, $validatedData['product_variations']);
 
+        }
         return response()->json($product, 200);
     }
 
@@ -97,7 +107,7 @@ class ProductController extends Controller
             'price' => 'required|max:99999999',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'sub_category_slug' => 'required|exists:App\Models\SubCategory,slug',
-            'brand_slug' => 'required|exists:App\Models\Brand,slug',
+            'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',
@@ -182,4 +192,13 @@ class ProductController extends Controller
             ProductVariationValue::create($variationValue);
         }
     }
+
+    public function toggleEnable($slug)
+    {
+        $product = Product::where('slug', $slug)->firstOrFail();
+        $product->is_enable = !$product->is_enable;
+        $product->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
 }

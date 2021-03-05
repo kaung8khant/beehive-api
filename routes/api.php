@@ -59,6 +59,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
 
             Route::resource('products', 'ProductController');
+            Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
             Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
 
             Route::resource('product-variations', 'ProductVariationController');
