@@ -18,7 +18,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        return Product::with('shop', 'shopCategory', 'brand','subCategory')
+        return Product::with('shop', 'shopCategory', 'brand', 'subCategory')
             ->with('productVariations')->with('productVariations.productVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
@@ -44,7 +44,7 @@ class ProductController extends Controller
 
         $this->createProductVariation($productId, $validatedData['product_variations']);
 
-        return response()->json($product->refresh()->load('shop',"productVariations"), 201);
+        return response()->json($product->refresh()->load('shop', "productVariations"), 201);
     }
 
     public function show($slug)
@@ -163,14 +163,12 @@ class ProductController extends Controller
 
     private function createProductVariation($productId, $productVariations)
     {
-
         foreach ($productVariations as $variation) {
             $variation['slug'] = $this->generateUniqueSlug();
             $variation['product_id'] = $productId;
             $productVariation = ProductVariation::create($variation);
             $variationId = $productVariation->id;
             $this->createVariationValues($variationId, $variation['product_variation_values']);
-
         }
     }
 
@@ -190,5 +188,17 @@ class ProductController extends Controller
         $product->save();
         return response()->json(['message' => 'Success.'], 200);
     }
-
+    /**
+      * Display a listing of products by each brand.
+      */
+    public function getProductsByBrand(Request $request, $slug)
+    {
+        return Product::with('shop', 'shopCategory')->whereHas('brand', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter .'%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter);
+        })->paginate(10);
+    }
 }

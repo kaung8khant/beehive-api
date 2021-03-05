@@ -65,8 +65,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('product-variations', 'ProductVariationController');
             Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
 
-
-
             Route::resource('product-variation-values', 'ProductVariationValueController');
             Route::get('product-variation/{slug}/product-variation-values', 'ProductVariationValueController@getProductVariationValuesByProductVariation');
 
@@ -78,6 +76,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('shops/{slug}/shop-branches', 'ShopBranchController@getBranchesByShop');
             Route::get('townships/{slug}/shop-branches', 'ShopBranchController@getBranchesByTownship');
             Route::resource('brands', 'BrandController');
+            Route::get('brands/{slug}/products', 'ProductController@getProductsByBrand');
+
+
             /* Shop */
 
             /* Restaurant */
