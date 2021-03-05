@@ -93,8 +93,10 @@ class MenuController extends Controller
         $menuId = $menu->id;
 
         $menu->menuVariations()->delete();
+        $menu->menuToppings()->delete();
 
         $this->createVariations($menuId, $validatedData['menu_variations']);
+        $this->createToppings($menuId, $validatedData['menu_toppings']);
 
         return response()->json($menu->load('restaurant'), 200);
     }
