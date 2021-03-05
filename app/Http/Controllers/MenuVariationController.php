@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\MenuVariation;
 use App\Models\Menu;
@@ -93,7 +92,15 @@ class MenuVariationController extends Controller
         $validatedData['menu_id'] = $this->getMenu($request->menu_slug)->id;
 
         $menuVariation->update($validatedData);
-        return response()->json($menuVariation->load('menu'), 200);
+
+        $menuVariationId = $menuVariation->id;
+
+        $menuVariation->menuVariationValues()->delete();
+
+        $this->createVariationValues($menuVariationId, $validatedData['menu_variation_values']);
+
+        // return response()->json($menuVariation->load('menuVariationValues'), 200);
+        return response()->json(['message' => 'Successfully Updated.'], 201);
     }
 
     public function getVariationsByMenu(Request $request, $slug)
@@ -119,12 +126,24 @@ class MenuVariationController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
+    private function createVariationValues($variationId, $variationValues)
+    {
+        foreach ($variationValues as $variationValue) {
+            $variationValue['slug'] = $this->generateUniqueSlug();
+            $variationValue['menu_variation_id'] = $variationId;
+            MenuVariationValue::create($variationValue);
+        }
+    }
+
     private function getParamsToValidate($slug = FALSE)
     {
         $params = [
             'name' => 'required|string',
             'name_mm' => 'nullable|string',
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
+            'menu_variation_values' => 'required|array',
+            'menu_variation_values.*.value' => 'required|string',
+            'menu_variation_values.*.price' => 'required|numeric',
         ];
 
         if ($slug) {
