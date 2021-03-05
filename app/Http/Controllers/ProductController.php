@@ -97,7 +97,7 @@ class ProductController extends Controller
             'price' => 'required|max:99999999',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'sub_category_slug' => 'required|exists:App\Models\SubCategory,slug',
-            'brand_slug' => 'required|exists:App\Models\Brand,slug',
+            'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',
