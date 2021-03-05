@@ -37,12 +37,18 @@ class ProductController extends Controller
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
         $validatedData['sub_category_id'] = $subCategory->id;
-        $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
+
+        if($request->brand_slug){
+            $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
+        }
+
 
         $product = Product::create($validatedData);
         $productId = $product->id;
 
-        $this->createProductVariation($productId, $validatedData['product_variations']);
+        if($request->product_variations){
+            $this->createProductVariation($productId, $validatedData['product_variations']);
+        }
 
         return response()->json($product->refresh()->load('shop', "productVariations"), 201);
     }
@@ -67,17 +73,21 @@ class ProductController extends Controller
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
         $validatedData['sub_category_id'] = $subCategory->id;
-        $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
+        if($request->brand_slug){
+            $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
+        }
 
 
         $product->update($validatedData);
 
         $productId = $product->id;
 
-        $product->productVariations()->delete();
+        if($request->product_variations){
 
-        $this->createProductVariation($productId, $validatedData['product_variations']);
+            $product->productVariations()->delete();
+            $this->createProductVariation($productId, $validatedData['product_variations']);
 
+        }
         return response()->json($product, 200);
     }
 
