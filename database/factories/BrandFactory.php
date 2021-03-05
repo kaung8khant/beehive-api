@@ -2,13 +2,14 @@
 
 namespace Database\Factories;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class BrandFactory extends Factory
 {
     use StringHelper;
+
     /**
      * The name of the factory's corresponding model.
      *
@@ -24,8 +25,8 @@ class BrandFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->unique()->text(30),
-            "slug" => $this->generateUniqueSlug(),
+            'slug' => $this->generateUniqueSlug(),
+            'name' => $this->faker->unique()->text(20),
         ];
     }
 }

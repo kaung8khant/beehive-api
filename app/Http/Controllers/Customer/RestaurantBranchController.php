@@ -27,7 +27,8 @@ class RestaurantBranchController extends Controller
         $radius = config('system.restaurant_search_radius');
 
         // 6371000 for meter, 6371 for kilometer
-        $restaurantBranches = RestaurantBranch::selectRaw('id, slug, name, name_mm, address, contact_number, opening_time, closing_time,
+        $restaurantBranches = RestaurantBranch::with('restaurant')
+            ->selectRaw('id, slug, name, name_mm, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
             ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
                 + sin(radians(?)) * sin(radians(latitude)) )

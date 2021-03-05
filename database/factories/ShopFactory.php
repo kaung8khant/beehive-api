@@ -4,10 +4,10 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
-use App\Models\RestaurantBranch;
+use App\Models\Shop;
 use App\Models\Township;
 
-class RestaurantBranchFactory extends Factory
+class ShopFactory extends Factory
 {
     use StringHelper;
 
@@ -16,7 +16,7 @@ class RestaurantBranchFactory extends Factory
      *
      * @var string
      */
-    protected $model = RestaurantBranch::class;
+    protected $model = Shop::class;
 
     /**
      * Define the model's default state.
@@ -29,8 +29,9 @@ class RestaurantBranchFactory extends Factory
 
         return [
             'slug' => $this->generateUniqueSlug(),
-            'name' => $this->faker->unique()->company() . ' Restaurant',
-            'name_mm' => $mmFaker->name() . 'ဆိုင်ခွဲ',
+            'name' => $this->faker->unique()->company(),
+            'name_mm' => $mmFaker->name(),
+            'is_official' => $this->faker->boolean(),
             'address' => $this->faker->address(),
             'contact_number' => $this->faker->phoneNumber(),
             'opening_time' => rand(0, 11) . ':' . rand(0, 59),

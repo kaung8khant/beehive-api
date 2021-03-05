@@ -15,9 +15,9 @@ class CreateRestaurantCategoriesTable extends Migration
     {
         Schema::create('restaurant_categories', function (Blueprint $table) {
             $table->id();
+            $table->string('slug')->unique();
             $table->string('name')->unique();
             $table->string('name_mm')->unique()->nullable();
-            $table->string('slug')->unique();
             $table->timestamps();
         });
     }

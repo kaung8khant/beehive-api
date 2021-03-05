@@ -37,6 +37,13 @@ class Product extends Model
         'is_enable' => 'boolean',
     ];
 
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        return '';
+    }
+
     public function shop()
     {
         return $this->belongsTo(Shop::class);

@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
 use App\Models\Menu;
 use App\Models\Restaurant;
-use App\Models\RestaurantCategory;
 
 class MenuFactory extends Factory
 {

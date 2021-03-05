@@ -16,20 +16,13 @@ Route::group(['prefix' => 'user'], function () {
         Route::patch('addresses/{slug}/set-primary', 'Customer\AddressController@setPrimaryAddress');
         Route::resource('addresses', 'Customer\AddressController');
 
-        Route::get('shops', 'Customer\ShopController@index');
-        Route::get('shops/favorites', 'Customer\ShopController@getFavoriteShops');
-        Route::get('shops/{slug}', 'Customer\ShopController@show');
-        Route::post('shops/{slug}/set-favorite', 'Customer\ShopController@setFavoriteShop');
-        Route::post('shops/{slug}/remove-favorite', 'Customer\ShopController@removeFavoriteShop');
-
         /* Restaurant */
-        Route::get('restaurants', 'Customer\RestaurantController@index');
+        // Route::get('restaurants', 'Customer\RestaurantController@index');
         Route::get('restaurants/favorites', 'Customer\RestaurantController@getFavoriteRestaurants');
         Route::get('restaurants/{slug}', 'Customer\RestaurantController@show');
         Route::post('restaurants/{slug}/favorites', 'Customer\RestaurantController@setFavoriteRestaurant');
         Route::delete('restaurants/{slug}/favorites', 'Customer\RestaurantController@removeFavoriteRestaurant');
-
-        Route::get('restaurants/{slug}/branches', 'Customer\RestaurantBranchController@getRestaurantBranchesByRestaurant');
+        // Route::get('restaurants/{slug}/branches', 'Customer\RestaurantBranchController@getRestaurantBranchesByRestaurant');
 
         Route::get('restaurant-branches', 'Customer\RestaurantBranchController@index');
         Route::get('restaurant-branches/{slug}', 'Customer\RestaurantBranchController@show');
@@ -41,6 +34,19 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('restaurant-tags', 'Customer\RestaurantTagController@index');
         Route::get('restaurant-tags/{slug}/restaurants', 'Customer\RestaurantTagController@getRestaurantsByTag');
         /* Restaurant */
+
+        /* Shop */
+        Route::get('shops', 'Customer\ShopController@index');
+        Route::get('shops/favorites', 'Customer\ShopController@getFavoriteShops');
+        Route::get('shops/{slug}', 'Customer\ShopController@show');
+        Route::post('shops/{slug}/set-favorite', 'Customer\ShopController@setFavoriteShop');
+        Route::post('shops/{slug}/remove-favorite', 'Customer\ShopController@removeFavoriteShop');
+        /* Shop */
+
+        /* Home */
+        Route::get('suggestions', 'Customer\HomeController@getSuggestions');
+        Route::get('new-arrivals', 'Customer\HomeController@getNewArrivals');
+        /* Home */
 
         Route::resource('orders', 'Customer\OrderController');
     });
