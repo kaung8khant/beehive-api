@@ -98,6 +98,7 @@ class MenuVariationValueController extends Controller
         return $params;
     }
 
+
     private function getMenuVariationId($slug)
     {
         return MenuVariation::where('slug', $slug)->first()->id;
