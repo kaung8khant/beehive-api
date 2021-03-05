@@ -24,6 +24,13 @@ class ShopSeeder extends Seeder
                 'name_mm' => 'Impact Myanmar',
                 'is_official' => true,
                 'is_enable' => true,
+                'address' => 'NO(88), Kannar Road, Latha T/S, Yangon',
+                'contact_number' => '095172935',
+                'opening_time' => '08:00',
+                'closing_time' => '20:00',
+                'latitude' => 16.7778,
+                'longitude' => 96.1514,
+                'township_id' => 1,
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
@@ -31,6 +38,13 @@ class ShopSeeder extends Seeder
                 'name_mm' => 'Marigold',
                 'is_official' => true,
                 'is_enable' => true,
+                'address' => 'NO(88), Kannar Road, Latha T/S, Yangon',
+                'contact_number' => '095172935',
+                'opening_time' => '08:00',
+                'closing_time' => '20:00',
+                'latitude' => 16.7778,
+                'longitude' => 96.1514,
+                'township_id' => 1,
             ],
         ];
         foreach ($shops as $shop) {
