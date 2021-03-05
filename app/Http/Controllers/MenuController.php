@@ -89,6 +89,13 @@ class MenuController extends Controller
         $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
 
         $menu->update($validatedData);
+
+        $menuId = $menu->id;
+
+        $menu->menuVariations()->delete();
+
+        $this->createVariations($menuId, $validatedData['menu_variations']);
+
         return response()->json($menu->load('restaurant'), 200);
     }
 
