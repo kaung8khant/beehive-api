@@ -126,9 +126,9 @@ class PromocodeController extends Controller
         return response()->json($promocode, 201);
     }
 
-    public function removeRule($slug)
+    public function removeRule($id)
     {
-        PromocodeRule::where('slug', $slug)->firstOrFail()->delete();
+        PromocodeRule::where('id', $id)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
