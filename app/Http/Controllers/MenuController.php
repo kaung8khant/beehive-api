@@ -149,7 +149,7 @@ class MenuController extends Controller
     {
         $params = [
             'name' => 'required',
-            'name_mm' => 'required',
+            'name_mm' => 'nullable',
             'description' => 'required',
             'description_mm' => 'required',
             'price' => 'required|numeric',
@@ -158,10 +158,10 @@ class MenuController extends Controller
             'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
             'menu_variations' => 'nullable|array',
             'menu_variations.*.name' => 'required|string',
-            'menu_variations.*.name_mm' => 'required|string',
+            'menu_variations.*.name_mm' => 'nullable|string',
             'menu_toppings' => 'nullable|array',
             'menu_toppings.*.name' => 'required|string',
-            'menu_toppings.*.name_mm' => 'required|string',
+            'menu_toppings.*.name_mm' => 'nullable|string',
             'menu_toppings.*.price' => 'required|numeric',
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
