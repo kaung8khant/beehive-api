@@ -136,7 +136,7 @@ class MenuController extends Controller
      */
     public function getAvailableMenusByRestaurantBranch(Request $request, $slug)
     {
-        return Menu::with('restaurantCategory')->whereHas('restaurant_branches', function ($q) use ($slug) {
+        return Menu::with('restaurantCategory')->whereHas('restaurantBranches', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
@@ -149,19 +149,19 @@ class MenuController extends Controller
     {
         $params = [
             'name' => 'required',
-            'name_mm' => 'required',
+            'name_mm' => 'nullable',
             'description' => 'required',
-            'description_mm' => 'required',
+            'description_mm' => 'nullable',
             'price' => 'required|numeric',
             'is_enable' => 'required|boolean',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
             'menu_variations' => 'nullable|array',
             'menu_variations.*.name' => 'required|string',
-            'menu_variations.*.name_mm' => 'required|string',
+            'menu_variations.*.name_mm' => 'nullable|string',
             'menu_toppings' => 'nullable|array',
             'menu_toppings.*.name' => 'required|string',
-            'menu_toppings.*.name_mm' => 'required|string',
+            'menu_toppings.*.name_mm' => 'nullable|string',
             'menu_toppings.*.price' => 'required|numeric',
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
@@ -214,5 +214,13 @@ class MenuController extends Controller
     private function getRestaurantCategoryId($slug)
     {
         return RestaurantCategory::where('slug', $slug)->first()->id;
+    }
+
+    public function toggleEnable($slug)
+    {
+        $menu = Menu::where('slug', $slug)->firstOrFail();
+        $menu->is_enable = !$menu->is_enable;
+        $menu->save();
+        return response()->json(['message' => 'Success.'], 200);
     }
 }
