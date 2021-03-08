@@ -95,6 +95,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('menu-variations', 'MenuVariationController');
             Route::resource('menu-variation-values', 'MenuVariationValueController');
             Route::resource('menu-toppings', 'MenuToppingController');
+            Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
             Route::get('restaurants/{slug}/menus', 'MenuController@getMenusByRestaurant');
             Route::get('menus/{slug}/menu-variations', 'MenuVariationController@getVariationsByMenu');
             Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
