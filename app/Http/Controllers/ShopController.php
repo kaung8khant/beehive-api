@@ -63,7 +63,7 @@ class ShopController extends Controller
 
     public function show($slug)
     {
-        $shop = Shop::with('availableCategories', 'shopTags')->where('slug', $slug)->firstOrFail();
+        $shop = Shop::with('availableCategories', 'shopTags',"township")->where('slug', $slug)->firstOrFail();
         return response()->json($shop, 200);
     }
 
@@ -86,6 +86,12 @@ class ShopController extends Controller
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
             'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'address' => 'required',
+            'contact_number' => 'required',
+            'opening_time' => 'required|date_format:H:i',
+            'closing_time' => 'required|date_format:H:i',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
         ]));
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
