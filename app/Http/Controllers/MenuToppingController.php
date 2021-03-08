@@ -120,8 +120,8 @@ class MenuToppingController extends Controller
     private function getParamsToValidate($slug = false)
     {
         $params = [
-            'name' => 'required|unique:menu_toppings',
-            'name_mm' => 'nullable|unique:menu_toppings',
+            'name' => 'required|string',
+            'name_mm' => 'nullable|string',
             'price' => 'required|numeric',
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
         ];

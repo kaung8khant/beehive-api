@@ -36,8 +36,8 @@ class MenuVariationController extends Controller
     {
         $validatedData = $request->validate([
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
-            'menu_variations.*.name' => 'required|unique:menu_variations',
-            'menu_variations.*.name_mm' => 'nullable|unique:menu_variations',
+            'menu_variations.*.name' => 'required|string',
+            'menu_variations.*.name_mm' => 'nullable|string',
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
@@ -138,8 +138,8 @@ class MenuVariationController extends Controller
     private function getParamsToValidate($slug = FALSE)
     {
         $params = [
-            'name' => 'required|unique:menu_variations',
-            'name_mm' => 'nullable|unique:menu_variations',
+            'name' => 'required|string',
+            'name_mm' => 'nullable|string',
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
             'menu_variation_values' => 'required|array',
             'menu_variation_values.*.value' => 'required|string',
