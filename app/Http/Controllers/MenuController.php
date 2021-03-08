@@ -218,9 +218,9 @@ class MenuController extends Controller
 
     public function toggleEnable($slug)
     {
-        $product = Menu::where('slug', $slug)->firstOrFail();
-        $product->is_enable = !$product->is_enable;
-        $product->save();
+        $menu = Menu::where('slug', $slug)->firstOrFail();
+        $menu->is_enable = !$menu->is_enable;
+        $menu->save();
         return response()->json(['message' => 'Success.'], 200);
     }
 }
