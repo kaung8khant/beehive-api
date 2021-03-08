@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Validator;
 use App\Helpers\ResponseHelper;
 use App\Models\RestaurantBranch;
 use App\Models\Product;
-use App\Models\Menu;
 
 class HomeController extends Controller
 {
@@ -16,34 +15,43 @@ class HomeController extends Controller
 
     public function getSuggestions(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'lat' => 'required|numeric',
-            'lng' => 'required|numeric',
-        ]);
-
+        $validator = $this->validateLocation($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, TRUE);
         }
 
         $result = [
-            'restaurant_branches' => $this->getSuggestionRestaurantBranches($request),
+            'restaurant_branches' => $this->getRestaurantBranches($request)->inRandomOrder()->limit(10)->get(),
             'products' => $this->getRandomProducts(),
         ];
 
         return $this->generateResponse($result, 200);
     }
 
-    public function getNewArrivals()
+    public function getNewArrivals(Request $request)
     {
+        $validator = $this->validateLocation($request);
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+        }
+
         $result = [
-            'menus' => $this->getNewMenus(),
+            'restaurant_branches' => $this->getRestaurantBranches($request)->latest()->limit(10)->get(),
             'products' => $this->getNewProducts(),
         ];
 
         return $this->generateResponse($result, 200);
     }
 
-    private function getSuggestionRestaurantBranches($request)
+    private function validateLocation($request)
+    {
+        return Validator::make($request->all(), [
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+        ]);
+    }
+
+    private function getRestaurantBranches($request, $suggestion = FALSE)
     {
         $radius = config('system.restaurant_search_radius');
 
@@ -54,10 +62,7 @@ class HomeController extends Controller
                 + sin(radians(?)) * sin(radians(latitude)) )
             ) AS distance', [$request->lat, $request->lng, $request->lat])
             ->where('is_enable', 1)
-            ->having('distance', '<', $radius)
-            ->inRandomOrder()
-            ->limit(10)
-            ->get();
+            ->having('distance', '<', $radius);
     }
 
     private function getRandomProducts()
@@ -65,15 +70,6 @@ class HomeController extends Controller
         return Product::with('shop')
             ->where('is_enable', 1)
             ->inRandomOrder()
-            ->limit(10)
-            ->get();
-    }
-
-    private function getNewMenus()
-    {
-        return Menu::with('restaurant')
-            ->where('is_enable', 1)
-            ->latest()
             ->limit(10)
             ->get();
     }

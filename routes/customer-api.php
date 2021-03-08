@@ -18,21 +18,22 @@ Route::group(['prefix' => 'user'], function () {
 
         /* Restaurant */
         // Route::get('restaurants', 'Customer\RestaurantController@index');
+        Route::get('restaurants/new-arrivals', 'Customer\RestaurantController@getNewArrivals');
+        Route::get('restaurants/recommendations', 'Customer\RestaurantController@getRecommendations');
+
         Route::get('restaurants/favorites', 'Customer\RestaurantController@getFavoriteRestaurants');
-        Route::get('restaurants/{slug}', 'Customer\RestaurantController@show');
         Route::post('restaurants/{slug}/favorites', 'Customer\RestaurantController@setFavoriteRestaurant');
         Route::delete('restaurants/{slug}/favorites', 'Customer\RestaurantController@removeFavoriteRestaurant');
-        // Route::get('restaurants/{slug}/branches', 'Customer\RestaurantBranchController@getRestaurantBranchesByRestaurant');
 
-        Route::get('restaurant-branches', 'Customer\RestaurantBranchController@index');
-        Route::get('restaurant-branches/{slug}', 'Customer\RestaurantBranchController@show');
-        Route::get('restaurant-branches/{slug}/menus', 'Customer\RestaurantBranchController@getAvailableMenusByBranch');
+        Route::get('restaurants/branches', 'Customer\RestaurantController@getAllRestaurantBranches');
+        Route::get('restaurants/branches/{slug}', 'Customer\RestaurantController@getOneRestaurantBranch');
+        Route::get('restaurants/branches/{slug}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
 
-        Route::get('restaurant-categories', 'Customer\RestaurantCategoryController@index');
-        Route::get('restaurant-categories/{slug}/restaurants', 'Customer\RestaurantCategoryController@getRestaurantsByCategory');
+        Route::get('restaurant-categories', 'Customer\RestaurantController@getRestaurantCategories');
+        Route::get('restaurant-categories/{slug}/restaurants', 'Customer\RestaurantController@getRestaurantsByCategory');
 
-        Route::get('restaurant-tags', 'Customer\RestaurantTagController@index');
-        Route::get('restaurant-tags/{slug}/restaurants', 'Customer\RestaurantTagController@getRestaurantsByTag');
+        Route::get('restaurant-tags', 'Customer\RestaurantController@getRestaurantTags');
+        Route::get('restaurant-tags/{slug}/restaurants', 'Customer\RestaurantController@getRestaurantsByTag');
         /* Restaurant */
 
         /* Shop */
