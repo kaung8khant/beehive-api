@@ -215,4 +215,12 @@ class MenuController extends Controller
     {
         return RestaurantCategory::where('slug', $slug)->first()->id;
     }
+
+    public function toggleEnable($slug)
+    {
+        $menu = Menu::where('slug', $slug)->firstOrFail();
+        $menu->is_enable = !$menu->is_enable;
+        $menu->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
 }
