@@ -151,7 +151,7 @@ class MenuController extends Controller
             'name' => 'required',
             'name_mm' => 'nullable',
             'description' => 'required',
-            'description_mm' => 'required',
+            'description_mm' => 'nullable',
             'price' => 'required|numeric',
             'is_enable' => 'required|boolean',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
