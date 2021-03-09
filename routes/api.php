@@ -152,4 +152,5 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
      * -----------
      */
     require __DIR__ . '/customer-api.php';
+    require __DIR__ . '/vendor-api.php';
 });
