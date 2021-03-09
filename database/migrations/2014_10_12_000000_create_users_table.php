@@ -22,6 +22,8 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->boolean('is_enable')->default(1);
             $table->boolean('is_locked')->default(0);
+            $table->unsignedBigInteger('shop_id')->nullable();
+            $table->unsignedBigInteger('restaurant_branch_id')->nullable();
             $table->timestamps();
         });
     }

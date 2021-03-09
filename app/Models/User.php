@@ -55,4 +55,11 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(Driver::class);
     }
+
+    public function shop(){
+        return $this->belongsTo(Shop::class,'shop_id');
+    }
+    public function restaurant_branch(){
+        return $this->belongsTo(RestaurantBranch::class,'restaurant_branch_id');
+    }
 }

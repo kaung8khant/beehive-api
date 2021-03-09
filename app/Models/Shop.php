@@ -63,4 +63,8 @@ class Shop extends Model
     {
         return $this->belongsTo(Township::class);
     }
+
+    public function user(){
+        return $this->belongsTo(User::class,'users','id');
+    }
 }

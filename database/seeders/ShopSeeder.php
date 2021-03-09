@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Shop;
+use App\Models\User;
 
 class ShopSeeder extends Seeder
 {
@@ -14,6 +15,8 @@ class ShopSeeder extends Seeder
      */
     public function run()
     {
+       
         Shop::factory()->count(50)->create();
+
     }
 }
