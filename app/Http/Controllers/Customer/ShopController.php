@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Shop;
+use App\Models\ShopCategory;
+use Illuminate\Support\Facades\Log;
 
 class ShopController extends Controller
 {
@@ -58,8 +60,14 @@ class ShopController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
+    public function getCategories(){
+        
+        return ShopCategory::all();
+    }
+
     private function getShopId($slug)
     {
         return Shop::where('slug', $slug)->firstOrFail()->id;
     }
+    
 }
