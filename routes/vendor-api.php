@@ -18,7 +18,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('restaurant-branches', 'RestaurantBranchController@store');
         Route::put('restaurant-branches/{slug}', 'RestaurantBranchController@update');
         Route::patch('restaurant-branches/toggle-enable/{slug}', 'RestaurantBranchController@toggleEnable');
-        Route::delete('restaurant-branches/{slug}', 'RestaurantBranchController@destory');
+        Route::delete('restaurant-branches/{slug}', 'RestaurantBranchContrgitoller@destory');
         /* branch */
 
         /* menus */
