@@ -19,8 +19,8 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-       // $restaurantId = RestaurantBranch::find(1)->value('id');
-       //$shopId = Shop::factory()->create()->id;
+        // $restaurantId = RestaurantBranch::find(1)->value('id');
+        //$shopId = Shop::factory()->create()->id;
 
         //$customer->favoriteRestaurants()->attach($restaurantId);
         $users = [
