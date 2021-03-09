@@ -27,12 +27,27 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
         Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
         Route::get('menus/{slug}/menu-variations', 'MenuVariationController@getVariationsByMenu');
+        Route::get('menu-variations/{slug}', 'MenuVariationController@show');
+        Route::post('menu-variations', 'MenuVariationController@store');
+        Route::put('menu-variations/{slug}', 'MenuVariationController@update');
+        Route::delete('menu-variations', 'MenuVariationController@destory');
+
+        Route::get('menu-variation-values/{slug}', 'MenuVariationValueController@show');
+        Route::post('menu-variation-values', 'MenuVariationValueController@store');
+        Route::put('menu-variation-values/{slug}', 'MenuVariationValueController@update');
+        Route::delete('menu-variation-values', 'MenuVariationValueController@destory');
+
         Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
+        Route::get('menu-toppings/{slug}', 'MenuToppingController@show');
+        Route::post('menu-toppings', 'MenuToppingController@store');
+        Route::put('menu-toppings/{slug}', 'MenuToppingController@update');
+        Route::delete('menu-toppings', 'MenuToppingController@destory');
 
         /* restaurant */
 
         /* shop */
         /* shop categories */
+        Route::get('shop-categories', 'ShopCategoryController@index');
         Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
         Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
         Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
