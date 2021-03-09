@@ -18,6 +18,6 @@ class FavoriteRestaurantSeeder extends Seeder
         $customer = Customer::find(1);
         $restaurantId = Restaurant::find(1)->value('id');
 
-        $customer->restaurants()->attach($restaurantId);
+        $customer->favoriteRestaurants()->attach($restaurantId);
     }
 }
