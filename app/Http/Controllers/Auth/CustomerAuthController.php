@@ -50,7 +50,7 @@ class CustomerAuthController extends Controller
     {
         $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
         $customer = Customer::where('phone_number', $phoneNumber)->first();
-
+        
         if ($customer) {
             if (!$customer->is_enable) {
                 return 'disabled';
