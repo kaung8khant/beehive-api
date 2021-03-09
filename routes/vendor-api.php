@@ -10,5 +10,22 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::put('profile/update', 'Auth\VendorAuthController@updateProfile');
         Route::post('refresh-token', 'Auth\VendorAuthController@refreshToken');
         Route::post('logout', 'Auth\VendorAuthController@logout');
+
+        /* branch */
+        Route::get('restaurants/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByRestaurant');
+        Route::get('restaurant-branches/{slug}', 'RestaurantBranchController@show');
+        Route::post('restaurant-branches', 'RestaurantBranchController@store');
+        Route::put('restaurant-branches/{slug}', 'RestaurantBranchController@update');
+        Route::patch('restaurant-branches/toggle-enable/{slug}', 'RestaurantBranchController@toggleEnable');
+        Route::delete('restaurant-branches/{slug}', 'RestaurantBranchContrgitoller@destory');
+        /* branch */
+
+        /* menus */
+        Route::get('restaurant-branches/{slug}/menus', 'MenuController@getAvailableMenusByRestaurantBranch');
+        Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
+        Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
+        /* menus */
+
+        /* restaurant */
     });
 });
