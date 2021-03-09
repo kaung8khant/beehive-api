@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Support\Facades\Log;
+use App\Helpers\ResponseHelper;
 
 class ProductController extends Controller
 {
+    use ResponseHelper;
+
     public function index(Request $request)
     {
         return Product::with('shop', 'shopCategory', 'brand', 'subCategory')
@@ -23,4 +27,11 @@ class ProductController extends Controller
             ->where('slug', $slug)->first();
     }
 
+    public function getByCategory(Request $request, $slug)
+    {
+
+        $product = Product::where('shop_category_id', $slug)->paginate($request->size);
+
+        return $this->generateResponse($product, 200);
+    }
 }
