@@ -19,10 +19,6 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-       // $restaurantId = RestaurantBranch::find(1)->value('id');
-       //$shopId = Shop::factory()->create()->id;
-
-        //$customer->favoriteRestaurants()->attach($restaurantId);
         $users = [
             [
                 'slug' => $this->generateUniqueSlug(),
@@ -31,6 +27,14 @@ class UserSeeder extends Seeder
                 'phone_number' => '09123456789',
                 'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
                 'shop_id'=>  Shop::factory()->create()->id,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'username' => 'admin2',
+                'name' => 'Admin2',
+                'phone_number' => '0912312333',
+                'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+                'restaurant_branch_id'=>  RestaurantBranch::factory()->create()->id,
             ],
             [
                 'slug' => $this->generateUniqueSlug(),

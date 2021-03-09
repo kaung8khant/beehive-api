@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantBranch;
 use App\Models\Township;
+use App\Models\Restaurant;
 
 class RestaurantBranchFactory extends Factory
 {
@@ -40,6 +41,9 @@ class RestaurantBranchFactory extends Factory
             'township_id' => function () {
                 return  Township::pluck('id')->random(1)[0];
             },
+            'restaurant_id' => function (){
+                return Restaurant::pluck('id')->random(1)[0];
+            }
         ];
     }
 }

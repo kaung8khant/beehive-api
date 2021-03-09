@@ -14,16 +14,16 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call(CitySeeder::class);
+        $this->call(RestaurantCategorySeeder::class);
+        $this->call(RestaurantTagSeeder::class);
+        $this->call(RestaurantSeeder::class);
+        
         $this->call(UserSeeder::class);
         $this->call(RoleSeeder::class);
         $this->call(UserRoleSeeder::class);
         $this->call(CustomerSeeder::class);
-       
+        
 
-
-        $this->call(RestaurantCategorySeeder::class);
-        $this->call(RestaurantTagSeeder::class);
-        $this->call(RestaurantSeeder::class);
         $this->call(CategoryRestaurantSeeder::class);
         $this->call(TagRestaurantSeeder::class);
         $this->call(MenuSeeder::class);
