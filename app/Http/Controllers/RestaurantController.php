@@ -17,7 +17,7 @@ class RestaurantController extends Controller
 
     public function index(Request $request)
     {
-        return Restaurant::with('availableCategories', 'restaurantTags')
+        return Restaurant::with('availableCategories', 'availableTags')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -56,18 +56,19 @@ class RestaurantController extends Controller
         $this->createRestaurantBranch($restaurantId, $townshipId, $validatedData['restaurant_branch']);
 
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
-        $restaurant->restaurantTags()->attach($restaurantTags);
+        $restaurant->availableTags()->attach($restaurantTags);
 
         if ($request->available_categories) {
             $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
             $restaurant->availableCategories()->attach($restaurantCategories);
         }
-        return response()->json($restaurant->load('restaurantTags', 'availableCategories', 'restaurantBranches'), 201);
+
+        return response()->json($restaurant->load('availableTags', 'availableCategories', 'restaurantBranches'), 201);
     }
 
     public function show($slug)
     {
-        $restaurant = Restaurant::with('availableCategories', 'restaurantTags')->where('slug', $slug)->firstOrFail();
+        $restaurant = Restaurant::with('availableCategories', 'availableTags')->where('slug', $slug)->firstOrFail();
         return response()->json($restaurant, 200);
     }
 
@@ -94,15 +95,16 @@ class RestaurantController extends Controller
         $restaurant->update($validatedData);
 
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
-        $restaurant->restaurantTags()->detach();
-        $restaurant->restaurantTags()->attach($restaurantTags);
+        $restaurant->availableTags()->detach();
+        $restaurant->availableTags()->attach($restaurantTags);
 
         if ($request->available_categories) {
             $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
             $restaurant->availableCategories()->detach();
             $restaurant->availableCategories()->attach($restaurantCategories);
         }
-        return response()->json($restaurant->load(['availableCategories', 'restaurantTags']), 200);
+
+        return response()->json($restaurant->load(['availableCategories', 'availableTags']), 200);
     }
 
     public function destroy($slug)
@@ -144,7 +146,7 @@ class RestaurantController extends Controller
         $restaurant->availableCategories()->detach();
         $restaurant->availableCategories()->attach($restaurantCategories);
 
-        return response()->json($restaurant->load(['availableCategories', 'restaurantTags']), 201);
+        return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
     }
 
     public function removeRestaurantCategories(Request $request, $slug)
@@ -157,6 +159,6 @@ class RestaurantController extends Controller
         $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $restaurant->availableCategories()->detach($restaurantCategories);
 
-        return response()->json($restaurant->load(['availableCategories', 'restaurantTags']), 201);
+        return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
     }
 }

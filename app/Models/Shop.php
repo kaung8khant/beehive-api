@@ -39,7 +39,7 @@ class Shop extends Model
         'is_enable' => 'boolean',
     ];
 
-    public function shopTags()
+    public function availableTags()
     {
         return $this->belongsToMany(ShopTag::class, 'tag_shop');
     }

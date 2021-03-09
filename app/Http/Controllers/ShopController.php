@@ -16,7 +16,7 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        return Shop::with('availableCategories', 'shopTags')
+        return Shop::with('availableCategories', 'availableTags')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -52,18 +52,19 @@ class ShopController extends Controller
 
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
-        $shop->shopTags()->attach($shopTags);
+        $shop->availableTags()->attach($shopTags);
 
         if ($request->available_categories) {
             $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
             $shop->availableCategories()->attach($shopCategories);
         }
-        return response()->json($shop->refresh()->load(['shopTags', 'availableCategories']), 201);
+
+        return response()->json($shop->refresh()->load(['availableTags', 'availableCategories']), 201);
     }
 
     public function show($slug)
     {
-        $shop = Shop::with('availableCategories', 'shopTags',"township")->where('slug', $slug)->firstOrFail();
+        $shop = Shop::with('availableCategories', 'availableTags', 'township')->where('slug', $slug)->firstOrFail();
         return response()->json($shop, 200);
     }
 
@@ -95,15 +96,16 @@ class ShopController extends Controller
         ]));
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
-        $shop->shopTags()->detach();
-        $shop->shopTags()->attach($shopTags);
+        $shop->availableTags()->detach();
+        $shop->availableTags()->attach($shopTags);
 
         if ($request->available_categories) {
             $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
             $shop->availableCategories()->detach();
             $shop->availableCategories()->attach($shopCategories);
         }
-        return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
+
+        return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
     }
 
     public function destroy($slug)
@@ -145,7 +147,7 @@ class ShopController extends Controller
         $shop->availableCategories()->detach();
         $shop->availableCategories()->attach($shopCategories);
 
-        return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
+        return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
     }
 
     public function removeShopCategories(Request $request, $slug)
@@ -158,6 +160,6 @@ class ShopController extends Controller
         $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
         $shop->availableCategories()->detach($shopCategories);
 
-        return response()->json($shop->load(['availableCategories', 'shopTags']), 201);
+        return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
     }
 }

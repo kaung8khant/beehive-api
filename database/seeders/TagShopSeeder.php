@@ -19,7 +19,7 @@ class TagShopSeeder extends Seeder
         $shopTags = [1, 2];
 
         foreach ($shops as $shop) {
-            $shop->shopTags()->attach($shopTags);
+            $shop->availableTags()->attach($shopTags);
         }
     }
 }

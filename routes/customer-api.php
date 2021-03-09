@@ -9,6 +9,8 @@ Route::group(['prefix' => 'user'], function () {
 
     Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
         Route::get('profile', 'Auth\CustomerAuthController@getProfile');
+        Route::put('profile', 'Auth\CustomerAuthController@updateProfile');
+        Route::patch('password/update', 'Auth\CustomerAuthController@updatePassword');
         Route::post('refresh-token', 'Auth\CustomerAuthController@refreshToken');
         Route::post('logout', 'Auth\CustomerAuthController@logout');
 

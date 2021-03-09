@@ -27,7 +27,7 @@ class Restaurant extends Model
         'is_enable' => 'boolean',
     ];
 
-    public function restaurantTags()
+    public function availableTags()
     {
         return $this->belongsToMany(RestaurantTag::class, 'tag_restaurant');
     }
