@@ -11,9 +11,11 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('refresh-token', 'Auth\VendorAuthController@refreshToken');
         Route::post('logout', 'Auth\VendorAuthController@logout');
 
+        /* restaurant */
         /* restaurant categories */
         Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
-        /* restaurant categories */
+        Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
+        Route::post('restaurants/remove-restaurant-categories/{slug}', 'RestaurantController@removeRestaurantCategories');
 
         /* menus */
         Route::get('restaurant-branches/{slug}/menus', 'MenuController@getAvailableMenusByRestaurantBranch');
@@ -26,8 +28,16 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
         Route::get('menus/{slug}/menu-variations', 'MenuVariationController@getVariationsByMenu');
         Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
-        /* menus */
 
         /* restaurant */
+
+        /* shop */
+        /* shop categories */
+        Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
+        Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
+        Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
+        Route::get('shop-categories/{slug}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory');
+
+        /* shop */
     });
 });
