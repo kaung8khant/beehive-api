@@ -28,7 +28,7 @@ class VendorAuthController extends Controller
             return response()->json(['token' => $result], 200);
         }
 
-        return response()->json(['message' => 'Username or password wrong.'.Hash::make($request->password)], 401);
+        return response()->json(['message' => 'Username or password wrong.' . Hash::make($request->password)], 401);
     }
 
     private function attemptLogin(Request $request)
@@ -62,7 +62,7 @@ class VendorAuthController extends Controller
 
     public function getProfile()
     {
-        $user = User::with('shop','restaurant_branch','restaurant_branch.restaurant')->where('id',Auth::guard('users')->user()->id)->get();
+        $user = User::with('shop','restaurant_branch','restaurant_branch.restaurant','roles')->where('id',Auth::guard('vendors')->user()->id)->get();
 
         return response()->json($user);
     }
