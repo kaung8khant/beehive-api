@@ -42,7 +42,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('menu-toppings/{slug}', 'MenuToppingController@show');
         Route::post('menu-toppings', 'MenuToppingController@store');
         Route::put('menu-toppings/{slug}', 'MenuToppingController@update');
-        Route::delete('menu-toppings/{slug}', 'MenuToppingController@destory');
+        Route::delete('menu-toppings/{slug}', 'MenuToppingController@destroy');
         /* restaurant */
 
         /* shop */
