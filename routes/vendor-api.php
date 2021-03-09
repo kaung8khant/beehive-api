@@ -31,7 +31,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('menu-variations/{slug}', 'MenuVariationController@show');
         Route::post('menu-variations', 'MenuVariationController@store');
         Route::put('menu-variations/{slug}', 'MenuVariationController@update');
-        Route::delete('menu-variations/', 'MenuVariationController@destroy');
+        Route::delete('menu-variations/{slug}', 'MenuVariationController@destroy');
 
         Route::get('menu-variation-values/{slug}', 'MenuVariationValueController@show');
         Route::post('menu-variation-values', 'MenuVariationValueController@store');
