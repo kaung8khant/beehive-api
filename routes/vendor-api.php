@@ -20,6 +20,7 @@ Route::group(['prefix' => 'vendor'], function () {
         /* menus */
         Route::get('restaurant-branches/{slug}/menus', 'MenuController@getAvailableMenusByRestaurantBranch');
         Route::get('menus/{slug}', 'MenuController@show');
+        Route::post('restaurant-branches/{slug}/menus', 'MenuController@createAvailableMenu');
         Route::post('menus', 'MenuController@store');
         Route::put('menus/{slug}', 'MenuController@update');
         Route::delete('menus/{slug}', 'MenuController@destory');

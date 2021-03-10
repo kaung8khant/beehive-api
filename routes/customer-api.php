@@ -14,6 +14,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('refresh-token', 'Auth\CustomerAuthController@refreshToken');
         Route::post('logout', 'Auth\CustomerAuthController@logout');
 
+        Route::get('townships', 'Customer\AddressController@getAllTownships');
         Route::get('addresses/get-primary', 'Customer\AddressController@getPrimaryAddress');
         Route::patch('addresses/{slug}/set-primary', 'Customer\AddressController@setPrimaryAddress');
         Route::resource('addresses', 'Customer\AddressController');
@@ -60,11 +61,8 @@ Route::group(['prefix' => 'user'], function () {
         /* Product */
         Route::get('products', 'Customer\ProductController@index');
         Route::get('products/{slug}', 'Customer\ProductController@show');
-<<<<<<< HEAD
         Route::get('product-categories/{slug}/products','Customer\ProductController@getByCategory');
         Route::get('product-shops/{slug}/products','Customer\ProductController@getByShop');
-=======
         Route::get('product-categories/{slug}', 'Customer\ProductController@getByCategory');
->>>>>>> develop
     });
 });
