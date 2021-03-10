@@ -21,12 +21,15 @@ class ProductController extends Controller
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate($request->size)->items();
-        return $this->generateResponse($product,200);
+        return $this->generateResponse($product, 200);
     }
-    public function show($slug){
-        return Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
+
+    public function show($slug)
+    {
+        $product =  Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
             ->with('productVariations')->with('productVariations.productVariationValues')
             ->where('slug', $slug)->first();
+        return $this->generateResponse($product, 200);
     }
 
     public function getByCategory(Request $request, $slug)
@@ -37,12 +40,12 @@ class ProductController extends Controller
         return $this->generateResponse($product, 200);
     }
 
-    public function getByShop(Request $request,$slug)
+    public function getByShop(Request $request, $slug)
     {
         $shopId = $this->getShopId($slug);
         $product = Product::where('shop_id', $shopId)->paginate($request->size)->items();
 
-        return $this->generateResponse($product,200);
+        return $this->generateResponse($product, 200);
     }
 
     private function getShopId($slug)

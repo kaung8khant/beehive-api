@@ -25,6 +25,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::put('menus/{slug}', 'MenuController@update');
         Route::delete('menus/{slug}', 'MenuController@destory');
         Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
+        Route::resource('restaurant-branches', 'RestaurantBranchController');
         Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
         Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
 
@@ -48,6 +49,7 @@ Route::group(['prefix' => 'vendor'], function () {
 
         /* shop */
         /* shop categories */
+        Route::resource('shops', 'ShopController');
         Route::get('shop-categories', 'ShopCategoryController@index');
         Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
         Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
@@ -59,7 +61,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('products/{slug}', 'ProductController@show');
         Route::post('products', 'ProductController@store');
         Route::put('products/{slug}', 'ProductController@update');
-        Route::delete('products/{slug}', 'ProductController@destory');
+        Route::delete('products/{slug}', 'ProductController@destroy');
         Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
 
         Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
@@ -76,6 +78,10 @@ Route::group(['prefix' => 'vendor'], function () {
 
         Route::get('brands', 'BrandController@index');
         Route::post('brands', 'BrandController@store');
+
+        Route::resource('cities', 'CityController');
+        Route::resource('townships', 'TownshipController');
+        Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
         /* shop */
     });
 });
