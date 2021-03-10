@@ -10,6 +10,7 @@ use App\Models\ShopCategory;
 use Illuminate\Support\Facades\Log;
 use App\Models\ShopTag;
 use App\Helpers\ResponseHelper;
+use App\Models\ShopSubCategory;
 
 class ShopController extends Controller
 {
@@ -69,7 +70,7 @@ class ShopController extends Controller
 
     public function getCategories(){
         
-        $categories = ShopCategory::all();
+        $categories = ShopCategory::with('shopSubCategories')->get();
         return $this->generateResponse($categories,200);
     }
 
@@ -87,11 +88,22 @@ class ShopController extends Controller
     {
 
         $shopTag = ShopTag::where('slug', $slug)->firstOrFail();
-        $restaurants =  $shopTag->shops()->paginate($request->size);
+        $restaurants =  $shopTag->shops()->paginate($request->size)->items();
 
         return $this->generateResponse($restaurants, 200);
     }
+    public function getByCategory(Request $request,$slug)
+    {
+        $shop = ShopCategory::with('shops')->where('slug', $slug)->paginate($request->size)->items();
+        return  $this->generateResponse($shop, 200);
+    }
 
+    public function getBySubCategory(Request $request,$slug)
+    {
+        $shop = ShopSubCategory::with('shopCategory')->with('shopCategory.shops')->where('slug', $slug)->paginate($request->size)->items();
+        return  $this->generateResponse($shop, 200);
+    }
+    
 
     private function getShopId($slug)
     {
@@ -99,5 +111,6 @@ class ShopController extends Controller
     }
 
     
+
     
 }
