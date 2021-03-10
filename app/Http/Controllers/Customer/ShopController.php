@@ -26,21 +26,25 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        return Shop::with('availableCategories', 'shopTags')
+        $shop = Shop::with('availableCategories', 'shopTags')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
-            ->paginate(10);
+            ->paginate($request->size)->items();
+        return $this->generateResponse($shop,200);
     }
 
     public function show($slug)
     {
-        return Shop::with('availableCategories', 'shopTags')->where('slug', $slug)->first();
+        $shop = Shop::with('availableCategories', 'shopTags','products')->where('slug', $slug)->first();
+        return $this->generateResponse($shop,200);
     }
 
     public function getFavoriteShops()
     {
-        return $this->customer->shops()->with('availableCategories', 'shopTags')->paginate(10);
+        $shop = $this->customer->shops()->with('availableCategories', 'shopTags')->paginate(10);
+
+        return $this->generateResponse($shop,200);
     }
 
     public function setFavoriteShop($slug)
@@ -66,7 +70,8 @@ class ShopController extends Controller
 
     public function getCategories(){
         
-        return ShopCategory::all();
+        $categories = ShopCategory::all();
+        return $this->generateResponse($categories,200);
     }
 
     public function getTags(Request $request)
@@ -93,6 +98,7 @@ class ShopController extends Controller
     {
         return Shop::where('slug', $slug)->firstOrFail()->id;
     }
+
     
     
 }
