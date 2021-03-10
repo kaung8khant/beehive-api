@@ -24,9 +24,10 @@ class ProductController extends Controller
         return $this->generateResponse($product,200);
     }
     public function show($slug){
-        return Product::with('shop', 'shopCategory', 'brand', 'subCategory')
+        $product =  Product::with('shop', 'shopCategory', 'brand', 'subCategory')
             ->with('productVariations')->with('productVariations.productVariationValues')
             ->where('slug', $slug)->first();
+        return $this->generateResponse($product,200);
     }
 
     public function getByCategory(Request $request, $slug)
