@@ -24,6 +24,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::put('menus/{slug}', 'MenuController@update');
         Route::delete('menus/{slug}', 'MenuController@destory');
         Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
+        Route::resource('restaurant-branches', 'RestaurantBranchController');
         Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
         Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
 
@@ -75,6 +76,10 @@ Route::group(['prefix' => 'vendor'], function () {
 
         Route::get('brands', 'BrandController@index');
         Route::post('brands', 'BrandController@store');
+
+        Route::resource('cities', 'CityController');
+        Route::resource('townships', 'TownshipController');
+        Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
         /* shop */
     });
 });
