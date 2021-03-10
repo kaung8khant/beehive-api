@@ -59,7 +59,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('products/{slug}', 'ProductController@show');
         Route::post('products', 'ProductController@store');
         Route::put('products/{slug}', 'ProductController@update');
-        Route::delete('products/{slug}', 'ProductController@destory');
+        Route::delete('products/{slug}', 'ProductController@destroy');
         Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
 
         Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
