@@ -61,6 +61,8 @@ Route::group(['prefix' => 'user'], function () {
         /* Product */
         Route::get('products', 'Customer\ProductController@index');
         Route::get('products/{slug}', 'Customer\ProductController@show');
+        Route::get('product-categories/{slug}/products','Customer\ProductController@getByCategory');
+        Route::get('product-shops/{slug}/products','Customer\ProductController@getByShop');
         Route::get('product-categories/{slug}', 'Customer\ProductController@getByCategory');
     });
 });
