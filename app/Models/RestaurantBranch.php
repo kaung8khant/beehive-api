@@ -59,7 +59,8 @@ class RestaurantBranch extends Model
         return $this->belongsToMany(Menu::class, 'restaurant_branch_menu');
     }
 
-    public function user(){
-        return $this->belongsTo(User::class,'users','id');
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'users', 'id');
     }
 }

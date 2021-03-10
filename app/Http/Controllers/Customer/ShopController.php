@@ -26,7 +26,7 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        $shop = Shop::with('availableCategories', 'shopTags')
+        $shop = Shop::with('availableCategories', 'availableTags')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -36,14 +36,13 @@ class ShopController extends Controller
 
     public function show($slug)
     {
-        $shop = Shop::with('availableCategories', 'shopTags','products')->where('slug', $slug)->first();
+        $shop =  Shop::with('availableCategories', 'availableTags')->where('slug', $slug)->first();
         return $this->generateResponse($shop,200);
     }
 
-    public function getFavoriteShops()
+    public function getFavoriteShops(Request $request)
     {
-        $shop = $this->customer->shops()->with('availableCategories', 'shopTags')->paginate(10);
-
+        $shop = $this->customer->shops()->with('availableCategories', 'availableTags')->paginate($request->size)->items();
         return $this->generateResponse($shop,200);
     }
 

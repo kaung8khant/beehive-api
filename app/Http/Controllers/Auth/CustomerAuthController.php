@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Propaganistas\LaravelPhone\PhoneNumber;
 use App\Helpers\StringHelper;
@@ -24,7 +25,7 @@ class CustomerAuthController extends Controller
             $request->all(),
             [
                 'phone_number' => 'required|phone:MM',
-                'password' => 'required|string|min:6',
+                'password' => 'required|string',
             ],
             ['phone_number.phone' => 'Invalid phone number.']
         );
@@ -50,7 +51,7 @@ class CustomerAuthController extends Controller
     {
         $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
         $customer = Customer::where('phone_number', $phoneNumber)->first();
-        
+
         if ($customer) {
             if (!$customer->is_enable) {
                 return 'disabled';
@@ -105,8 +106,52 @@ class CustomerAuthController extends Controller
 
     public function getProfile()
     {
-        $user = Auth::guard('customers')->user();
-        return $this->generateResponse($user, 200);
+        $customer = Auth::guard('customers')->user();
+        return $this->generateResponse($customer, 200);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $customer = Auth::guard('customers')->user();
+
+        $validator = Validator::make($request->all(), [
+            'email' => [
+                'nullable',
+                'email',
+                Rule::unique('customers')->ignore($customer->id),
+            ],
+            'name' => 'required|max:255',
+            'gender' => 'nullable|in:Male,Female',
+            'date_of_birth' => 'nullable|date_format:Y-m-d',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+        }
+
+        $customer->update($validator->validated());
+        return $this->generateResponse($customer, 200);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'old_password' => 'required|string',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+        }
+
+        $customer = Auth::guard('customers')->user();
+
+        if (Hash::check($request->old_password, $customer->password)) {
+            $customer->update(['password' => Hash::make($request->new_password)]);
+            return $this->generateResponse('Your password has been successfully updated.', 200, TRUE);
+        }
+
+        return $this->generateResponse('Your old password is incorrect.', 403, TRUE);
     }
 
     private function validateRegister($request)
@@ -119,7 +164,8 @@ class CustomerAuthController extends Controller
                 'name' => 'required|max:255',
                 'phone_number' => 'required|phone:MM|unique:customers',
                 'password' => 'required|string|min:6',
-                'gender' => 'required|in:Male,Female',
+                'gender' => 'nullable|in:Male,Female',
+                'date_of_birth' => 'nullable|date_format:Y-m-d',
                 'otp_code' => 'required|string',
             ],
             ['phone_number.phone' => 'Invalid phone number.']

@@ -19,7 +19,7 @@ class TagRestaurantSeeder extends Seeder
         $restaurantTags = RestaurantTag::pluck('id');
 
         foreach ($restaurants as $restaurant) {
-            $restaurant->restaurantTags()->attach($restaurantTags->random(20)->all());
+            $restaurant->availableTags()->attach($restaurantTags->random(20)->all());
         }
     }
 }
