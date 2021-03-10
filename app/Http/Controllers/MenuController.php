@@ -11,6 +11,7 @@ use App\Models\RestaurantCategory;
 use App\Models\MenuVariation;
 use App\Models\MenuVariationValue;
 use App\Models\MenuTopping;
+use App\Models\RestaurantBranch;
 
 class MenuController extends Controller
 {
@@ -223,5 +224,28 @@ class MenuController extends Controller
         $menu->is_enable = !$menu->is_enable;
         $menu->save();
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function createAvailableMenu(Request $request, $slug)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $validatedData = $request->validate($this->getParamsToValidate(true));
+
+        $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
+        $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
+
+        $menu = Menu::create($validatedData);
+        $menuId = $menu->id;
+
+        $this->createVariations($menuId, $validatedData['menu_variations']);
+        $this->createToppings($menuId, $validatedData['menu_toppings']);
+
+        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
+
+        $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
+        $restaurantBranch->availableMenus()->attach($availableMenus);
+
+        return response()->json($menu->refresh()->load('menuVariations', 'menuToppings', 'menuVariations.menuVariationValues'), 201);
     }
 }
