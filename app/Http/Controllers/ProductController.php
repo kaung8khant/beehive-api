@@ -8,7 +8,7 @@ use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Restaurant;
 use App\Models\Shop;
-use App\Models\SubCategory;
+use App\Models\ShopSubCategory;
 use App\Models\ProductVariation;
 use App\Models\ProductVariationValue;
 
@@ -18,7 +18,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        return Product::with('shop', 'shopCategory', 'brand', 'subCategory')
+        return Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
             ->with('productVariations')->with('productVariations.productVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
@@ -55,7 +55,7 @@ class ProductController extends Controller
 
     public function show($slug)
     {
-        $product = Product::with('shop', 'shopCategory', 'subCategory', 'brand')
+        $product = Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand')
         ->with('productVariations')->with('productVariations.productVariationValues')
         ->where('slug', $slug)->firstOrFail();
         return response()->json($product, 200);
@@ -106,7 +106,7 @@ class ProductController extends Controller
             'description_mm' => 'nullable|string',
             'price' => 'required|max:99999999',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
-            'sub_category_slug' => 'required|exists:App\Models\SubCategory,slug',
+            'sub_category_slug' => 'required|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
 
             'product_variations' => 'nullable|array',
@@ -135,7 +135,7 @@ class ProductController extends Controller
 
     private function getSubCategory($slug)
     {
-        return SubCategory::where('slug', $slug)->first();
+        return ShopSubCategory::where('slug', $slug)->first();
     }
 
     /**

@@ -29,12 +29,12 @@ class Restaurant extends Model
 
     public function availableTags()
     {
-        return $this->belongsToMany(RestaurantTag::class, 'tag_restaurant');
+        return $this->belongsToMany(RestaurantTag::class, 'restaurant_restaurant_tag_map');
     }
 
     public function availableCategories()
     {
-        return $this->belongsToMany(RestaurantCategory::class, 'category_restaurant');
+        return $this->belongsToMany(RestaurantCategory::class, 'restaurant_restaurant_category_map');
     }
 
     public function menus()

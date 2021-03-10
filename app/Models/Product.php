@@ -54,9 +54,9 @@ class Product extends Model
         return $this->belongsTo(ShopCategory::class);
     }
 
-    public function subCategory()
+    public function shopSubCategory()
     {
-        return $this->belongsTo(SubCategory::class);
+        return $this->belongsTo(ShopSubCategory::class);
     }
 
     public function productVariations()

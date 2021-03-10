@@ -15,7 +15,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $product =  Product::with('shop', 'shopCategory', 'brand', 'subCategory')
+        $product =  Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
             ->with('productVariations')->with('productVariations.productVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
@@ -24,7 +24,7 @@ class ProductController extends Controller
         return $this->generateResponse($product,200);
     }
     public function show($slug){
-        return Product::with('shop', 'shopCategory', 'brand', 'subCategory')
+        return Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
             ->with('productVariations')->with('productVariations.productVariationValues')
             ->where('slug', $slug)->first();
     }

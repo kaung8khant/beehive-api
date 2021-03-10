@@ -41,12 +41,12 @@ class Shop extends Model
 
     public function availableTags()
     {
-        return $this->belongsToMany(ShopTag::class, 'tag_shop');
+        return $this->belongsToMany(ShopTag::class, 'shop_shop_tag_map');
     }
 
     public function availableCategories()
     {
-        return $this->belongsToMany(ShopCategory::class, 'category_shop');
+        return $this->belongsToMany(ShopCategory::class, 'shop_shop_category_map');
     }
 
     public function products()

@@ -52,7 +52,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
         Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
         Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
-        Route::get('shop-categories/{slug}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory');
+        Route::get('shop-categories/{slug}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
 
         /* products */
         Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');

@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\ShopCategory;
-use App\Models\SubCategory;
+use App\Models\ShopSubCategory;
 
 class ShopCategorySeeder extends Seeder
 {
@@ -18,6 +18,6 @@ class ShopCategorySeeder extends Seeder
      */
     public function run()
     {
-        ShopCategory::factory()->count(30)->has(SubCategory::factory()->count(3))->create();
+        ShopCategory::factory()->count(30)->has(ShopSubCategory::factory()->count(3))->create();
     }
 }
