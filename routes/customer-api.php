@@ -14,6 +14,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('refresh-token', 'Auth\CustomerAuthController@refreshToken');
         Route::post('logout', 'Auth\CustomerAuthController@logout');
 
+        Route::get('townships', 'Customer\AddressController@getAllTownships');
         Route::get('addresses/get-primary', 'Customer\AddressController@getPrimaryAddress');
         Route::patch('addresses/{slug}/set-primary', 'Customer\AddressController@setPrimaryAddress');
         Route::resource('addresses', 'Customer\AddressController');

@@ -17,6 +17,31 @@ class TownshipController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/townships",
+     *      operationId="getTownshipLists",
+     *      tags={"Townships"},
+     *      summary="Get list of townships",
+     *      description="Returns list of townships",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function index(Request $request)
     {
         return Township::with('city')
@@ -31,6 +56,30 @@ class TownshipController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
+     */
+/**
+     * @OA\Post(
+     *      path="/api/v2/admin/townships",
+     *      operationId="storeTownship",
+     *      tags={"Townships"},
+     *      summary="Create a township",
+     *      description="Returns newly created township",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created township object",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/Township")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function store(Request $request)
     {
@@ -55,6 +104,31 @@ class TownshipController extends Controller
      * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/townships/{slug}",
+     *      operationId="showTownship",
+     *      tags={"Townships"},
+     *      summary="Get One Township",
+     *      description="Returns a requested township",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested township",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function show($slug)
     {
         $township = Township::with('city')->where('slug', $slug)->firstOrFail();
@@ -67,6 +141,39 @@ class TownshipController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $slug
      * @return \Illuminate\Http\Response
+     */
+    /**
+     * @OA\Put(
+     *      path="/api/v2/admin/townships/{slug}",
+     *      operationId="updateTownship",
+     *      tags={"Townships"},
+     *      summary="Update a township",
+     *      description="Update a requested township",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug to identify a township",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="New township data to be updated.",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/Township")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function update(Request $request, $slug)
     {
@@ -96,6 +203,31 @@ class TownshipController extends Controller
      * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
+     /**
+     * @OA\Delete(
+     *      path="/api/v2/admin/townships/{slug}",
+     *      operationId="deleteTownship",
+     *      tags={"Townships"},
+     *      summary="Delete One Township",
+     *      description="Delete one specific township",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested township",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function destroy($slug)
     {
         Township::where('slug', $slug)->firstOrFail()->delete();
@@ -114,6 +246,31 @@ class TownshipController extends Controller
     * @param  string  $slug
     * @return \Illuminate\Http\Response
     */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/cities/{slug}/townships",
+     *      operationId="getTownshipListsByCity",
+     *      tags={"Townships"},
+     *      summary="Get townships By city",
+     *      description="Returns list of townships",
+       *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested city",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function getTownshipsByCity(Request $request, $slug)
     {
         return Township::whereHas('city', function ($q) use ($slug) {

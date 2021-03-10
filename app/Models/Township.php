@@ -4,7 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="Township"),
+ *      @OA\Property(property="name", type="string", example="Tamwe"),
+ *      @OA\Property(property="name_mm", type="string", example="တာမွေ"),
+ *      @OA\Property(property="city_slug", type="string", example="8998B3"),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ * )
+ */
 class Township extends Model
 {
     use HasFactory;
@@ -18,6 +26,7 @@ class Township extends Model
 
     protected $hidden =  [
         'id',
+        'city_id',
         'created_at',
         'updated_at',
     ];
