@@ -49,6 +49,7 @@ Route::group(['prefix' => 'vendor'], function () {
 
         /* shop */
         /* shop categories */
+        Route::resource('shops', 'ShopController');
         Route::get('shop-categories', 'ShopCategoryController@index');
         Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
         Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
