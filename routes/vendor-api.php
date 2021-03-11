@@ -83,7 +83,10 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('cities', 'CityController@index');
         Route::get('townships', 'TownshipController@index');
         Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
-        Route::resource('customers', 'CustomerController');
+
+
+        Route::get('customers', 'CustomerController@index');
+        Route::post('customers', 'CustomerController@store');
 
         /* shop */
     });
