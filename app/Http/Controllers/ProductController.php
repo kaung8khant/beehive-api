@@ -38,7 +38,7 @@ class ProductController extends Controller
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
         $validatedData['sub_category_id'] = $subCategory->id;
 
-        if($request->brand_slug){
+        if ($request->brand_slug) {
             $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
         }
 
@@ -46,7 +46,7 @@ class ProductController extends Controller
         $product = Product::create($validatedData);
         $productId = $product->id;
 
-        if($request->product_variations){
+        if ($request->product_variations) {
             $this->createProductVariation($productId, $validatedData['product_variations']);
         }
 
@@ -73,7 +73,7 @@ class ProductController extends Controller
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
         $validatedData['sub_category_id'] = $subCategory->id;
-        if($request->brand_slug){
+        if ($request->brand_slug) {
             $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
         }
 
@@ -82,11 +82,9 @@ class ProductController extends Controller
 
         $productId = $product->id;
 
-        if($request->product_variations){
-
+        if ($request->product_variations) {
             $product->productVariations()->delete();
             $this->createProductVariation($productId, $validatedData['product_variations']);
-
         }
         return response()->json($product, 200);
     }
@@ -143,7 +141,7 @@ class ProductController extends Controller
     */
     public function getProductsByShop(Request $request, $slug)
     {
-        return Product::with('shopCategory', 'brand')->whereHas('shop', function ($q) use ($slug) {
+        return Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand')->whereHas('shop', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
