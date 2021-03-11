@@ -1014,6 +1014,215 @@
                 ]
             }
         },
+        "/api/v2/admin/shop-tags": {
+            "get": {
+                "tags": [
+                    "ShopTags"
+                ],
+                "summary": "Get list of shop tags",
+                "description": "Returns list of shop tags",
+                "operationId": "getShopTagLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "ShopTags"
+                ],
+                "summary": "Create a Shop Tag",
+                "description": "Returns newly created shop tag",
+                "operationId": "storeShopTag",
+                "requestBody": {
+                    "description": "Created shop tag object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ShopTag"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/shop-tags/{slug}": {
+            "get": {
+                "tags": [
+                    "ShopTags"
+                ],
+                "summary": "Get One Shop Tag",
+                "description": "Returns a requested shop tag",
+                "operationId": "showShopTag",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested shop tag",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "ShopTags"
+                ],
+                "summary": "Update a shop tag",
+                "description": "Update a requested shop tag",
+                "operationId": "updateShopTag",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a shop tag",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New shop tag data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ShopTag"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "ShopTags"
+                ],
+                "summary": "Delete One Shop Tag",
+                "description": "Delete one specific shop tag",
+                "operationId": "deleteShopTag",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested Shop Tag",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/shops/{slug}/shop-tags": {
+            "get": {
+                "tags": [
+                    "ShopTags"
+                ],
+                "summary": "Get Shop tags By Shop",
+                "description": "Returns list of shop tags",
+                "operationId": "getShopTagsByShop",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested shop",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/townships": {
             "get": {
                 "tags": [
@@ -1356,6 +1565,26 @@
                 "type": "object",
                 "xml": {
                     "name": "ShopSubCategory"
+                }
+            },
+            "ShopTag": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "အမည်"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "ShopTag"
                 }
             },
             "Township": {
