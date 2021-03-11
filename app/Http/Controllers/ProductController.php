@@ -79,11 +79,11 @@ class ProductController extends Controller
 
         $validatedData = $request->validate($this->getParamsToValidate(true));
 
-        $subCategory = $this->getSubCategory($request->sub_category_slug);
+        $subCategory = $this->getSubCategory($request->shop_sub_category_slug);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
-        $validatedData['sub_category_id'] = $subCategory->id;
+        $validatedData['shop_sub_category_id'] = $subCategory->id;
 
         if ($request->brand_slug) {
             $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
@@ -177,7 +177,7 @@ class ProductController extends Controller
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
-        $validatedData['sub_category_id'] = $subCategory->id;
+        $validatedData['shop_sub_category_id'] = $subCategory->id;
         if ($request->brand_slug) {
             $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
         }
@@ -188,7 +188,6 @@ class ProductController extends Controller
         $productId = $product->id;
 
         if ($request->product_variations) {
-
             $product->productVariations()->delete();
             $this->createProductVariation($productId, $validatedData['product_variations']);
         }
@@ -198,7 +197,7 @@ class ProductController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/products/{slug}",
-     *      operationId="showProduct",
+     *      operationId="deleteProduct",
      *      tags={"Products"},
      *      summary="Delete One Product",
      *      description="Delete one specific product",
@@ -235,14 +234,13 @@ class ProductController extends Controller
             'description_mm' => 'nullable|string',
             'price' => 'required|max:99999999',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
-            'sub_category_slug' => 'required|exists:App\Models\ShopSubCategory,slug',
+            'shop_sub_category_slug' => 'required|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',
             'product_variations.*.name' => 'nullable|string',
             'product_variations.*.name_mm' => 'nullable|string',
-
 
             'product_variations.*.product_variation_values' => 'nullable|array',
             'product_variations.*.product_variation_values.*.value' => 'nullable|string',
@@ -273,7 +271,7 @@ class ProductController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v2/admin/shops/{slug}/products",
-     *      operationId="showProductsByShop",
+     *      operationId="getProductsByShop",
      *      tags={"Products"},
      *      summary="Get Products By Shop",
      *      description="Returns requested list of products",
@@ -297,7 +295,7 @@ class ProductController extends Controller
      */
     public function getProductsByShop(Request $request, $slug)
     {
-        return Product::with('shopCategory', 'brand')->whereHas('shop', function ($q) use ($slug) {
+        return Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand')->whereHas('shop', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
@@ -345,6 +343,31 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * @OA\Patch(
+     *      path="/api/v2/admin/products/toggle-enable/{slug}",
+     *      operationId="enableProduct",
+     *      tags={"Products"},
+     *      summary="Enable Product",
+     *      description="Enable a product",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of the Product",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function toggleEnable($slug)
     {
         $product = Product::where('slug', $slug)->firstOrFail();
@@ -358,7 +381,7 @@ class ProductController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v2/admin/brands/{slug}/products",
-     *      operationId="showProductsByBrand",
+     *      operationId="getProductsByBrand",
      *      tags={"Products"},
      *      summary="Get Products By Brand",
      *      description="Returns requested list of products",

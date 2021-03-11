@@ -17,6 +17,40 @@ class MenuToppingController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/menu-toppings",
+     *      operationId="getMenuToppingLists",
+     *      tags={"MenuToppings"},
+     *      summary="Get list of menu toppings",
+     *      description="Returns list of menu toppings",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          description="Filter",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function index(Request $request)
     {
         return MenuTopping::with('menu')
@@ -31,16 +65,41 @@ class MenuToppingController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    // public function store(Request $request)
-    // {
-    //     $request['slug'] = $this->generateUniqueSlug();
 
-    //     $validatedData = $request->validate($this->getParamsToValidate(true));
-    //     $validatedData['menu_id'] = $this->getMenuId($request->menu_slug);
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/menu-toppings",
+     *      operationId="storeMenuTopping",
+     *      tags={"MenuToppings"},
+     *      summary="Create Menu Toppings",
+     *      description="Returns newly created Menu Topping list",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Remove ShopCategories in a shop",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(
+     *      @OA\Property(property="menu_slug", type="string", example="D16AAF"),
+     *               @OA\Property(property="menu_toppings", type="array", @OA\Items(oneOf={
+     *                @OA\Schema(
+     *                   @OA\Property(property="name", type="string", example="Name"),
+     *                   @OA\Property(property="name_mm", type="string", example="အမည်"),
+     *                   @OA\Property(property="price", type="number", example=1000),
+     *                  ),
+     *                })),
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
 
-    //     $menuTopping = MenuTopping::create($validatedData);
-    //     return response()->json($menuTopping->load('menu'), 201);
-    // }
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -69,6 +128,33 @@ class MenuToppingController extends Controller
      * @param  \App\Models\MenuTopping  $menuTopping
      * @return \Illuminate\Http\Response
      */
+
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/menu-toppings/{slug}",
+     *      operationId="showMenuTopping",
+     *      tags={"MenuToppings"},
+     *      summary="Get One Menu Topping",
+     *      description="Returns a requested menu topping",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested menu topping",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
+
     public function show($slug)
     {
         $menuTopping = MenuTopping::with('menu')->where('slug', $slug)->firstOrFail();
@@ -82,6 +168,41 @@ class MenuToppingController extends Controller
      * @param  \App\Models\MenuTopping  $menuTopping
      * @return \Illuminate\Http\Response
      */
+
+    /**
+     * @OA\Put(
+     *      path="/api/v2/admin/menu-toppings/{slug}",
+     *      operationId="updateMenuTopping",
+     *      tags={"MenuToppings"},
+     *      summary="Update a Menu Topping",
+     *      description="Update a requested Menu Topping",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug to identify a Menu Topping",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="New menu topping data to be updated.",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/MenuTopping")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
+
     public function update(Request $request, $slug)
     {
         $menuTopping = MenuTopping::where('slug', $slug)->firstOrFail();
@@ -99,12 +220,73 @@ class MenuToppingController extends Controller
      * @param  \App\Models\MenuTopping  $menuTopping
      * @return \Illuminate\Http\Response
      */
+
+         /**
+     * @OA\Delete(
+     *      path="/api/v2/admin/menu-toppings/{slug}",
+     *      operationId="deleteMenuTopping",
+     *      tags={"MenuToppings"},
+     *      summary="Delete One Menu Topping",
+     *      description="Delete one specific menu topping",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested menu topping",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function destroy($slug)
     {
         MenuTopping::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
+
+ /**
+     * @OA\Get(
+     *      path="/api/v2/admin/menus/{slug}/menu-toppings",
+     *      operationId="getToppingsByMenu",
+     *      tags={"MenuToppings"},
+     *      summary="Get Toppings By Menu",
+     *      description="Returns list of menu toppings",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested menu",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          description="Filter",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function getToppingsByMenu(Request $request, $slug)
     {
         return MenuTopping::whereHas('menu', function ($q) use ($slug) {
