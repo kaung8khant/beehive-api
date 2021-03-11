@@ -14,10 +14,28 @@ class UploadController extends Controller
     use StringHelper;
 
     /**
-     * Upload a file.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @OA\Post(
+     *      path="/api/v2/files",
+     *      operationId="fileUpload",
+     *      tags={"Files"},
+     *      summary="Upload a file",
+     *      description="Returns newly uploaded file",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created city object",
+     *          @OA\MediaType(
+     *              mediaType="multipart/form-data",
+     *              @OA\Schema(@OA\Property(property="file", type="file"),)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function upload(Request $request)
     {
