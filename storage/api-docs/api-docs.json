@@ -787,6 +787,197 @@
                 ]
             }
         },
+        "/api/v2/admin/product-variation-values": {
+            "get": {
+                "tags": [
+                    "Product Variation Values"
+                ],
+                "summary": "Get list of product variaiton values",
+                "description": "Returns list of product variation values",
+                "operationId": "getProductVariationValueLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Product Variation Values"
+                ],
+                "summary": "Create list of product variation value",
+                "description": "Returns list of newly created product variation value",
+                "operationId": "storeProductVariationValue",
+                "requestBody": {
+                    "description": "Created product variation value list of object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductVariationValue"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/product-variation-values/{slug}": {
+            "get": {
+                "tags": [
+                    "Product Variation Values"
+                ],
+                "summary": "Get One Product Variation Value",
+                "description": "Returns a requested product variation value",
+                "operationId": "showProductVariationValue",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested product variation value",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Update a product variation value",
+                "description": "Update a requested product variation value",
+                "operationId": "updateProductVariationValue",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a product variation value",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New product variation value data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductVariationValue"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Product Variation Values"
+                ],
+                "summary": "Delete One Product variation value",
+                "description": "Delete one specific product variation value",
+                "operationId": "showProductVariationValue",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested product variation value",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/product-variations/{slug}/product-variation-values": {
+            "get": {
+                "tags": [
+                    "Product Variation Values"
+                ],
+                "summary": "Get Products By Shop",
+                "description": "Returns requested list of product variation values",
+                "operationId": "showProductVariationValuesByShop",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the product variation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/shop-categories": {
             "get": {
                 "tags": [
@@ -1318,6 +1509,30 @@
                 "type": "object",
                 "xml": {
                     "name": "Product Variation"
+                }
+            },
+            "ProductVariationValue": {
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "example": "value"
+                    },
+                    "price": {
+                        "type": "decimal",
+                        "example": 0
+                    },
+                    "product_variation_slug": {
+                        "type": "string",
+                        "example": "product_variation_slug"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "Product Variation Value"
                 }
             },
             "ShopCategory": {
