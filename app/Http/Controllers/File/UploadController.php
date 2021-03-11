@@ -26,8 +26,8 @@ class UploadController extends Controller
         $request->validate([
             'slug' => 'required|unique:files',
             'file' => 'required|file|mimes:jpg,png,gif,pdf|max:4096',
-            'source' => 'required|string',
-            'sourceSlug' => 'required|string|exists:' . $request->source . ',slug',
+            'source' => 'nullable|string',
+            'sourceSlug' => 'nullable|string|exists:' . $request->source . ',slug',
         ]);
 
         $file = $request->file('file');
@@ -74,15 +74,15 @@ class UploadController extends Controller
 
     private function storeData(Request $request, $fileName, $extension)
     {
-        $model = '\App\Models\\' . str_replace(' ', '', ucwords(rtrim(str_replace('_', ' ', $request->source), 's')));
-        $sourceId = $model::where('slug', $request->sourceSlug)->first()->value('id');
+        // $model = '\App\Models\\' . str_replace(' ', '', ucwords(rtrim(str_replace('_', ' ', $request->source), 's')));
+        // $sourceId = $model::where('slug', $request->sourceSlug)->first()->value('id');
 
         return File::create([
             'slug' => $request->slug,
             'file_name' => $fileName,
             'extension' => $extension,
-            'source' => $request->source,
-            'source_id' => $sourceId,
+            // 'source' => $request->source,
+            // 'source_id' => $sourceId,
         ]);
     }
 }

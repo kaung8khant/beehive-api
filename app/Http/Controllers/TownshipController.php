@@ -31,7 +31,16 @@ class TownshipController extends Controller
      *          in="query",
      *          @OA\Schema(
      *              type="integer"
-     *          )
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          description="Filter",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          ),
      *      ),
      *      @OA\Response(
      *          response=200,
@@ -57,7 +66,8 @@ class TownshipController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-/**
+
+    /**
      * @OA\Post(
      *      path="/api/v2/admin/townships",
      *      operationId="storeTownship",
@@ -253,7 +263,7 @@ class TownshipController extends Controller
      *      tags={"Townships"},
      *      summary="Get townships By city",
      *      description="Returns list of townships",
-       *      @OA\Parameter(
+     *      @OA\Parameter(
      *          name="slug",
      *          description="Slug of a requested city",
      *          required=true,
@@ -261,6 +271,15 @@ class TownshipController extends Controller
      *          @OA\Schema(
      *              type="string"
      *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          description="Filter",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          ),
      *      ),
      *      @OA\Response(
      *          response=200,
