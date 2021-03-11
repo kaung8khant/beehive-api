@@ -18,6 +18,31 @@ class ProductVariationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/product-variations",
+     *      operationId="getProductVariationLists",
+     *      tags={"Product Variations"},
+     *      summary="Get list of product variations",
+     *      description="Returns list of product variations",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function index(Request $request)
     {
         return ProductVariation::with('product')
@@ -32,6 +57,7 @@ class ProductVariationController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -58,9 +84,8 @@ class ProductVariationController extends Controller
             $productVariation = ProductVariation::create($variation);
             $variationId = $productVariation->id;
             $this->createVariationValues($variationId, $variation['product_variation_values']);
-
         }
-        return response()->json($productVariation->load('product','productVariationValues'), 201);
+        return response()->json($productVariation->load('product', 'productVariationValues'), 201);
     }
 
     /**
@@ -118,11 +143,11 @@ class ProductVariationController extends Controller
     public function getProductVariationsByProduct($slug, Request $request)
     {
         return ProductVariation::with('productVariationValues')
-        ->whereHas('product', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where('name', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('slug', $request->filter)
-        ->paginate(10);
+            ->whereHas('product', function ($q) use ($slug) {
+                $q->where('slug', $slug);
+            })->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     private function createVariationValues($variationId, $variationValues)
@@ -133,5 +158,4 @@ class ProductVariationController extends Controller
             ProductVariationValue::create($variationValue);
         }
     }
-
 }
