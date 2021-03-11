@@ -14,10 +14,28 @@ class UploadController extends Controller
     use StringHelper;
 
     /**
-     * Upload a file.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @OA\Post(
+     *      path="/api/v2/files",
+     *      operationId="fileUpload",
+     *      tags={"Files"},
+     *      summary="Upload a file",
+     *      description="Returns newly uploaded file",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created city object",
+     *          @OA\MediaType(
+     *              mediaType="multipart/form-data",
+     *              @OA\Schema(@OA\Property(property="file", type="file"),)
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function upload(Request $request)
     {
@@ -26,8 +44,8 @@ class UploadController extends Controller
         $request->validate([
             'slug' => 'required|unique:files',
             'file' => 'required|file|mimes:jpg,png,gif,pdf|max:4096',
-            'source' => 'required|string',
-            'sourceSlug' => 'required|string|exists:' . $request->source . ',slug',
+            'source' => 'nullable|string',
+            'sourceSlug' => 'nullable|string|exists:' . $request->source . ',slug',
         ]);
 
         $file = $request->file('file');
@@ -74,15 +92,15 @@ class UploadController extends Controller
 
     private function storeData(Request $request, $fileName, $extension)
     {
-        $model = '\App\Models\\' . str_replace(' ', '', ucwords(rtrim(str_replace('_', ' ', $request->source), 's')));
-        $sourceId = $model::where('slug', $request->sourceSlug)->first()->value('id');
+        // $model = '\App\Models\\' . str_replace(' ', '', ucwords(rtrim(str_replace('_', ' ', $request->source), 's')));
+        // $sourceId = $model::where('slug', $request->sourceSlug)->first()->value('id');
 
         return File::create([
             'slug' => $request->slug,
             'file_name' => $fileName,
             'extension' => $extension,
-            'source' => $request->source,
-            'source_id' => $sourceId,
+            // 'source' => $request->source,
+            // 'source_id' => $sourceId,
         ]);
     }
 }

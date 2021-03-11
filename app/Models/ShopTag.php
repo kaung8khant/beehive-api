@@ -5,6 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="ShopTag"),
+ *      @OA\Property(property="name", type="string", example="name"),
+ *      @OA\Property(property="name_mm", type="string", example="အမည်"),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ * )
+ */
+
 class ShopTag extends Model
 {
     use HasFactory;
