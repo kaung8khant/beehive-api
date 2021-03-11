@@ -587,6 +587,37 @@
                 ]
             }
         },
+        "/api/v2/admin/product-variations": {
+            "get": {
+                "tags": [
+                    "Product Variations"
+                ],
+                "summary": "Get list of product variations",
+                "description": "Returns list of product variations",
+                "operationId": "getProductVariationLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/townships": {
             "get": {
                 "tags": [
@@ -867,6 +898,30 @@
                 "type": "object",
                 "xml": {
                     "name": "Product"
+                }
+            },
+            "ProductVariation": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Variation Name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "အမည်"
+                    },
+                    "product_slug": {
+                        "type": "string",
+                        "example": "Product Slug"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "Product Variation"
                 }
             },
             "Township": {

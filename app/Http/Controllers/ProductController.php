@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
 use App\Models\Product;
-use App\Models\Restaurant;
 use App\Models\Shop;
 use App\Models\ShopSubCategory;
 use App\Models\ProductVariation;
