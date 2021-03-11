@@ -49,18 +49,19 @@ Route::group(['prefix' => 'vendor'], function () {
 
         /* shop */
         /* shop categories */
+        Route::resource('shops', 'ShopController');
         Route::get('shop-categories', 'ShopCategoryController@index');
         Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
         Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
         Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
-        Route::get('shop-categories/{slug}/sub-categories', 'SubCategoryController@getSubCategoriesByCategory');
+        Route::get('shop-categories/{slug}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
 
         /* products */
         Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
         Route::get('products/{slug}', 'ProductController@show');
         Route::post('products', 'ProductController@store');
         Route::put('products/{slug}', 'ProductController@update');
-        Route::delete('products/{slug}', 'ProductController@destory');
+        Route::delete('products/{slug}', 'ProductController@destroy');
         Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
 
         Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');

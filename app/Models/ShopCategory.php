@@ -21,9 +21,9 @@ class ShopCategory extends Model
         'pivot',
     ];
 
-    public function subCategories()
+    public function shopSubCategories()
     {
-        return $this->hasMany(SubCategory::class);
+        return $this->hasMany(ShopSubCategory::class);
     }
 
     public function products()
@@ -33,6 +33,6 @@ class ShopCategory extends Model
 
     public function shops()
     {
-        return $this->belongsToMany(Shop::class, 'category_shop');
+        return $this->belongsToMany(Shop::class, 'shop_shop_category_map');
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCategoryRestaurantTable extends Migration
+class CreateRestaurantRestaurantTagMapTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,12 @@ class CreateCategoryRestaurantTable extends Migration
      */
     public function up()
     {
-        Schema::create('category_restaurant', function (Blueprint $table) {
+        Schema::create('restaurant_restaurant_tag_map', function (Blueprint $table) {
             $table->unsignedBigInteger('restaurant_id');
-            $table->unsignedBigInteger('restaurant_category_id');
-            $table->primary(['restaurant_id', 'restaurant_category_id']);
+            $table->unsignedBigInteger('restaurant_tag_id');
+            $table->primary(['restaurant_id', 'restaurant_tag_id'], 'restaurant_restaurant_tag_map_primary');
             $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
-            $table->foreign('restaurant_category_id')->references('id')->on('restaurant_categories')->onDelete('cascade');
+            $table->foreign('restaurant_tag_id')->references('id')->on('restaurant_tags')->onDelete('cascade');
         });
     }
 
@@ -29,6 +29,6 @@ class CreateCategoryRestaurantTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('category_restaurant');
+        Schema::dropIfExists('tag_restaurant');
     }
 }

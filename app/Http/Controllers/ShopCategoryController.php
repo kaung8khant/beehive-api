@@ -18,7 +18,7 @@ class ShopCategoryController extends Controller
      */
     public function index(Request $request)
     {
-        return ShopCategory::with('subCategories')
+        return ShopCategory::with('shopSubCategories')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -54,7 +54,7 @@ class ShopCategoryController extends Controller
      */
     public function show($slug)
     {
-        $shopCategory = ShopCategory::with('subCategories')->where('slug', $slug)->firstOrFail();
+        $shopCategory = ShopCategory::with('shopSubCategories')->where('slug', $slug)->firstOrFail();
         return response()->json($shopCategory, 200);
     }
 

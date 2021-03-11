@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
 use App\Models\Product;
 use App\Models\Shop;
-use App\Models\SubCategory;
+use App\Models\ShopSubCategory;
 use App\Models\Brand;
 
 class ProductFactory extends Factory
@@ -40,8 +40,8 @@ class ProductFactory extends Factory
             'shop_category_id' => function (array $attributes) {
                 return  Shop::find($attributes['shop_id'])->availableCategories()->pluck('shop_category_id')->random(1)[0];
             },
-            'sub_category_id' => function (array $attributes) {
-                return  SubCategory::where('shop_category_id', $attributes['shop_category_id'])->pluck('id')->random(1)[0];
+            'shop_sub_category_id' => function (array $attributes) {
+                return  ShopSubCategory::where('shop_category_id', $attributes['shop_category_id'])->pluck('id')->random(1)[0];
             },
             'brand_id' => function () {
                 $condition = rand(0, 1);

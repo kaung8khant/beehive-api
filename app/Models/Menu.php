@@ -56,6 +56,6 @@ class Menu extends Model
 
     public function restaurantBranches()
     {
-        return $this->belongsToMany(RestaurantBranch::class, 'restaurant_branch_menu');
+        return $this->belongsToMany(RestaurantBranch::class, 'restaurant_branch_menu_map');
     }
 }

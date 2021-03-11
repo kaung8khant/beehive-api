@@ -4,9 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Shop;
-use App\Models\ShopCategory;
+// use App\Models\ShopTag;
 
-class CategoryShopSeeder extends Seeder
+class ShopShopTagSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,10 +16,10 @@ class CategoryShopSeeder extends Seeder
     public function run()
     {
         $shops = Shop::all();
-        $shopCategories = ShopCategory::pluck('id');
+        $shopTags = [1, 2];
 
         foreach ($shops as $shop) {
-            $shop->availableCategories()->attach($shopCategories->random(2)->all());
+            $shop->availableTags()->attach($shopTags);
         }
     }
 }

@@ -23,6 +23,6 @@ class ShopTag extends Model
 
     public function shops()
     {
-        return $this->belongsToMany(Shop::class, 'tag_shop');
+        return $this->belongsToMany(Shop::class, 'shop_shop_tag_map');
     }
 }

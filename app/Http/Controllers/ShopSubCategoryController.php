@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ShopCategory;
-use App\Models\SubCategory;
+use App\Models\ShopSubCategory;
 
-class SubCategoryController extends Controller
+class ShopSubCategoryController extends Controller
 {
     use StringHelper;
 
@@ -19,7 +19,7 @@ class SubCategoryController extends Controller
      */
     public function index(Request $request)
     {
-        return SubCategory::with('shopCategory')
+        return ShopSubCategory::with('shopCategory')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -45,7 +45,7 @@ class SubCategoryController extends Controller
 
         $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
 
-        $subCategory = SubCategory::create($validatedData);
+        $subCategory = ShopSubCategory::create($validatedData);
         return response()->json($subCategory->load('shopCategory'), 201);
     }
 
@@ -57,7 +57,7 @@ class SubCategoryController extends Controller
      */
     public function show($slug)
     {
-        $subCategory = SubCategory::with('shopCategory')->where('slug', $slug)->firstOrFail();
+        $subCategory = ShopSubCategory::with('shopCategory')->where('slug', $slug)->firstOrFail();
         return response()->json($subCategory, 200);
     }
 
@@ -70,7 +70,7 @@ class SubCategoryController extends Controller
      */
     public function update(Request $request, $slug)
     {
-        $subCategory = SubCategory::where('slug', $slug)->firstOrFail();
+        $subCategory = ShopSubCategory::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate([
             'name' => [
@@ -105,7 +105,7 @@ class SubCategoryController extends Controller
      */
     public function destroy($slug)
     {
-        SubCategory::where('slug', $slug)->firstOrFail()->delete();
+        ShopSubCategory::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -123,7 +123,7 @@ class SubCategoryController extends Controller
     */
     public function getSubCategoriesByCategory(Request $request, $slug)
     {
-        return SubCategory::whereHas('shopCategory', function ($q) use ($slug) {
+        return ShopSubCategory::whereHas('shopCategory', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter .'%')

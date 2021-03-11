@@ -4,9 +4,9 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
-use App\Models\SubCategory;
+use App\Models\ShopSubCategory;
 
-class SubCategoryFactory extends Factory
+class ShopSubCategoryFactory extends Factory
 {
     use StringHelper;
 
@@ -15,7 +15,7 @@ class SubCategoryFactory extends Factory
      *
      * @var string
      */
-    protected $model = SubCategory::class;
+    protected $model = ShopSubCategory::class;
 
     /**
      * Define the model's default state.
