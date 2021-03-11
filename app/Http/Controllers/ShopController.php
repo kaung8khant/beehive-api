@@ -72,7 +72,7 @@ class ShopController extends Controller
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $shop->update($request->validate([
+        $validatedData = $request->validate([
             'name' => [
                 'required',
                 Rule::unique('shops')->ignore($shop->id),
@@ -93,7 +93,11 @@ class ShopController extends Controller
             'closing_time' => 'required|date_format:H:i',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-        ]));
+            'township_slug' => 'required|exists:App\Models\Township,slug',
+        ]);
+
+        $validatedData['township_id'] = $this->getTownshipIdBySlug($request->township_slug);
+        $shop->update($validatedData);
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->availableTags()->detach();
