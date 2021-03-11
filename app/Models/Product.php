@@ -5,6 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="Product"),
+ *      @OA\Property(property="name", type="string", example="Product Name"),
+ *      @OA\Property(property="name_mm", type="string", example="အမည်"),
+ *      @OA\Property(property="description", type="string", example="Description"),
+ *      @OA\Property(property="description_mm", type="string", example="ဖော်ပြချက်"),
+ *      @OA\Property(property="price", type="decimal", example="Price"),
+ *      @OA\Property(property="shop_slug", type="string", example="Shop Slug"),
+ *      @OA\Property(property="shop_category_slug", type="string", example="Shop Category Slug"),
+ *      @OA\Property(property="sub_category_slug", type="string", example="Sub Category Slug"),
+ *      @OA\Property(property="brand_slug", type="string", example="Brand Slug"),
+ *      @OA\Property(property="is_enable", type="boolean", example="true"),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ * )
+ */
+
 class Product extends Model
 {
     use HasFactory;
