@@ -625,6 +625,166 @@
                         "bearerAuth": []
                     }
                 ]
+            },
+            "post": {
+                "tags": [
+                    "Product Variations"
+                ],
+                "summary": "Create a product variation",
+                "description": "Returns newly created product variation",
+                "operationId": "storeProductVariation",
+                "requestBody": {
+                    "description": "Created product variation object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductVariation"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/product-variations/{slug}": {
+            "get": {
+                "tags": [
+                    "Product Variations"
+                ],
+                "summary": "Get One Product Variation",
+                "description": "Returns a requested product variation",
+                "operationId": "showProductVariation",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested product variation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Product Variations"
+                ],
+                "summary": "Update a product variation",
+                "description": "Update a requested product variation",
+                "operationId": "updateProductVariation",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a product variation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New product variation data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductVariation"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Product Variations"
+                ],
+                "summary": "Delete One Product Variation",
+                "description": "Delete one specific product variation",
+                "operationId": "showProductVariation",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested product variation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/products/{slug}/product-variations": {
+            "get": {
+                "tags": [
+                    "Product Variations"
+                ],
+                "summary": "Get Product Variations By Shop",
+                "description": "Returns requested list of product variations",
+                "operationId": "showProductVariationsByProduct",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Product",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v2/admin/shop-categories": {
@@ -1104,23 +1264,23 @@
                     },
                     "price": {
                         "type": "decimal",
-                        "example": "Price"
+                        "example": 0
                     },
                     "shop_slug": {
                         "type": "string",
-                        "example": "Shop Slug"
+                        "example": "shop_slug"
                     },
                     "shop_category_slug": {
                         "type": "string",
-                        "example": "Shop Category Slug"
+                        "example": "shop_category_slug"
                     },
-                    "sub_category_slug": {
+                    "shop_sub_category_slug": {
                         "type": "string",
-                        "example": "Sub Category Slug"
+                        "example": "shop_sub_category_slug"
                     },
                     "brand_slug": {
                         "type": "string",
-                        "example": "Brand Slug"
+                        "example": "brand-slug"
                     },
                     "is_enable": {
                         "type": "boolean",

@@ -79,11 +79,11 @@ class ProductController extends Controller
 
         $validatedData = $request->validate($this->getParamsToValidate(true));
 
-        $subCategory = $this->getSubCategory($request->sub_category_slug);
+        $subCategory = $this->getSubCategory($request->shop_sub_category_slug);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
-        $validatedData['sub_category_id'] = $subCategory->id;
+        $validatedData['shop_sub_category_id'] = $subCategory->id;
 
         if ($request->brand_slug) {
             $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
@@ -177,7 +177,7 @@ class ProductController extends Controller
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
-        $validatedData['sub_category_id'] = $subCategory->id;
+        $validatedData['shop_sub_category_id'] = $subCategory->id;
         if ($request->brand_slug) {
             $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
         }
@@ -235,14 +235,13 @@ class ProductController extends Controller
             'description_mm' => 'nullable|string',
             'price' => 'required|max:99999999',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
-            'sub_category_slug' => 'required|exists:App\Models\ShopSubCategory,slug',
+            'shop_sub_category_slug' => 'required|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',
             'product_variations.*.name' => 'nullable|string',
             'product_variations.*.name_mm' => 'nullable|string',
-
 
             'product_variations.*.product_variation_values' => 'nullable|array',
             'product_variations.*.product_variation_values.*.value' => 'nullable|string',

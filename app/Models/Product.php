@@ -12,11 +12,11 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="name_mm", type="string", example="အမည်"),
  *      @OA\Property(property="description", type="string", example="Description"),
  *      @OA\Property(property="description_mm", type="string", example="ဖော်ပြချက်"),
- *      @OA\Property(property="price", type="decimal", example="Price"),
- *      @OA\Property(property="shop_slug", type="string", example="Shop Slug"),
- *      @OA\Property(property="shop_category_slug", type="string", example="Shop Category Slug"),
- *      @OA\Property(property="sub_category_slug", type="string", example="Sub Category Slug"),
- *      @OA\Property(property="brand_slug", type="string", example="Brand Slug"),
+ *      @OA\Property(property="price", type="decimal", example=0.00),
+ *      @OA\Property(property="shop_slug", type="string", example="shop_slug"),
+ *      @OA\Property(property="shop_category_slug", type="string", example="shop_category_slug"),
+ *      @OA\Property(property="shop_sub_category_slug", type="string", example="shop_sub_category_slug"),
+ *      @OA\Property(property="brand_slug", type="string", example="brand-slug"),
  *      @OA\Property(property="is_enable", type="boolean", example="true"),
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
@@ -35,7 +35,7 @@ class Product extends Model
         'price',
         'shop_id',
         'shop_category_id',
-        'sub_category_id',
+        'shop_sub_category_id',
         'brand_id',
         'is_enable'
     ];
@@ -44,7 +44,7 @@ class Product extends Model
         'id',
         'shop_id',
         'shop_category_id',
-        'sub_category_id',
+        'shop_sub_category_id',
         'brand_id',
         'created_at',
         'updated_at',
