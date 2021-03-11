@@ -17,10 +17,35 @@ class ProductVariationValueController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/product-variation-values",
+     *      operationId="getProductVariationValueLists",
+     *      tags={"Product Variation Values"},
+     *      summary="Get list of product variaiton values",
+     *      description="Returns list of product variation values",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function index(Request $request)
     {
         return ProductVariationValue::with('productVariation')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->where('value', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -30,6 +55,30 @@ class ProductVariationValueController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
+     */
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/product-variation-values",
+     *      operationId="storeProductVariationValue",
+     *      tags={"Product Variation Values"},
+     *      summary="Create list of product variation value",
+     *      description="Returns list of newly created product variation value",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created product variation value list of object",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/ProductVariationValue")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function store(Request $request)
     {
@@ -48,6 +97,31 @@ class ProductVariationValueController extends Controller
      * @param  \App\Models\ProductVariationValue  $productVariationValue
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/product-variation-values/{slug}",
+     *      operationId="showProductVariationValue",
+     *      tags={"Product Variation Values"},
+     *      summary="Get One Product Variation Value",
+     *      description="Returns a requested product variation value",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested product variation value",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function show($slug)
     {
         $productVariationValue = ProductVariationValue::with('productVariation')->where('slug', $slug)->firstOrFail();
@@ -60,6 +134,39 @@ class ProductVariationValueController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\ProductVariationValue  $productVariationValue
      * @return \Illuminate\Http\Response
+     */
+    /**
+     * @OA\Put(
+     *      path="/api/v2/admin/product-variation-values/{slug}",
+     *      operationId="updateProductVariationValue",
+     *      tags={"Products"},
+     *      summary="Update a product variation value",
+     *      description="Update a requested product variation value",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug to identify a product variation value",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="New product variation value data to be updated.",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/ProductVariationValue")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function update(Request $request, $slug)
     {
@@ -77,6 +184,31 @@ class ProductVariationValueController extends Controller
      *
      * @param  \App\Models\ProductVariationValue  $productVariationValue
      * @return \Illuminate\Http\Response
+     */
+    /**
+     * @OA\Delete(
+     *      path="/api/v2/admin/product-variation-values/{slug}",
+     *      operationId="deleteProductVariationValue",
+     *      tags={"Product Variation Values"},
+     *      summary="Delete One Product variation value",
+     *      description="Delete one specific product variation value",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested product variation value",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function destroy($slug)
     {
@@ -104,12 +236,37 @@ class ProductVariationValueController extends Controller
         return ProductVariation::where('slug', $slug)->first()->id;
     }
 
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/product-variations/{slug}/product-variation-values",
+     *      operationId="getProductVariationValuesByProductVariation",
+     *      tags={"Product Variation Values"},
+     *      summary="Get Product Variation Values By Product variation",
+     *      description="Returns requested list of product variation values",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of the product variation",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function getProductVariationValuesByProductVariation($slug, Request $request)
     {
         return ProductVariationValue::whereHas('productVariation', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where('value', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('slug', $request->filter)
-        ->paginate(10);
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 }

@@ -11,9 +11,7 @@
     "paths": {
         "/api/v2/admin/login": {
             "post": {
-                "tags": [
-                    "UserAuth"
-                ],
+                "tags": ["UserAuth"],
                 "summary": "User login",
                 "description": "Login as a system user",
                 "operationId": "adminLogin",
@@ -47,9 +45,7 @@
         },
         "/api/v2/admin/brands": {
             "get": {
-                "tags": [
-                    "Brands"
-                ],
+                "tags": ["Brands"],
                 "summary": "Get list of brands",
                 "description": "Returns list of brand",
                 "operationId": "getBrandLists",
@@ -85,9 +81,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "Brands"
-                ],
+                "tags": ["Brands"],
                 "summary": "Create a brand",
                 "description": "Returns newly created brand",
                 "operationId": "storeBrand",
@@ -116,9 +110,7 @@
         },
         "/api/v2/admin/brands/{slug}": {
             "get": {
-                "tags": [
-                    "Brands"
-                ],
+                "tags": ["Brands"],
                 "summary": "Get One Brand",
                 "description": "Returns a requested brand",
                 "operationId": "showBrands",
@@ -145,9 +137,7 @@
                 ]
             },
             "put": {
-                "tags": [
-                    "Brands"
-                ],
+                "tags": ["Brands"],
                 "summary": "Update a brand",
                 "description": "Update a requested brands",
                 "operationId": "updateBrand",
@@ -185,9 +175,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Brands"
-                ],
+                "tags": ["Brands"],
                 "summary": "Delete One Brand",
                 "description": "Delete one specific brand",
                 "operationId": "deleteBrand",
@@ -216,9 +204,7 @@
         },
         "/api/v2/admin/cities": {
             "get": {
-                "tags": [
-                    "Cities"
-                ],
+                "tags": ["Cities"],
                 "summary": "Get list of cities",
                 "description": "Returns list of cities",
                 "operationId": "getCityLists",
@@ -245,9 +231,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "Cities"
-                ],
+                "tags": ["Cities"],
                 "summary": "Create a city",
                 "description": "Returns newly created city",
                 "operationId": "storeCity",
@@ -276,9 +260,7 @@
         },
         "/api/v2/admin/cities/{slug}": {
             "get": {
-                "tags": [
-                    "Cities"
-                ],
+                "tags": ["Cities"],
                 "summary": "Get One City",
                 "description": "Returns a requested city",
                 "operationId": "showCity",
@@ -305,9 +287,7 @@
                 ]
             },
             "put": {
-                "tags": [
-                    "Cities"
-                ],
+                "tags": ["Cities"],
                 "summary": "Update a city",
                 "description": "Update a requested city",
                 "operationId": "updateCity",
@@ -345,9 +325,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Cities"
-                ],
+                "tags": ["Cities"],
                 "summary": "Delete One City",
                 "description": "Delete one specific city",
                 "operationId": "showCity",
@@ -376,9 +354,7 @@
         },
         "/api/v2/admin/products": {
             "get": {
-                "tags": [
-                    "Products"
-                ],
+                "tags": ["Products"],
                 "summary": "Get list of products",
                 "description": "Returns list of products",
                 "operationId": "getProductLists",
@@ -405,9 +381,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "Products"
-                ],
+                "tags": ["Products"],
                 "summary": "Create a product",
                 "description": "Returns newly created product",
                 "operationId": "storeProduct",
@@ -436,9 +410,7 @@
         },
         "/api/v2/admin/products/{slug}": {
             "get": {
-                "tags": [
-                    "Products"
-                ],
+                "tags": ["Products"],
                 "summary": "Get One Product",
                 "description": "Returns a requested product",
                 "operationId": "showProduct",
@@ -465,9 +437,7 @@
                 ]
             },
             "put": {
-                "tags": [
-                    "Products"
-                ],
+                "tags": ["Products"],
                 "summary": "Update a product",
                 "description": "Update a requested product",
                 "operationId": "updateProduct",
@@ -505,12 +475,10 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Products"
-                ],
+                "tags": ["Products"],
                 "summary": "Delete One Product",
                 "description": "Delete one specific product",
-                "operationId": "showProduct",
+                "operationId": "deleteProduct",
                 "parameters": [
                     {
                         "name": "slug",
@@ -536,12 +504,10 @@
         },
         "/api/v2/admin/shops/{slug}/products": {
             "get": {
-                "tags": [
-                    "Products"
-                ],
+                "tags": ["Products"],
                 "summary": "Get Products By Shop",
                 "description": "Returns requested list of products",
-                "operationId": "showProductsByShop",
+                "operationId": "getProductsByShop",
                 "parameters": [
                     {
                         "name": "slug",
@@ -565,14 +531,41 @@
                 ]
             }
         },
+        "/api/v2/admin/products/toggle-enable/{slug}": {
+            "patch": {
+                "tags": ["Products"],
+                "summary": "Enable Product",
+                "description": "Enable a product",
+                "operationId": "enableProduct",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Product",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/brands/{slug}/products": {
             "get": {
-                "tags": [
-                    "Products"
-                ],
+                "tags": ["Products"],
                 "summary": "Get Products By Brand",
                 "description": "Returns requested list of products",
-                "operationId": "showProductsByBrand",
+                "operationId": "getProductsByBrand",
                 "parameters": [
                     {
                         "name": "slug",
@@ -596,11 +589,903 @@
                 ]
             }
         },
+        "/api/v2/admin/product-variations": {
+            "get": {
+                "tags": ["Product Variations"],
+                "summary": "Get list of product variations",
+                "description": "Returns list of product variations",
+                "operationId": "getProductVariationLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": ["Product Variations"],
+                "summary": "Create a product variation",
+                "description": "Returns newly created product variation",
+                "operationId": "storeProductVariation",
+                "requestBody": {
+                    "description": "Created product variation object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductVariation"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/product-variations/{slug}": {
+            "get": {
+                "tags": ["Product Variations"],
+                "summary": "Get One Product Variation",
+                "description": "Returns a requested product variation",
+                "operationId": "showProductVariation",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested product variation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": ["Product Variations"],
+                "summary": "Update a product variation",
+                "description": "Update a requested product variation",
+                "operationId": "updateProductVariation",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a product variation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New product variation data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductVariation"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": ["Product Variations"],
+                "summary": "Delete One Product Variation",
+                "description": "Delete one specific product variation",
+                "operationId": "deleteProductVariation",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested product variation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/products/{slug}/product-variations": {
+            "get": {
+                "tags": ["Product Variations"],
+                "summary": "Get Product Variations By Product",
+                "description": "Returns requested list of product variations",
+                "operationId": "getProductVariationsByProduct",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Product",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/product-variation-values": {
+            "get": {
+                "tags": ["Product Variation Values"],
+                "summary": "Get list of product variaiton values",
+                "description": "Returns list of product variation values",
+                "operationId": "getProductVariationValueLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": ["Product Variation Values"],
+                "summary": "Create list of product variation value",
+                "description": "Returns list of newly created product variation value",
+                "operationId": "storeProductVariationValue",
+                "requestBody": {
+                    "description": "Created product variation value list of object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductVariationValue"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/product-variation-values/{slug}": {
+            "get": {
+                "tags": ["Product Variation Values"],
+                "summary": "Get One Product Variation Value",
+                "description": "Returns a requested product variation value",
+                "operationId": "showProductVariationValue",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested product variation value",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": ["Products"],
+                "summary": "Update a product variation value",
+                "description": "Update a requested product variation value",
+                "operationId": "updateProductVariationValue",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a product variation value",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New product variation value data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductVariationValue"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": ["Product Variation Values"],
+                "summary": "Delete One Product variation value",
+                "description": "Delete one specific product variation value",
+                "operationId": "deleteProductVariationValue",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested product variation value",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/product-variations/{slug}/product-variation-values": {
+            "get": {
+                "tags": ["Product Variation Values"],
+                "summary": "Get Product Variation Values By Product variation",
+                "description": "Returns requested list of product variation values",
+                "operationId": "getProductVariationValuesByProductVariation",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the product variation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurant-branches": {
+            "get": {
+                "tags": ["Restaurant Branches"],
+                "summary": "Get list of restaurant branches",
+                "description": "Returns list of restaurant branches",
+                "operationId": "getRestaurantBranchLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": ["Restaurant Branches"],
+                "summary": "Create a restaurant branch",
+                "description": "Returns newly created restaurant branch",
+                "operationId": "storeRestaurantBranch",
+                "requestBody": {
+                    "description": "Created restaurant branch object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RestaurantBranch"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurant-branches/{slug}": {
+            "get": {
+                "tags": ["RestaurantBranches"],
+                "summary": "Get One Restaurant Branch",
+                "description": "Returns a requested restaurant branch",
+                "operationId": "showRestaurantBranch",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested restaurant branch",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": ["Restaurant Branches"],
+                "summary": "Update a restaurant branch",
+                "description": "Update a requested restaurant branch",
+                "operationId": "updateRestaurantBranch",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a restaurant branch",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New restaurant branch data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RestaurantBranch"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": ["Restaurants"],
+                "summary": "Delete One Restaurant Branch",
+                "description": "Delete one specific restaurant branch",
+                "operationId": "deleteRestaurantBranch",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested restaurant branch",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants/{slug}/restaurant-branches": {
+            "get": {
+                "tags": ["Restaurant Branches"],
+                "summary": "Get Branches By Restaurant",
+                "description": "Returns requested list of restaurant branches",
+                "operationId": "getBranchesByRestaurant",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/townships/{slug}/restaurant-branches": {
+            "get": {
+                "tags": ["Restaurant Branches"],
+                "summary": "Get Branches By Restaurant",
+                "description": "Returns requested list of restaurant branches",
+                "operationId": "getBranchesByTownship",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Township",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurant-branches/toggle-enable/{slug}": {
+            "patch": {
+                "tags": ["Restaurant Branches"],
+                "summary": "Enable Restaurant Branch",
+                "description": "Enable a restaurant branch",
+                "operationId": "enableRestaurantBranch",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the restaurant branch",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurant-branches/add-available-menus/{slug}": {
+            "post": {
+                "tags": ["Restaurant Branches"],
+                "summary": "Add available menus",
+                "description": "Returns newly added available menus",
+                "operationId": "addAvailableMenus",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the menu",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Added available menus",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RestaurantBranch"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants": {
+            "get": {
+                "tags": ["Restaurants"],
+                "summary": "Get list of restaurants",
+                "description": "Returns list of restaurants",
+                "operationId": "getRestaurantLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": ["Restaurants"],
+                "summary": "Create a restaurant",
+                "description": "Returns newly created restaurant",
+                "operationId": "storeRestaurant",
+                "requestBody": {
+                    "description": "Created restaurant object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Restaurant"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants/{slug}": {
+            "get": {
+                "tags": ["Restaurants"],
+                "summary": "Get One Restaurant",
+                "description": "Returns a requested restaurant",
+                "operationId": "showRestaurant",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": ["Restaurants"],
+                "summary": "Update a restaurant",
+                "description": "Update a requested restaurant",
+                "operationId": "updateRestaurant",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New restaurant data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Restaurant"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": ["Restaurants"],
+                "summary": "Delete One Restaurant",
+                "description": "Delete one specific restaurant",
+                "operationId": "deleteRestaurant",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants/toggle-enable/{slug}": {
+            "patch": {
+                "tags": ["Restaurants"],
+                "summary": "Enable Restaurant",
+                "description": "Enable a restaurant",
+                "operationId": "enableRestaurant",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants/add-restaurant-categories/{slug}": {
+            "post": {
+                "tags": ["Restaurants"],
+                "summary": "Add restaurant categories",
+                "description": "Returns newly added restaurant categories",
+                "operationId": "addRestaurantCategories",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Added restaurant categories",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Restaurant"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants/remove-restaurant-categories/{slug}": {
+            "post": {
+                "tags": ["Restaurants"],
+                "summary": "Remove restaurant categories",
+                "description": "Returns newly removed restaurant categories",
+                "operationId": "removeRestaurantCategories",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Removed restaurant categores",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Restaurant"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/shop-categories": {
             "get": {
-                "tags": [
-                    "Shop Category"
-                ],
+                "tags": ["Shop Category"],
                 "summary": "Get list of shop categories",
                 "description": "Returns list of shop categories",
                 "operationId": "getShopCategoryLists",
@@ -636,9 +1521,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "Shop Category"
-                ],
+                "tags": ["Shop Category"],
                 "summary": "Create a Shop Category",
                 "description": "Returns newly created shop category",
                 "operationId": "storeShopCategory",
@@ -667,9 +1550,7 @@
         },
         "/api/v2/admin/shop-categories/{slug}": {
             "get": {
-                "tags": [
-                    "Shop Category"
-                ],
+                "tags": ["Shop Category"],
                 "summary": "Get One Shop Category",
                 "description": "Returns a requested shop category",
                 "operationId": "showShopCategory",
@@ -696,9 +1577,7 @@
                 ]
             },
             "put": {
-                "tags": [
-                    "Shop Category"
-                ],
+                "tags": ["Shop Category"],
                 "summary": "Update a Shop Category",
                 "description": "Update a requested shop category",
                 "operationId": "updateShopCategory",
@@ -736,9 +1615,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Shop Category"
-                ],
+                "tags": ["Shop Category"],
                 "summary": "Delete One Shop Category",
                 "description": "Delete one specific shop category",
                 "operationId": "deleteShopCategory",
@@ -767,9 +1644,7 @@
         },
         "/api/v2/admin/shops/{slug}/shop-categories": {
             "get": {
-                "tags": [
-                    "Shop Category"
-                ],
+                "tags": ["Shop Category"],
                 "summary": "Get Shop Categories By Shop",
                 "description": "Returns list of shop categories",
                 "operationId": "getshopCategoryListsByShop",
@@ -807,9 +1682,7 @@
         },
         "/api/v2/admin/shops": {
             "get": {
-                "tags": [
-                    "Shops"
-                ],
+                "tags": ["Shops"],
                 "summary": "Get list of shops",
                 "description": "Returns list of shops",
                 "operationId": "getShopLists",
@@ -845,9 +1718,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "Shops"
-                ],
+                "tags": ["Shops"],
                 "summary": "Create a Shop",
                 "description": "Returns newly created shop",
                 "operationId": "storeShop",
@@ -876,9 +1747,7 @@
         },
         "/api/v2/admin/shops/{slug}": {
             "get": {
-                "tags": [
-                    "Shops"
-                ],
+                "tags": ["Shops"],
                 "summary": "Get One Shop",
                 "description": "Returns a requested shop",
                 "operationId": "showShop",
@@ -905,9 +1774,7 @@
                 ]
             },
             "put": {
-                "tags": [
-                    "Shops"
-                ],
+                "tags": ["Shops"],
                 "summary": "Update a Shop",
                 "description": "Update a requested shop",
                 "operationId": "updateShop",
@@ -945,9 +1812,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Shops"
-                ],
+                "tags": ["Shops"],
                 "summary": "Delete One Shop",
                 "description": "Delete one specific shop",
                 "operationId": "deleteShop",
@@ -976,9 +1841,7 @@
         },
         "/api/v2/admin/shops/toggle-enable/{slug}": {
             "patch": {
-                "tags": [
-                    "Shops"
-                ],
+                "tags": ["Shops"],
                 "summary": "Toggle Enable a Shop",
                 "description": "Toggle Enable a requested shop",
                 "operationId": "toggleEnable",
@@ -1007,9 +1870,7 @@
         },
         "/api/v2/admin/shops/toggle-official/{slug}": {
             "patch": {
-                "tags": [
-                    "Shops"
-                ],
+                "tags": ["Shops"],
                 "summary": "Toggle Official a Shop",
                 "description": "Toggle Official a requested shop",
                 "operationId": "toggleOfficial",
@@ -1038,9 +1899,7 @@
         },
         "/api/v2/admin/shops/add-shop-categories/{slug}": {
             "post": {
-                "tags": [
-                    "Shops"
-                ],
+                "tags": ["Shops"],
                 "summary": "Add ShopCategories",
                 "description": "Add ShopCategories in a shop",
                 "operationId": "addShopCategories",
@@ -1093,9 +1952,7 @@
         },
         "/api/v2/admin/shops/remove-shop-categories/{slug}": {
             "post": {
-                "tags": [
-                    "Shops"
-                ],
+                "tags": ["Shops"],
                 "summary": "Remove ShopCategories",
                 "description": "Remove ShopCategories in a shop",
                 "operationId": "removeShopCategories",
@@ -1148,9 +2005,7 @@
         },
         "/api/v2/admin/sub-categories": {
             "get": {
-                "tags": [
-                    "Subcategories"
-                ],
+                "tags": ["Subcategories"],
                 "summary": "Get list of subcategories",
                 "description": "Returns list of subcategories",
                 "operationId": "getSubcategoryLists",
@@ -1186,9 +2041,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "Subcategories"
-                ],
+                "tags": ["Subcategories"],
                 "summary": "Create a Subcategory",
                 "description": "Returns newly created subcategory",
                 "operationId": "storeSubcategory",
@@ -1217,9 +2070,7 @@
         },
         "/api/v2/admin/sub-categories/{slug}": {
             "get": {
-                "tags": [
-                    "Subcategories"
-                ],
+                "tags": ["Subcategories"],
                 "summary": "Get One Subcategory",
                 "description": "Returns a requested subcategory",
                 "operationId": "showSubcategory",
@@ -1246,9 +2097,7 @@
                 ]
             },
             "put": {
-                "tags": [
-                    "Subcategories"
-                ],
+                "tags": ["Subcategories"],
                 "summary": "Update a Subcategory",
                 "description": "Update a requested subcategory",
                 "operationId": "updateSubCategory",
@@ -1286,9 +2135,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Subcategories"
-                ],
+                "tags": ["Subcategories"],
                 "summary": "Delete One Subcategory",
                 "description": "Delete one specific subcategory",
                 "operationId": "deleteSubcategory",
@@ -1317,9 +2164,7 @@
         },
         "/api/v2/admin/shop-categories/{slug}/sub-categories": {
             "get": {
-                "tags": [
-                    "Subcategories"
-                ],
+                "tags": ["Subcategories"],
                 "summary": "Get Subcategories By Shop Category",
                 "description": "Returns list of subcategories",
                 "operationId": "getSubCategoriesByCategory",
@@ -1357,9 +2202,7 @@
         },
         "/api/v2/admin/shop-tags": {
             "get": {
-                "tags": [
-                    "ShopTags"
-                ],
+                "tags": ["ShopTags"],
                 "summary": "Get list of shop tags",
                 "description": "Returns list of shop tags",
                 "operationId": "getShopTagLists",
@@ -1395,9 +2238,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "ShopTags"
-                ],
+                "tags": ["ShopTags"],
                 "summary": "Create a Shop Tag",
                 "description": "Returns newly created shop tag",
                 "operationId": "storeShopTag",
@@ -1426,9 +2267,7 @@
         },
         "/api/v2/admin/shop-tags/{slug}": {
             "get": {
-                "tags": [
-                    "ShopTags"
-                ],
+                "tags": ["ShopTags"],
                 "summary": "Get One Shop Tag",
                 "description": "Returns a requested shop tag",
                 "operationId": "showShopTag",
@@ -1455,9 +2294,7 @@
                 ]
             },
             "put": {
-                "tags": [
-                    "ShopTags"
-                ],
+                "tags": ["ShopTags"],
                 "summary": "Update a shop tag",
                 "description": "Update a requested shop tag",
                 "operationId": "updateShopTag",
@@ -1495,9 +2332,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "ShopTags"
-                ],
+                "tags": ["ShopTags"],
                 "summary": "Delete One Shop Tag",
                 "description": "Delete one specific shop tag",
                 "operationId": "deleteShopTag",
@@ -1526,9 +2361,7 @@
         },
         "/api/v2/admin/shops/{slug}/shop-tags": {
             "get": {
-                "tags": [
-                    "ShopTags"
-                ],
+                "tags": ["ShopTags"],
                 "summary": "Get Shop tags By Shop",
                 "description": "Returns list of shop tags",
                 "operationId": "getShopTagsByShop",
@@ -1566,9 +2399,7 @@
         },
         "/api/v2/admin/townships": {
             "get": {
-                "tags": [
-                    "Townships"
-                ],
+                "tags": ["Townships"],
                 "summary": "Get list of townships",
                 "description": "Returns list of townships",
                 "operationId": "getTownshipLists",
@@ -1604,9 +2435,7 @@
                 ]
             },
             "post": {
-                "tags": [
-                    "Townships"
-                ],
+                "tags": ["Townships"],
                 "summary": "Create a township",
                 "description": "Returns newly created township",
                 "operationId": "storeTownship",
@@ -1635,9 +2464,7 @@
         },
         "/api/v2/admin/townships/{slug}": {
             "get": {
-                "tags": [
-                    "Townships"
-                ],
+                "tags": ["Townships"],
                 "summary": "Get One Township",
                 "description": "Returns a requested township",
                 "operationId": "showTownship",
@@ -1664,9 +2491,7 @@
                 ]
             },
             "put": {
-                "tags": [
-                    "Townships"
-                ],
+                "tags": ["Townships"],
                 "summary": "Update a township",
                 "description": "Update a requested township",
                 "operationId": "updateTownship",
@@ -1704,9 +2529,7 @@
                 ]
             },
             "delete": {
-                "tags": [
-                    "Townships"
-                ],
+                "tags": ["Townships"],
                 "summary": "Delete One Township",
                 "description": "Delete one specific township",
                 "operationId": "deleteTownship",
@@ -1735,9 +2558,7 @@
         },
         "/api/v2/admin/cities/{slug}/townships": {
             "get": {
-                "tags": [
-                    "Townships"
-                ],
+                "tags": ["Townships"],
                 "summary": "Get townships By city",
                 "description": "Returns list of townships",
                 "operationId": "getTownshipListsByCity",
@@ -1832,23 +2653,23 @@
                     },
                     "price": {
                         "type": "decimal",
-                        "example": "Price"
+                        "example": 0
                     },
                     "shop_slug": {
                         "type": "string",
-                        "example": "Shop Slug"
+                        "example": "shop_slug"
                     },
                     "shop_category_slug": {
                         "type": "string",
-                        "example": "Shop Category Slug"
+                        "example": "shop_category_slug"
                     },
-                    "sub_category_slug": {
+                    "shop_sub_category_slug": {
                         "type": "string",
-                        "example": "Sub Category Slug"
+                        "example": "shop_sub_category_slug"
                     },
                     "brand_slug": {
                         "type": "string",
-                        "example": "Brand Slug"
+                        "example": "brand_slug"
                     },
                     "is_enable": {
                         "type": "boolean",
@@ -1864,7 +2685,79 @@
                     "name": "Product"
                 }
             },
-            "Shop": {
+            "ProductVariation": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Variation Name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "အမည်"
+                    },
+                    "product_slug": {
+                        "type": "string",
+                        "example": "Product Slug"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "Product Variation"
+                }
+            },
+            "ProductVariationValue": {
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "example": "value"
+                    },
+                    "price": {
+                        "type": "decimal",
+                        "example": 0
+                    },
+                    "product_variation_slug": {
+                        "type": "string",
+                        "example": "product_variation_slug"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "Product Variation Value"
+                }
+            },
+            "Restaurant": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Restaurant Name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "ဆိုင်အမည်"
+                    },
+                    "is_enable": {
+                        "type": "boolean",
+                        "example": "true"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "Restaurant"
+                }
+            },
+            "RestaurantBranch": {
                 "properties": {
                     "name": {
                         "type": "string",
@@ -1872,63 +2765,52 @@
                     },
                     "name_mm": {
                         "type": "string",
-                        "example": "အမည်"
+                        "example": "name_mm"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "address"
+                    },
+                    "contact_number": {
+                        "type": "string",
+                        "example": "string"
+                    },
+                    "opening_time": {
+                        "type": "time",
+                        "example": "00:00"
+                    },
+                    "closing_time": {
+                        "type": "time",
+                        "example": "00:00"
+                    },
+                    "latitude": {
+                        "type": "double",
+                        "example": "0.00"
+                    },
+                    "longitude": {
+                        "type": "double",
+                        "example": "0.00"
+                    },
+                    "restaurant_slug": {
+                        "type": "string",
+                        "example": "restaurant_slug"
+                    },
+                    "township_slug": {
+                        "type": "string",
+                        "example": "township_slug"
+                    },
+                    "is_enable": {
+                        "type": "boolean",
+                        "example": "true"
                     },
                     "slug": {
                         "type": "string",
                         "readOnly": true
-                    },
-                    "is_official": {
-                        "type": "boolean",
-                        "example": true
-                    },
-                    "is_enable": {
-                        "type": "boolean",
-                        "example": true
-                    },
-                    "address": {
-                        "type": "string",
-                        "example": "somewhere"
-                    },
-                    "contact_number": {
-                        "type": "string",
-                        "example": "09444456321"
-                    },
-                    "opening_time": {
-                        "type": "string",
-                        "example": "06:09:00"
-                    },
-                    "closing_time": {
-                        "type": "string",
-                        "example": "21:51:00"
-                    },
-                    "latitude": {
-                        "type": "number",
-                        "example": 16.888501
-                    },
-                    "longitude": {
-                        "type": "number",
-                        "example": 96.199375
-                    },
-                    "township_slug": {
-                        "type": "string",
-                        "example": "CB91EE"
-                    },
-                    "shop_tags": {
-                        "type": "array",
-                        "items": {
-                            "oneOf": [
-                                {
-                                    "type": "string",
-                                    "example": "CB965585"
-                                }
-                            ]
-                        }
                     }
                 },
                 "type": "object",
                 "xml": {
-                    "name": "Shop"
+                    "name": "RestaurantBranch"
                 }
             },
             "ShopCategory": {
@@ -2028,7 +2910,5 @@
             }
         }
     },
-    "security": [
-        []
-    ]
+    "security": [[]]
 }
