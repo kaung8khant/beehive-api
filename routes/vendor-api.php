@@ -16,7 +16,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
         Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
         Route::post('restaurants/remove-restaurant-categories/{slug}', 'RestaurantController@removeRestaurantCategories');
-        Route::put('restaurant-branches/{slug}', 'RestaurantBranchController@updateWithTagsAndCategories');
+        Route::put('restaurant-branches/{slug}/update', 'RestaurantBranchController@updateWithTagsAndCategories');
 
         /* menus */
         Route::get('restaurant-branches/{slug}/menus', 'MenuController@getAvailableMenusByRestaurantBranch');
@@ -50,6 +50,7 @@ Route::group(['prefix' => 'vendor'], function () {
         /* shop */
         /* shop categories */
         Route::resource('shops', 'ShopController');
+        Route::get('shop-tags', 'ShopTagController@index');
         Route::get('shop-categories', 'ShopCategoryController@index');
         Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
         Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
@@ -79,8 +80,8 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('brands', 'BrandController@index');
         Route::post('brands', 'BrandController@store');
 
-        Route::resource('cities', 'CityController');
-        Route::resource('townships', 'TownshipController');
+        Route::get('cities', 'CityController@index');
+        Route::get('townships', 'TownshipController@index');
         Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
         Route::resource('customers', 'CustomerController');
 
