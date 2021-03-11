@@ -374,6 +374,215 @@
                 ]
             }
         },
+        "/api/v2/admin/shop-categories": {
+            "get": {
+                "tags": [
+                    "Shop Category"
+                ],
+                "summary": "Get list of shop categories",
+                "description": "Returns list of shop categories",
+                "operationId": "getShopCategoryLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Shop Category"
+                ],
+                "summary": "Create a Shop Category",
+                "description": "Returns newly created shop category",
+                "operationId": "storeShopCategory",
+                "requestBody": {
+                    "description": "Created shop category object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ShopCategory"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/shop-categories/{slug}": {
+            "get": {
+                "tags": [
+                    "Shop Category"
+                ],
+                "summary": "Get One Shop Category",
+                "description": "Returns a requested shop category",
+                "operationId": "showShopCategory",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested shop category",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Shop Category"
+                ],
+                "summary": "Update a Shop Category",
+                "description": "Update a requested shop category",
+                "operationId": "updateShopCategory",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a shop category",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New shop category data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ShopCategory"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Shop Category"
+                ],
+                "summary": "Delete One Shop Category",
+                "description": "Delete one specific shop category",
+                "operationId": "deleteShopCategory",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested shop category",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/shops/{slug}/shop-categories": {
+            "get": {
+                "tags": [
+                    "Shop Category"
+                ],
+                "summary": "Get Shop Categories By Shop",
+                "description": "Returns list of shop categories",
+                "operationId": "getshopCategoryListsByShop",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested shop",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/townships": {
             "get": {
                 "tags": [
@@ -560,6 +769,15 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -611,6 +829,26 @@
                 "type": "object",
                 "xml": {
                     "name": "City"
+                }
+            },
+            "ShopCategory": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "ShopCategory Name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "ShopCategory အမည်"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "ShopCategory"
                 }
             },
             "Township": {
