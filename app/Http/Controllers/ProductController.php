@@ -344,6 +344,31 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * @OA\Patch(
+     *      path="/api/v2/admin/products/toggle-enable/{slug}",
+     *      operationId="showProducts",
+     *      tags={"Products"},
+     *      summary="Enable Product",
+     *      description="Enable a product",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of the Product",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function toggleEnable($slug)
     {
         $product = Product::where('slug', $slug)->firstOrFail();

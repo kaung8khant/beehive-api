@@ -565,6 +565,37 @@
                 ]
             }
         },
+        "/api/v2/admin/products/toggle-enable/{slug}": {
+            "patch": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Enable Product",
+                "description": "Enable a product",
+                "operationId": "showProducts",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Product",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/brands/{slug}/products": {
             "get": {
                 "tags": [
@@ -761,7 +792,7 @@
                 "tags": [
                     "Product Variations"
                 ],
-                "summary": "Get Product Variations By Shop",
+                "summary": "Get Product Variations By Product",
                 "description": "Returns requested list of product variations",
                 "operationId": "showProductVariationsByProduct",
                 "parameters": [
@@ -952,14 +983,174 @@
                 "tags": [
                     "Product Variation Values"
                 ],
-                "summary": "Get Products By Shop",
+                "summary": "Get Product Variation Values By Product variation",
                 "description": "Returns requested list of product variation values",
-                "operationId": "showProductVariationValuesByShop",
+                "operationId": "showProductVariationValuesByProductVariation",
                 "parameters": [
                     {
                         "name": "slug",
                         "in": "path",
                         "description": "Slug of the product variation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants": {
+            "get": {
+                "tags": [
+                    "Restaurants"
+                ],
+                "summary": "Get list of restaurants",
+                "description": "Returns list of restaurants",
+                "operationId": "getRestaurantLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Restaurants"
+                ],
+                "summary": "Create a restaurant",
+                "description": "Returns newly created restaurant",
+                "operationId": "storeRestaurant",
+                "requestBody": {
+                    "description": "Created restaurant object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Restaurant"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants/{slug}": {
+            "get": {
+                "tags": [
+                    "Restaurants"
+                ],
+                "summary": "Get One Restaurant",
+                "description": "Returns a requested restaurant",
+                "operationId": "showRestaurant",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Restaurants"
+                ],
+                "summary": "Update a restaurant",
+                "description": "Update a requested restaurant",
+                "operationId": "updateRestaurant",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New restaurant data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Restaurant"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Restaurants"
+                ],
+                "summary": "Delete One Restaurant",
+                "description": "Delete one specific restaurant",
+                "operationId": "showRestaurant",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested restaurant",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1533,6 +1724,30 @@
                 "type": "object",
                 "xml": {
                     "name": "Product Variation Value"
+                }
+            },
+            "Restaurant": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Restaurant Name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "ဆိုင်အမည်"
+                    },
+                    "is_enable": {
+                        "type": "boolean",
+                        "example": "true"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "Restaurant"
                 }
             },
             "ShopCategory": {

@@ -14,6 +14,31 @@ use App\Models\Township;
 class RestaurantController extends Controller
 {
     use StringHelper;
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/restaurants",
+     *      operationId="getRestaurantLists",
+     *      tags={"Restaurants"},
+     *      summary="Get list of restaurants",
+     *      description="Returns list of restaurants",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
 
     public function index(Request $request)
     {
@@ -24,6 +49,30 @@ class RestaurantController extends Controller
             ->paginate(10);
     }
 
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/restaurants",
+     *      operationId="storeRestaurant",
+     *      tags={"Restaurants"},
+     *      summary="Create a restaurant",
+     *      description="Returns newly created restaurant",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created restaurant object",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/Restaurant")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -66,12 +115,70 @@ class RestaurantController extends Controller
         return response()->json($restaurant->load('availableTags', 'availableCategories', 'restaurantBranches'), 201);
     }
 
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/restaurants/{slug}",
+     *      operationId="showRestaurant",
+     *      tags={"Restaurants"},
+     *      summary="Get One Restaurant",
+     *      description="Returns a requested restaurant",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested restaurant",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function show($slug)
     {
         $restaurant = Restaurant::with('availableCategories', 'availableTags')->where('slug', $slug)->firstOrFail();
         return response()->json($restaurant, 200);
     }
 
+    /**
+     * @OA\Put(
+     *      path="/api/v2/admin/restaurants/{slug}",
+     *      operationId="updateRestaurant",
+     *      tags={"Restaurants"},
+     *      summary="Update a restaurant",
+     *      description="Update a requested restaurant",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug to identify a restaurant",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="New restaurant data to be updated.",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/Restaurant")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function update(Request $request, $slug)
     {
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
@@ -107,6 +214,31 @@ class RestaurantController extends Controller
         return response()->json($restaurant->load(['availableCategories', 'availableTags']), 200);
     }
 
+    /**
+     * @OA\Delete(
+     *      path="/api/v2/admin/restaurants/{slug}",
+     *      operationId="showRestaurant",
+     *      tags={"Restaurants"},
+     *      summary="Delete One Restaurant",
+     *      description="Delete one specific restaurant",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested restaurant",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function destroy($slug)
     {
         Restaurant::where('slug', $slug)->firstOrFail()->delete();

@@ -252,7 +252,7 @@ class ProductVariationController extends Controller
      *      path="/api/v2/admin/products/{slug}/product-variations",
      *      operationId="showProductVariationsByProduct",
      *      tags={"Product Variations"},
-     *      summary="Get Product Variations By Shop",
+     *      summary="Get Product Variations By Product",
      *      description="Returns requested list of product variations",
      *      @OA\Parameter(
      *          name="slug",
