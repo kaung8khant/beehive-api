@@ -1036,6 +1036,116 @@
                 ]
             }
         },
+        "/api/v2/admin/shops/add-shop-categories/{slug}": {
+            "post": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Add ShopCategories",
+                "description": "Add ShopCategories in a shop",
+                "operationId": "addShopCategories",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a shop",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Add ShopCategories in a shop",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "properties": {
+                                    "available_categories": {
+                                        "type": "array",
+                                        "items": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "string",
+                                                    "example": "CB965585"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/shops/remove-shop-categories/{slug}": {
+            "post": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Remove ShopCategories",
+                "description": "Remove ShopCategories in a shop",
+                "operationId": "removeShopCategories",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a shop",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Remove ShopCategories in a shop",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "properties": {
+                                    "available_categories": {
+                                        "type": "array",
+                                        "items": {
+                                            "oneOf": [
+                                                {
+                                                    "type": "string",
+                                                    "example": "CB965585"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/sub-categories": {
             "get": {
                 "tags": [

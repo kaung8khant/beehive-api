@@ -330,7 +330,45 @@ class ShopController extends Controller
         return Township::where('slug', $slug)->first()->id;
     }
 
-
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/shops/add-shop-categories/{slug}",
+     *      operationId="addShopCategories",
+     *      tags={"Shops"},
+     *      summary="Add ShopCategories",
+     *      description="Add ShopCategories in a shop",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug to identify a shop",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Add ShopCategories in a shop",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(
+     *               @OA\Property(property="available_categories", type="array", @OA\Items(oneOf={
+     *                @OA\Schema(
+     *                 type="string", example="CB965585"
+     *                   ),
+     *                })),
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function addShopCategories(Request $request, $slug)
     {
         $shop =$request->validate([
@@ -346,6 +384,45 @@ class ShopController extends Controller
         return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
     }
 
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/shops/remove-shop-categories/{slug}",
+     *      operationId="removeShopCategories",
+     *      tags={"Shops"},
+     *      summary="Remove ShopCategories",
+     *      description="Remove ShopCategories in a shop",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug to identify a shop",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Remove ShopCategories in a shop",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(
+     *               @OA\Property(property="available_categories", type="array", @OA\Items(oneOf={
+     *                @OA\Schema(
+     *                 type="string", example="CB965585"
+     *                   ),
+     *                })),
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function removeShopCategories(Request $request, $slug)
     {
         $shop =$request->validate([
