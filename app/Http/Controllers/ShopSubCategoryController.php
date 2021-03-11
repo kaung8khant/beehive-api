@@ -37,9 +37,9 @@ class ShopSubCategoryController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $validatedData = $request->validate([
-            'name' => 'required|unique:sub_categories',
-            'name_mm' => 'nullable|unique:sub_categories',
-            'slug' => 'required|unique:sub_categories',
+            'name' => 'required|unique:shop_sub_categories',
+            'name_mm' => 'nullable|unique:shop_sub_categories',
+            'slug' => 'required|unique:shop_sub_categories',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ]);
 
@@ -75,11 +75,11 @@ class ShopSubCategoryController extends Controller
         $validatedData = $request->validate([
             'name' => [
                 'required',
-                Rule::unique('sub_categories')->ignore($subCategory->id),
+                Rule::unique('shop_sub_categories')->ignore($subCategory->id),
             ],
             'name_mm' => [
                 'nullable',
-                Rule::unique('sub_categories')->ignore($subCategory->id),
+                Rule::unique('shop_sub_categories')->ignore($subCategory->id),
             ],
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ]);
