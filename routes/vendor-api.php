@@ -81,6 +81,8 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::resource('cities', 'CityController');
         Route::resource('townships', 'TownshipController');
         Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
+        Route::resource('customers', 'CustomerController');
+
         /* shop */
     });
 });
