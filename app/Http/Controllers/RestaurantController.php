@@ -245,6 +245,31 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
+    /**
+     * @OA\Patch(
+     *      path="/api/v2/admin/restaurants/toggle-enable/{slug}",
+     *      operationId="showRestaurant",
+     *      tags={"Restaurants"},
+     *      summary="Enable Restaurant",
+     *      description="Enable a restaurant",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of the Restaurant",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function toggleEnable($slug)
     {
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
@@ -266,6 +291,39 @@ class RestaurantController extends Controller
         return Township::where('slug', $slug)->first()->id;
     }
 
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/restaurants/add-restaurant-categories/{slug}",
+     *      operationId="addRestaurantCategories",
+     *      tags={"Restaurants"},
+     *      summary="Add restaurant categories",
+     *      description="Returns newly added restaurant categories",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of the Restaurant",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Added restaurant categores",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/Restaurant")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function addRestaurantCategories(Request $request, $slug)
     {
         $restaurant = $request->validate([
@@ -281,6 +339,39 @@ class RestaurantController extends Controller
         return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
     }
 
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/restaurants/remove-restaurant-categories/{slug}",
+     *      operationId="removeRestaurantCategories",
+     *      tags={"Restaurants"},
+     *      summary="Remove restaurant categories",
+     *      description="Returns newly removed restaurant categories",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of the Restaurant",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Removed restaurant categores",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/Restaurant")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function removeRestaurantCategories(Request $request, $slug)
     {
         $restaurant = $request->validate([

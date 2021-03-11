@@ -1169,6 +1169,121 @@
                 ]
             }
         },
+        "/api/v2/admin/restaurants/toggle-enable/{slug}": {
+            "patch": {
+                "tags": [
+                    "Restaurants"
+                ],
+                "summary": "Enable Restaurant",
+                "description": "Enable a restaurant",
+                "operationId": "showRestaurant",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants/add-restaurant-categories/{slug}": {
+            "post": {
+                "tags": [
+                    "Restaurants"
+                ],
+                "summary": "Add restaurant categories",
+                "description": "Returns newly added restaurant categories",
+                "operationId": "addRestaurantCategories",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Added restaurant categores",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Restaurant"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants/remove-restaurant-categories/{slug}": {
+            "post": {
+                "tags": [
+                    "Restaurants"
+                ],
+                "summary": "Remove restaurant categories",
+                "description": "Returns newly removed restaurant categories",
+                "operationId": "removeRestaurantCategories",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Removed restaurant categores",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Restaurant"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/shop-categories": {
             "get": {
                 "tags": [
