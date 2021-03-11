@@ -8,6 +8,8 @@ use App\Helpers\StringHelper;
 use App\Models\Menu;
 use App\Models\RestaurantBranch;
 use App\Models\Restaurant;
+use App\Models\RestaurantCategory;
+use App\Models\RestaurantTag;
 use App\Models\Township;
 
 class RestaurantBranchController extends Controller
@@ -156,5 +158,51 @@ class RestaurantBranchController extends Controller
         $restaurantBranch->availableMenus()->detach($availableMenus);
 
         return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
+    }
+
+    public function updateWithTagsAndCategories(Request $request, $slug)
+    {
+        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
+
+        $validatedData = $request->validate([
+            'name' => [
+                'required',
+                Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
+            ],
+            'name_mm' => [
+                'nullable',
+                Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
+            ],
+            'address' => 'required',
+            'contact_number' => 'required',
+            'opening_time' => 'required|date_format:H:i',
+            'closing_time' => 'required|date_format:H:i',
+            'latitude' => 'required',
+            'longitude' => 'required',
+            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
+            'township_slug' => 'required|exists:App\Models\Township,slug',
+            'is_enable' => 'nullable|boolean',
+            'restaurant_tags' => 'required|array',
+            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
+            'available_categories' => 'nullable|array',
+            'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+        ]);
+
+        $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
+        $validatedData['township_id'] = $this->getTownshipId($request->township_slug);
+
+        $restaurantBranch->update($validatedData);
+        $restaurant = Restaurant::where('slug', $request->restaurant_slug)->firstOrFail();
+
+        $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
+        $restaurant->availableTags()->detach();
+        $restaurant->availableTags()->attach($restaurantTags);
+
+        if ($request->available_categories) {
+            $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
+            $restaurant->availableCategories()->detach();
+            $restaurant->availableCategories()->attach($restaurantCategories);
+        }
+        return response()->json($restaurantBranch->load('restaurant', 'township'), 200);
     }
 }

@@ -16,6 +16,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
         Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
         Route::post('restaurants/remove-restaurant-categories/{slug}', 'RestaurantController@removeRestaurantCategories');
+        Route::put('restaurant-branches/{slug}', 'RestaurantBranchController@updateWithTagsAndCategories');
 
         /* menus */
         Route::get('restaurant-branches/{slug}/menus', 'MenuController@getAvailableMenusByRestaurantBranch');
@@ -25,7 +26,6 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::put('menus/{slug}', 'MenuController@update');
         Route::delete('menus/{slug}', 'MenuController@destory');
         Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
-        Route::resource('restaurant-branches', 'RestaurantBranchController');
         Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
         Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
 
