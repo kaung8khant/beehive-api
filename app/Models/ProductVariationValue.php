@@ -5,6 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="Product Variation Value"),
+ *      @OA\Property(property="value", type="string", example="value"),
+ *      @OA\Property(property="price", type="decimal", example=0.00),
+ *      @OA\Property(property="product_variation_slug", type="string", example="product_variation_slug"),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ * )
+ */
 
 class ProductVariationValue extends Model
 {

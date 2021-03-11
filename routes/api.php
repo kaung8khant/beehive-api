@@ -66,7 +66,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
 
             Route::resource('product-variation-values', 'ProductVariationValueController');
-            Route::get('product-variation/{slug}/product-variation-values', 'ProductVariationValueController@getProductVariationValuesByProductVariation');
+            Route::get('product-variations/{slug}/product-variation-values', 'ProductVariationValueController@getProductVariationValuesByProductVariation');
 
             Route::resource('brands', 'BrandController');
             Route::get('brands/{slug}/products', 'ProductController@getProductsByBrand');
@@ -130,7 +130,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         });
     });
 
-    Route::post('upload-file', 'File\UploadController@upload');
+    Route::post('files', 'File\UploadController@upload');
     Route::get('files/{source}/{sourceSlug}', 'File\FileController@getFilesBySource');
     Route::get('files/{slug}', 'File\FileController@getFile');
 

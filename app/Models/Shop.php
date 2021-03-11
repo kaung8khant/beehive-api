@@ -5,6 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="Shop"),
+ *      @OA\Property(property="name", type="string", example="name"),
+ *      @OA\Property(property="name_mm", type="string", example="အမည်"),
+ *      @OA\Property(property="slug", type="string", readOnly=true),
+ *      @OA\Property(property="is_official", type="boolean", example=true),
+ *      @OA\Property(property="is_enable", type="boolean", example=true),
+ *      @OA\Property(property="address", type="string", example="somewhere"),
+ *      @OA\Property(property="contact_number", type="string", example="09444456321"),
+ *      @OA\Property(property="opening_time", type="string", example="06:09:00"),
+ *      @OA\Property(property="closing_time", type="string", example="21:51:00"),
+ *      @OA\Property(property="latitude", type="number", example=16.888501),
+ *      @OA\Property(property="longitude", type="number", example=96.199375),
+ *      @OA\Property(property="township_slug", type="string", example="CB91EE"),
+ *      @OA\Property(property="shop_tags", type="array", @OA\Items(oneOf={
+ *        @OA\Schema(
+ *           type="string",example="CB965585"
+ *           ),
+ *     })),
+ * )
+ */
+
 class Shop extends Model
 {
     use HasFactory;
@@ -21,7 +44,6 @@ class Shop extends Model
         'closing_time',
         'latitude',
         'longitude',
-        'shop_id',
         'township_id',
     ];
 
