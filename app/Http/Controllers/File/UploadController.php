@@ -26,8 +26,8 @@ class UploadController extends Controller
         $request->validate([
             'slug' => 'required|unique:files',
             'file' => 'required|file|mimes:jpg,png,gif,pdf|max:4096',
-            'source' => 'required|string',
-            'sourceSlug' => 'required|string|exists:' . $request->source . ',slug',
+            'source' => 'nullable|string',
+            'sourceSlug' => 'nullable|string|exists:' . $request->source . ',slug',
         ]);
 
         $file = $request->file('file');

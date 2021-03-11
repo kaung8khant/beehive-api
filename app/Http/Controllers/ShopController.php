@@ -47,7 +47,7 @@ class ShopController extends Controller
         ]);
         $townshipId = $this->getTownshipIdBySlug($request->township_slug);
         $validatedData['township_id'] = $townshipId;
-        $shop = Shop::create($validatedData,$townshipId);
+        $shop = Shop::create($validatedData, $townshipId);
         $shopId = $shop->id;
 
 
@@ -81,7 +81,7 @@ class ShopController extends Controller
                 'nullable',
                 Rule::unique('shops')->ignore($shop->id),
             ],
-            'is_enable' => 'required|boolean',
+            'is_enable' => 'nullable|boolean',
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
