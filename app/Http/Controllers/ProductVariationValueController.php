@@ -188,7 +188,7 @@ class ProductVariationValueController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/product-variation-values/{slug}",
-     *      operationId="showProductVariationValue",
+     *      operationId="deleteProductVariationValue",
      *      tags={"Product Variation Values"},
      *      summary="Delete One Product variation value",
      *      description="Delete one specific product variation value",
@@ -239,7 +239,7 @@ class ProductVariationValueController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v2/admin/product-variations/{slug}/product-variation-values",
-     *      operationId="showProductVariationValuesByProductVariation",
+     *      operationId="getProductVariationValuesByProductVariation",
      *      tags={"Product Variation Values"},
      *      summary="Get Product Variation Values By Product variation",
      *      description="Returns requested list of product variation values",

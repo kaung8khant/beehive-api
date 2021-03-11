@@ -214,7 +214,7 @@ class ProductVariationController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/product-variations/{slug}",
-     *      operationId="showProductVariation",
+     *      operationId="deleteProductVariation",
      *      tags={"Product Variations"},
      *      summary="Delete One Product Variation",
      *      description="Delete one specific product variation",
@@ -250,7 +250,7 @@ class ProductVariationController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v2/admin/products/{slug}/product-variations",
-     *      operationId="showProductVariationsByProduct",
+     *      operationId="getProductVariationsByProduct",
      *      tags={"Product Variations"},
      *      summary="Get Product Variations By Product",
      *      description="Returns requested list of product variations",

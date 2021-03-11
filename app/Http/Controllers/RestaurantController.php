@@ -217,7 +217,7 @@ class RestaurantController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/restaurants/{slug}",
-     *      operationId="showRestaurant",
+     *      operationId="deleteRestaurant",
      *      tags={"Restaurants"},
      *      summary="Delete One Restaurant",
      *      description="Delete one specific restaurant",
@@ -248,7 +248,7 @@ class RestaurantController extends Controller
     /**
      * @OA\Patch(
      *      path="/api/v2/admin/restaurants/toggle-enable/{slug}",
-     *      operationId="showRestaurant",
+     *      operationId="enableRestaurant",
      *      tags={"Restaurants"},
      *      summary="Enable Restaurant",
      *      description="Enable a restaurant",
@@ -309,7 +309,7 @@ class RestaurantController extends Controller
      *      ),
      *      @OA\RequestBody(
      *          required=true,
-     *          description="Added restaurant categores",
+     *          description="Added restaurant categories",
      *          @OA\MediaType(
      *              mediaType="applications/json",
      *              @OA\Schema(ref="#/components/schemas/Restaurant")

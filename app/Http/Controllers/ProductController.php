@@ -198,7 +198,7 @@ class ProductController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/products/{slug}",
-     *      operationId="showProduct",
+     *      operationId="deleteProduct",
      *      tags={"Products"},
      *      summary="Delete One Product",
      *      description="Delete one specific product",
@@ -272,7 +272,7 @@ class ProductController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v2/admin/shops/{slug}/products",
-     *      operationId="showProductsByShop",
+     *      operationId="getProductsByShop",
      *      tags={"Products"},
      *      summary="Get Products By Shop",
      *      description="Returns requested list of products",
@@ -347,7 +347,7 @@ class ProductController extends Controller
     /**
      * @OA\Patch(
      *      path="/api/v2/admin/products/toggle-enable/{slug}",
-     *      operationId="showProducts",
+     *      operationId="enableProduct",
      *      tags={"Products"},
      *      summary="Enable Product",
      *      description="Enable a product",
@@ -382,7 +382,7 @@ class ProductController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v2/admin/brands/{slug}/products",
-     *      operationId="showProductsByBrand",
+     *      operationId="getProductsByBrand",
      *      tags={"Products"},
      *      summary="Get Products By Brand",
      *      description="Returns requested list of products",
