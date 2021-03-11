@@ -17,6 +17,8 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
         Route::post('restaurants/remove-restaurant-categories/{slug}', 'RestaurantController@removeRestaurantCategories');
         Route::put('restaurant-branches/{slug}/update', 'RestaurantBranchController@updateWithTagsAndCategories');
+        Route::get('restaurant-categories', 'RestaurantCategoryController@index');
+        Route::get('restaurant-tags', 'RestaurantTagController@index');
 
         /* menus */
         Route::get('restaurant-branches/{slug}/menus', 'MenuController@getAvailableMenusByRestaurantBranch');
