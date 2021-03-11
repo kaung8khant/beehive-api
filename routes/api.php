@@ -130,7 +130,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         });
     });
 
-    Route::post('upload-file', 'File\UploadController@upload');
+    Route::post('files', 'File\UploadController@upload');
     Route::get('files/{source}/{sourceSlug}', 'File\FileController@getFilesBySource');
     Route::get('files/{slug}', 'File\FileController@getFile');
 
