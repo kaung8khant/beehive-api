@@ -11,7 +11,12 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="name", type="string", example="Restaurant Name"),
  *      @OA\Property(property="name_mm", type="string", example="ဆိုင်အမည်"),
  *      @OA\Property(property="is_enable", type="boolean", example="true"),
- *      @OA\Property(property="slug", type="string", readOnly=true)
+ *      @OA\Property(property="availableTags", type="array", @OA\Items(oneOf={
+ *        @OA\Schema(
+ *           type="string",example="CB965585"
+ *           ),
+ *     })),
+ *     @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
 

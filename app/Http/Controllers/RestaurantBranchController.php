@@ -104,7 +104,7 @@ class RestaurantBranchController extends Controller
      * @OA\Get(
      *      path="/api/v2/admin/restaurant-branches/{slug}",
      *      operationId="showRestaurantBranch",
-     *      tags={"RestaurantBranches"},
+     *      tags={"Restaurant Branches"},
      *      summary="Get One Restaurant Branch",
      *      description="Returns a requested restaurant branch",
      *      @OA\Parameter(

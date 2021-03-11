@@ -188,7 +188,6 @@ class ProductController extends Controller
         $productId = $product->id;
 
         if ($request->product_variations) {
-
             $product->productVariations()->delete();
             $this->createProductVariation($productId, $validatedData['product_variations']);
         }
@@ -296,7 +295,7 @@ class ProductController extends Controller
      */
     public function getProductsByShop(Request $request, $slug)
     {
-        return Product::with('shopCategory', 'brand')->whereHas('shop', function ($q) use ($slug) {
+        return Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand')->whereHas('shop', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
