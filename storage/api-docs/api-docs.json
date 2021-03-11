@@ -365,6 +365,228 @@
                 ]
             }
         },
+        "/api/v2/admin/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get list of products",
+                "description": "Returns list of products",
+                "operationId": "getProductLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Create a product",
+                "description": "Returns newly created product",
+                "operationId": "storeProduct",
+                "requestBody": {
+                    "description": "Created product object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Product"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/products/{slug}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get One Product",
+                "description": "Returns a requested product",
+                "operationId": "showProduct",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested product",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Update a product",
+                "description": "Update a requested product",
+                "operationId": "updateProduct",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a product",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New product data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Product"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Delete One Product",
+                "description": "Delete one specific product",
+                "operationId": "showProduct",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested product",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/shops/{slug}/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get Products By Shop",
+                "description": "Returns requested list of products",
+                "operationId": "showProductsByShop",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the shop",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/brands/{slug}/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get Products By Brand",
+                "description": "Returns requested list of products",
+                "operationId": "showProductsByBrand",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the Brand",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/townships": {
             "get": {
                 "tags": [
@@ -593,6 +815,58 @@
                 "type": "object",
                 "xml": {
                     "name": "City"
+                }
+            },
+            "Product": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Product Name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "အမည်"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Description"
+                    },
+                    "description_mm": {
+                        "type": "string",
+                        "example": "ဖော်ပြချက်"
+                    },
+                    "price": {
+                        "type": "decimal",
+                        "example": "Price"
+                    },
+                    "shop_slug": {
+                        "type": "string",
+                        "example": "Shop Slug"
+                    },
+                    "shop_category_slug": {
+                        "type": "string",
+                        "example": "Shop Category Slug"
+                    },
+                    "sub_category_slug": {
+                        "type": "string",
+                        "example": "Sub Category Slug"
+                    },
+                    "brand_slug": {
+                        "type": "string",
+                        "example": "Brand Slug"
+                    },
+                    "is_enable": {
+                        "type": "boolean",
+                        "example": "true"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "Product"
                 }
             },
             "Township": {
