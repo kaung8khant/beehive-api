@@ -805,6 +805,237 @@
                 ]
             }
         },
+        "/api/v2/admin/shops": {
+            "get": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Get list of shops",
+                "description": "Returns list of shops",
+                "operationId": "getShopLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Create a Shop",
+                "description": "Returns newly created shop",
+                "operationId": "storeShop",
+                "requestBody": {
+                    "description": "Created shop object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Shop"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/shops/{slug}": {
+            "get": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Get One Shop",
+                "description": "Returns a requested shop",
+                "operationId": "showShop",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested shop",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Update a Shop",
+                "description": "Update a requested shop",
+                "operationId": "updateShop",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a shop",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New shop data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Shop"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Delete One Shop",
+                "description": "Delete one specific shop",
+                "operationId": "deleteShop",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested shop",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/shops/toggle-enable/{slug}": {
+            "patch": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Toggle Enable a Shop",
+                "description": "Toggle Enable a requested shop",
+                "operationId": "toggleEnable",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a shop",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/shops/toggle-official/{slug}": {
+            "patch": {
+                "tags": [
+                    "Shops"
+                ],
+                "summary": "Toggle Official a Shop",
+                "description": "Toggle Official a requested shop",
+                "operationId": "toggleOfficial",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a shop",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/sub-categories": {
             "get": {
                 "tags": [
@@ -1521,6 +1752,73 @@
                 "type": "object",
                 "xml": {
                     "name": "Product"
+                }
+            },
+            "Shop": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "အမည်"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "is_official": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "is_enable": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "somewhere"
+                    },
+                    "contact_number": {
+                        "type": "string",
+                        "example": "09444456321"
+                    },
+                    "opening_time": {
+                        "type": "string",
+                        "example": "06:09:00"
+                    },
+                    "closing_time": {
+                        "type": "string",
+                        "example": "21:51:00"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "example": 16.888501
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "example": 96.199375
+                    },
+                    "township_slug": {
+                        "type": "string",
+                        "example": "CB91EE"
+                    },
+                    "shop_tags": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "example": "CB965585"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "Shop"
                 }
             },
             "ShopCategory": {
