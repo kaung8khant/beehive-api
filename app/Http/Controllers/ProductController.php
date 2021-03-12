@@ -30,6 +30,15 @@ class ProductController extends Controller
      *              type="integer"
      *          )
      *      ),
+     *      @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation"
@@ -285,6 +294,15 @@ class ProductController extends Controller
      *              type="string"
      *          )
      *      ),
+     *      @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation"
@@ -394,6 +412,15 @@ class ProductController extends Controller
      *          @OA\Schema(
      *              type="string"
      *          )
+     *      ),
+     *       @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
      *      ),
      *      @OA\Response(
      *          response=200,

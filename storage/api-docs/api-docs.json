@@ -1024,6 +1024,15 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -1181,6 +1190,15 @@
                         "in": "path",
                         "description": "Slug of the shop",
                         "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -4150,6 +4168,14 @@
                             "address": {
                                 "type": "string",
                                 "example": "address"
+                            },
+                            "latitude": {
+                                "type": "double",
+                                "example": "0.00"
+                            },
+                            "longitude": {
+                                "type": "double",
+                                "example": "0.00"
                             },
                             "is_enable": {
                                 "type": "boolean",
