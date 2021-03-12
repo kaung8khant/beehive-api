@@ -18,6 +18,20 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="shop_sub_category_slug", type="string", example="shop_sub_category_slug"),
  *      @OA\Property(property="brand_slug", type="string", example="brand_slug"),
  *      @OA\Property(property="is_enable", type="boolean", example="true"),
+ *      @OA\Property(property="product_variations", type="array",
+ *      @OA\Items(type="object",
+ *      @OA\Property(property="name", type="string", example="Variation Name"),
+ *      @OA\Property(property="name_mm", type="string", example="အမည်"),
+ *      @OA\Property(property="slug", type="string", readOnly=true),
+ *      @OA\Property(property="product_variation_values", type="array",
+ *      @OA\Items(type="object",
+ *      @OA\Property(property="value", type="string", example="value"),
+ *      @OA\Property(property="price", type="decimal",example=0.00),
+ *      @OA\Property(property="slug", type="string", readOnly=true),
+ *      ),
+ *      ),
+ *      ),
+ *      ),
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
