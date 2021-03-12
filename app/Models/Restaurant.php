@@ -11,11 +11,24 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="name", type="string", example="Restaurant Name"),
  *      @OA\Property(property="name_mm", type="string", example="ဆိုင်အမည်"),
  *      @OA\Property(property="is_enable", type="boolean", example="true"),
- *      @OA\Property(property="availableTags", type="array", @OA\Items(oneOf={
+ *      @OA\Property(property="restaurant_tags", type="array", @OA\Items(oneOf={
  *        @OA\Schema(
  *           type="string",example="CB965585"
  *           ),
  *     })),
+ *      @OA\Property(property="restaurant_branch", type="object",
+ *      @OA\Property(property="name", type="string",example="Name" ),
+ *      @OA\Property(property="name_mm", type="string",example="အမည်"),
+ *      @OA\Property(property="contact_number", type="string",example="contact_number"),
+ *      @OA\Property(property="opening_time", type="time",example="00:00"),
+ *      @OA\Property(property="closing_time", type="time",example="00:00"),
+ *      @OA\Property(property="township_slug", type="string", example="township_slug"),
+ *      @OA\Property(property="address", type="string",example="address"),
+ *      @OA\Property(property="latitude", type="double", example="0.00"),
+ *      @OA\Property(property="longitude", type="double", example="0.00"),
+ *      @OA\Property(property="is_enable", type="boolean", example="true"),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ *       ),
  *     @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */

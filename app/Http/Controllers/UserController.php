@@ -20,6 +20,40 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/users",
+     *      operationId="getUserLists",
+     *      tags={"Users"},
+     *      summary="Get list of users",
+     *      description="Returns list of users",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function index(Request $request)
     {
         return User::with('roles')
@@ -28,9 +62,9 @@ class UserController extends Controller
             })
             ->where(function ($q) use ($request) {
                 $q->where('username', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
             })
 
             ->paginate(10);
@@ -41,6 +75,30 @@ class UserController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
+     */
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/users",
+     *      operationId="storeUser",
+     *      tags={"Users"},
+     *      summary="Create a user",
+     *      description="Returns newly created user",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created user object",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/User")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function store(Request $request)
     {
@@ -71,6 +129,31 @@ class UserController extends Controller
      * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/users/{slug}",
+     *      operationId="showUser",
+     *      tags={"Users"},
+     *      summary="Get One user",
+     *      description="Returns a requested user",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested user",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function show($slug)
     {
         return User::with('roles')->where('slug', $slug)->firstOrFail();
@@ -82,6 +165,39 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $slug
      * @return \Illuminate\Http\Response
+     */
+    /**
+     * @OA\Put(
+     *      path="/api/v2/admin/users/{slug}",
+     *      operationId="updateUser",
+     *      tags={"Users"},
+     *      summary="Update a user",
+     *      description="Update a requested user",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug to identify a user",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="New user data to be updated.",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/User")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function update(Request $request, $slug)
     {
@@ -116,6 +232,31 @@ class UserController extends Controller
      * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Delete(
+     *      path="/api/v2/admin/users/{slug}",
+     *      operationId="deleteUser",
+     *      tags={"Users"},
+     *      summary="Delete One User",
+     *      description="Delete one specific user",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested user",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function destroy($slug)
     {
         $user = User::where('slug', $slug)->firstOrFail();
@@ -133,6 +274,31 @@ class UserController extends Controller
      *
      * @param  int  $slug
      * @return \Illuminate\Http\Response
+     */
+    /**
+     * @OA\Patch(
+     *      path="/api/v2/admin/users/toggle-enable/{slug}",
+     *      operationId="enableUser",
+     *      tags={"Users"},
+     *      summary="Enable user",
+     *      description="Enable a user",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of the user",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function toggleEnable($slug)
     {

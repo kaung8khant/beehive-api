@@ -88,6 +88,35 @@ class UserAuthController extends Controller
         return response()->json(Auth::guard('users')->user());
     }
 
+
+    /**
+     * @OA\Put(
+     *      path="/api/v2/admin/profile/update",
+     *      operationId="updateProfile",
+     *      tags={"UserAuth"},
+     *      summary="Update profile",
+     *      description="Update profile",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Profile data to be updated.",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(
+     *                  @OA\Property(property="name", type="string", example="name"),
+     *                  @OA\Property(property="phone_number", type="string", example="phone_number"),
+     *                  @OA\Property(property="username", type="string", readOnly=true)
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function updateProfile(Request $request)
     {
         $user = Auth::guard('users')->user();

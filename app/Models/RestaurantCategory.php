@@ -5,6 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="RestaurantCategory"),
+ *      @OA\Property(property="name", type="string", example="Name"),
+ *      @OA\Property(property="name_mm", type="string", example="အမည်"),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ * )
+ */
+
 class RestaurantCategory extends Model
 {
     use HasFactory;

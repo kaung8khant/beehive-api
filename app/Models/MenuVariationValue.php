@@ -5,6 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="MenuVariationValue"),
+ *      @OA\Property(property="value", type="string", example="Name"),
+ *      @OA\Property(property="price", type="number", example=1000),
+ *      @OA\Property(property="menu_variation_slug", type="string", example="D16AAF"),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ * )
+ */
 class MenuVariationValue extends Model
 {
     use HasFactory;
