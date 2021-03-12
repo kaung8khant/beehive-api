@@ -17,6 +17,40 @@ class MenuVariationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/menu-variations",
+     *      operationId="getMenuVariationLists",
+     *      tags={"MenuVariations"},
+     *      summary="Get list of menu variation",
+     *      description="Returns list of menu variation",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          description="Filter",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function index(Request $request)
     {
         return MenuVariation::with('menu')
@@ -31,6 +65,45 @@ class MenuVariationController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
+     */
+
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/menu-variations",
+     *      operationId="storeMenuVariations",
+     *      tags={"MenuVariations"},
+     *      summary="Create a menu variation",
+     *      description="Returns newly created menu variation",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created menu",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(
+     *               @OA\Property(property="menu_slug", type="string", example="39463"),
+     *               @OA\Property(property="menu_variations", type="array", @OA\Items(oneOf={
+     *                  @OA\Schema(
+     *                   @OA\Property(property="name", type="string", example="Name"),
+     *                   @OA\Property(property="name_mm", type="string", example="အမည်"),
+     *                   @OA\Property(property="menu_variation_values", type="array", @OA\Items(oneOf={
+     *                    @OA\Schema(
+     *                      @OA\Property(property="value", type="string", example="Name"),
+     *                      @OA\Property(property="price", type="number", example=1000),
+     *                      ),
+     *                     })),
+     *                  ),
+     *                })),
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function store(Request $request)
     {
@@ -71,6 +144,31 @@ class MenuVariationController extends Controller
      * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/menu-variations/{slug}",
+     *      operationId="showMenuVariation",
+     *      tags={"MenuVariations"},
+     *      summary="Get One menu variation",
+     *      description="Returns a requested menu variation",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested menu variation",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function show($slug)
     {
         $menu = MenuVariation::with('menu')->with('menuVariationValues')->where('slug', $slug)->firstOrFail();
@@ -83,6 +181,39 @@ class MenuVariationController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
+     */
+    /**
+     * @OA\Put(
+     *      path="/api/v2/admin/menu-variations/{slug}",
+     *      operationId="updateMenuVariation",
+     *      tags={"MenuVariations"},
+     *      summary="Update a menu variation",
+     *      description="Update a requested menu variation",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug to identify a menu variation",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="New subcategory data to be updated.",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/MenuVariation")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function update(Request $request, $slug)
     {
@@ -97,6 +228,41 @@ class MenuVariationController extends Controller
         // return response()->json(['message' => 'Successfully Updated.'], 201);
     }
 
+
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/menus/{slug}/menu-variations",
+     *      operationId="getVariationsByMenu",
+     *      tags={"MenuVariations"},
+     *      summary="Get Variations By Menu",
+     *      description="Returns list of menu variations",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested menu",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          description="Filter",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function getVariationsByMenu(Request $request, $slug)
     {
         return MenuVariation::with('menuVariationValues')->whereHas('menu', function ($q) use ($slug) {
@@ -113,6 +279,31 @@ class MenuVariationController extends Controller
      *
      * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
+     */
+    /**
+     * @OA\Delete(
+     *      path="/api/v2/admin/menu-variations/{slug}",
+     *      operationId="deleteMenuVariation",
+     *      tags={"MenuVariations"},
+     *      summary="Delete One Menu Variation",
+     *      description="Delete one specific menu variation",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested menu variation",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
      */
     public function destroy($slug)
     {
