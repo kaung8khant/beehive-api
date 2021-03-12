@@ -45,6 +45,51 @@
                 }
             }
         },
+        "/api/v2/admin/profile/update": {
+            "put": {
+                "tags": [
+                    "UserAuth"
+                ],
+                "summary": "Update profile",
+                "description": "Update profile",
+                "operationId": "updateProfile",
+                "requestBody": {
+                    "description": "Profile data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "name"
+                                    },
+                                    "phone_number": {
+                                        "type": "string",
+                                        "example": "phone_number"
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "readOnly": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/brands": {
             "get": {
                 "tags": [
