@@ -173,7 +173,7 @@ class ProductController extends Controller
 
         $validatedData = $request->validate($this->getParamsToValidate());
 
-        $subCategory = $this->getSubCategory($request->sub_category_slug);
+        $subCategory = $this->getSubCategory($request->shop_sub_category_slug);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
@@ -233,6 +233,7 @@ class ProductController extends Controller
             'description' => 'required|string',
             'description_mm' => 'nullable|string',
             'price' => 'required|max:99999999',
+            'is_enable' => 'required|boolean',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'shop_sub_category_slug' => 'required|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
