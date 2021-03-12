@@ -3982,33 +3982,45 @@
             },
             "ProductVariation": {
                 "properties": {
-                    "name": {
-                        "type": "string",
-                        "example": "Variation Name"
-                    },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "အမည်"
-                    },
-                    "product_slug": {
-                        "type": "string",
-                        "example": "Product Slug"
-                    },
-                    "product_variation_values": {
+                    "product_variations": {
                         "type": "array",
                         "items": {
                             "properties": {
-                                "value": {
+                                "name": {
                                     "type": "string",
-                                    "example": "value"
+                                    "example": "Variation Name"
                                 },
-                                "price": {
-                                    "type": "decimal",
-                                    "example": 0
+                                "name_mm": {
+                                    "type": "string",
+                                    "example": "အမည်"
+                                },
+                                "product_variations_values": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "value": {
+                                                "type": "string",
+                                                "example": "value"
+                                            },
+                                            "price": {
+                                                "type": "decimal",
+                                                "example": 0
+                                            },
+                                            "slug": {
+                                                "type": "string",
+                                                "readOnly": true
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
                                 }
                             },
                             "type": "object"
                         }
+                    },
+                    "product_slug": {
+                        "type": "string",
+                        "example": "Product Slug"
                     },
                     "slug": {
                         "type": "string",
