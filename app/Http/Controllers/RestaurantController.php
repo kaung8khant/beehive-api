@@ -30,6 +30,15 @@ class RestaurantController extends Controller
      *              type="integer"
      *          )
      *      ),
+     *      @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation"

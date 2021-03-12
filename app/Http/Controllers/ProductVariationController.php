@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ProductVariation;
 use App\Models\Product;
@@ -33,6 +32,15 @@ class ProductVariationController extends Controller
      *          @OA\Schema(
      *              type="integer"
      *          )
+     *      ),
+     *      @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
      *      ),
      *      @OA\Response(
      *          response=200,
@@ -262,6 +270,15 @@ class ProductVariationController extends Controller
      *          @OA\Schema(
      *              type="string"
      *          )
+     *      ),
+     *      @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
      *      ),
      *      @OA\Response(
      *          response=200,
