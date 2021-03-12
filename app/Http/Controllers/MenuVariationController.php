@@ -76,21 +76,24 @@ class MenuVariationController extends Controller
      *      description="Returns newly created menu variation",
      *      @OA\RequestBody(
      *          required=true,
-     *          description="Created menu variation object",
+     *          description="Created menu",
      *          @OA\MediaType(
      *              mediaType="applications/json",
      *              @OA\Schema(
-     *              @OA\Property(property="name", type="string", example="Variation Name"),
-     *              @OA\Property(property="name_mm", type="string", example="အမည်"),
-     *              @OA\Property(property="menu_slug", type="string", example="Menu Slug"),
-     *              @OA\Property(property="menu_variation_values", type="array",
-     *              @OA\Items(type="object",
-     *              @OA\Property(property="value", type="string", example="value"),
-     *              @OA\Property(property="price", type="decimal",example=0.00)
-     *      ),
-     *      ),
-     *      @OA\Property(property="slug", type="string", readOnly=true)
-     * )
+     *               @OA\Property(property="menu_slug", type="string", example="39463"),
+     *               @OA\Property(property="menu_variations", type="array", @OA\Items(oneOf={
+     *                  @OA\Schema(
+     *                   @OA\Property(property="name", type="string", example="Name"),
+     *                   @OA\Property(property="name_mm", type="string", example="အမည်"),
+     *                   @OA\Property(property="menu_variation_values", type="array", @OA\Items(oneOf={
+     *                    @OA\Schema(
+     *                      @OA\Property(property="value", type="string", example="Name"),
+     *                      @OA\Property(property="price", type="number", example=1000),
+     *                      ),
+     *                     })),
+     *                  ),
+     *                })),
+     *              )
      *          )
      *      ),
      *      @OA\Response(
