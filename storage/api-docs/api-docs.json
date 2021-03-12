@@ -231,6 +231,15 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -398,6 +407,594 @@
                         }
                     }
                 },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/menu-toppings": {
+            "get": {
+                "tags": [
+                    "MenuToppings"
+                ],
+                "summary": "Get list of menu toppings",
+                "description": "Returns list of menu toppings",
+                "operationId": "getMenuToppingLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "MenuToppings"
+                ],
+                "summary": "Create Menu Toppings",
+                "description": "Returns newly created Menu Topping list",
+                "operationId": "storeMenuTopping",
+                "requestBody": {
+                    "description": "Remove ShopCategories in a shop",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "properties": {
+                                    "menu_slug": {
+                                        "type": "string",
+                                        "example": "D16AAF"
+                                    },
+                                    "menu_toppings": {
+                                        "type": "array",
+                                        "items": {
+                                            "oneOf": [
+                                                {
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "Name"
+                                                        },
+                                                        "name_mm": {
+                                                            "type": "string",
+                                                            "example": "အမည်"
+                                                        },
+                                                        "price": {
+                                                            "type": "number",
+                                                            "example": 1000
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/menu-toppings/{slug}": {
+            "get": {
+                "tags": [
+                    "MenuToppings"
+                ],
+                "summary": "Get One Menu Topping",
+                "description": "Returns a requested menu topping",
+                "operationId": "showMenuTopping",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested menu topping",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "MenuToppings"
+                ],
+                "summary": "Update a Menu Topping",
+                "description": "Update a requested Menu Topping",
+                "operationId": "updateMenuTopping",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a Menu Topping",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New menu topping data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MenuTopping"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "MenuToppings"
+                ],
+                "summary": "Delete One Menu Topping",
+                "description": "Delete one specific menu topping",
+                "operationId": "deleteMenuTopping",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested menu topping",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/menus/{slug}/menu-toppings": {
+            "get": {
+                "tags": [
+                    "MenuToppings"
+                ],
+                "summary": "Get Toppings By Menu",
+                "description": "Returns list of menu toppings",
+                "operationId": "getToppingsByMenu",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested menu",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/menu-variations": {
+            "get": {
+                "tags": [
+                    "MenuVariations"
+                ],
+                "summary": "Get list of menu variation",
+                "description": "Returns list of menu variation",
+                "operationId": "getMenuVariationLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/menu-variations/{slug}": {
+            "get": {
+                "tags": [
+                    "MenuVariations"
+                ],
+                "summary": "Get One menu variation",
+                "description": "Returns a requested menu variation",
+                "operationId": "showMenuVariation",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested menu variation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "MenuVariations"
+                ],
+                "summary": "Update a menu variation",
+                "description": "Update a requested menu variation",
+                "operationId": "updateMenuVariation",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a menu variation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New subcategory data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MenuVariation"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "MenuVariations"
+                ],
+                "summary": "Delete One Menu Variation",
+                "description": "Delete one specific menu mariation",
+                "operationId": "deleteMenuVariation",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested menu mariation",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/menus/{slug}/menu-variations": {
+            "get": {
+                "tags": [
+                    "MenuVariations"
+                ],
+                "summary": "Get Variations By Menu",
+                "description": "Returns list of menu variations",
+                "operationId": "getVariationsByMenu",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested menu",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/menu-variation-values": {
+            "get": {
+                "tags": [
+                    "Menu Variation values"
+                ],
+                "summary": "Get list of menu variation value",
+                "description": "Returns list of menu variation value",
+                "operationId": "getMenuVariationValueLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Menu Variation values"
+                ],
+                "summary": "Create a Menu Variation Value",
+                "description": "Returns newly created menu variation value",
+                "operationId": "storeMenuVariationValue",
+                "requestBody": {
+                    "description": "Created menu variation value object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MenuVariationValue"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/menu-variation-values/{slug}": {
+            "get": {
+                "tags": [
+                    "Menu Variation values"
+                ],
+                "summary": "Get One menu variation value",
+                "description": "Returns a requested menu variation value",
+                "operationId": "showMenuVariationValue",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested menu variation value",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Menu Variation values"
+                ],
+                "summary": "Update a Menu Variation Value",
+                "description": "Update a requested menu variation value",
+                "operationId": "updateMenuVariationValue",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a menu variation value",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New menu variation value data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MenuVariationValue"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Menu Variation values"
+                ],
+                "summary": "Delete One Menu Variation Value",
+                "description": "Delete one specific menu variation value",
+                "operationId": "deleteMenuVariationValue",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested menu variation value",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation"
@@ -1382,6 +1979,197 @@
                 ]
             }
         },
+        "/api/v2/admin/restaurant-categories": {
+            "get": {
+                "tags": [
+                    "Restaurant Categories"
+                ],
+                "summary": "Get list of restaurant categories",
+                "description": "Returns list of restaurant categories",
+                "operationId": "getRestaurantCategoryLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Restaurant Categories"
+                ],
+                "summary": "Create a restaurant category",
+                "description": "Returns newly created restaurant category",
+                "operationId": "storeRestaurantCategory",
+                "requestBody": {
+                    "description": "Created restaurant category object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RestaurantCategory"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurant-categories/{slug}": {
+            "get": {
+                "tags": [
+                    "Restaurant Categories"
+                ],
+                "summary": "Get One Restaurant Category",
+                "description": "Returns a requested restaurant category",
+                "operationId": "showRestaurantCategory",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a restaurant category",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Restaurant Categories"
+                ],
+                "summary": "Update a Restaurant Category",
+                "description": "Update a requested restaurant category",
+                "operationId": "updateRestaurantCategory",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a restaurant category",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New restaurant category data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RestaurantCategory"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Restaurant Categories"
+                ],
+                "summary": "Delete One restaurant category",
+                "description": "Delete one specific restaurant category",
+                "operationId": "deleteRestaurantCategory",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested restaurant category",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants/{slug}/restaurant-categories": {
+            "get": {
+                "tags": [
+                    "Restaurant Categories"
+                ],
+                "summary": "Get Categories By Restaurant",
+                "description": "Returns requested list of restaurant categories",
+                "operationId": "getCategoriesByRestaurant",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/restaurants": {
             "get": {
                 "tags": [
@@ -1645,6 +2433,197 @@
                         }
                     }
                 },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurant-tags": {
+            "get": {
+                "tags": [
+                    "Restaurant Tags"
+                ],
+                "summary": "Get list of restaurant tags",
+                "description": "Returns list of restaurant tags",
+                "operationId": "getRestaurantTags",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Restaurant Tags"
+                ],
+                "summary": "Create a restaurant tag",
+                "description": "Returns newly created restaurant tag",
+                "operationId": "storeRestaurantTag",
+                "requestBody": {
+                    "description": "Created restaurant tag object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RestaurantTag"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurant-tags/{slug}": {
+            "get": {
+                "tags": [
+                    "Restaurant Tags"
+                ],
+                "summary": "Get One RestaurantTag",
+                "description": "Returns a requested Restaurant Tag",
+                "operationId": "showRestaurantTag",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested restaurant tag",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Restaurant Tags"
+                ],
+                "summary": "Update a restaurant tag",
+                "description": "Update a restaurant tag",
+                "operationId": "updateRestaurantTag",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a restaurant tag",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New restaurant tag data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RestaurantTag"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Restaurant Tags"
+                ],
+                "summary": "Delete One Restaurant Tag",
+                "description": "Delete one restaurant tag",
+                "operationId": "deleteRestaurantTags",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested restaurant tag",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurants/{slug}/restaurant-tags": {
+            "get": {
+                "tags": [
+                    "Restaurant Tags"
+                ],
+                "summary": "Get Tags By Restaurant",
+                "description": "Returns requested list of restaruant tags",
+                "operationId": "getTagsByRestaurant",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of the restaurant",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation"
@@ -2873,6 +3852,82 @@
                     "name": "City"
                 }
             },
+            "MenuTopping": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "အမည်"
+                    },
+                    "menu_slug": {
+                        "type": "string",
+                        "example": "D16AAF"
+                    },
+                    "price": {
+                        "type": "number",
+                        "example": 1000
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "MenuTopping"
+                }
+            },
+            "MenuVariation": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "အမည်"
+                    },
+                    "menu_slug": {
+                        "type": "string",
+                        "example": "D16AAF"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "MenuVariation"
+                }
+            },
+            "MenuVariationValue": {
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "example": "Name"
+                    },
+                    "price": {
+                        "type": "number",
+                        "example": 1000
+                    },
+                    "menu_variation_slug": {
+                        "type": "string",
+                        "example": "D16AAF"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "MenuVariationValue"
+                }
+            },
             "Product": {
                 "properties": {
                     "name": {
@@ -2915,6 +3970,46 @@
                         "type": "boolean",
                         "example": "true"
                     },
+                    "product_variations": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "Variation Name"
+                                },
+                                "name_mm": {
+                                    "type": "string",
+                                    "example": "အမည်"
+                                },
+                                "slug": {
+                                    "type": "string",
+                                    "readOnly": true
+                                },
+                                "product_variation_values": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "value": {
+                                                "type": "string",
+                                                "example": "value"
+                                            },
+                                            "price": {
+                                                "type": "decimal",
+                                                "example": 0
+                                            },
+                                            "slug": {
+                                                "type": "string",
+                                                "readOnly": true
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
                     "slug": {
                         "type": "string",
                         "readOnly": true
@@ -2927,13 +4022,41 @@
             },
             "ProductVariation": {
                 "properties": {
-                    "name": {
-                        "type": "string",
-                        "example": "Variation Name"
-                    },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "အမည်"
+                    "product_variations": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "Variation Name"
+                                },
+                                "name_mm": {
+                                    "type": "string",
+                                    "example": "အမည်"
+                                },
+                                "product_variation_values": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "value": {
+                                                "type": "string",
+                                                "example": "value"
+                                            },
+                                            "price": {
+                                                "type": "decimal",
+                                                "example": 0
+                                            },
+                                            "slug": {
+                                                "type": "string",
+                                                "readOnly": true
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
                     },
                     "product_slug": {
                         "type": "string",
@@ -2987,7 +4110,7 @@
                         "type": "boolean",
                         "example": "true"
                     },
-                    "availableTags": {
+                    "restaurant_tags": {
                         "type": "array",
                         "items": {
                             "oneOf": [
@@ -2997,6 +4120,47 @@
                                 }
                             ]
                         }
+                    },
+                    "restaurant_branch": {
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "example": "Name"
+                            },
+                            "name_mm": {
+                                "type": "string",
+                                "example": "အမည်"
+                            },
+                            "contact_number": {
+                                "type": "string",
+                                "example": "contact_number"
+                            },
+                            "opening_time": {
+                                "type": "time",
+                                "example": "00:00"
+                            },
+                            "closing_time": {
+                                "type": "time",
+                                "example": "00:00"
+                            },
+                            "township_slug": {
+                                "type": "string",
+                                "example": "township_slug"
+                            },
+                            "address": {
+                                "type": "string",
+                                "example": "address"
+                            },
+                            "is_enable": {
+                                "type": "boolean",
+                                "example": "true"
+                            },
+                            "slug": {
+                                "type": "string",
+                                "readOnly": true
+                            }
+                        },
+                        "type": "object"
                     },
                     "slug": {
                         "type": "string",
@@ -3062,6 +4226,46 @@
                 "type": "object",
                 "xml": {
                     "name": "RestaurantBranch"
+                }
+            },
+            "RestaurantCategory": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "အမည်"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "RestaurantCategory"
+                }
+            },
+            "RestaurantTag": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "example": "Product Name"
+                    },
+                    "name_mm": {
+                        "type": "string",
+                        "example": "အမည်"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "RestaurantTag"
                 }
             },
             "Shop": {
