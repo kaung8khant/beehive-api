@@ -249,12 +249,12 @@ class ProductController extends Controller
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',
-            'product_variations.*.name' => 'nullable|string',
+            'product_variations.*.name' => 'required|string',
             'product_variations.*.name_mm' => 'nullable|string',
 
-            'product_variations.*.product_variation_values' => 'nullable|array',
-            'product_variations.*.product_variation_values.*.value' => 'nullable|string',
-            'product_variations.*.product_variation_values.*.price' => 'nullable|numeric',
+            'product_variations.*.product_variation_values' => 'required|array',
+            'product_variations.*.product_variation_values.*.value' => 'required|string',
+            'product_variations.*.product_variation_values.*.price' => 'required|numeric',
 
         ];
 
