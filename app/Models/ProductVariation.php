@@ -14,7 +14,8 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="product_variation_values", type="array",
  *      @OA\Items(type="object",
  *      @OA\Property(property="value", type="string", example="value"),
- *      @OA\Property(property="price", type="decimal",example=0.00)
+ *      @OA\Property(property="price", type="decimal",example=0.00),
+ *      @OA\Property(property="slug", type="string", readOnly=true),
  *      ),
  *      ),
  *      @OA\Property(property="slug", type="string", readOnly=true)
