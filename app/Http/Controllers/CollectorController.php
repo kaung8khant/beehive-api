@@ -75,7 +75,7 @@ class CollectorController extends Controller
      *          description="Created collector object",
      *          @OA\MediaType(
      *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Collector")
+     *              @OA\Schema(ref="#/components/schemas/User")
      *          )
      *      ),
      *      @OA\Response(
@@ -160,7 +160,7 @@ class CollectorController extends Controller
      *          description="New collector data to be updated.",
      *          @OA\MediaType(
      *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Collector")
+     *              @OA\Schema(ref="#/components/schemas/User")
      *          )
      *      ),
      *      @OA\Response(
@@ -201,12 +201,12 @@ class CollectorController extends Controller
      * @OA\Delete(
      *      path="/api/v2/admin/collectors/{slug}",
      *      operationId="deleteCollector",
-     *      tags={"Users"},
-     *      summary="Delete One User",
-     *      description="Delete one specific user",
+     *      tags={"Collectors"},
+     *      summary="Delete One collector",
+     *      description="Delete one specific collector",
      *      @OA\Parameter(
      *          name="slug",
-     *          description="Slug of a requested user",
+     *          description="Slug of a requested collector",
      *          required=true,
      *          in="path",
      *          @OA\Schema(
@@ -234,6 +234,31 @@ class CollectorController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
+    /**
+     * @OA\Patch(
+     *      path="/api/v2/admin/collectors/toggle-enable/{slug}",
+     *      operationId="enableCollector",
+     *      tags={"Collectors"},
+     *      summary="Enable collector",
+     *      description="Enable a collector",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of the collector",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function toggleEnable($slug)
     {
         $collector = User::where('slug', $slug)->firstOrFail();
