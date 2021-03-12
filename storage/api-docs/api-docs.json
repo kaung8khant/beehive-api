@@ -3970,6 +3970,46 @@
                         "type": "boolean",
                         "example": "true"
                     },
+                    "product_variations": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "example": "Variation Name"
+                                },
+                                "name_mm": {
+                                    "type": "string",
+                                    "example": "အမည်"
+                                },
+                                "slug": {
+                                    "type": "string",
+                                    "readOnly": true
+                                },
+                                "product_variation_values": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "value": {
+                                                "type": "string",
+                                                "example": "value"
+                                            },
+                                            "price": {
+                                                "type": "decimal",
+                                                "example": 0
+                                            },
+                                            "slug": {
+                                                "type": "string",
+                                                "readOnly": true
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
                     "slug": {
                         "type": "string",
                         "readOnly": true
@@ -3994,7 +4034,7 @@
                                     "type": "string",
                                     "example": "အမည်"
                                 },
-                                "product_variations_values": {
+                                "product_variation_values": {
                                     "type": "array",
                                     "items": {
                                         "properties": {
