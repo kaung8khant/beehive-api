@@ -3994,6 +3994,22 @@
                         "type": "string",
                         "example": "Product Slug"
                     },
+                    "product_variation_values": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "value": {
+                                    "type": "string",
+                                    "example": "value"
+                                },
+                                "price": {
+                                    "type": "decimal",
+                                    "example": 0
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
                     "slug": {
                         "type": "string",
                         "readOnly": true
@@ -4065,14 +4081,14 @@
                             },
                             "contact_number": {
                                 "type": "string",
-                                "example": "အမည်"
+                                "example": "contact_number"
                             },
                             "opening_time": {
                                 "type": "time",
                                 "example": "00:00"
                             },
                             "closing_time": {
-                                "type": "closing_time",
+                                "type": "time",
                                 "example": "00:00"
                             },
                             "township_slug": {
