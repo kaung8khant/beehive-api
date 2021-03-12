@@ -98,7 +98,6 @@ class ProductController extends Controller
             $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
         }
 
-
         $product = Product::create($validatedData);
         $productId = $product->id;
 
