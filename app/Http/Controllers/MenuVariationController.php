@@ -67,7 +67,41 @@ class MenuVariationController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/menu-variations",
+     *      operationId="storeMenuVariations",
+     *      tags={"MenuVariations"},
+     *      summary="Create a menu variation",
+     *      description="Returns newly created menu variation",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created menu variation object",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(
+     *              @OA\Property(property="name", type="string", example="Variation Name"),
+     *              @OA\Property(property="name_mm", type="string", example="အမည်"),
+     *              @OA\Property(property="menu_slug", type="string", example="Menu Slug"),
+     *              @OA\Property(property="menu_variation_values", type="array",
+     *              @OA\Items(type="object",
+     *              @OA\Property(property="value", type="string", example="value"),
+     *              @OA\Property(property="price", type="decimal",example=0.00)
+     *      ),
+     *      ),
+     *      @OA\Property(property="slug", type="string", readOnly=true)
+     * )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -249,10 +283,10 @@ class MenuVariationController extends Controller
      *      operationId="deleteMenuVariation",
      *      tags={"MenuVariations"},
      *      summary="Delete One Menu Variation",
-     *      description="Delete one specific menu mariation",
+     *      description="Delete one specific menu variation",
      *      @OA\Parameter(
      *          name="slug",
-     *          description="Slug of a requested menu mariation",
+     *          description="Slug of a requested menu variation",
      *          required=true,
      *          in="path",
      *          @OA\Schema(
