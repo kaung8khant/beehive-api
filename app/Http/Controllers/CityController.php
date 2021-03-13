@@ -175,7 +175,7 @@ class CityController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/cities/{slug}",
-     *      operationId="showCity",
+     *      operationId="deleteCity",
      *      tags={"Cities"},
      *      summary="Delete One City",
      *      description="Delete one specific city",

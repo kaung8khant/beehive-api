@@ -30,6 +30,15 @@ class ProductController extends Controller
      *              type="integer"
      *          )
      *      ),
+     *      @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation"
@@ -88,7 +97,6 @@ class ProductController extends Controller
         if ($request->brand_slug) {
             $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
         }
-
 
         $product = Product::create($validatedData);
         $productId = $product->id;
@@ -173,7 +181,7 @@ class ProductController extends Controller
 
         $validatedData = $request->validate($this->getParamsToValidate());
 
-        $subCategory = $this->getSubCategory($request->sub_category_slug);
+        $subCategory = $this->getSubCategory($request->shop_sub_category_slug);
 
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
@@ -233,18 +241,19 @@ class ProductController extends Controller
             'description' => 'required|string',
             'description_mm' => 'nullable|string',
             'price' => 'required|max:99999999',
+            'is_enable' => 'required|boolean',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'shop_sub_category_slug' => 'required|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',
-            'product_variations.*.name' => 'nullable|string',
+            'product_variations.*.name' => 'required|string',
             'product_variations.*.name_mm' => 'nullable|string',
 
-            'product_variations.*.product_variation_values' => 'nullable|array',
-            'product_variations.*.product_variation_values.*.value' => 'nullable|string',
-            'product_variations.*.product_variation_values.*.price' => 'nullable|numeric',
+            'product_variations.*.product_variation_values' => 'required|array',
+            'product_variations.*.product_variation_values.*.value' => 'required|string',
+            'product_variations.*.product_variation_values.*.price' => 'required|numeric',
 
         ];
 
@@ -283,6 +292,15 @@ class ProductController extends Controller
      *          @OA\Schema(
      *              type="string"
      *          )
+     *      ),
+     *      @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
      *      ),
      *      @OA\Response(
      *          response=200,
@@ -393,6 +411,15 @@ class ProductController extends Controller
      *          @OA\Schema(
      *              type="string"
      *          )
+     *      ),
+     *       @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
      *      ),
      *      @OA\Response(
      *          response=200,

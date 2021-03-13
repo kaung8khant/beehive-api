@@ -79,7 +79,7 @@ class MenuToppingController extends Controller
      *          @OA\MediaType(
      *              mediaType="applications/json",
      *              @OA\Schema(
-     *      @OA\Property(property="menu_slug", type="string", example="D16AAF"),
+     *               @OA\Property(property="menu_slug", type="string", example="D16AAF"),
      *               @OA\Property(property="menu_toppings", type="array", @OA\Items(oneOf={
      *                @OA\Schema(
      *                   @OA\Property(property="name", type="string", example="Name"),
@@ -253,7 +253,7 @@ class MenuToppingController extends Controller
     }
 
 
- /**
+    /**
      * @OA\Get(
      *      path="/api/v2/admin/menus/{slug}/menu-toppings",
      *      operationId="getToppingsByMenu",

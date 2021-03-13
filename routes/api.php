@@ -131,11 +131,11 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
     });
 
     Route::post('files', 'File\UploadController@upload');
-    Route::get('files/{source}/{sourceSlug}', 'File\FileController@getFilesBySource');
     Route::get('files/{slug}', 'File\FileController@getFile');
+    Route::get('files/{source}/{sourceSlug}', 'File\FileController@getFilesBySource');
 
-    Route::get('images/{source}/{sourceSlug}', 'File\FileController@getImagesBySource');
     Route::get('images/{slug}', 'File\FileController@getImage');
+    Route::get('images/{source}/{sourceSlug}', 'File\FileController@getImagesBySource');
 
     Route::delete('files/{slug}', 'File\FileController@deleteFile');
 

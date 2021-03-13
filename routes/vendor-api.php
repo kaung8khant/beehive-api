@@ -26,12 +26,10 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('restaurant-branches/{slug}/menus', 'MenuController@createAvailableMenu');
         Route::post('menus', 'MenuController@store');
         Route::put('menus/{slug}', 'MenuController@update');
-        Route::delete('menus/{slug}', 'MenuController@destory');
         Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
         Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
         Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
 
-        Route::get('menus/{slug}/menu-variations', 'MenuVariationController@getVariationsByMenu');
         Route::get('menu-variations/{slug}', 'MenuVariationController@show');
         Route::post('menu-variations', 'MenuVariationController@store');
         Route::put('menu-variations/{slug}', 'MenuVariationController@update');
@@ -42,7 +40,6 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::put('menu-variation-values/{slug}', 'MenuVariationValueController@update');
         Route::delete('menu-variation-values/{slug}', 'MenuVariationValueController@destroy');
 
-        Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
         Route::get('menu-toppings/{slug}', 'MenuToppingController@show');
         Route::post('menu-toppings', 'MenuToppingController@store');
         Route::put('menu-toppings/{slug}', 'MenuToppingController@update');
@@ -77,7 +74,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('product-variation-values/{slug}', 'ProductVariationValueController@show');
         Route::post('product-variation-values', 'ProductVariationValueController@store');
         Route::put('product-variation-values/{slug}', 'ProductVariationValueController@update');
-        Route::delete('product-variation-values/{slug}', 'ProductVariationValueController@destory');
+        Route::delete('product-variation-values/{slug}', 'ProductVariationValueController@destroy');
 
         Route::get('brands', 'BrandController@index');
         Route::post('brands', 'BrandController@store');
