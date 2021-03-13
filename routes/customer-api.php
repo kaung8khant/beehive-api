@@ -45,8 +45,8 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('shops/categories', 'Customer\ShopController@getCategories');
         Route::get('shops/tags', 'Customer\ShopController@getTags');
         Route::get('shop-tags/{slug}', 'Customer\ShopController@getByTag');
-        Route::get('shop-categories/{slug}/shops', 'Customer\ShopController@getByCategory');
-        Route::get('shop-subcategories/{slug}/shops', 'Customer\ShopController@getBySubCategory');
+        Route::get('shop-categories/{slug}', 'Customer\ShopController@getByCategory');
+        Route::get('shop-subcategories/{slug}', 'Customer\ShopController@getBySubCategory');
         Route::get('shops/{slug}', 'Customer\ShopController@show');
         Route::post('shops/{slug}/set-favorite', 'Customer\ShopController@setFavoriteShop');
         Route::post('shops/{slug}/remove-favorite', 'Customer\ShopController@removeFavoriteShop');
@@ -64,9 +64,9 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('products', 'Customer\ProductController@index');
         Route::get('products/brands','Customer\ProductController@getAllBrand');
         Route::get('products/{slug}', 'Customer\ProductController@show');
-        Route::get('product-categories/{slug}/products','Customer\ProductController@getByCategory');
-        Route::get('product-shops/{slug}/products','Customer\ProductController@getByShop');
-        Route::get('product-brands/{slug}/products','Customer\ProductController@getByBrand');
+        Route::get('product-categories/{slug}','Customer\ProductController@getByCategory');
+        Route::get('product-shops/{slug}','Customer\ProductController@getByShop');
+        Route::get('product-brands/{slug}','Customer\ProductController@getByBrand');
         
     });
 });
