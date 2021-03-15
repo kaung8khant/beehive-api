@@ -60,8 +60,6 @@ class MenuController extends Controller
     {
         return Menu::with('restaurant')
             ->with('restaurantCategory')
-            ->with('menuVariations')->with('menuVariations.menuVariationValues')
-            ->with('menuToppings')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -122,31 +120,31 @@ class MenuController extends Controller
      * @param  \App\Models\Menu  $menu
      * @return \Illuminate\Http\Response
      */
-     /**
-     * @OA\Get(
-     *      path="/api/v2/admin/menus/{slug}",
-     *      operationId="showMenu",
-     *      tags={"Menus"},
-     *      summary="Get One menu",
-     *      description="Returns a requested menu ",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested menu",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
+    /**
+    * @OA\Get(
+    *      path="/api/v2/admin/menus/{slug}",
+    *      operationId="showMenu",
+    *      tags={"Menus"},
+    *      summary="Get One menu",
+    *      description="Returns a requested menu ",
+    *      @OA\Parameter(
+    *          name="slug",
+    *          description="Slug of a requested menu",
+    *          required=true,
+    *          in="path",
+    *          @OA\Schema(
+    *              type="string"
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful operation"
+    *      ),
+    *      security={
+    *          {"bearerAuth": {}}
+    *      }
+    *)
+    */
     public function show($slug)
     {
         $menu = Menu::with('restaurant')->with('restaurantCategory')
@@ -347,8 +345,8 @@ class MenuController extends Controller
      */
     public function getAvailableMenusByRestaurantBranch(Request $request, $slug)
     {
-        return Menu::with('restaurantCategory')->with('menuVariations')->with('menuVariations.menuVariationValues')
-        ->with('menuToppings')->whereHas('restaurantBranches', function ($q) use ($slug) {
+        return Menu::with('restaurantCategory')
+        ->whereHas('restaurantBranches', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')

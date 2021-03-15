@@ -17,7 +17,7 @@ class CreateProductVariationValuesTable extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->string('value');
-            $table->decimal('price', 12, 2);
+            $table->decimal('price', 12, 0);
             $table->unsignedBigInteger('product_variation_id');
             $table->timestamps();
             $table->foreign('product_variation_id')->references('id')->on('product_variations')->onDelete('cascade');
