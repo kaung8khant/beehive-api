@@ -17,6 +17,40 @@ class OrderController extends Controller
 {
     use StringHelper;
 
+     /**
+     * @OA\Get(
+     *      path="/api/v2/admin/orders",
+     *      operationId="getOrderLists",
+     *      tags={"Orders"},
+     *      summary="Get list of orders",
+     *      description="Returns list of orders",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          description="Filter",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function index(Request $request)
     {
         return Order::with('orderContact')
@@ -31,6 +65,51 @@ class OrderController extends Controller
             ->paginate(10);
     }
 
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/orders",
+     *      operationId="storeOrders",
+     *      tags={"Orders"},
+     *      summary="Create a order",
+     *      description="Returns newly created order",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created order",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(
+     *               @OA\Property(property="customer_slug", type="string", example="D16AAF"),
+     *               @OA\Property(property="order_date", type="string", example="2021-02-19"),
+     *               @OA\Property(property="order_type", type="string", example="shop"),
+     *               @OA\Property(property="special_instruction", type="string", example="special_instruction"),
+     *               @OA\Property(property="payment_mode", type="string", example="CBPay"),
+     *               @OA\Property(property="delivery_mode", type="string", example="delivery"),
+     *               @OA\Property(property="rating", type="string", example="1"),
+     *               @OA\Property(property="order_items", type="array",
+     *               @OA\Items(type="object",
+     *                  @OA\Property(property="value", type="string", example="value"),
+     *                  @OA\Property(property="item_name", type="string",example=0.00),
+     *                  @OA\Property(property="item_type", type="string",example="product"),
+     *                  @OA\Property(property="quantity", type="number",example=0.00),
+     *                  @OA\Property(property="amount", type="number",example=0.00),
+     *                  @OA\Property(property="tax", type="number",example=0.00),
+     *                  @OA\Property(property="discount", type="number",example=0.00),
+     *                  @OA\Property(property="slug", type="string", readOnly=true),
+     *                  ),
+     *                  ),
+     *
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -48,6 +127,31 @@ class OrderController extends Controller
         return response()->json($order->refresh()->load('orderContact', 'orderItems'), 201);
     }
 
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/orders/{slug}",
+     *      operationId="Order",
+     *      tags={"Orders"},
+     *      summary="Get One Order",
+     *      description="Returns a requested Order",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested Order",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function show($slug)
     {
         $order = Order::with('orderContact')
@@ -74,6 +178,32 @@ class OrderController extends Controller
         // return response()->json($order, 200);
     }
 
+
+    /**
+     * @OA\Delete(
+     *      path="/api/v2/admin/orders/{slug}",
+     *      operationId="deleteOrder",
+     *      tags={"Orders"},
+     *      summary="Delete One Order",
+     *      description="Delete one specific order",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested order ",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function destroy($slug)
     {
         $order = Order::where('slug', $slug)->firstOrFail();
@@ -168,6 +298,31 @@ class OrderController extends Controller
         return Product::where('slug', $slug)->first()->id;
     }
 
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/customers/{slug}/orders",
+     *      operationId="getOrdersByCustomer",
+     *      tags={"Orders"},
+     *      summary="Get Orders By Customer",
+     *      description="Returns list of orders",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested orders",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function getOrdersByCustomer($slug)
     {
         $customerId = $this->getCustomerId($slug);
