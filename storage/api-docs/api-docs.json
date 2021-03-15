@@ -404,7 +404,7 @@
                 ],
                 "summary": "Delete One City",
                 "description": "Delete one specific city",
-                "operationId": "showCity",
+                "operationId": "deleteCity",
                 "parameters": [
                     {
                         "name": "slug",
@@ -2729,6 +2729,270 @@
                 ]
             }
         },
+        "/api/v2/admin/promocodes": {
+            "get": {
+                "tags": [
+                    "Promocodes"
+                ],
+                "summary": "Get list of promocodes",
+                "description": "Returns list of promocodes",
+                "operationId": "getPromocodeLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Promocodes"
+                ],
+                "summary": "Create a promocode",
+                "description": "Returns newly created promocode",
+                "operationId": "storePromocode",
+                "requestBody": {
+                    "description": "Created promocode object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Promocode"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/promocodes/{slug}": {
+            "get": {
+                "tags": [
+                    "Promocodes"
+                ],
+                "summary": "Get One Promocode",
+                "description": "Returns a requested promocode",
+                "operationId": "showPromocode",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested promocode",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Promocodes"
+                ],
+                "summary": "Update a promocode",
+                "description": "Update a requested promocode",
+                "operationId": "updatePromocode",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a promocode",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New promocode data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Promocode"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Promocodes"
+                ],
+                "summary": "Delete One Promocode",
+                "description": "Delete one specific promocode",
+                "operationId": "deletePromocode",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested promocode",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/promocodes/add-rules/{slug}": {
+            "post": {
+                "tags": [
+                    "Promocodes"
+                ],
+                "summary": "Add Rules",
+                "description": "Returns newly add rules data",
+                "operationId": "addRules",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested promocode",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "add  rules in promocode object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "properties": {
+                                    "rules": {
+                                        "type": "array",
+                                        "items": {
+                                            "oneOf": [
+                                                {
+                                                    "properties": {
+                                                        "value": {
+                                                            "type": "string",
+                                                            "example": "value"
+                                                        },
+                                                        "data_type": {
+                                                            "type": "string",
+                                                            "example": "before date"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/rules/{id}": {
+            "delete": {
+                "tags": [
+                    "Promocodes"
+                ],
+                "summary": "Remove Rule",
+                "description": "Remove Rule",
+                "operationId": "removeRule",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of a requested rule",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/restaurant-branches": {
             "get": {
                 "tags": [
@@ -3907,6 +4171,99 @@
                         }
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/settings": {
+            "get": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Get list of settings",
+                "description": "Returns list of settings",
+                "operationId": "getSettingLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/settings/{key}": {
+            "get": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Get One Setting",
+                "description": "Returns a requested setting",
+                "operationId": "showSetting",
+                "parameters": [
+                    {
+                        "name": "key",
+                        "in": "path",
+                        "description": "Key of a requested setting",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/settings/update": {
+            "put": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Update a Setting",
+                "description": "Update a requested setting",
+                "operationId": "updateSetting",
+                "requestBody": {
+                    "description": "New setting data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Setting"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Successful operation"
@@ -5723,6 +6080,58 @@
                     "name": "Product Variation Value"
                 }
             },
+            "Promocode": {
+                "properties": {
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "00012"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "fix"
+                    },
+                    "usage": {
+                        "type": "string",
+                        "example": "shop"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "example": 1000
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "description"
+                    },
+                    "rules": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "properties": {
+                                        "value": {
+                                            "type": "string",
+                                            "example": "value"
+                                        },
+                                        "data_type": {
+                                            "type": "string",
+                                            "example": "before date"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "Promocode"
+                }
+            },
             "Restaurant": {
                 "properties": {
                     "name": {
@@ -5917,6 +6326,28 @@
                 "type": "object",
                 "xml": {
                     "name": "Role"
+                }
+            },
+            "Setting": {
+                "items": {
+                    "properties": {
+                        "key": {
+                            "type": "string",
+                            "example": "33"
+                        },
+                        "value": {
+                            "type": "string",
+                            "example": "Name"
+                        },
+                        "data_type": {
+                            "type": "string",
+                            "example": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "xml": {
+                    "name": "Setting"
                 }
             },
             "Shop": {
