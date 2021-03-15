@@ -2317,7 +2317,9 @@
                         "bearerAuth": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/v2/{path}/products": {
             "post": {
                 "tags": [
                     "Products"
@@ -2325,6 +2327,22 @@
                 "summary": "Create a product",
                 "description": "Returns newly created product",
                 "operationId": "storeProduct",
+                "parameters": [
+                    {
+                        "name": "path",
+                        "in": "path",
+                        "description": "Key of a requested setting",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "admin",
+                            "enum": [
+                                "admin",
+                                "vendor"
+                            ]
+                        }
+                    }
+                ],
                 "requestBody": {
                     "description": "Created product object",
                     "required": true,
@@ -2348,7 +2366,7 @@
                 ]
             }
         },
-        "/api/v2/admin/products/{slug}": {
+        "/api/v2/{path}/products/{slug}": {
             "get": {
                 "tags": [
                     "Products"
@@ -2357,6 +2375,20 @@
                 "description": "Returns a requested product",
                 "operationId": "showProduct",
                 "parameters": [
+                    {
+                        "name": "path",
+                        "in": "path",
+                        "description": "Key of a requested setting",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "admin",
+                            "enum": [
+                                "admin",
+                                "vendor"
+                            ]
+                        }
+                    },
                     {
                         "name": "slug",
                         "in": "path",
@@ -2386,6 +2418,20 @@
                 "description": "Update a requested product",
                 "operationId": "updateProduct",
                 "parameters": [
+                    {
+                        "name": "path",
+                        "in": "path",
+                        "description": "Key of a requested setting",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "admin",
+                            "enum": [
+                                "admin",
+                                "vendor"
+                            ]
+                        }
+                    },
                     {
                         "name": "slug",
                         "in": "path",
@@ -2426,6 +2472,20 @@
                 "description": "Delete one specific product",
                 "operationId": "deleteProduct",
                 "parameters": [
+                    {
+                        "name": "path",
+                        "in": "path",
+                        "description": "Key of a requested setting",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "default": "admin",
+                            "enum": [
+                                "admin",
+                                "vendor"
+                            ]
+                        }
+                    },
                     {
                         "name": "slug",
                         "in": "path",
@@ -4444,7 +4504,7 @@
                 ]
             }
         },
-        "/api/v2/admin/settings/{key}": {
+        "/api/v2/{path}/settings/{key}": {
             "get": {
                 "tags": [
                     "Settings"
@@ -6603,15 +6663,15 @@
                     "properties": {
                         "key": {
                             "type": "string",
-                            "example": "33"
+                            "example": "tax"
                         },
                         "value": {
                             "type": "string",
-                            "example": "Name"
+                            "example": "20"
                         },
                         "data_type": {
                             "type": "string",
-                            "example": "string"
+                            "example": "integer"
                         }
                     },
                     "type": "object"
