@@ -24,10 +24,10 @@ class RestaurantController extends Controller
         try {
             $customer->favoriteRestaurants()->attach($restaurantId);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'You already set favorite this restaurant.'], 409);
+            return $this->generateResponse('You already set favorite this restaurant.', 409, TRUE);
         }
 
-        return response()->json(['message' => 'Success.'], 200);
+        return $this->generateResponse('Success.', 200, TRUE);
     }
 
     public function removeFavoriteRestaurant($slug)
@@ -35,7 +35,7 @@ class RestaurantController extends Controller
         $restaurantId = $this->getRestaurantId($slug);
         $customer = Auth::guard('customers')->user();
         $customer->favoriteRestaurants()->detach($restaurantId);
-        return response()->json(['message' => 'Success.'], 200);
+        return $this->generateResponse('Success.', 200, TRUE);
     }
 
     public function getFavoriteRestaurants(Request $request)
@@ -258,7 +258,7 @@ class RestaurantController extends Controller
             array_push($branches, $restaurant['restaurantBranches']);
         }
 
-        $data['restaurantBranches'] = collect($branches)->collapse()->sortBy('distance')->values();
+        $data['restaurant_branches'] = collect($branches)->collapse()->sortBy('distance')->values();
         unset($data['restaurants']);
 
         return $data;

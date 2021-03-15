@@ -15,7 +15,6 @@ class CreateRestaurantOrderContactsTable extends Migration
     {
         Schema::create('restaurant_order_contacts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('restaurant_order_id');
             $table->string('customer_name');
             $table->string('phone_number');
             $table->string('house_number');
@@ -23,6 +22,7 @@ class CreateRestaurantOrderContactsTable extends Migration
             $table->string('street_name');
             $table->double('latitude')->nullable();
             $table->double('longitude')->nullable();
+            $table->unsignedBigInteger('restaurant_order_id');
             $table->timestamps();
             $table->foreign('restaurant_order_id')->references('id')->on('restaurant_orders')->onDelete('cascade');
         });

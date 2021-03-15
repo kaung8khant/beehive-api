@@ -15,9 +15,9 @@ class CreateRestaurantOrderStatusesTable extends Migration
     {
         Schema::create('restaurant_order_statuses', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('restaurant_order_id');
             $table->enum('status', ['pending', 'preparing', 'pickUp', 'onRoute', 'delivered', 'cancelled'])->default('pending');
             $table->string('created_by')->nullable();
+            $table->unsignedBigInteger('restaurant_order_id');
             $table->timestamps();
             $table->foreign('restaurant_order_id')->references('id')->on('restaurant_orders')->onDelete('cascade');
         });

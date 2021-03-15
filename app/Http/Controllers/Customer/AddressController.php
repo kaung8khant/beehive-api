@@ -26,7 +26,7 @@ class AddressController extends Controller
 
     public function index()
     {
-        $addresses = Address::where('customer_id', $this->customer_id)->paginate(10)->items();
+        $addresses = Address::with('township')->where('customer_id', $this->customer_id)->paginate(10)->items();
         return $this->generateResponse($addresses, 200);
     }
 
@@ -44,7 +44,7 @@ class AddressController extends Controller
         $validatedData['customer_id'] = $this->customer_id;
 
         $address = Address::create($validatedData);
-        return $this->generateResponse($address->refresh(), 201);
+        return $this->generateResponse($address->refresh()->load('township'), 201);
     }
 
     public function show($slug)
@@ -119,6 +119,6 @@ class AddressController extends Controller
 
     private function getAddress($slug)
     {
-        return Address::where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
+        return Address::with('township')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
     }
 }
