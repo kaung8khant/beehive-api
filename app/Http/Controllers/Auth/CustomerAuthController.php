@@ -106,7 +106,8 @@ class CustomerAuthController extends Controller
 
     public function getProfile()
     {
-        $customer = Auth::guard('customers')->user();
+        $customerId = Auth::guard('customers')->user()->id;
+        $customer = Customer::with('addresses')->where('id', $customerId)->firstOrFail();
         return $this->generateResponse($customer, 200);
     }
 
