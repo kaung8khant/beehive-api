@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Shop;
+use App\Models\ShopCategory;
+use App\Models\Brand;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\ResponseHelper;
 
@@ -34,8 +36,8 @@ class ProductController extends Controller
 
     public function getByCategory(Request $request, $slug)
     {
-
-        $product = Product::where('shop_category_id', $slug)->paginate($request->size)->items();
+        $category_id = $this->getShopCategoryId($slug);
+        $product = Product::where('shop_category_id', $category_id)->paginate($request->size)->items();
 
         return $this->generateResponse($product, 200);
     }
@@ -46,6 +48,25 @@ class ProductController extends Controller
         $product = Product::where('shop_id', $shopId)->paginate($request->size)->items();
 
         return $this->generateResponse($product, 200);
+    }
+    public function getAllBrand(Request $request){
+        Log::info("here");
+        $brand = Brand::all();
+        Log::info(json_encode($brand));
+        return $this->generateResponse($brand, 200);
+    }
+    public function getByBrand(Request $request,$slug){
+        $brandId = $this->getBrandId($slug);
+        $product =  Product::where("brand_id",$brandId)->paginate($request->size)->items();
+        return $this->generateResponse($product, 200);
+    }
+
+    private function getBrandId($slug){
+        return Brand::where('slug', $slug)->firstOrFail()->id;
+    }
+
+    private function getShopCategoryId($slug){
+        return ShopCategory::where('slug',$slug)->firstOrFail()->id;
     }
 
     private function getShopId($slug)

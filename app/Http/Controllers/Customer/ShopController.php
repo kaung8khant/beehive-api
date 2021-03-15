@@ -10,6 +10,7 @@ use App\Models\ShopCategory;
 use Illuminate\Support\Facades\Log;
 use App\Models\ShopTag;
 use App\Helpers\ResponseHelper;
+use App\Models\ShopSubCategory;
 
 class ShopController extends Controller
 {
@@ -67,37 +68,85 @@ class ShopController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function getCategories(){
+    public function getCategories(Request $request){
         
-        $categories = ShopCategory::all();
-        return $this->generateResponse($categories,200);
+        $shopCategories = ShopCategory::with('shopSubCategories','shops.products')
+        ->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('slug', $request->filter)
+        ->paginate($request->size)
+        ->items();
+
+        $shopCategories = $this->getProductFromShop($shopCategories);
+
+        return $this->generateResponse($shopCategories,200);
     }
+
 
     public function getTags(Request $request)
     {
-        $shopTags =  ShopTag::where('name', 'LIKE', '%' . $request->filter . '%')
+        $shopTags =  ShopTag::with('shops.products')
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate($request->size)
             ->items();
+
+        $shopTags =  $this->getProductFromShop($shopTags);
 
         return $this->generateResponse($shopTags, 200);
     }
     public function getByTag(Request $request, $slug)
     {
 
-        $shopTag = ShopTag::where('slug', $slug)->firstOrFail();
-        $restaurants =  $shopTag->shops()->paginate($request->size);
+        $shopTag = ShopTag::with('shops','shops.products','shops.products.shop')->where('slug', $slug)->firstOrFail();
 
-        return $this->generateResponse($restaurants, 200);
+        $shopTag = $this->replaceShopWithProduct($shopTag);
+
+        return $this->generateResponse($shopTag, 200);
+    }
+    public function getByCategory(Request $request,$slug)
+    {
+        $shopCategory = ShopCategory::with('shops','shops.products','shops.products.shop')->where('slug', $slug)->firstOrFail();
+        $shopCategory = $this->replaceShopWithProduct($shopCategory);
+        return  $this->generateResponse($shopCategory, 200);
     }
 
+    public function getBySubCategory(Request $request,$slug)
+    {
+        $shop = ShopSubCategory::with('shopCategory')->with('shopCategory.shops')->where('slug', $slug)->paginate($request->size)->items();
+        
+        return  $this->generateResponse($shop, 200);
+    }
+    
 
     private function getShopId($slug)
     {
         return Shop::where('slug', $slug)->firstOrFail()->id;
     }
 
-    
+    private function getProductFromShop($items)
+    {
+        foreach ($items as $item) {
+            $item = $this->replaceShopWithProduct($item);
+        }
+
+        return $items;
+    }
+
+    private function replaceShopWithProduct($data)
+    {
+        $products = [];
+        
+        foreach ($data['shops'] as $shop) {
+            array_push($products, $shop['products']);
+        }
+
+        $data['products'] = collect($products)->collapse()->values();
+        unset($data['shops']);
+
+        return $data;
+    } 
+
     
 }
