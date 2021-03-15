@@ -41,32 +41,6 @@ class ShopController extends Controller
         return $this->generateResponse($shop,200);
     }
 
-    public function getFavoriteShops(Request $request)
-    {
-        $shop = $this->customer->shops()->with('availableCategories', 'availableTags')->paginate($request->size)->items();
-        return $this->generateResponse($shop,200);
-    }
-
-    public function setFavoriteShop($slug)
-    {
-        $shopId = $this->getShopId($slug);
-
-        try {
-            $this->customer->shops()->attach($shopId);
-        } catch (\Illuminate\Database\QueryException $e) {
-            return response()->json(['message' => 'You already set favorite this shop.'], 409);
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
-
-    public function removeFavoriteShop($slug)
-    {
-        $shopId = $this->getShopId($slug);
-
-        $this->customer->shops()->detach($shopId);
-        return response()->json(['message' => 'Success.'], 200);
-    }
 
     public function getCategories(Request $request){
         
@@ -152,10 +126,25 @@ class ShopController extends Controller
         }
 
         $data['products'] = collect($products)->collapse()->values();
+        $data['products'] = $this->checkProductFav($data['products']);
         unset($data['shops']);
 
         return $data;
     } 
+
+    //redundant from ProductController 
+    private function checkProductFav($data,$type="array"){
+        if($type==="array"){
+            foreach($data as $product){
+                $product['is_favorite'] = empty(json_decode($product['customers']))?false:true;
+                unset($product['customers']);
+            }
+        }else{
+            $data['is_favorite'] = empty(json_decode($data['customers']))?false:true;
+            unset($data['customers']);
+        }
+        return $data;
+    }
 
     
 }

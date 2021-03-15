@@ -76,11 +76,6 @@ class Shop extends Model
         return $this->hasMany(Product::class);
     }
 
-    public function customers()
-    {
-        return $this->belongsToMany(Customer::class, 'favorite_shop');
-    }
-
     public function township()
     {
         return $this->belongsTo(Township::class);

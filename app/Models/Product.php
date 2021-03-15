@@ -99,4 +99,8 @@ class Product extends Model
     {
         return $this->belongsTo(Brand::class);
     }
+    public function customers()
+    {
+        return $this->belongsToMany(Customer::class, 'favorite_product');
+    }
 }

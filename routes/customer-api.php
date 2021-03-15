@@ -43,7 +43,7 @@ Route::group(['prefix' => 'user'], function () {
 
         /* Shop */
         Route::get('shops', 'Customer\ShopController@index');
-        Route::get('shops/favorites', 'Customer\ShopController@getFavoriteShops');
+        
         Route::get('shops/categories', 'Customer\ShopController@getCategories');
         Route::get('shop/categorized/products','Customer\ShopController@getCatgorizedProduct');
         Route::get('shops/tags', 'Customer\ShopController@getTags');
@@ -61,15 +61,21 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('new-arrivals', 'Customer\HomeController@getNewArrivals');
         /* Home */
 
-        Route::resource('orders', 'Customer\OrderController');
+        //Route::resource('orders', 'Customer\OrderController');
 
         /* Product */
         Route::get('products', 'Customer\ProductController@index');
         Route::get('products/brands','Customer\ProductController@getAllBrand');
+        Route::get('products/favorites', 'Customer\ProductController@getFavorite');
         Route::get('products/{slug}', 'Customer\ProductController@show');
+        Route::post('products/{slug}/set-favorite', 'Customer\ProductController@setFavorite');
+        Route::post('products/{slug}/remove-favorite', 'Customer\ProductController@removeFavorite');
         Route::get('product-categories/{slug}','Customer\ProductController@getByCategory');
         Route::get('product-shops/{slug}','Customer\ProductController@getByShop');
         Route::get('product-brands/{slug}','Customer\ProductController@getByBrand');
         
+        
+        Route::resource('shop-orders', 'Customer\ShopOrderController');
+        Route::put('shop-orders/cancel/{slug}','Customer\ShopOrderController@cancelOrder');
     });
 });

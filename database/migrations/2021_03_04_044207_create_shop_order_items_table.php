@@ -22,6 +22,8 @@ class CreateShopOrderItemsTable extends Migration
             $table->decimal('amount', 12, 2);
             $table->decimal('tax', 12, 2);
             $table->decimal('discount', 12, 2);
+            $table->json('variations');
+            $table->json('shop');
             $table->boolean('is_deleted')->default(0);
             $table->timestamps();
             $table->unique(['shop_order_id', 'product_id']);
