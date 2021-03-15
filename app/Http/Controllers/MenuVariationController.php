@@ -76,7 +76,7 @@ class MenuVariationController extends Controller
      *      description="Returns newly created menu variation",
      *      @OA\RequestBody(
      *          required=true,
-     *          description="Created menu",
+     *          description="Created menu variation",
      *          @OA\MediaType(
      *              mediaType="applications/json",
      *              @OA\Schema(
