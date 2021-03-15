@@ -10,6 +10,7 @@ use App\Models\Shop;
 use App\Models\ShopSubCategory;
 use App\Models\ProductVariation;
 use App\Models\ProductVariationValue;
+use App\Models\ShopCategory;
 
 class ProductController extends Controller
 {
@@ -51,7 +52,6 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         return Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
-            ->with('productVariations')->with('productVariations.productVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -60,11 +60,22 @@ class ProductController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v2/admin/products",
+     *      path="/api/v2/{path}/products",
      *      operationId="storeProduct",
      *      tags={"Products"},
      *      summary="Create a product",
      *      description="Returns newly created product",
+     *      @OA\Parameter(
+     *          name="path",
+     *          description="Key of a requested setting",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum= {"admin","vendor"},
+     *              default= "admin",
+     *          )
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Created product object",
@@ -87,12 +98,15 @@ class ProductController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $validatedData = $request->validate($this->getParamsToValidate(true));
-
-        $subCategory = $this->getSubCategory($request->shop_sub_category_slug);
-
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
-        $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
-        $validatedData['shop_sub_category_id'] = $subCategory->id;
+
+        if ($request->shop_sub_category_slug) {
+            $subCategory = $this->getSubCategory($request->shop_sub_category_slug);
+            $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
+            $validatedData['shop_sub_category_id'] = $subCategory->id;
+        } else {
+            $validatedData['shop_category_id'] =  $this->getShopCategoryId($request->shop_category_slug);
+        }
 
         if ($request->brand_slug) {
             $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
@@ -110,11 +124,22 @@ class ProductController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v2/admin/products/{slug}",
+     *      path="/api/v2/{path}/products/{slug}",
      *      operationId="showProduct",
      *      tags={"Products"},
      *      summary="Get One Product",
      *      description="Returns a requested product",
+     *      @OA\Parameter(
+     *          name="path",
+     *          description="Key of a requested setting",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum= {"admin","vendor"},
+     *              default= "admin",
+     *          )
+     *      ),
      *      @OA\Parameter(
      *          name="slug",
      *          description="Slug of a requested product",
@@ -143,11 +168,22 @@ class ProductController extends Controller
 
     /**
      * @OA\Put(
-     *      path="/api/v2/admin/products/{slug}",
+     *      path="/api/v2/{path}/products/{slug}",
      *      operationId="updateProduct",
      *      tags={"Products"},
      *      summary="Update a product",
      *      description="Update a requested product",
+     *      @OA\Parameter(
+     *          name="path",
+     *          description="Key of a requested setting",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum= {"admin","vendor"},
+     *              default= "admin",
+     *          )
+     *      ),
      *      @OA\Parameter(
      *          name="slug",
      *          description="Slug to identify a product",
@@ -178,19 +214,20 @@ class ProductController extends Controller
     {
         $product = Product::where('slug', $slug)->firstOrFail();
 
-
         $validatedData = $request->validate($this->getParamsToValidate());
-
-        $subCategory = $this->getSubCategory($request->shop_sub_category_slug);
-
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
-        $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
-        $validatedData['shop_sub_category_id'] = $subCategory->id;
+
+        if ($request->shop_sub_category_slug) {
+            $subCategory = $this->getSubCategory($request->shop_sub_category_slug);
+            $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
+            $validatedData['shop_sub_category_id'] = $subCategory->id;
+        } else {
+            $validatedData['shop_category_id'] =  $this->getShopCategoryId($request->shop_category_slug);
+        }
+
         if ($request->brand_slug) {
             $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
         }
-
-
         $product->update($validatedData);
 
         $productId = $product->id;
@@ -204,11 +241,22 @@ class ProductController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="/api/v2/admin/products/{slug}",
+     *      path="/api/v2/{path}/products/{slug}",
      *      operationId="deleteProduct",
      *      tags={"Products"},
      *      summary="Delete One Product",
      *      description="Delete one specific product",
+     *      @OA\Parameter(
+     *          name="path",
+     *          description="Key of a requested setting",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum= {"admin","vendor"},
+     *              default= "admin",
+     *          )
+     *      ),
      *      @OA\Parameter(
      *          name="slug",
      *          description="Slug of a requested product",
@@ -243,7 +291,8 @@ class ProductController extends Controller
             'price' => 'required|max:99999999',
             'is_enable' => 'required|boolean',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
-            'shop_sub_category_slug' => 'required|exists:App\Models\ShopSubCategory,slug',
+            'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
+            'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
 
             'product_variations' => 'nullable|array',
@@ -267,6 +316,11 @@ class ProductController extends Controller
     private function getShopId($slug)
     {
         return Shop::where('slug', $slug)->first()->id;
+    }
+
+    private function getShopCategoryId($slug)
+    {
+        return ShopCategory::where('slug', $slug)->first()->id;
     }
 
     private function getSubCategory($slug)

@@ -12,7 +12,7 @@ class SettingController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @OA\Get(
      *      path="/api/v2/admin/settings",
      *      operationId="getSettingLists",
@@ -49,9 +49,9 @@ class SettingController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     /**
+    /**
      * @OA\Get(
-     *      path="/api/v2/admin/settings/{key}",
+     *      path="/api/v2/{path}/settings/{key}",
      *      operationId="showSetting",
      *      tags={"Settings"},
      *      summary="Get One Setting",
@@ -85,9 +85,9 @@ class SettingController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-/**
+    /**
      * @OA\Put(
-     *      path="/api/v2/admin/settings",
+     *      path="/api/v2/admin/settings/update",
      *      operationId="updateSetting",
      *      tags={"Settings"},
      *      summary="Update a Setting",

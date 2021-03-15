@@ -19,7 +19,7 @@ class CreatePromocodesTable extends Migration
             $table->string('code');
             $table->enum('type', ['fix', 'percentage']);
             $table->enum('usage', ['shop', 'restaurant', 'both']);
-            $table->decimal('amount', 12, 2);
+            $table->decimal('amount', 12, 0);
             $table->string('description');
             $table->timestamps();
         });

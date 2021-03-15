@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @OA\Schema(
  *      @OA\Xml(name="Setting"),
- *      @OA\Property(property="key", type="string", example="33"),
- *      @OA\Property(property="value", type="string", example="Name"),
- *      @OA\Property(property="data_type", type="string", example="string")
+ *       @OA\Items(type="object",
+ *       @OA\Property(property="key", type="string", example="tax"),
+ *       @OA\Property(property="value", type="string", example="20"),
+ *       @OA\Property(property="data_type", type="string", example="integer")
+ *   ),
  * )
  */
 
