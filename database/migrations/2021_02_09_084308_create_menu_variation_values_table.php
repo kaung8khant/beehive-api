@@ -17,7 +17,7 @@ class CreateMenuVariationValuesTable extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->string('value');
-            $table->decimal('price', 12, 2);
+            $table->decimal('price', 12, 0);
             $table->unsignedBigInteger('menu_variation_id');
             $table->timestamps();
             $table->foreign('menu_variation_id')->references('id')->on('menu_variations')->onDelete('cascade');

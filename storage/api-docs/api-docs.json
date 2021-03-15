@@ -4714,35 +4714,6 @@
                         "bearerAuth": []
                     }
                 ]
-            },
-            "put": {
-                "tags": [
-                    "Settings"
-                ],
-                "summary": "Update a Setting",
-                "description": "Update a requested setting",
-                "operationId": "updateSetting",
-                "requestBody": {
-                    "description": "New setting data to be updated.",
-                    "required": true,
-                    "content": {
-                        "applications/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Setting"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful operation"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
             }
         },
         "/api/v2/admin/settings/{key}": {
@@ -4764,6 +4735,37 @@
                         }
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/settings/update": {
+            "put": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Update a Setting",
+                "description": "Update a requested setting",
+                "operationId": "updateSetting",
+                "requestBody": {
+                    "description": "New setting data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Setting"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Successful operation"
@@ -6949,21 +6951,23 @@
                 }
             },
             "Setting": {
-                "properties": {
-                    "key": {
-                        "type": "string",
-                        "example": "33"
+                "items": {
+                    "properties": {
+                        "key": {
+                            "type": "string",
+                            "example": "33"
+                        },
+                        "value": {
+                            "type": "string",
+                            "example": "Name"
+                        },
+                        "data_type": {
+                            "type": "string",
+                            "example": "string"
+                        }
                     },
-                    "value": {
-                        "type": "string",
-                        "example": "Name"
-                    },
-                    "data_type": {
-                        "type": "string",
-                        "example": "string"
-                    }
+                    "type": "object"
                 },
-                "type": "object",
                 "xml": {
                     "name": "Setting"
                 }
