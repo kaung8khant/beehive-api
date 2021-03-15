@@ -45,6 +45,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('shops', 'Customer\ShopController@index');
         Route::get('shops/favorites', 'Customer\ShopController@getFavoriteShops');
         Route::get('shops/categories', 'Customer\ShopController@getCategories');
+        Route::get('shop/categorized/products','Customer\ShopController@getCatgorizedProduct');
         Route::get('shops/tags', 'Customer\ShopController@getTags');
         Route::get('shop-tags/{slug}', 'Customer\ShopController@getByTag');
         Route::get('shop-categories/{slug}', 'Customer\ShopController@getByCategory');

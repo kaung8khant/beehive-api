@@ -70,6 +70,16 @@ class ShopController extends Controller
 
     public function getCategories(Request $request){
         
+        $shopCategories = ShopCategory::with('shopSubCategories')
+        ->where('name', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+        ->orWhere('slug', $request->filter)
+        ->paginate($request->size)
+        ->items();
+
+        return $this->generateResponse($shopCategories,200);
+    }
+    public function getCatgorizedProduct(Request $request){
         $shopCategories = ShopCategory::with('shopSubCategories','shops.products')
         ->where('name', 'LIKE', '%' . $request->filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
@@ -81,7 +91,6 @@ class ShopController extends Controller
 
         return $this->generateResponse($shopCategories,200);
     }
-
 
     public function getTags(Request $request)
     {
@@ -111,7 +120,7 @@ class ShopController extends Controller
         $shopCategory = $this->replaceShopWithProduct($shopCategory);
         return  $this->generateResponse($shopCategory, 200);
     }
-
+    
     public function getBySubCategory(Request $request,$slug)
     {
         $shop = ShopSubCategory::with('shopCategory')->with('shopCategory.shops')->where('slug', $slug)->paginate($request->size)->items();
