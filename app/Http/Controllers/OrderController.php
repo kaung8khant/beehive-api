@@ -98,7 +98,6 @@ class OrderController extends Controller
      *                  @OA\Property(property="discount", type="number",example=0.00),
      *                  ),
      *                  ),
-     *
      *              )
      *          )
      *      ),
