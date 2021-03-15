@@ -20,7 +20,7 @@ class CreateMenusTable extends Migration
             $table->string('name_mm')->nullable();
             $table->text('description');
             $table->text('description_mm')->nullable();
-            $table->decimal('price', 12, 2);
+            $table->decimal('price', 12, 0);
             $table->unsignedBigInteger('restaurant_id');
             $table->unsignedBigInteger('restaurant_category_id');
             $table->boolean('is_enable')->default(1);

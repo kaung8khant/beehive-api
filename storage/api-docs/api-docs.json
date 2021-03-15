@@ -2049,6 +2049,77 @@
                 ]
             }
         },
+        "/api/v2/admin/orders/{slug}/contact": {
+            "get": {
+                "tags": [
+                    "OrderContact"
+                ],
+                "summary": "Get One Order Contact",
+                "description": "Returns a requested order contact",
+                "operationId": "Order",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested order",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "OrderContact"
+                ],
+                "summary": "Update a OrderContact",
+                "description": "Update a requested OrderContact",
+                "operationId": "updateOrderContact",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a Order",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New Order Contact data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OrderContact"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v2/admin/orders": {
             "get": {
                 "tags": [
@@ -2130,6 +2201,9 @@
                                         "type": "string",
                                         "example": "1"
                                     },
+                                    "customer_info": {
+                                        "$ref": "#/components/schemas/OrderContact"
+                                    },
                                     "order_items": {
                                         "type": "array",
                                         "items": {
@@ -2137,6 +2211,10 @@
                                                 "value": {
                                                     "type": "string",
                                                     "example": "value"
+                                                },
+                                                "item_slug": {
+                                                    "type": "string",
+                                                    "example": "D16AAF"
                                                 },
                                                 "item_name": {
                                                     "type": "string",
@@ -2161,10 +2239,6 @@
                                                 "discount": {
                                                     "type": "number",
                                                     "example": 0
-                                                },
-                                                "slug": {
-                                                    "type": "string",
-                                                    "readOnly": true
                                                 }
                                             },
                                             "type": "object"
@@ -2261,6 +2335,204 @@
                         "name": "slug",
                         "in": "path",
                         "description": "Slug of a requested orders",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/orders/{slug}/items": {
+            "get": {
+                "tags": [
+                    "OrderItems"
+                ],
+                "summary": "Get list of order items",
+                "description": "Returns list of order items",
+                "operationId": "getOrderItemLists",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested Order",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "OrderItems"
+                ],
+                "summary": "Create a order item",
+                "description": "Returns newly created order item",
+                "operationId": "storeOrderItems",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested Order",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Created order item object",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OrderItem"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/orders/{slug}/items/{id}": {
+            "get": {
+                "tags": [
+                    "OrderItems"
+                ],
+                "summary": "Get One order item",
+                "description": "Returns a requested orders items",
+                "operationId": "getOneOrderItem",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested Order",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of a requested Order item",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "OrderItems"
+                ],
+                "summary": "Update a order item",
+                "description": "Update a requested order item",
+                "operationId": "updateOrderItem",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug to identify a order",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id to identify a order item",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "New order item data to be updated.",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OrderItem"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "OrderItems"
+                ],
+                "summary": "Delete One Order Item",
+                "description": "Delete one specific order item",
+                "operationId": "deleteOrderItem",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested order ",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of a requested order item",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -6240,6 +6512,86 @@
                 "type": "object",
                 "xml": {
                     "name": "Order"
+                }
+            },
+            "OrderContact": {
+                "properties": {
+                    "order_slug": {
+                        "type": "string",
+                        "example": "D16AAF"
+                    },
+                    "customer_name": {
+                        "type": "string",
+                        "example": "U Ba"
+                    },
+                    "phone_number": {
+                        "type": "string",
+                        "example": "09444469588"
+                    },
+                    "house_number": {
+                        "type": "string",
+                        "example": "somethings"
+                    },
+                    "floor": {
+                        "type": "string",
+                        "example": "first"
+                    },
+                    "street_name": {
+                        "type": "string",
+                        "example": "somewhere"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "example": 16.761054
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "example": 96.196635
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "OrderContact"
+                }
+            },
+            "OrderItem": {
+                "properties": {
+                    "item_slug": {
+                        "type": "string",
+                        "example": "D16AAF"
+                    },
+                    "item_name": {
+                        "type": "string",
+                        "example": "name"
+                    },
+                    "item_type": {
+                        "type": "string",
+                        "example": "product"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "example": 0
+                    },
+                    "quantity": {
+                        "type": "number",
+                        "example": 0
+                    },
+                    "tax": {
+                        "type": "number",
+                        "example": 0
+                    },
+                    "discount": {
+                        "type": "number",
+                        "example": 0
+                    },
+                    "is_deleted": {
+                        "type": "boolean",
+                        "example": false
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "OrderItem"
                 }
             },
             "Product": {

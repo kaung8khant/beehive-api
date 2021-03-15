@@ -85,19 +85,19 @@ class OrderController extends Controller
      *               @OA\Property(property="payment_mode", type="string", example="CBPay"),
      *               @OA\Property(property="delivery_mode", type="string", example="delivery"),
      *               @OA\Property(property="rating", type="string", example="1"),
+     *               @OA\Property(property="customer_info", ref="#/components/schemas/OrderContact"),
      *               @OA\Property(property="order_items", type="array",
      *               @OA\Items(type="object",
      *                  @OA\Property(property="value", type="string", example="value"),
+     *                  @OA\Property(property="item_slug", type="string", example="D16AAF"),
      *                  @OA\Property(property="item_name", type="string",example=0.00),
      *                  @OA\Property(property="item_type", type="string",example="product"),
      *                  @OA\Property(property="quantity", type="number",example=0.00),
      *                  @OA\Property(property="amount", type="number",example=0.00),
      *                  @OA\Property(property="tax", type="number",example=0.00),
      *                  @OA\Property(property="discount", type="number",example=0.00),
-     *                  @OA\Property(property="slug", type="string", readOnly=true),
      *                  ),
      *                  ),
-     *
      *              )
      *          )
      *      ),
