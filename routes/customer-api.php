@@ -37,6 +37,8 @@ Route::group(['prefix' => 'user'], function () {
 
         Route::get('restaurant-tags', 'Customer\RestaurantController@getRestaurantTags');
         Route::get('restaurant-tags/{slug}/restaurants', 'Customer\RestaurantController@getRestaurantsByTag');
+
+        Route::resource('restaurants/orders', 'Customer\RestaurantOrderController');
         /* Restaurant */
 
         /* Shop */

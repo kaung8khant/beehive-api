@@ -16,7 +16,7 @@ class CreateRestaurantBranchesTable extends Migration
         Schema::create('restaurant_branches', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('name_mm')->unique()->nullable();
             $table->string('address');
             $table->string('contact_number');
@@ -28,6 +28,7 @@ class CreateRestaurantBranchesTable extends Migration
             $table->unsignedBigInteger('restaurant_id');
             $table->unsignedBigInteger('township_id');
             $table->timestamps();
+            $table->unique(['name', 'restaurant_id']);
             $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
             $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
         });

@@ -15,14 +15,16 @@ class CreateRestaurantOrderItemsTable extends Migration
     {
         Schema::create('restaurant_order_items', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('restaurant_order_id');
-            $table->unsignedBigInteger('menu_id')->nullable();
             $table->string('menu_name');
             $table->integer('quantity');
             $table->decimal('amount', 12, 2);
             $table->decimal('tax', 12, 2);
             $table->decimal('discount', 12, 2);
+            $table->json('variations');
+            $table->json('toppings');
             $table->boolean('is_deleted')->default(0);
+            $table->unsignedBigInteger('restaurant_order_id');
+            $table->unsignedBigInteger('menu_id')->nullable();
             $table->timestamps();
             $table->unique(['restaurant_order_id', 'menu_id']);
             $table->foreign('restaurant_order_id')->references('id')->on('restaurant_orders')->onDelete('cascade');
