@@ -21,6 +21,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('restaurant-tags', 'RestaurantTagController@index');
 
         /* menus */
+        Route::get('restaurants/{slug}/menus', 'MenuController@getMenusByRestaurant');
         Route::get('restaurant-branches/{slug}/menus', 'MenuController@getAvailableMenusByRestaurantBranch');
         Route::get('menus/{slug}', 'MenuController@show');
         Route::post('restaurant-branches/{slug}/menus', 'MenuController@createAvailableMenu');
@@ -68,7 +69,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('product-variations/{slug}', 'ProductVariationController@show');
         Route::post('product-variations', 'ProductVariationController@store');
         Route::put('product-variations/{slug}', 'ProductVariationController@update');
-        Route::delete('product-variations/{slug}', 'ProductVariationController@destory');
+        Route::delete('product-variations/{slug}', 'ProductVariationController@destroy');
 
         Route::get('product-variation/{slug}/product-variation-values', 'ProductVariationValueController@getProductVariationValuesByProductVariation');
         Route::get('product-variation-values/{slug}', 'ProductVariationValueController@show');
