@@ -82,4 +82,67 @@ class HomeController extends Controller
             ->limit(10)
             ->get();
     }
+
+    public function search(Request $request)
+    {
+        $validator = $this->validateSearch($request);
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+        }
+
+        $result = [
+            'restaurant_branches' => $this->searchRestaurantBranches($request, TRUE),
+            'products' => null,
+        ];
+
+        return $this->generateResponse($result, 200);
+    }
+
+    public function searchRestaurantBranches(Request $request, $homeSearch = FALSE)
+    {
+        $validator = $this->validateSearch($request);
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+        }
+
+        $restaurantBranches = $this->getRestaurantBranches($request)
+            ->where('name', 'LIKE', '%' . $request->keyword . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%')
+            ->orWhereHas('restaurant', function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
+                    ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%')
+                    ->orWhereHas('availableCategories', function ($q) use ($request) {
+                        $q->where('name', 'LIKE', '%' . $request->keyword . '%')
+                            ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%');
+                    })
+                    ->orWhereHas('availableTags', function ($q) use ($request) {
+                        $q->where('name', 'LIKE', '%' . $request->keyword . '%')
+                            ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%');
+                    });
+            })
+            ->orWhereHas('availableMenus', function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
+                    ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%')
+                    ->orWhere('description', 'LIKE', '%' . $request->keyword . '%')
+                    ->orWhere('description_mm', 'LIKE', '%' . $request->keyword . '%');
+            })
+            ->orderBy('distance', 'asc')
+            ->paginate($request->size)
+            ->items();
+
+        if ($homeSearch) {
+            return $restaurantBranches;
+        }
+
+        return $this->generateResponse($restaurantBranches, 200);
+    }
+
+    private function validateSearch($request)
+    {
+        return Validator::make($request->all(), [
+            'keyword' => 'required|string',
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+        ]);
+    }
 }

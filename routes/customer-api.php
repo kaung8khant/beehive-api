@@ -28,15 +28,16 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('restaurants/{slug}/favorites', 'Customer\RestaurantController@setFavoriteRestaurant');
         Route::delete('restaurants/{slug}/favorites', 'Customer\RestaurantController@removeFavoriteRestaurant');
 
-        Route::get('restaurants/branches', 'Customer\RestaurantController@getAllRestaurantBranches');
-        Route::get('restaurants/branches/{slug}', 'Customer\RestaurantController@getOneRestaurantBranch');
+        Route::get('restaurants/branches', 'Customer\RestaurantController@getAllBranches');
+        Route::get('restaurants/branches/search', 'Customer\HomeController@searchRestaurantBranches');
+        Route::get('restaurants/branches/{slug}', 'Customer\RestaurantController@getOneBranch');
         Route::get('restaurants/branches/{slug}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
 
-        Route::get('restaurant-categories', 'Customer\RestaurantController@getRestaurantCategories');
-        Route::get('restaurant-categories/{slug}/restaurants', 'Customer\RestaurantController@getRestaurantsByCategory');
+        Route::get('restaurant-categories', 'Customer\RestaurantController@getCategories');
+        Route::get('restaurant-categories/{slug}/restaurants', 'Customer\RestaurantController@getByCategory');
 
-        Route::get('restaurant-tags', 'Customer\RestaurantController@getRestaurantTags');
-        Route::get('restaurant-tags/{slug}/restaurants', 'Customer\RestaurantController@getRestaurantsByTag');
+        Route::get('restaurant-tags', 'Customer\RestaurantController@getTags');
+        Route::get('restaurant-tags/{slug}/restaurants', 'Customer\RestaurantController@getByTag');
 
         Route::resource('restaurants/orders', 'Customer\RestaurantOrderController');
         /* Restaurant */
@@ -58,6 +59,7 @@ Route::group(['prefix' => 'user'], function () {
         /* Home */
         Route::get('suggestions', 'Customer\HomeController@getSuggestions');
         Route::get('new-arrivals', 'Customer\HomeController@getNewArrivals');
+        Route::get('search', 'Customer\HomeController@search');
         /* Home */
 
         Route::resource('orders', 'Customer\OrderController');

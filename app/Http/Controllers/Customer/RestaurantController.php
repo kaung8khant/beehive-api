@@ -49,7 +49,7 @@ class RestaurantController extends Controller
 
         $favoriteRestaurants = $customer->favoriteRestaurants()
             ->with(['restaurantBranches' => function ($query) use ($request) {
-                $this->getRestaurantBranchQuery($query, $request)->orderBy('distance', 'asc');
+                $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
             }])
             ->paginate($request->size)
             ->pluck('restaurantBranches')
@@ -65,7 +65,7 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, TRUE);
         }
 
-        $recommendedBranches = $this->getRestaurantBranches($request)
+        $recommendedBranches = $this->getBranches($request)
             ->orderBy('distance', 'asc')
             ->paginate($request->size)
             ->items();
@@ -80,7 +80,7 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, TRUE);
         }
 
-        $newArrivals = $this->getRestaurantBranches($request)
+        $newArrivals = $this->getBranches($request)
             ->latest()
             ->paginate($request->size)
             ->items();
@@ -88,34 +88,14 @@ class RestaurantController extends Controller
         return $this->generateResponse($newArrivals, 200);
     }
 
-    public function getAllRestaurantBranches(Request $request)
+    public function getAllBranches(Request $request)
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, TRUE);
         }
 
-        $restaurantBranches = $this->getRestaurantBranches($request)
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhereHas('restaurant', function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhereHas('availableCategories', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%');
-                    })
-                    ->orWhereHas('availableTags', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%');
-                    });
-            })
-            ->orWhereHas('availableMenus', function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('description', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('description_mm', 'LIKE', '%' . $request->filter . '%');
-            })
+        $restaurantBranches = $this->getBranches($request)
             ->orderBy('distance', 'asc')
             ->paginate($request->size)
             ->items();
@@ -123,7 +103,7 @@ class RestaurantController extends Controller
         return $this->generateResponse($restaurantBranches, 200);
     }
 
-    public function getOneRestaurantBranch($slug)
+    public function getOneBranch($slug)
     {
         $restaurantBranch = RestaurantBranch::with('restaurant')->where('slug', $slug)->firstOrFail();
         return $this->generateResponse($restaurantBranch, 200);
@@ -135,7 +115,7 @@ class RestaurantController extends Controller
         return $this->generateResponse($menus, 200);
     }
 
-    public function getRestaurantCategories(Request $request)
+    public function getCategories(Request $request)
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
@@ -144,7 +124,7 @@ class RestaurantController extends Controller
 
         $restaurantCategories = RestaurantCategory::with('restaurants')
             ->with(['restaurants.restaurantBranches' => function ($query) use ($request) {
-                $this->getRestaurantBranchQuery($query, $request)->orderBy('distance', 'asc');
+                $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
             }])
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
@@ -156,7 +136,7 @@ class RestaurantController extends Controller
         return $this->generateResponse($restaurantCategories, 200);
     }
 
-    public function getRestaurantTags(Request $request)
+    public function getTags(Request $request)
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
@@ -165,7 +145,7 @@ class RestaurantController extends Controller
 
         $restaurantTags = RestaurantTag::with('restaurants')
             ->with(['restaurants.restaurantBranches' => function ($query) use ($request) {
-                $this->getRestaurantBranchQuery($query, $request)->orderBy('distance', 'asc');
+                $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
             }])
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
@@ -177,7 +157,7 @@ class RestaurantController extends Controller
         return $this->generateResponse($restaurantTags, 200);
     }
 
-    public function getRestaurantsByCategory(Request $request, $slug)
+    public function getByCategory(Request $request, $slug)
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
@@ -186,7 +166,7 @@ class RestaurantController extends Controller
 
         $restaurantCategory = RestaurantCategory::with('restaurants')
             ->with(['restaurants.restaurantBranches' => function ($query) use ($request) {
-                $this->getRestaurantBranchQuery($query, $request)->orderBy('distance', 'asc');
+                $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
             }])
             ->where('slug', $slug)
             ->firstOrFail();
@@ -195,7 +175,7 @@ class RestaurantController extends Controller
         return $this->generateResponse($restaurantCategory, 200);
     }
 
-    public function getRestaurantsByTag(Request $request, $slug)
+    public function getByTag(Request $request, $slug)
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
@@ -204,7 +184,7 @@ class RestaurantController extends Controller
 
         $restaurantTag = RestaurantTag::with('restaurants')
             ->with(['restaurants.restaurantBranches' => function ($query) use ($request) {
-                $this->getRestaurantBranchQuery($query, $request)->orderBy('distance', 'asc');
+                $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
             }])
             ->where('slug', $slug)
             ->firstOrFail();
@@ -221,13 +201,13 @@ class RestaurantController extends Controller
         ]);
     }
 
-    private function getRestaurantBranches($request)
+    private function getBranches($request)
     {
         $query = RestaurantBranch::with('restaurant');
-        return $this->getRestaurantBranchQuery($query, $request);
+        return $this->getBranchQuery($query, $request);
     }
 
-    private function getRestaurantBranchQuery($query, $request)
+    private function getBranchQuery($query, $request)
     {
         $radius = config('system.restaurant_search_radius');
 
