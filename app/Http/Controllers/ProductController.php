@@ -60,11 +60,22 @@ class ProductController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v2/admin/products",
+     *      path="/api/v2/{path}/products",
      *      operationId="storeProduct",
      *      tags={"Products"},
      *      summary="Create a product",
      *      description="Returns newly created product",
+     *      @OA\Parameter(
+     *          name="path",
+     *          description="Key of a requested setting",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum= {"admin","vendor"},
+     *              default= "admin",
+     *          )
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Created product object",
@@ -113,11 +124,22 @@ class ProductController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v2/admin/products/{slug}",
+     *      path="/api/v2/{path}/products/{slug}",
      *      operationId="showProduct",
      *      tags={"Products"},
      *      summary="Get One Product",
      *      description="Returns a requested product",
+     *      @OA\Parameter(
+     *          name="path",
+     *          description="Key of a requested setting",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum= {"admin","vendor"},
+     *              default= "admin",
+     *          )
+     *      ),
      *      @OA\Parameter(
      *          name="slug",
      *          description="Slug of a requested product",
@@ -146,11 +168,22 @@ class ProductController extends Controller
 
     /**
      * @OA\Put(
-     *      path="/api/v2/admin/products/{slug}",
+     *      path="/api/v2/{path}/products/{slug}",
      *      operationId="updateProduct",
      *      tags={"Products"},
      *      summary="Update a product",
      *      description="Update a requested product",
+     *      @OA\Parameter(
+     *          name="path",
+     *          description="Key of a requested setting",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum= {"admin","vendor"},
+     *              default= "admin",
+     *          )
+     *      ),
      *      @OA\Parameter(
      *          name="slug",
      *          description="Slug to identify a product",
@@ -208,11 +241,22 @@ class ProductController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="/api/v2/admin/products/{slug}",
+     *      path="/api/v2/{path}/products/{slug}",
      *      operationId="deleteProduct",
      *      tags={"Products"},
      *      summary="Delete One Product",
      *      description="Delete one specific product",
+     *      @OA\Parameter(
+     *          name="path",
+     *          description="Key of a requested setting",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum= {"admin","vendor"},
+     *              default= "admin",
+     *          )
+     *      ),
      *      @OA\Parameter(
      *          name="slug",
      *          description="Slug of a requested product",

@@ -10,6 +10,31 @@ use App\Models\Product;
 
 class OrderItemController extends Controller
 {
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/orders/{slug}/items",
+     *      operationId="getOrderItemLists",
+     *      tags={"OrderItems"},
+     *      summary="Get list of order items",
+     *      description="Returns list of order items",
+     *    @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested Order",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function index($slug)
     {
         $orderItem = OrderItem::whereHas('order', function ($q) use ($slug) {
@@ -19,6 +44,40 @@ class OrderItemController extends Controller
         return $orderItem;
     }
 
+
+      /**
+     * @OA\Post(
+     *      path="/api/v2/admin/orders/{slug}/items",
+     *      operationId="storeOrderItems",
+     *      tags={"OrderItems"},
+     *      summary="Create a order item",
+     *      description="Returns newly created order item",
+     *      @OA\Parameter(
+     *      name="slug",
+     *      description="Slug of a requested Order",
+     *      required=true,
+     *      in="path",
+     *      @OA\Schema(
+     *          type="string"
+     *       )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created order item object",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/OrderItem")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function store(Request $request, $slug)
     {
         $order = $this->getOrder($slug);
@@ -48,6 +107,41 @@ class OrderItemController extends Controller
         }
     }
 
+
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/orders/{slug}/items/{id}",
+     *      operationId="getOneOrderItem",
+     *      tags={"OrderItems"},
+     *      summary="Get One order item",
+     *      description="Returns a requested orders items",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested Order",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="id of a requested Order item",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function show($slug, $itemId)
     {
         $order = $this->getOrder($slug);
@@ -55,6 +149,49 @@ class OrderItemController extends Controller
         return response()->json($orderItem, 200);
     }
 
+
+    /**
+     * @OA\Put(
+     *      path="/api/v2/admin/orders/{slug}/items/{id}",
+     *      operationId="updateOrderItem",
+     *      tags={"OrderItems"},
+     *      summary="Update a order item",
+     *      description="Update a requested order item",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug to identify a order",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="id to identify a order item",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="New order item data to be updated.",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/OrderItem")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function update(Request $request, $slug, $itemId)
     {
         $order = $this->getOrder($slug);
@@ -70,6 +207,41 @@ class OrderItemController extends Controller
         return response()->json($orderItem, 200);
     }
 
+
+     /**
+     * @OA\Delete(
+     *      path="/api/v2/admin/orders/{slug}/items/{id}",
+     *      operationId="deleteOrderItem",
+     *      tags={"OrderItems"},
+     *      summary="Delete One Order Item",
+     *      description="Delete one specific order item",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested order ",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="id of a requested order item",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function destroy($slug, $itemId)
     {
         $order = $this->getOrder($slug);

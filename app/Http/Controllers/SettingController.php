@@ -51,7 +51,7 @@ class SettingController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v2/admin/settings/{key}",
+     *      path="/api/v2/{path}/settings/{key}",
      *      operationId="showSetting",
      *      tags={"Settings"},
      *      summary="Get One Setting",
