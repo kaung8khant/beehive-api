@@ -74,7 +74,7 @@ class RestaurantBranch extends Model
 
     public function availableMenus()
     {
-        return $this->belongsToMany(Menu::class, 'restaurant_branch_menu_map')->withPivot('is_available');
+        return $this->belongsToMany(Menu::class, 'restaurant_branch_menu_map');
     }
 
     public function user()

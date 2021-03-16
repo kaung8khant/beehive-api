@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
+use App\Helpers\ResponseHelper;
 use App\Models\Menu;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
@@ -16,6 +16,8 @@ use App\Models\RestaurantBranch;
 class MenuController extends Controller
 {
     use StringHelper;
+
+    use ResponseHelper;
 
     /**
      * Display a listing of the resource.
@@ -101,8 +103,8 @@ class MenuController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $validatedData = $request->validate($this->getParamsToValidate(true));
-
-        $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
+        $restaurant = RestaurantBranch::where('slug', $request->restaurant_slug)->firstOrFail();
+        $validatedData['restaurant_id'] = $restaurant->id;
         $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
 
         $menu = Menu::create($validatedData);
@@ -110,7 +112,10 @@ class MenuController extends Controller
 
         $this->createVariations($menuId, $validatedData['menu_variations']);
         $this->createToppings($menuId, $validatedData['menu_toppings']);
-
+        foreach ($restaurant->restaurantBranches as $branch) {
+            $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
+            $branch->availableMenus()->attach($availableMenus);
+        }
         return response()->json($menu->refresh()->load('menuVariations', 'menuToppings', 'menuVariations.menuVariationValues'), 201);
     }
 
@@ -121,30 +126,30 @@ class MenuController extends Controller
      * @return \Illuminate\Http\Response
      */
     /**
-    * @OA\Get(
-    *      path="/api/v2/admin/menus/{slug}",
-    *      operationId="showMenu",
-    *      tags={"Menus"},
-    *      summary="Get One menu",
-    *      description="Returns a requested menu ",
-    *      @OA\Parameter(
-    *          name="slug",
-    *          description="Slug of a requested menu",
-    *          required=true,
-    *          in="path",
-    *          @OA\Schema(
-    *              type="string"
-    *          )
-    *      ),
-    *      @OA\Response(
-    *          response=200,
-    *          description="Successful operation"
-    *      ),
-    *      security={
-    *          {"bearerAuth": {}}
-    *      }
-    *)
-    */
+     * @OA\Get(
+     *      path="/api/v2/admin/menus/{slug}",
+     *      operationId="showMenu",
+     *      tags={"Menus"},
+     *      summary="Get One menu",
+     *      description="Returns a requested menu ",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested menu",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function show($slug)
     {
         $menu = Menu::with('restaurant')->with('restaurantCategory')
@@ -345,14 +350,14 @@ class MenuController extends Controller
      */
     public function getAvailableMenusByRestaurantBranch(Request $request, $slug)
     {
-        return Menu::with('restaurantCategory')
-        ->whereHas('restaurantBranches', function ($q) use ($slug) {
-            $q->where('slug', $slug);
+        $menus = Menu::with('restaurantBranches')->whereHas('restaurantBranches', function ($query) use ($slug) {
+            $query->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
+        return $this->generateResponse($menus, 200);
     }
 
     private function getParamsToValidate($slug = false)
@@ -459,6 +464,21 @@ class MenuController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
+
+    public function toggleAvailable(Request $request, $restaurantSlug, $slug)
+    {
+        // $restaurantBranch = RestaurantBranch::where('slug', $restaurantSlug)->firstOrFail();
+
+        // $availableMenus = Menu::where('slug', $slug)->pluck('id');
+        // $restaurantBranch->availableMenus()->attach($availableMenus, ['is_available',$request->is_available]);
+        // return response()->json(['message' => 'Success.'], 200);
+        $menu = Menu::with('restaurantBranches')->whereHas('restaurantBranches', function ($query) use ($restaurantSlug) {
+            $query->where('slug', $restaurantSlug);
+        })->where('slug', $slug)->paginate(10);
+
+        $menu['is_available'] = !$menu->restaurantBranches->first()->pivot->is_available;
+        return response()->json(['message' => 'Success.'], 200);
+    }
 
     /**
      * @OA\Post(
