@@ -57,6 +57,11 @@ class RestaurantBranch extends Model
 
     protected $appends = ['image_url'];
 
+    public function getIsAvailableAttribute()
+    {
+        return boolval($this->pivot->is_available);
+    }
+
     public function getImageUrlAttribute()
     {
         return '';
@@ -74,7 +79,7 @@ class RestaurantBranch extends Model
 
     public function availableMenus()
     {
-        return $this->belongsToMany(Menu::class, 'restaurant_branch_menu_map');
+        return $this->belongsToMany(Menu::class, 'restaurant_branch_menu_map')->withPivot('is_available');
     }
 
     public function user()

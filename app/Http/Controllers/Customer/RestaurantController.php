@@ -11,6 +11,7 @@ use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
+use App\Models\Menu;
 
 class RestaurantController extends Controller
 {
@@ -111,8 +112,38 @@ class RestaurantController extends Controller
 
     public function getAvailableMenusByBranch($slug)
     {
-        $menus = RestaurantBranch::with('availableMenus')->where('slug', $slug)->firstOrFail();
-        return $this->generateResponse($menus, 200);
+        $restaurantBranch = RestaurantBranch::with('availableMenus')
+            ->with('availableMenus.restaurantCategory')
+            ->where('slug', $slug)
+            ->firstOrFail()
+            ->toArray();
+
+        $availableMenus = $restaurantBranch['available_menus'];
+
+        $availableCategories = collect([]);
+        foreach ($availableMenus as $menu) {
+            $availableCategories->push($menu['restaurant_category']);
+        }
+
+        $availableCategories = $availableCategories->unique()->values()->toArray();
+
+        for ($i = 0; $i < count($availableCategories); $i++) {
+            $categoryMenus = [];
+
+            foreach ($availableMenus as $menu) {
+                if ($availableCategories[$i]['slug'] === $menu['restaurant_category']['slug']) {
+                    unset($menu['restaurant_category']);
+                    array_push($categoryMenus, $menu);
+                }
+            }
+
+            $availableCategories[$i]['menus'] = $categoryMenus;
+        }
+
+        unset($restaurantBranch['available_menus']);
+        $restaurantBranch['available_categories'] = $availableCategories;
+
+        return $this->generateResponse($restaurantBranch, 200);
     }
 
     public function getCategories(Request $request)

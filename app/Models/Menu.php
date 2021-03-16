@@ -68,6 +68,11 @@ class Menu extends Model
         'is_enable' => 'boolean',
     ];
 
+    public function getIsAvailableAttribute()
+    {
+        return boolval($this->pivot->is_available);
+    }
+
     public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);
@@ -90,6 +95,6 @@ class Menu extends Model
 
     public function restaurantBranches()
     {
-        return $this->belongsToMany(RestaurantBranch::class, 'restaurant_branch_menu_map');
+        return $this->belongsToMany(RestaurantBranch::class, 'restaurant_branch_menu_map')->withPivot('is_available');
     }
 }
