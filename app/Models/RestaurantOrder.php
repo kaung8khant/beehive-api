@@ -17,12 +17,14 @@ class RestaurantOrder extends Model
         'delivery_mode',
         'customer_id',
         'restaurant_id',
+        'restaurant_branch_id',
     ];
 
     protected $hidden = [
         'id',
         'customer_id',
         'restaurant_id',
+        'restaurant_branch_id',
         'created_at',
         'updated_at',
     ];
@@ -32,6 +34,16 @@ class RestaurantOrder extends Model
     public function getOrderStatusAttribute()
     {
         return $this->restaurantOrderStatuses()->latest()->first()->status;
+    }
+
+    public function restaurant()
+    {
+        return $this->belongsTo(Restaurant::class);
+    }
+
+    public function restaurantBranch()
+    {
+        return $this->belongsTo(RestaurantBranch::class);
     }
 
     public function restaurantOrderStatuses()

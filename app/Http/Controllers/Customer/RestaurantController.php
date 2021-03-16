@@ -11,6 +11,7 @@ use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
+use App\Models\Menu;
 
 class RestaurantController extends Controller
 {
