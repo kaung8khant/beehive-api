@@ -5,6 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="RestaurantOrder"),
+ *      @OA\Property(property="order_date", type="string", example="2021-02-19"),
+ *      @OA\Property(property="restaurant_slug", type="string", example=""),
+ *      @OA\Property(property="restaurant_branch_slug", type="string", example=""),
+ *      @OA\Property(property="customer_slug", type="string", example="D16AAF"),
+ *      @OA\Property(property="special_instruction", type="string", example="special_instruction"),
+ *      @OA\Property(property="payment_mode", type="string", example="COD"),
+ *      @OA\Property(property="delivery_mode", type="string", example="delivery"),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ * )
+ */
 class RestaurantOrder extends Model
 {
     use HasFactory;
