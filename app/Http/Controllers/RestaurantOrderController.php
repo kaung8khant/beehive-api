@@ -170,7 +170,6 @@ class RestaurantOrderController extends Controller
 
         $validatedData = $validator->validated();
         $validatedData['customer_id'] = $this->getCustomerId($request->customer_slug);
-
         $validatedData['restaurant_id'] = $this->getRestaurantId($validatedData['restaurant_slug']);
         $validatedData['restaurant_branch_id'] = $this->getRestaurantBranchId($validatedData['restaurant_branch_slug']);
 
@@ -180,7 +179,6 @@ class RestaurantOrderController extends Controller
         $this->createOrderStatus($orderId);
         $this->createOrderContact($orderId, $validatedData['customer_info']);
         $this->createOrderItems($orderId, $validatedData['order_items']);
-        return $validatedData;
 
         return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
     }
