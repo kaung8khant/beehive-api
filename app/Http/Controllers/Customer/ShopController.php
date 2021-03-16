@@ -48,8 +48,7 @@ class ShopController extends Controller
         ->where('name', 'LIKE', '%' . $request->filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
         ->orWhere('slug', $request->filter)
-        ->paginate($request->size)
-        ->items();
+        ->get();
 
         return $this->generateResponse($shopCategories,200);
     }
@@ -58,8 +57,7 @@ class ShopController extends Controller
         ->where('name', 'LIKE', '%' . $request->filter . '%')
         ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
         ->orWhere('slug', $request->filter)
-        ->paginate($request->size)
-        ->items();
+        ->get();
 
         $shopCategories = $this->getProductFromShop($shopCategories);
 
@@ -72,8 +70,7 @@ class ShopController extends Controller
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
-            ->paginate($request->size)
-            ->items();
+            ->get();
 
         $shopTags =  $this->getProductFromShop($shopTags);
 
