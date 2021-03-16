@@ -90,6 +90,6 @@ class Menu extends Model
 
     public function restaurantBranches()
     {
-        return $this->belongsToMany(RestaurantBranch::class, 'restaurant_branch_menu_map');
+        return $this->belongsToMany(RestaurantBranch::class, 'restaurant_branch_menu_map')->withPivot('is_available');
     }
 }
