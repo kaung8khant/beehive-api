@@ -57,6 +57,11 @@ class RestaurantBranch extends Model
 
     protected $appends = ['image_url'];
 
+    public function getIsAvailableAttribute()
+    {
+        return boolval($this->pivot->is_available);
+    }
+
     public function getImageUrlAttribute()
     {
         return '';
