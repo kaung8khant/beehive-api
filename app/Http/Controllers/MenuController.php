@@ -345,7 +345,7 @@ class MenuController extends Controller
      */
     public function getAvailableMenusByRestaurantBranch(Request $request, $slug)
     {
-        return Menu::with('restaurantCategory')
+        return Menu::with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuToppings')
         ->whereHas('restaurantBranches', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
