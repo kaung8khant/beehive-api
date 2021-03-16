@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Helpers\StringHelper;
 use App\Helpers\ResponseHelper;
 use App\Models\Restaurant;
+use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderStatus;
 use App\Models\RestaurantOrderContact;
@@ -22,7 +23,9 @@ class RestaurantOrderController extends Controller
     public function index()
     {
         $customer_id = Auth::guard('customers')->user()->id;
-        $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact')
+        $restaurantOrders = RestaurantOrder::with('restaurant')
+            ->with('restaurantBranch')
+            ->with('RestaurantOrderContact')
             ->with('RestaurantOrderItems')
             ->where('customer_id', $customer_id)
             ->latest()
@@ -35,7 +38,9 @@ class RestaurantOrderController extends Controller
     public function show($slug)
     {
         $customer_id = Auth::guard('customers')->user()->id;
-        $order = RestaurantOrder::with('RestaurantOrderContact')
+        $order = RestaurantOrder::with('restaurant')
+            ->with('restaurantBranch')
+            ->with('RestaurantOrderContact')
             ->with('RestaurantOrderItems')
             ->where('slug', $slug)
             ->where('customer_id', $customer_id)
@@ -55,9 +60,12 @@ class RestaurantOrderController extends Controller
 
         $validatedData = $validator->validated();
         $validatedData['customer_id'] = Auth::guard('customers')->user()->id;
-        $validatedData['restaurant_id'] = Restaurant::where('slug', $validatedData['restaurant_slug'])->first()->id;
 
-        $validatedData['restaurant_id'] = $this->getRestaurantId($validatedData['restaurant_slug']);
+        $restaurantBranch = $this->getRestaurantBranch($validatedData['restaurant_branch_slug']);
+
+        $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
+        $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
+
         $order = RestaurantOrder::create($validatedData);
         $orderId = $order->id;
 
@@ -65,7 +73,7 @@ class RestaurantOrderController extends Controller
         $this->createOrderContact($orderId, $validatedData['customer_info']);
         $this->createOrderItems($orderId, $validatedData['order_items']);
 
-        return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
+        return $this->generateResponse($order->refresh()->load('restaurant', 'restaurantBranch', 'restaurantOrderContact', 'restaurantOrderItems'), 201);
     }
 
     public function destroy($slug)
@@ -88,7 +96,7 @@ class RestaurantOrderController extends Controller
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:package,delivery',
-            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
+            'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
@@ -139,9 +147,9 @@ class RestaurantOrderController extends Controller
         }
     }
 
-    private function getRestaurantId($slug)
+    private function getRestaurantBranch($slug)
     {
-        return Restaurant::where('slug', $slug)->first()->id;
+        return RestaurantBranch::where('slug', $slug)->first();
     }
 
     private function getMenuId($slug)
