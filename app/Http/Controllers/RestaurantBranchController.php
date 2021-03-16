@@ -505,20 +505,12 @@ class RestaurantBranchController extends Controller
         return response()->json($restaurantBranch->load('restaurant', 'township'), 200);
     }
 
-    public function toggleAvailable($restaurantSlug, $slug)
+    public function toggleAvailable(Request $request, $restaurantSlug, $slug)
     {
-        // $restaurantBranch = RestaurantBranch::where('slug', $restaurantSlug)->firstOrFail();
+        $restaurantBranch = RestaurantBranch::where('slug', $restaurantSlug)->firstOrFail();
 
-        // $availableMenus = Menu::where('slug', $slug)->pluck('id');
-        // $restaurantBranch->availableMenus()->attach($availableMenus, ['is_available',$request->is_available]);
-        // return response()->json(['message' => 'Success.'], 200);
-
-        $menu = Menu::with('restaurantBranches')->whereHas('restaurantBranches', function ($query) use ($restaurantSlug) {
-            $query->where('slug', $restaurantSlug);
-        })->where('slug', $slug)->firstOrFail();
-
-        $menu['is_available'] = !$menu->restaurantBranches->first()->pivot->is_available;
-        $menu->save();
+        $availableMenus = Menu::where('slug', $slug)->pluck('id');
+        $restaurantBranch->availableMenus()->attach($availableMenus, ['is_available',$request->has('is_available')?1:0]);
         return response()->json(['message' => 'Success.'], 200);
     }
 }
