@@ -19,6 +19,7 @@ class CreateRestaurantBranchMenuMapTable extends Migration
             $table->primary(['restaurant_branch_id', 'menu_id'], 'restaurant_branch_menu_map_primary');
             $table->foreign('restaurant_branch_id')->references('id')->on('restaurant_branches')->onDelete('cascade');
             $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
+            $table->boolean('is_available')->default(true);
         });
     }
 
