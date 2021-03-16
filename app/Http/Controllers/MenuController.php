@@ -350,18 +350,29 @@ class MenuController extends Controller
      */
     public function getAvailableMenusByRestaurantBranch(Request $request, $slug)
     {
-        $menus = Menu::with('restaurantBranches')->whereHas('restaurantBranches', function ($query) use ($slug) {
-            $query->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        // $menus = Menu::with('restaurantBranches')->whereHas('restaurantBranches', function ($query) use ($slug) {
+        //     $query->where('slug', $slug);
+        // })->where(function ($q) use ($request) {
+        //     $q->where('name', 'LIKE', '%' . $request->filter . '%')
+        //         ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+        //         ->orWhere('slug', $request->filter);
+        // })->paginate(10);
 
-        foreach ($menus as $menu) {
-            $menu['is_available'] = $menu->restaurantBranches->first()->pivot->is_available;
-            unset($menu['restaurantBranches']);
+        // foreach ($menus as $menu) {
+        //     $menu['is_available'] = $menu->restaurantBranches->first()->pivot->is_available;
+        //     // $menu->setAppends(['is_available']);
+        //     unset($menu['restaurantBranches']);
+        // }
+
+        $branch = RestaurantBranch::with('availableMenus')->where('slug', $slug)->firstOrFail();
+        foreach ($branch->availableMenus as $menu) {
+            $menu->setAppends(['is_available']);
         }
+        $menus=$branch->availableMenus()->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+        })->paginate(10);
         return $this->generateResponse($menus, 200);
     }
 
