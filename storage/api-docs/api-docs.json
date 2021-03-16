@@ -11,7 +11,9 @@
     "paths": {
         "/api/v2/admin/login": {
             "post": {
-                "tags": ["UserAuth"],
+                "tags": [
+                    "UserAuth"
+                ],
                 "summary": "User login",
                 "description": "Login as a system user",
                 "operationId": "adminLogin",
@@ -45,7 +47,9 @@
         },
         "/api/v2/admin/profile/update": {
             "put": {
-                "tags": ["UserAuth"],
+                "tags": [
+                    "UserAuth"
+                ],
                 "summary": "Update profile",
                 "description": "Update profile",
                 "operationId": "updateProfile",
@@ -88,7 +92,9 @@
         },
         "/api/v2/admin/brands": {
             "get": {
-                "tags": ["Brands"],
+                "tags": [
+                    "Brands"
+                ],
                 "summary": "Get list of brands",
                 "description": "Returns list of brand",
                 "operationId": "getBrandLists",
@@ -124,7 +130,9 @@
                 ]
             },
             "post": {
-                "tags": ["Brands"],
+                "tags": [
+                    "Brands"
+                ],
                 "summary": "Create a brand",
                 "description": "Returns newly created brand",
                 "operationId": "storeBrand",
@@ -153,7 +161,9 @@
         },
         "/api/v2/admin/brands/{slug}": {
             "get": {
-                "tags": ["Brands"],
+                "tags": [
+                    "Brands"
+                ],
                 "summary": "Get One Brand",
                 "description": "Returns a requested brand",
                 "operationId": "showBrands",
@@ -180,7 +190,9 @@
                 ]
             },
             "put": {
-                "tags": ["Brands"],
+                "tags": [
+                    "Brands"
+                ],
                 "summary": "Update a brand",
                 "description": "Update a requested brands",
                 "operationId": "updateBrand",
@@ -218,7 +230,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Brands"],
+                "tags": [
+                    "Brands"
+                ],
                 "summary": "Delete One Brand",
                 "description": "Delete one specific brand",
                 "operationId": "deleteBrand",
@@ -247,7 +261,9 @@
         },
         "/api/v2/admin/cities": {
             "get": {
-                "tags": ["Cities"],
+                "tags": [
+                    "Cities"
+                ],
                 "summary": "Get list of cities",
                 "description": "Returns list of cities",
                 "operationId": "getCityLists",
@@ -283,7 +299,9 @@
                 ]
             },
             "post": {
-                "tags": ["Cities"],
+                "tags": [
+                    "Cities"
+                ],
                 "summary": "Create a city",
                 "description": "Returns newly created city",
                 "operationId": "storeCity",
@@ -312,7 +330,9 @@
         },
         "/api/v2/admin/cities/{slug}": {
             "get": {
-                "tags": ["Cities"],
+                "tags": [
+                    "Cities"
+                ],
                 "summary": "Get One City",
                 "description": "Returns a requested city",
                 "operationId": "showCity",
@@ -339,7 +359,9 @@
                 ]
             },
             "put": {
-                "tags": ["Cities"],
+                "tags": [
+                    "Cities"
+                ],
                 "summary": "Update a city",
                 "description": "Update a requested city",
                 "operationId": "updateCity",
@@ -377,7 +399,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Cities"],
+                "tags": [
+                    "Cities"
+                ],
                 "summary": "Delete One City",
                 "description": "Delete one specific city",
                 "operationId": "deleteCity",
@@ -406,7 +430,9 @@
         },
         "/api/v2/admin/collectors": {
             "get": {
-                "tags": ["Collectors"],
+                "tags": [
+                    "Collectors"
+                ],
                 "summary": "Get list of collectors",
                 "description": "Returns list of collectors",
                 "operationId": "getCollectorLists",
@@ -442,7 +468,9 @@
                 ]
             },
             "post": {
-                "tags": ["Collectors"],
+                "tags": [
+                    "Collectors"
+                ],
                 "summary": "Create a collector",
                 "description": "Returns newly created collector",
                 "operationId": "storeUser",
@@ -471,7 +499,9 @@
         },
         "/api/v2/admin/collectors/{slug}": {
             "get": {
-                "tags": ["Collectors"],
+                "tags": [
+                    "Collectors"
+                ],
                 "summary": "Get One collector",
                 "description": "Returns a requested collector",
                 "operationId": "showCollector",
@@ -498,7 +528,9 @@
                 ]
             },
             "put": {
-                "tags": ["Collectors"],
+                "tags": [
+                    "Collectors"
+                ],
                 "summary": "Update a collector",
                 "description": "Update a requested collector",
                 "operationId": "updateCollector",
@@ -536,7 +568,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Collectors"],
+                "tags": [
+                    "Collectors"
+                ],
                 "summary": "Delete One collector",
                 "description": "Delete one specific collector",
                 "operationId": "deleteCollector",
@@ -565,7 +599,9 @@
         },
         "/api/v2/admin/collectors/toggle-enable/{slug}": {
             "patch": {
-                "tags": ["Collectors"],
+                "tags": [
+                    "Collectors"
+                ],
                 "summary": "Enable collector",
                 "description": "Enable a collector",
                 "operationId": "enableCollector",
@@ -594,7 +630,9 @@
         },
         "/api/v2/admin/customers": {
             "get": {
-                "tags": ["Customer"],
+                "tags": [
+                    "Customer"
+                ],
                 "summary": "Get list of customers",
                 "description": "Returns list of customers",
                 "operationId": "getCustomerLists",
@@ -630,7 +668,9 @@
                 ]
             },
             "post": {
-                "tags": ["Customer"],
+                "tags": [
+                    "Customer"
+                ],
                 "summary": "Create a Customer",
                 "description": "Returns newly created Customer",
                 "operationId": "storeCustomer",
@@ -659,7 +699,9 @@
         },
         "/api/v2/admin/customers/{slug}": {
             "get": {
-                "tags": ["Customer"],
+                "tags": [
+                    "Customer"
+                ],
                 "summary": "Get One Customer",
                 "description": "Returns a requested Customer",
                 "operationId": "showCustomer",
@@ -686,7 +728,9 @@
                 ]
             },
             "put": {
-                "tags": ["Customer"],
+                "tags": [
+                    "Customer"
+                ],
                 "summary": "Update a Customer",
                 "description": "Update a requested Customer",
                 "operationId": "updateCustomer",
@@ -724,7 +768,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Customer"],
+                "tags": [
+                    "Customer"
+                ],
                 "summary": "Delete One Customer",
                 "description": "Delete one specific Customer",
                 "operationId": "showCustomer",
@@ -753,7 +799,9 @@
         },
         "/api/v2/admin/customers/toggle-enable/{slug}": {
             "patch": {
-                "tags": ["Customer"],
+                "tags": [
+                    "Customer"
+                ],
                 "summary": "Enable customer",
                 "description": "Enable a customer",
                 "operationId": "enableCustomer",
@@ -782,7 +830,9 @@
         },
         "/api/v2/admin/drivers": {
             "get": {
-                "tags": ["Drivers"],
+                "tags": [
+                    "Drivers"
+                ],
                 "summary": "Get list of drivers",
                 "description": "Returns list of drivers",
                 "operationId": "getDriverLists",
@@ -818,7 +868,9 @@
                 ]
             },
             "post": {
-                "tags": ["Drivers"],
+                "tags": [
+                    "Drivers"
+                ],
                 "summary": "Create a driver",
                 "description": "Returns newly created driver",
                 "operationId": "storeDriver",
@@ -847,7 +899,9 @@
         },
         "/api/v2/admin/drivers/{slug}": {
             "get": {
-                "tags": ["Drivers"],
+                "tags": [
+                    "Drivers"
+                ],
                 "summary": "Get One driver",
                 "description": "Returns a requested driver",
                 "operationId": "showDriver",
@@ -874,7 +928,9 @@
                 ]
             },
             "put": {
-                "tags": ["Drivers"],
+                "tags": [
+                    "Drivers"
+                ],
                 "summary": "Update a driver",
                 "description": "Update a requested driver",
                 "operationId": "updateDriver",
@@ -912,7 +968,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Drivers"],
+                "tags": [
+                    "Drivers"
+                ],
                 "summary": "Delete One driver",
                 "description": "Delete one specific driver",
                 "operationId": "deleteDriver",
@@ -941,7 +999,9 @@
         },
         "/api/v2/admin/drivers/toggle-enable/{slug}": {
             "patch": {
-                "tags": ["Drivers"],
+                "tags": [
+                    "Drivers"
+                ],
                 "summary": "Enable driver",
                 "description": "Enable a driver",
                 "operationId": "enableDriver",
@@ -970,7 +1030,9 @@
         },
         "/api/v2/files": {
             "post": {
-                "tags": ["Files"],
+                "tags": [
+                    "Files"
+                ],
                 "summary": "Upload a file",
                 "description": "Returns newly uploaded file",
                 "operationId": "fileUpload",
@@ -1004,7 +1066,9 @@
         },
         "/api/v2/admin/menus": {
             "get": {
-                "tags": ["Menus"],
+                "tags": [
+                    "Menus"
+                ],
                 "summary": "Get list of menus",
                 "description": "Returns list of menus",
                 "operationId": "getMenuLists",
@@ -1040,7 +1104,9 @@
                 ]
             },
             "post": {
-                "tags": ["Menus"],
+                "tags": [
+                    "Menus"
+                ],
                 "summary": "Create a menu",
                 "description": "Returns newly created menu variation",
                 "operationId": "storeMenu",
@@ -1069,7 +1135,9 @@
         },
         "/api/v2/admin/menus/{slug}": {
             "get": {
-                "tags": ["Menus"],
+                "tags": [
+                    "Menus"
+                ],
                 "summary": "Get One menu",
                 "description": "Returns a requested menu ",
                 "operationId": "showMenu",
@@ -1096,7 +1164,9 @@
                 ]
             },
             "put": {
-                "tags": ["Menus"],
+                "tags": [
+                    "Menus"
+                ],
                 "summary": "Update a menu",
                 "description": "Update a requested menu ",
                 "operationId": "updateMenu",
@@ -1134,7 +1204,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Menus"],
+                "tags": [
+                    "Menus"
+                ],
                 "summary": "Delete One Menu",
                 "description": "Delete one specific menu",
                 "operationId": "deleteMenu",
@@ -1163,7 +1235,9 @@
         },
         "/api/v2/admin/restaurants/{slug}/menus": {
             "get": {
-                "tags": ["Menus"],
+                "tags": [
+                    "Menus"
+                ],
                 "summary": "Get Menus By Restaurant",
                 "description": "Returns list of menus",
                 "operationId": "getMenusByRestaurant",
@@ -1201,7 +1275,9 @@
         },
         "/api/v2/admin/restaurant-branches/{slug}/menus": {
             "get": {
-                "tags": ["Menus"],
+                "tags": [
+                    "Menus"
+                ],
                 "summary": "Get Available Menus By Restaurant Branch",
                 "description": "Returns list of menus",
                 "operationId": "getAvailableMenusByRestaurantBranch",
@@ -1239,7 +1315,9 @@
         },
         "/api/v2/admin/menus/toggle-enable/{slug}": {
             "patch": {
-                "tags": ["Menus"],
+                "tags": [
+                    "Menus"
+                ],
                 "summary": "Enable Menu",
                 "description": "Enable a menu",
                 "operationId": "enableMenu",
@@ -1268,7 +1346,9 @@
         },
         "/api/v2/vendor/restaurant-branches/{slug}/menus": {
             "post": {
-                "tags": ["Menus"],
+                "tags": [
+                    "Menus"
+                ],
                 "summary": "Create AvailableMenu",
                 "description": "Create a requested menu ",
                 "operationId": "createAvailableMenu",
@@ -1308,7 +1388,9 @@
         },
         "/api/v2/admin/menu-toppings": {
             "get": {
-                "tags": ["MenuToppings"],
+                "tags": [
+                    "MenuToppings"
+                ],
                 "summary": "Get list of menu toppings",
                 "description": "Returns list of menu toppings",
                 "operationId": "getMenuToppingLists",
@@ -1344,7 +1426,9 @@
                 ]
             },
             "post": {
-                "tags": ["MenuToppings"],
+                "tags": [
+                    "MenuToppings"
+                ],
                 "summary": "Create Menu Toppings",
                 "description": "Returns newly created Menu Topping list",
                 "operationId": "storeMenuTopping",
@@ -1403,7 +1487,9 @@
         },
         "/api/v2/admin/menu-toppings/{slug}": {
             "get": {
-                "tags": ["MenuToppings"],
+                "tags": [
+                    "MenuToppings"
+                ],
                 "summary": "Get One Menu Topping",
                 "description": "Returns a requested menu topping",
                 "operationId": "showMenuTopping",
@@ -1430,7 +1516,9 @@
                 ]
             },
             "put": {
-                "tags": ["MenuToppings"],
+                "tags": [
+                    "MenuToppings"
+                ],
                 "summary": "Update a Menu Topping",
                 "description": "Update a requested Menu Topping",
                 "operationId": "updateMenuTopping",
@@ -1468,7 +1556,9 @@
                 ]
             },
             "delete": {
-                "tags": ["MenuToppings"],
+                "tags": [
+                    "MenuToppings"
+                ],
                 "summary": "Delete One Menu Topping",
                 "description": "Delete one specific menu topping",
                 "operationId": "deleteMenuTopping",
@@ -1497,7 +1587,9 @@
         },
         "/api/v2/admin/menus/{slug}/menu-toppings": {
             "get": {
-                "tags": ["MenuToppings"],
+                "tags": [
+                    "MenuToppings"
+                ],
                 "summary": "Get Toppings By Menu",
                 "description": "Returns list of menu toppings",
                 "operationId": "getToppingsByMenu",
@@ -1535,7 +1627,9 @@
         },
         "/api/v2/admin/menu-variations": {
             "get": {
-                "tags": ["MenuVariations"],
+                "tags": [
+                    "MenuVariations"
+                ],
                 "summary": "Get list of menu variation",
                 "description": "Returns list of menu variation",
                 "operationId": "getMenuVariationLists",
@@ -1571,7 +1665,9 @@
                 ]
             },
             "post": {
-                "tags": ["MenuVariations"],
+                "tags": [
+                    "MenuVariations"
+                ],
                 "summary": "Create a menu variation",
                 "description": "Returns newly created menu variation",
                 "operationId": "storeMenuVariations",
@@ -1646,7 +1742,9 @@
         },
         "/api/v2/admin/menu-variations/{slug}": {
             "get": {
-                "tags": ["MenuVariations"],
+                "tags": [
+                    "MenuVariations"
+                ],
                 "summary": "Get One menu variation",
                 "description": "Returns a requested menu variation",
                 "operationId": "showMenuVariation",
@@ -1673,7 +1771,9 @@
                 ]
             },
             "put": {
-                "tags": ["MenuVariations"],
+                "tags": [
+                    "MenuVariations"
+                ],
                 "summary": "Update a menu variation",
                 "description": "Update a requested menu variation",
                 "operationId": "updateMenuVariation",
@@ -1711,7 +1811,9 @@
                 ]
             },
             "delete": {
-                "tags": ["MenuVariations"],
+                "tags": [
+                    "MenuVariations"
+                ],
                 "summary": "Delete One Menu Variation",
                 "description": "Delete one specific menu variation",
                 "operationId": "deleteMenuVariation",
@@ -1740,7 +1842,9 @@
         },
         "/api/v2/admin/menus/{slug}/menu-variations": {
             "get": {
-                "tags": ["MenuVariations"],
+                "tags": [
+                    "MenuVariations"
+                ],
                 "summary": "Get Variations By Menu",
                 "description": "Returns list of menu variations",
                 "operationId": "getVariationsByMenu",
@@ -1778,7 +1882,9 @@
         },
         "/api/v2/admin/menu-variation-values": {
             "get": {
-                "tags": ["Menu Variation values"],
+                "tags": [
+                    "Menu Variation values"
+                ],
                 "summary": "Get list of menu variation value",
                 "description": "Returns list of menu variation value",
                 "operationId": "getMenuVariationValueLists",
@@ -1814,7 +1920,9 @@
                 ]
             },
             "post": {
-                "tags": ["Menu Variation values"],
+                "tags": [
+                    "Menu Variation values"
+                ],
                 "summary": "Create a Menu Variation Value",
                 "description": "Returns newly created menu variation value",
                 "operationId": "storeMenuVariationValue",
@@ -1843,7 +1951,9 @@
         },
         "/api/v2/admin/menu-variation-values/{slug}": {
             "get": {
-                "tags": ["Menu Variation values"],
+                "tags": [
+                    "Menu Variation values"
+                ],
                 "summary": "Get One menu variation value",
                 "description": "Returns a requested menu variation value",
                 "operationId": "showMenuVariationValue",
@@ -1870,7 +1980,9 @@
                 ]
             },
             "put": {
-                "tags": ["Menu Variation values"],
+                "tags": [
+                    "Menu Variation values"
+                ],
                 "summary": "Update a Menu Variation Value",
                 "description": "Update a requested menu variation value",
                 "operationId": "updateMenuVariationValue",
@@ -1908,7 +2020,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Menu Variation values"],
+                "tags": [
+                    "Menu Variation values"
+                ],
                 "summary": "Delete One Menu Variation Value",
                 "description": "Delete one specific menu variation value",
                 "operationId": "deleteMenuVariationValue",
@@ -1937,7 +2051,9 @@
         },
         "/api/v2/admin/orders/{slug}/contact": {
             "get": {
-                "tags": ["OrderContact"],
+                "tags": [
+                    "OrderContact"
+                ],
                 "summary": "Get One Order Contact",
                 "description": "Returns a requested order contact",
                 "operationId": "Order",
@@ -1964,7 +2080,9 @@
                 ]
             },
             "put": {
-                "tags": ["OrderContact"],
+                "tags": [
+                    "OrderContact"
+                ],
                 "summary": "Update a OrderContact",
                 "description": "Update a requested OrderContact",
                 "operationId": "updateOrderContact",
@@ -2004,7 +2122,9 @@
         },
         "/api/v2/admin/orders/{slug}/items": {
             "get": {
-                "tags": ["OrderItems"],
+                "tags": [
+                    "OrderItems"
+                ],
                 "summary": "Get list of order items",
                 "description": "Returns list of order items",
                 "operationId": "getOrderItemLists",
@@ -2031,7 +2151,9 @@
                 ]
             },
             "post": {
-                "tags": ["OrderItems"],
+                "tags": [
+                    "OrderItems"
+                ],
                 "summary": "Create a order item",
                 "description": "Returns newly created order item",
                 "operationId": "storeOrderItems",
@@ -2071,7 +2193,9 @@
         },
         "/api/v2/admin/orders/{slug}/items/{id}": {
             "get": {
-                "tags": ["OrderItems"],
+                "tags": [
+                    "OrderItems"
+                ],
                 "summary": "Get One order item",
                 "description": "Returns a requested orders items",
                 "operationId": "getOneOrderItem",
@@ -2107,7 +2231,9 @@
                 ]
             },
             "put": {
-                "tags": ["OrderItems"],
+                "tags": [
+                    "OrderItems"
+                ],
                 "summary": "Update a order item",
                 "description": "Update a requested order item",
                 "operationId": "updateOrderItem",
@@ -2154,7 +2280,9 @@
                 ]
             },
             "delete": {
-                "tags": ["OrderItems"],
+                "tags": [
+                    "OrderItems"
+                ],
                 "summary": "Delete One Order Item",
                 "description": "Delete one specific order item",
                 "operationId": "deleteOrderItem",
@@ -2192,7 +2320,9 @@
         },
         "/api/v2/admin/products": {
             "get": {
-                "tags": ["Products"],
+                "tags": [
+                    "Products"
+                ],
                 "summary": "Get list of products",
                 "description": "Returns list of products",
                 "operationId": "getProductLists",
@@ -2230,7 +2360,9 @@
         },
         "/api/v2/{path}/products": {
             "post": {
-                "tags": ["Products"],
+                "tags": [
+                    "Products"
+                ],
                 "summary": "Create a product",
                 "description": "Returns newly created product",
                 "operationId": "storeProduct",
@@ -2243,7 +2375,10 @@
                         "schema": {
                             "type": "string",
                             "default": "admin",
-                            "enum": ["admin", "vendor"]
+                            "enum": [
+                                "admin",
+                                "vendor"
+                            ]
                         }
                     }
                 ],
@@ -2272,7 +2407,9 @@
         },
         "/api/v2/{path}/products/{slug}": {
             "get": {
-                "tags": ["Products"],
+                "tags": [
+                    "Products"
+                ],
                 "summary": "Get One Product",
                 "description": "Returns a requested product",
                 "operationId": "showProduct",
@@ -2285,7 +2422,10 @@
                         "schema": {
                             "type": "string",
                             "default": "admin",
-                            "enum": ["admin", "vendor"]
+                            "enum": [
+                                "admin",
+                                "vendor"
+                            ]
                         }
                     },
                     {
@@ -2310,7 +2450,9 @@
                 ]
             },
             "put": {
-                "tags": ["Products"],
+                "tags": [
+                    "Products"
+                ],
                 "summary": "Update a product",
                 "description": "Update a requested product",
                 "operationId": "updateProduct",
@@ -2323,7 +2465,10 @@
                         "schema": {
                             "type": "string",
                             "default": "admin",
-                            "enum": ["admin", "vendor"]
+                            "enum": [
+                                "admin",
+                                "vendor"
+                            ]
                         }
                     },
                     {
@@ -2359,7 +2504,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Products"],
+                "tags": [
+                    "Products"
+                ],
                 "summary": "Delete One Product",
                 "description": "Delete one specific product",
                 "operationId": "deleteProduct",
@@ -2372,7 +2519,10 @@
                         "schema": {
                             "type": "string",
                             "default": "admin",
-                            "enum": ["admin", "vendor"]
+                            "enum": [
+                                "admin",
+                                "vendor"
+                            ]
                         }
                     },
                     {
@@ -2399,7 +2549,9 @@
         },
         "/api/v2/admin/shops/{slug}/products": {
             "get": {
-                "tags": ["Products"],
+                "tags": [
+                    "Products"
+                ],
                 "summary": "Get Products By Shop",
                 "description": "Returns requested list of products",
                 "operationId": "getProductsByShop",
@@ -2437,7 +2589,9 @@
         },
         "/api/v2/admin/products/toggle-enable/{slug}": {
             "patch": {
-                "tags": ["Products"],
+                "tags": [
+                    "Products"
+                ],
                 "summary": "Enable Product",
                 "description": "Enable a product",
                 "operationId": "enableProduct",
@@ -2466,7 +2620,9 @@
         },
         "/api/v2/admin/brands/{slug}/products": {
             "get": {
-                "tags": ["Products"],
+                "tags": [
+                    "Products"
+                ],
                 "summary": "Get Products By Brand",
                 "description": "Returns requested list of products",
                 "operationId": "getProductsByBrand",
@@ -2504,7 +2660,9 @@
         },
         "/api/v2/admin/product-variations": {
             "get": {
-                "tags": ["Product Variations"],
+                "tags": [
+                    "Product Variations"
+                ],
                 "summary": "Get list of product variations",
                 "description": "Returns list of product variations",
                 "operationId": "getProductVariationLists",
@@ -2540,7 +2698,9 @@
                 ]
             },
             "post": {
-                "tags": ["Product Variations"],
+                "tags": [
+                    "Product Variations"
+                ],
                 "summary": "Create a product variation",
                 "description": "Returns newly created product variation",
                 "operationId": "storeProductVariation",
@@ -2569,7 +2729,9 @@
         },
         "/api/v2/admin/product-variations/{slug}": {
             "get": {
-                "tags": ["Product Variations"],
+                "tags": [
+                    "Product Variations"
+                ],
                 "summary": "Get One Product Variation",
                 "description": "Returns a requested product variation",
                 "operationId": "showProductVariation",
@@ -2596,7 +2758,9 @@
                 ]
             },
             "put": {
-                "tags": ["Product Variations"],
+                "tags": [
+                    "Product Variations"
+                ],
                 "summary": "Update a product variation",
                 "description": "Update a requested product variation",
                 "operationId": "updateProductVariation",
@@ -2634,7 +2798,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Product Variations"],
+                "tags": [
+                    "Product Variations"
+                ],
                 "summary": "Delete One Product Variation",
                 "description": "Delete one specific product variation",
                 "operationId": "deleteProductVariation",
@@ -2663,7 +2829,9 @@
         },
         "/api/v2/admin/products/{slug}/product-variations": {
             "get": {
-                "tags": ["Product Variations"],
+                "tags": [
+                    "Product Variations"
+                ],
                 "summary": "Get Product Variations By Product",
                 "description": "Returns requested list of product variations",
                 "operationId": "getProductVariationsByProduct",
@@ -2701,7 +2869,9 @@
         },
         "/api/v2/admin/product-variation-values": {
             "get": {
-                "tags": ["Product Variation Values"],
+                "tags": [
+                    "Product Variation Values"
+                ],
                 "summary": "Get list of product variaiton values",
                 "description": "Returns list of product variation values",
                 "operationId": "getProductVariationValueLists",
@@ -2728,7 +2898,9 @@
                 ]
             },
             "post": {
-                "tags": ["Product Variation Values"],
+                "tags": [
+                    "Product Variation Values"
+                ],
                 "summary": "Create list of product variation value",
                 "description": "Returns list of newly created product variation value",
                 "operationId": "storeProductVariationValue",
@@ -2757,7 +2929,9 @@
         },
         "/api/v2/admin/product-variation-values/{slug}": {
             "get": {
-                "tags": ["Product Variation Values"],
+                "tags": [
+                    "Product Variation Values"
+                ],
                 "summary": "Get One Product Variation Value",
                 "description": "Returns a requested product variation value",
                 "operationId": "showProductVariationValue",
@@ -2784,7 +2958,9 @@
                 ]
             },
             "put": {
-                "tags": ["Products"],
+                "tags": [
+                    "Products"
+                ],
                 "summary": "Update a product variation value",
                 "description": "Update a requested product variation value",
                 "operationId": "updateProductVariationValue",
@@ -2822,7 +2998,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Product Variation Values"],
+                "tags": [
+                    "Product Variation Values"
+                ],
                 "summary": "Delete One Product variation value",
                 "description": "Delete one specific product variation value",
                 "operationId": "deleteProductVariationValue",
@@ -2851,7 +3029,9 @@
         },
         "/api/v2/admin/product-variations/{slug}/product-variation-values": {
             "get": {
-                "tags": ["Product Variation Values"],
+                "tags": [
+                    "Product Variation Values"
+                ],
                 "summary": "Get Product Variation Values By Product variation",
                 "description": "Returns requested list of product variation values",
                 "operationId": "getProductVariationValuesByProductVariation",
@@ -2880,7 +3060,9 @@
         },
         "/api/v2/admin/promocodes": {
             "get": {
-                "tags": ["Promocodes"],
+                "tags": [
+                    "Promocodes"
+                ],
                 "summary": "Get list of promocodes",
                 "description": "Returns list of promocodes",
                 "operationId": "getPromocodeLists",
@@ -2916,7 +3098,9 @@
                 ]
             },
             "post": {
-                "tags": ["Promocodes"],
+                "tags": [
+                    "Promocodes"
+                ],
                 "summary": "Create a promocode",
                 "description": "Returns newly created promocode",
                 "operationId": "storePromocode",
@@ -2945,7 +3129,9 @@
         },
         "/api/v2/admin/promocodes/{slug}": {
             "get": {
-                "tags": ["Promocodes"],
+                "tags": [
+                    "Promocodes"
+                ],
                 "summary": "Get One Promocode",
                 "description": "Returns a requested promocode",
                 "operationId": "showPromocode",
@@ -2972,7 +3158,9 @@
                 ]
             },
             "put": {
-                "tags": ["Promocodes"],
+                "tags": [
+                    "Promocodes"
+                ],
                 "summary": "Update a promocode",
                 "description": "Update a requested promocode",
                 "operationId": "updatePromocode",
@@ -3010,7 +3198,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Promocodes"],
+                "tags": [
+                    "Promocodes"
+                ],
                 "summary": "Delete One Promocode",
                 "description": "Delete one specific promocode",
                 "operationId": "deletePromocode",
@@ -3039,7 +3229,9 @@
         },
         "/api/v2/admin/promocodes/add-rules/{slug}": {
             "post": {
-                "tags": ["Promocodes"],
+                "tags": [
+                    "Promocodes"
+                ],
                 "summary": "Add Rules",
                 "description": "Returns newly add rules data",
                 "operationId": "addRules",
@@ -3101,7 +3293,9 @@
         },
         "/api/v2/admin/rules/{id}": {
             "delete": {
-                "tags": ["Promocodes"],
+                "tags": [
+                    "Promocodes"
+                ],
                 "summary": "Remove Rule",
                 "description": "Remove Rule",
                 "operationId": "removeRule",
@@ -3130,7 +3324,9 @@
         },
         "/api/v2/admin/restaurant-branches": {
             "get": {
-                "tags": ["Restaurant Branches"],
+                "tags": [
+                    "Restaurant Branches"
+                ],
                 "summary": "Get list of restaurant branches",
                 "description": "Returns list of restaurant branches",
                 "operationId": "getRestaurantBranchLists",
@@ -3166,7 +3362,9 @@
                 ]
             },
             "post": {
-                "tags": ["Restaurant Branches"],
+                "tags": [
+                    "Restaurant Branches"
+                ],
                 "summary": "Create a restaurant branch",
                 "description": "Returns newly created restaurant branch",
                 "operationId": "storeRestaurantBranch",
@@ -3195,7 +3393,9 @@
         },
         "/api/v2/admin/restaurant-branches/{slug}": {
             "get": {
-                "tags": ["Restaurant Branches"],
+                "tags": [
+                    "Restaurant Branches"
+                ],
                 "summary": "Get One Restaurant Branch",
                 "description": "Returns a requested restaurant branch",
                 "operationId": "showRestaurantBranch",
@@ -3222,7 +3422,9 @@
                 ]
             },
             "put": {
-                "tags": ["Restaurant Branches"],
+                "tags": [
+                    "Restaurant Branches"
+                ],
                 "summary": "Update a restaurant branch",
                 "description": "Update a requested restaurant branch",
                 "operationId": "updateRestaurantBranch",
@@ -3260,7 +3462,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Restaurants"],
+                "tags": [
+                    "Restaurants"
+                ],
                 "summary": "Delete One Restaurant Branch",
                 "description": "Delete one specific restaurant branch",
                 "operationId": "deleteRestaurantBranch",
@@ -3289,7 +3493,9 @@
         },
         "/api/v2/admin/restaurants/{slug}/restaurant-branches": {
             "get": {
-                "tags": ["Restaurant Branches"],
+                "tags": [
+                    "Restaurant Branches"
+                ],
                 "summary": "Get Branches By Restaurant",
                 "description": "Returns requested list of restaurant branches",
                 "operationId": "getBranchesByRestaurant",
@@ -3327,7 +3533,9 @@
         },
         "/api/v2/admin/townships/{slug}/restaurant-branches": {
             "get": {
-                "tags": ["Restaurant Branches"],
+                "tags": [
+                    "Restaurant Branches"
+                ],
                 "summary": "Get Branches By Restaurant",
                 "description": "Returns requested list of restaurant branches",
                 "operationId": "getBranchesByTownship",
@@ -3365,7 +3573,9 @@
         },
         "/api/v2/admin/restaurant-branches/toggle-enable/{slug}": {
             "patch": {
-                "tags": ["Restaurant Branches"],
+                "tags": [
+                    "Restaurant Branches"
+                ],
                 "summary": "Enable Restaurant Branch",
                 "description": "Enable a restaurant branch",
                 "operationId": "enableRestaurantBranch",
@@ -3394,7 +3604,9 @@
         },
         "/api/v2/admin/restaurant-branches/add-available-menus/{slug}": {
             "post": {
-                "tags": ["Restaurant Branches"],
+                "tags": [
+                    "Restaurant Branches"
+                ],
                 "summary": "Add available menus",
                 "description": "Returns newly added available menus",
                 "operationId": "addAvailableMenus",
@@ -3434,7 +3646,9 @@
         },
         "/api/v2/admin/restaurant-branches/remove-available-menus/{slug}": {
             "post": {
-                "tags": ["Restaurant Branches"],
+                "tags": [
+                    "Restaurant Branches"
+                ],
                 "summary": "Remvoe available menus",
                 "description": "Returns newly removed available menus",
                 "operationId": "removeAvailableMenus",
@@ -3474,7 +3688,9 @@
         },
         "/api/v2/admin/restaurant-categories": {
             "get": {
-                "tags": ["Restaurant Categories"],
+                "tags": [
+                    "Restaurant Categories"
+                ],
                 "summary": "Get list of restaurant categories",
                 "description": "Returns list of restaurant categories",
                 "operationId": "getRestaurantCategoryLists",
@@ -3501,7 +3717,9 @@
                 ]
             },
             "post": {
-                "tags": ["Restaurant Categories"],
+                "tags": [
+                    "Restaurant Categories"
+                ],
                 "summary": "Create a restaurant category",
                 "description": "Returns newly created restaurant category",
                 "operationId": "storeRestaurantCategory",
@@ -3530,7 +3748,9 @@
         },
         "/api/v2/admin/restaurant-categories/{slug}": {
             "get": {
-                "tags": ["Restaurant Categories"],
+                "tags": [
+                    "Restaurant Categories"
+                ],
                 "summary": "Get One Restaurant Category",
                 "description": "Returns a requested restaurant category",
                 "operationId": "showRestaurantCategory",
@@ -3557,7 +3777,9 @@
                 ]
             },
             "put": {
-                "tags": ["Restaurant Categories"],
+                "tags": [
+                    "Restaurant Categories"
+                ],
                 "summary": "Update a Restaurant Category",
                 "description": "Update a requested restaurant category",
                 "operationId": "updateRestaurantCategory",
@@ -3595,7 +3817,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Restaurant Categories"],
+                "tags": [
+                    "Restaurant Categories"
+                ],
                 "summary": "Delete One restaurant category",
                 "description": "Delete one specific restaurant category",
                 "operationId": "deleteRestaurantCategory",
@@ -3624,7 +3848,9 @@
         },
         "/api/v2/admin/restaurants/{slug}/restaurant-categories": {
             "get": {
-                "tags": ["Restaurant Categories"],
+                "tags": [
+                    "Restaurant Categories"
+                ],
                 "summary": "Get Categories By Restaurant",
                 "description": "Returns requested list of restaurant categories",
                 "operationId": "getCategoriesByRestaurant",
@@ -3653,7 +3879,9 @@
         },
         "/api/v2/admin/restaurants": {
             "get": {
-                "tags": ["Restaurants"],
+                "tags": [
+                    "Restaurants"
+                ],
                 "summary": "Get list of restaurants",
                 "description": "Returns list of restaurants",
                 "operationId": "getRestaurantLists",
@@ -3689,7 +3917,9 @@
                 ]
             },
             "post": {
-                "tags": ["Restaurants"],
+                "tags": [
+                    "Restaurants"
+                ],
                 "summary": "Create a restaurant",
                 "description": "Returns newly created restaurant",
                 "operationId": "storeRestaurant",
@@ -3718,7 +3948,9 @@
         },
         "/api/v2/admin/restaurants/{slug}": {
             "get": {
-                "tags": ["Restaurants"],
+                "tags": [
+                    "Restaurants"
+                ],
                 "summary": "Get One Restaurant",
                 "description": "Returns a requested restaurant",
                 "operationId": "showRestaurant",
@@ -3745,7 +3977,9 @@
                 ]
             },
             "put": {
-                "tags": ["Restaurants"],
+                "tags": [
+                    "Restaurants"
+                ],
                 "summary": "Update a restaurant",
                 "description": "Update a requested restaurant",
                 "operationId": "updateRestaurant",
@@ -3783,7 +4017,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Restaurants"],
+                "tags": [
+                    "Restaurants"
+                ],
                 "summary": "Delete One Restaurant",
                 "description": "Delete one specific restaurant",
                 "operationId": "deleteRestaurant",
@@ -3812,7 +4048,9 @@
         },
         "/api/v2/admin/restaurants/toggle-enable/{slug}": {
             "patch": {
-                "tags": ["Restaurants"],
+                "tags": [
+                    "Restaurants"
+                ],
                 "summary": "Enable Restaurant",
                 "description": "Enable a restaurant",
                 "operationId": "enableRestaurant",
@@ -3841,7 +4079,9 @@
         },
         "/api/v2/admin/restaurants/add-restaurant-categories/{slug}": {
             "post": {
-                "tags": ["Restaurants"],
+                "tags": [
+                    "Restaurants"
+                ],
                 "summary": "Add restaurant categories",
                 "description": "Returns newly added restaurant categories",
                 "operationId": "addRestaurantCategories",
@@ -3881,7 +4121,9 @@
         },
         "/api/v2/admin/restaurants/remove-restaurant-categories/{slug}": {
             "post": {
-                "tags": ["Restaurants"],
+                "tags": [
+                    "Restaurants"
+                ],
                 "summary": "Remove restaurant categories",
                 "description": "Returns newly removed restaurant categories",
                 "operationId": "removeRestaurantCategories",
@@ -3921,7 +4163,9 @@
         },
         "/api/v2/admin/restaurant-orders": {
             "get": {
-                "tags": ["Restaurant Orders"],
+                "tags": [
+                    "Restaurant Orders"
+                ],
                 "summary": "Get list of restaurant orders",
                 "description": "Returns list of restaurant orders",
                 "operationId": "getRestaurantOrderLists",
@@ -3957,7 +4201,9 @@
                 ]
             },
             "post": {
-                "tags": ["Restaurant Orders"],
+                "tags": [
+                    "Restaurant Orders"
+                ],
                 "summary": "Create Restaurant Order",
                 "description": "Returns newly created order",
                 "operationId": "storeRestaurantOrder",
@@ -3970,7 +4216,15 @@
                                 "properties": {
                                     "customer_slug": {
                                         "type": "string",
-                                        "example": "D16AAF"
+                                        "example": ""
+                                    },
+                                    "restaurant_slug": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "restaurant_branch_slug": {
+                                        "type": "string",
+                                        "example": ""
                                     },
                                     "order_date": {
                                         "type": "string",
@@ -3978,7 +4232,7 @@
                                     },
                                     "special_instruction": {
                                         "type": "string",
-                                        "example": "special_instruction"
+                                        "example": ""
                                     },
                                     "payment_mode": {
                                         "type": "string",
@@ -3997,7 +4251,7 @@
                                             "properties": {
                                                 "menu_slug": {
                                                     "type": "string",
-                                                    "example": "D16AAF"
+                                                    "example": ""
                                                 },
                                                 "menu_name": {
                                                     "type": "string",
@@ -4018,6 +4272,38 @@
                                                 "discount": {
                                                     "type": "number",
                                                     "example": 0
+                                                },
+                                                "variations": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": ""
+                                                            },
+                                                            "value": {
+                                                                "type": "number",
+                                                                "example": 0
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "toppings": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": ""
+                                                            },
+                                                            "value": {
+                                                                "type": "number",
+                                                                "example": 0
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
                                                 }
                                             },
                                             "type": "object"
@@ -4043,7 +4329,9 @@
         },
         "/api/v2/admin/restaurant-orders/{slug}": {
             "get": {
-                "tags": ["Restaurant Orders"],
+                "tags": [
+                    "Restaurant Orders"
+                ],
                 "summary": "Get One Restaurant Order",
                 "description": "Returns a requested restaurant order",
                 "operationId": "getOneRestaurantOrder",
@@ -4070,7 +4358,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Restaurant Orders"],
+                "tags": [
+                    "Restaurant Orders"
+                ],
                 "summary": "Delete One Restaurant Order",
                 "description": "Delete one specific restaurant order",
                 "operationId": "deleteRestaurantOrder",
@@ -4099,7 +4389,9 @@
         },
         "/api/v2/admin/restaurant-tags": {
             "get": {
-                "tags": ["Restaurant Tags"],
+                "tags": [
+                    "Restaurant Tags"
+                ],
                 "summary": "Get list of restaurant tags",
                 "description": "Returns list of restaurant tags",
                 "operationId": "getRestaurantTags",
@@ -4126,7 +4418,9 @@
                 ]
             },
             "post": {
-                "tags": ["Restaurant Tags"],
+                "tags": [
+                    "Restaurant Tags"
+                ],
                 "summary": "Create a restaurant tag",
                 "description": "Returns newly created restaurant tag",
                 "operationId": "storeRestaurantTag",
@@ -4155,7 +4449,9 @@
         },
         "/api/v2/admin/restaurant-tags/{slug}": {
             "get": {
-                "tags": ["Restaurant Tags"],
+                "tags": [
+                    "Restaurant Tags"
+                ],
                 "summary": "Get One RestaurantTag",
                 "description": "Returns a requested Restaurant Tag",
                 "operationId": "showRestaurantTag",
@@ -4182,7 +4478,9 @@
                 ]
             },
             "put": {
-                "tags": ["Restaurant Tags"],
+                "tags": [
+                    "Restaurant Tags"
+                ],
                 "summary": "Update a restaurant tag",
                 "description": "Update a restaurant tag",
                 "operationId": "updateRestaurantTag",
@@ -4220,7 +4518,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Restaurant Tags"],
+                "tags": [
+                    "Restaurant Tags"
+                ],
                 "summary": "Delete One Restaurant Tag",
                 "description": "Delete one restaurant tag",
                 "operationId": "deleteRestaurantTags",
@@ -4249,7 +4549,9 @@
         },
         "/api/v2/admin/restaurants/{slug}/restaurant-tags": {
             "get": {
-                "tags": ["Restaurant Tags"],
+                "tags": [
+                    "Restaurant Tags"
+                ],
                 "summary": "Get Tags By Restaurant",
                 "description": "Returns requested list of restaruant tags",
                 "operationId": "getTagsByRestaurant",
@@ -4278,7 +4580,9 @@
         },
         "/api/v2/admin/roles": {
             "get": {
-                "tags": ["Roles"],
+                "tags": [
+                    "Roles"
+                ],
                 "summary": "Get list of roles",
                 "description": "Returns list of roles",
                 "operationId": "getRoleLists",
@@ -4305,7 +4609,9 @@
                 ]
             },
             "post": {
-                "tags": ["Roles"],
+                "tags": [
+                    "Roles"
+                ],
                 "summary": "Create a role",
                 "description": "Returns newly created role",
                 "operationId": "storeRole",
@@ -4334,7 +4640,9 @@
         },
         "/api/v2/admin/roles/{slug}": {
             "get": {
-                "tags": ["Roles"],
+                "tags": [
+                    "Roles"
+                ],
                 "summary": "Get One Role",
                 "description": "Returns a requested role",
                 "operationId": "showRole",
@@ -4361,7 +4669,9 @@
                 ]
             },
             "put": {
-                "tags": ["Roles"],
+                "tags": [
+                    "Roles"
+                ],
                 "summary": "Update a Role",
                 "description": "Update a requested role",
                 "operationId": "updateRole",
@@ -4399,7 +4709,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Roles"],
+                "tags": [
+                    "Roles"
+                ],
                 "summary": "Delete One Role",
                 "description": "Delete one specific role",
                 "operationId": "showRole",
@@ -4428,7 +4740,9 @@
         },
         "/api/v2/admin/settings": {
             "get": {
-                "tags": ["Settings"],
+                "tags": [
+                    "Settings"
+                ],
                 "summary": "Get list of settings",
                 "description": "Returns list of settings",
                 "operationId": "getSettingLists",
@@ -4457,7 +4771,9 @@
         },
         "/api/v2/{path}/settings/{key}": {
             "get": {
-                "tags": ["Settings"],
+                "tags": [
+                    "Settings"
+                ],
                 "summary": "Get One Setting",
                 "description": "Returns a requested setting",
                 "operationId": "showSetting",
@@ -4486,7 +4802,9 @@
         },
         "/api/v2/admin/settings/update": {
             "put": {
-                "tags": ["Settings"],
+                "tags": [
+                    "Settings"
+                ],
                 "summary": "Update a Setting",
                 "description": "Update a requested setting",
                 "operationId": "updateSetting",
@@ -4515,7 +4833,9 @@
         },
         "/api/v2/admin/shop-categories": {
             "get": {
-                "tags": ["Shop Category"],
+                "tags": [
+                    "Shop Category"
+                ],
                 "summary": "Get list of shop categories",
                 "description": "Returns list of shop categories",
                 "operationId": "getShopCategoryLists",
@@ -4551,7 +4871,9 @@
                 ]
             },
             "post": {
-                "tags": ["Shop Category"],
+                "tags": [
+                    "Shop Category"
+                ],
                 "summary": "Create a Shop Category",
                 "description": "Returns newly created shop category",
                 "operationId": "storeShopCategory",
@@ -4580,7 +4902,9 @@
         },
         "/api/v2/admin/shop-categories/{slug}": {
             "get": {
-                "tags": ["Shop Category"],
+                "tags": [
+                    "Shop Category"
+                ],
                 "summary": "Get One Shop Category",
                 "description": "Returns a requested shop category",
                 "operationId": "showShopCategory",
@@ -4607,7 +4931,9 @@
                 ]
             },
             "put": {
-                "tags": ["Shop Category"],
+                "tags": [
+                    "Shop Category"
+                ],
                 "summary": "Update a Shop Category",
                 "description": "Update a requested shop category",
                 "operationId": "updateShopCategory",
@@ -4645,7 +4971,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Shop Category"],
+                "tags": [
+                    "Shop Category"
+                ],
                 "summary": "Delete One Shop Category",
                 "description": "Delete one specific shop category",
                 "operationId": "deleteShopCategory",
@@ -4674,7 +5002,9 @@
         },
         "/api/v2/admin/shops/{slug}/shop-categories": {
             "get": {
-                "tags": ["Shop Category"],
+                "tags": [
+                    "Shop Category"
+                ],
                 "summary": "Get Shop Categories By Shop",
                 "description": "Returns list of shop categories",
                 "operationId": "getshopCategoryListsByShop",
@@ -4712,7 +5042,9 @@
         },
         "/api/v2/admin/shops": {
             "get": {
-                "tags": ["Shops"],
+                "tags": [
+                    "Shops"
+                ],
                 "summary": "Get list of shops",
                 "description": "Returns list of shops",
                 "operationId": "getShopLists",
@@ -4748,7 +5080,9 @@
                 ]
             },
             "post": {
-                "tags": ["Shops"],
+                "tags": [
+                    "Shops"
+                ],
                 "summary": "Create a Shop",
                 "description": "Returns newly created shop",
                 "operationId": "storeShop",
@@ -4777,7 +5111,9 @@
         },
         "/api/v2/admin/shops/{slug}": {
             "get": {
-                "tags": ["Shops"],
+                "tags": [
+                    "Shops"
+                ],
                 "summary": "Get One Shop",
                 "description": "Returns a requested shop",
                 "operationId": "showShop",
@@ -4804,7 +5140,9 @@
                 ]
             },
             "put": {
-                "tags": ["Shops"],
+                "tags": [
+                    "Shops"
+                ],
                 "summary": "Update a Shop",
                 "description": "Update a requested shop",
                 "operationId": "updateShop",
@@ -4842,7 +5180,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Shops"],
+                "tags": [
+                    "Shops"
+                ],
                 "summary": "Delete One Shop",
                 "description": "Delete one specific shop",
                 "operationId": "deleteShop",
@@ -4871,7 +5211,9 @@
         },
         "/api/v2/admin/shops/toggle-enable/{slug}": {
             "patch": {
-                "tags": ["Shops"],
+                "tags": [
+                    "Shops"
+                ],
                 "summary": "Toggle Enable a Shop",
                 "description": "Toggle Enable a requested shop",
                 "operationId": "toggleEnable",
@@ -4900,7 +5242,9 @@
         },
         "/api/v2/admin/shops/toggle-official/{slug}": {
             "patch": {
-                "tags": ["Shops"],
+                "tags": [
+                    "Shops"
+                ],
                 "summary": "Toggle Official a Shop",
                 "description": "Toggle Official a requested shop",
                 "operationId": "toggleOfficial",
@@ -4929,7 +5273,9 @@
         },
         "/api/v2/admin/shops/add-shop-categories/{slug}": {
             "post": {
-                "tags": ["Shops"],
+                "tags": [
+                    "Shops"
+                ],
                 "summary": "Add ShopCategories",
                 "description": "Add ShopCategories in a shop",
                 "operationId": "addShopCategories",
@@ -4982,7 +5328,9 @@
         },
         "/api/v2/admin/shops/remove-shop-categories/{slug}": {
             "post": {
-                "tags": ["Shops"],
+                "tags": [
+                    "Shops"
+                ],
                 "summary": "Remove ShopCategories",
                 "description": "Remove ShopCategories in a shop",
                 "operationId": "removeShopCategories",
@@ -5035,7 +5383,9 @@
         },
         "/api/v2/admin/sub-categories": {
             "get": {
-                "tags": ["Subcategories"],
+                "tags": [
+                    "Subcategories"
+                ],
                 "summary": "Get list of subcategories",
                 "description": "Returns list of subcategories",
                 "operationId": "getSubcategoryLists",
@@ -5071,7 +5421,9 @@
                 ]
             },
             "post": {
-                "tags": ["Subcategories"],
+                "tags": [
+                    "Subcategories"
+                ],
                 "summary": "Create a Subcategory",
                 "description": "Returns newly created subcategory",
                 "operationId": "storeSubcategory",
@@ -5100,7 +5452,9 @@
         },
         "/api/v2/admin/sub-categories/{slug}": {
             "get": {
-                "tags": ["Subcategories"],
+                "tags": [
+                    "Subcategories"
+                ],
                 "summary": "Get One Subcategory",
                 "description": "Returns a requested subcategory",
                 "operationId": "showSubcategory",
@@ -5127,7 +5481,9 @@
                 ]
             },
             "put": {
-                "tags": ["Subcategories"],
+                "tags": [
+                    "Subcategories"
+                ],
                 "summary": "Update a Subcategory",
                 "description": "Update a requested subcategory",
                 "operationId": "updateSubCategory",
@@ -5165,7 +5521,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Subcategories"],
+                "tags": [
+                    "Subcategories"
+                ],
                 "summary": "Delete One Subcategory",
                 "description": "Delete one specific subcategory",
                 "operationId": "deleteSubcategory",
@@ -5194,7 +5552,9 @@
         },
         "/api/v2/admin/shop-categories/{slug}/sub-categories": {
             "get": {
-                "tags": ["Subcategories"],
+                "tags": [
+                    "Subcategories"
+                ],
                 "summary": "Get Subcategories By Shop Category",
                 "description": "Returns list of subcategories",
                 "operationId": "getSubCategoriesByCategory",
@@ -5232,7 +5592,9 @@
         },
         "/api/v2/admin/shop-tags": {
             "get": {
-                "tags": ["ShopTags"],
+                "tags": [
+                    "ShopTags"
+                ],
                 "summary": "Get list of shop tags",
                 "description": "Returns list of shop tags",
                 "operationId": "getShopTagLists",
@@ -5268,7 +5630,9 @@
                 ]
             },
             "post": {
-                "tags": ["ShopTags"],
+                "tags": [
+                    "ShopTags"
+                ],
                 "summary": "Create a Shop Tag",
                 "description": "Returns newly created shop tag",
                 "operationId": "storeShopTag",
@@ -5297,7 +5661,9 @@
         },
         "/api/v2/admin/shop-tags/{slug}": {
             "get": {
-                "tags": ["ShopTags"],
+                "tags": [
+                    "ShopTags"
+                ],
                 "summary": "Get One Shop Tag",
                 "description": "Returns a requested shop tag",
                 "operationId": "showShopTag",
@@ -5324,7 +5690,9 @@
                 ]
             },
             "put": {
-                "tags": ["ShopTags"],
+                "tags": [
+                    "ShopTags"
+                ],
                 "summary": "Update a shop tag",
                 "description": "Update a requested shop tag",
                 "operationId": "updateShopTag",
@@ -5362,7 +5730,9 @@
                 ]
             },
             "delete": {
-                "tags": ["ShopTags"],
+                "tags": [
+                    "ShopTags"
+                ],
                 "summary": "Delete One Shop Tag",
                 "description": "Delete one specific shop tag",
                 "operationId": "deleteShopTag",
@@ -5391,7 +5761,9 @@
         },
         "/api/v2/admin/shops/{slug}/shop-tags": {
             "get": {
-                "tags": ["ShopTags"],
+                "tags": [
+                    "ShopTags"
+                ],
                 "summary": "Get Shop tags By Shop",
                 "description": "Returns list of shop tags",
                 "operationId": "getShopTagsByShop",
@@ -5429,7 +5801,9 @@
         },
         "/api/v2/admin/townships": {
             "get": {
-                "tags": ["Townships"],
+                "tags": [
+                    "Townships"
+                ],
                 "summary": "Get list of townships",
                 "description": "Returns list of townships",
                 "operationId": "getTownshipLists",
@@ -5465,7 +5839,9 @@
                 ]
             },
             "post": {
-                "tags": ["Townships"],
+                "tags": [
+                    "Townships"
+                ],
                 "summary": "Create a township",
                 "description": "Returns newly created township",
                 "operationId": "storeTownship",
@@ -5494,7 +5870,9 @@
         },
         "/api/v2/admin/townships/{slug}": {
             "get": {
-                "tags": ["Townships"],
+                "tags": [
+                    "Townships"
+                ],
                 "summary": "Get One Township",
                 "description": "Returns a requested township",
                 "operationId": "showTownship",
@@ -5521,7 +5899,9 @@
                 ]
             },
             "put": {
-                "tags": ["Townships"],
+                "tags": [
+                    "Townships"
+                ],
                 "summary": "Update a township",
                 "description": "Update a requested township",
                 "operationId": "updateTownship",
@@ -5559,7 +5939,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Townships"],
+                "tags": [
+                    "Townships"
+                ],
                 "summary": "Delete One Township",
                 "description": "Delete one specific township",
                 "operationId": "deleteTownship",
@@ -5588,7 +5970,9 @@
         },
         "/api/v2/admin/cities/{slug}/townships": {
             "get": {
-                "tags": ["Townships"],
+                "tags": [
+                    "Townships"
+                ],
                 "summary": "Get townships By city",
                 "description": "Returns list of townships",
                 "operationId": "getTownshipListsByCity",
@@ -5626,7 +6010,9 @@
         },
         "/api/v2/admin/users": {
             "get": {
-                "tags": ["Users"],
+                "tags": [
+                    "Users"
+                ],
                 "summary": "Get list of users",
                 "description": "Returns list of users",
                 "operationId": "getUserLists",
@@ -5662,7 +6048,9 @@
                 ]
             },
             "post": {
-                "tags": ["Users"],
+                "tags": [
+                    "Users"
+                ],
                 "summary": "Create a user",
                 "description": "Returns newly created user",
                 "operationId": "storeUser",
@@ -5691,7 +6079,9 @@
         },
         "/api/v2/admin/users/{slug}": {
             "get": {
-                "tags": ["Users"],
+                "tags": [
+                    "Users"
+                ],
                 "summary": "Get One user",
                 "description": "Returns a requested user",
                 "operationId": "showUser",
@@ -5718,7 +6108,9 @@
                 ]
             },
             "put": {
-                "tags": ["Users"],
+                "tags": [
+                    "Users"
+                ],
                 "summary": "Update a user",
                 "description": "Update a requested user",
                 "operationId": "updateUser",
@@ -5756,7 +6148,9 @@
                 ]
             },
             "delete": {
-                "tags": ["Users"],
+                "tags": [
+                    "Users"
+                ],
                 "summary": "Delete One User",
                 "description": "Delete one specific user",
                 "operationId": "deleteUser",
@@ -5785,7 +6179,9 @@
         },
         "/api/v2/admin/users/toggle-enable/{slug}": {
             "patch": {
-                "tags": ["Users"],
+                "tags": [
+                    "Users"
+                ],
                 "summary": "Enable user",
                 "description": "Enable a user",
                 "operationId": "enableUser",
@@ -6073,13 +6469,9 @@
             },
             "OrderContact": {
                 "properties": {
-                    "order_slug": {
-                        "type": "string",
-                        "example": "D16AAF"
-                    },
                     "customer_name": {
                         "type": "string",
-                        "example": "U Ba"
+                        "example": ""
                     },
                     "phone_number": {
                         "type": "string",
@@ -6087,15 +6479,15 @@
                     },
                     "house_number": {
                         "type": "string",
-                        "example": "somethings"
+                        "example": ""
                     },
                     "floor": {
                         "type": "string",
-                        "example": "first"
+                        "example": ""
                     },
                     "street_name": {
                         "type": "string",
-                        "example": "somewhere"
+                        "example": ""
                     },
                     "latitude": {
                         "type": "number",
@@ -6537,9 +6929,13 @@
                         "type": "string",
                         "example": "2021-02-19"
                     },
+                    "restaurant_slug": {
+                        "type": "string",
+                        "example": ""
+                    },
                     "restaurant_branch_slug": {
                         "type": "string",
-                        "example": "SB3456"
+                        "example": ""
                     },
                     "customer_slug": {
                         "type": "string",
@@ -6551,7 +6947,7 @@
                     },
                     "payment_mode": {
                         "type": "string",
-                        "example": "CBPay"
+                        "example": "COD"
                     },
                     "delivery_mode": {
                         "type": "string",
@@ -6832,5 +7228,7 @@
             }
         }
     },
-    "security": [[]]
+    "security": [
+        []
+    ]
 }

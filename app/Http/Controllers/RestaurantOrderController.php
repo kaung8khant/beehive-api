@@ -117,20 +117,34 @@ class RestaurantOrderController extends Controller
      *          @OA\MediaType(
      *              mediaType="applications/json",
      *              @OA\Schema(
-     *               @OA\Property(property="customer_slug", type="string", example="D16AAF"),
+     *               @OA\Property(property="customer_slug", type="string", example=""),
+     *               @OA\Property(property="restaurant_slug", type="string", example=""),
+     *               @OA\Property(property="restaurant_branch_slug", type="string", example=""),
      *               @OA\Property(property="order_date", type="string", example="2021-02-19"),
-     *               @OA\Property(property="special_instruction", type="string", example="special_instruction"),
+     *               @OA\Property(property="special_instruction", type="string", example=""),
      *               @OA\Property(property="payment_mode", type="string", example="COD"),
      *               @OA\Property(property="delivery_mode", type="string", example="delivery"),
      *               @OA\Property(property="customer_info", ref="#/components/schemas/OrderContact"),
      *               @OA\Property(property="order_items", type="array",
      *               @OA\Items(type="object",
-     *                  @OA\Property(property="menu_slug", type="string", example="D16AAF"),
-     *                  @OA\Property(property="menu_name", type="string",example=0.00),
+     *                  @OA\Property(property="menu_slug", type="string", example=""),
+     *                  @OA\Property(property="menu_name", type="string",example=""),
      *                  @OA\Property(property="amount", type="number",example=0.00),
      *                  @OA\Property(property="quantity", type="number",example=0.00),
      *                  @OA\Property(property="tax", type="number",example=0.00),
      *                  @OA\Property(property="discount", type="number",example=0.00),
+     *                  @OA\Property(property="variations", type="array",
+     *                  @OA\Items(type="object",
+     *                  @OA\Property(property="name", type="string", example=""),
+     *                  @OA\Property(property="value", type="number",example=0.00),
+     *                      ),
+     *                      ),
+     *                  @OA\Property(property="toppings", type="array",
+     *                  @OA\Items(type="object",
+     *                  @OA\Property(property="name", type="string", example=""),
+     *                  @OA\Property(property="value", type="number",example=0.00),
+     *                      ),
+     *                      ),
      *                  ),
      *                  ),
      *              )
@@ -155,10 +169,7 @@ class RestaurantOrderController extends Controller
         }
 
         $validatedData = $validator->validated();
-        $customer= $this->getCustomer($request->customer_slug);
-        $validatedData['customer_id'] = $customer->id;
-        $validatedData['customer_info']['customer_name'] = $customer->name;
-        $validatedData['customer_info']['phone_number'] = $customer->phone_number;
+        $validatedData['customer_id'] = $this->getCustomerId($request->customer_slug);
 
         $validatedData['restaurant_id'] = $this->getRestaurantId($validatedData['restaurant_slug']);
         $validatedData['restaurant_branch_id'] = $this->getRestaurantBranchId($validatedData['restaurant_branch_slug']);
@@ -239,9 +250,9 @@ class RestaurantOrderController extends Controller
             'order_items.*.variations' => 'nullable|array',
             'order_items.*.toppings' => 'nullable|array',
             'order_items.*.variations.*.name' => 'required|string',
-            'order_items.*.variations.*.value' => 'required|string',
+            'order_items.*.variations.*.value' => 'required|numeric',
             'order_items.*.toppings.*.name' => 'required|string',
-            'order_items.*.toppings.*.value' => 'required|string',
+            'order_items.*.toppings.*.value' => 'required|numeric',
         ]);
     }
 
@@ -281,9 +292,9 @@ class RestaurantOrderController extends Controller
         return RestaurantBranch::where('slug', $slug)->first()->id;
     }
 
-    public function getCustomer($slug)
+    public function getCustomerId($slug)
     {
-        return Customer::where('slug', $slug)->first();
+        return Customer::where('slug', $slug)->first()->id;
     }
 
     private function getMenuId($slug)
