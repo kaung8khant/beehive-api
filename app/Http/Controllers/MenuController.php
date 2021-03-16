@@ -357,6 +357,11 @@ class MenuController extends Controller
                 ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
+
+        // foreach ($menus as $menu) {
+        //     $menu['is_available'] = $menu->restaurantBranches->first()->pivot->is_available;
+        //     unset($menu['restaurantBranches']);
+        // }
         return $this->generateResponse($menus, 200);
     }
 
