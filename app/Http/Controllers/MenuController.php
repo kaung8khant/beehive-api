@@ -350,7 +350,7 @@ class MenuController extends Controller
      */
     public function getAvailableMenusByRestaurantBranch(Request $request, $slug)
     {
-        $menus = Menu::with('restaurantCategory')->whereHas('restaurantBranches', function ($query) use ($slug) {
+        $menus = Menu::with('restaurantBranches')->whereHas('restaurantBranches', function ($query) use ($slug) {
             $query->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
@@ -358,6 +358,10 @@ class MenuController extends Controller
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
 
+        foreach ($menus as $menu) {
+            $menu['is_available'] = $menu->restaurantBranches->first()->pivot->is_available;
+            unset($menu['restaurantBranches']);
+        }
         return $this->generateResponse($menus, 200);
     }
 
@@ -473,6 +477,7 @@ class MenuController extends Controller
         // $availableMenus = Menu::where('slug', $slug)->pluck('id');
         // $restaurantBranch->availableMenus()->attach($availableMenus, ['is_available',$request->is_available]);
         // return response()->json(['message' => 'Success.'], 200);
+
         $menu = Menu::with('restaurantBranches')->whereHas('restaurantBranches', function ($query) use ($restaurantSlug) {
             $query->where('slug', $restaurantSlug);
         })->where('slug', $slug)->paginate(10);

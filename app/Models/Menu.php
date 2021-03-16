@@ -66,14 +66,8 @@ class Menu extends Model
 
     protected $casts = [
         'is_enable' => 'boolean',
+        'is_available' => 'boolean'
     ];
-
-    protected $appends = ['is_available'];
-
-    public function getIsAvailableAttribute()
-    {
-        return boolval($this->pivot->is_available);
-    }
 
     public function restaurant()
     {
@@ -97,6 +91,6 @@ class Menu extends Model
 
     public function restaurantBranches()
     {
-        return $this->belongsToMany(RestaurantBranch::class, 'restaurant_branch_menu_map');
+        return $this->belongsToMany(RestaurantBranch::class, 'restaurant_branch_menu_map')->withPivot('is_available');
     }
 }
