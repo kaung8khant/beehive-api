@@ -66,8 +66,12 @@ class Menu extends Model
 
     protected $casts = [
         'is_enable' => 'boolean',
-        'is_available' => 'boolean'
     ];
+
+    public function getIsAvailableAttribute()
+    {
+        return boolval($this->pivot->is_available);
+    }
 
     public function restaurant()
     {

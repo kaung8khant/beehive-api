@@ -469,23 +469,6 @@ class MenuController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-
-    public function toggleAvailable(Request $request, $restaurantSlug, $slug)
-    {
-        // $restaurantBranch = RestaurantBranch::where('slug', $restaurantSlug)->firstOrFail();
-
-        // $availableMenus = Menu::where('slug', $slug)->pluck('id');
-        // $restaurantBranch->availableMenus()->attach($availableMenus, ['is_available',$request->is_available]);
-        // return response()->json(['message' => 'Success.'], 200);
-
-        $menu = Menu::with('restaurantBranches')->whereHas('restaurantBranches', function ($query) use ($restaurantSlug) {
-            $query->where('slug', $restaurantSlug);
-        })->where('slug', $slug)->paginate(10);
-
-        $menu['is_available'] = !$menu->restaurantBranches->first()->pivot->is_available;
-        return response()->json(['message' => 'Success.'], 200);
-    }
-
     /**
      * @OA\Post(
      *      path="/api/v2/vendor/restaurant-branches/{slug}/menus",
