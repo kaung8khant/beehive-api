@@ -2120,239 +2120,6 @@
                 ]
             }
         },
-        "/api/v2/admin/orders": {
-            "get": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Get list of orders",
-                "description": "Returns list of orders",
-                "operationId": "getOrderLists",
-                "parameters": [
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "description": "Current Page",
-                        "required": false,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "filter",
-                        "in": "query",
-                        "description": "Filter",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Create a order",
-                "description": "Returns newly created order",
-                "operationId": "storeOrders",
-                "requestBody": {
-                    "description": "Created order",
-                    "required": true,
-                    "content": {
-                        "applications/json": {
-                            "schema": {
-                                "properties": {
-                                    "customer_slug": {
-                                        "type": "string",
-                                        "example": "D16AAF"
-                                    },
-                                    "order_date": {
-                                        "type": "string",
-                                        "example": "2021-02-19"
-                                    },
-                                    "order_type": {
-                                        "type": "string",
-                                        "example": "shop"
-                                    },
-                                    "special_instruction": {
-                                        "type": "string",
-                                        "example": "special_instruction"
-                                    },
-                                    "payment_mode": {
-                                        "type": "string",
-                                        "example": "CBPay"
-                                    },
-                                    "delivery_mode": {
-                                        "type": "string",
-                                        "example": "delivery"
-                                    },
-                                    "rating": {
-                                        "type": "string",
-                                        "example": "1"
-                                    },
-                                    "customer_info": {
-                                        "$ref": "#/components/schemas/OrderContact"
-                                    },
-                                    "order_items": {
-                                        "type": "array",
-                                        "items": {
-                                            "properties": {
-                                                "value": {
-                                                    "type": "string",
-                                                    "example": "value"
-                                                },
-                                                "item_slug": {
-                                                    "type": "string",
-                                                    "example": "D16AAF"
-                                                },
-                                                "item_name": {
-                                                    "type": "string",
-                                                    "example": 0
-                                                },
-                                                "item_type": {
-                                                    "type": "string",
-                                                    "example": "product"
-                                                },
-                                                "quantity": {
-                                                    "type": "number",
-                                                    "example": 0
-                                                },
-                                                "amount": {
-                                                    "type": "number",
-                                                    "example": 0
-                                                },
-                                                "tax": {
-                                                    "type": "number",
-                                                    "example": 0
-                                                },
-                                                "discount": {
-                                                    "type": "number",
-                                                    "example": 0
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful operation"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v2/admin/orders/{slug}": {
-            "get": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Get One Order",
-                "description": "Returns a requested Order",
-                "operationId": "Order",
-                "parameters": [
-                    {
-                        "name": "slug",
-                        "in": "path",
-                        "description": "Slug of a requested Order",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Delete One Order",
-                "description": "Delete one specific order",
-                "operationId": "deleteOrder",
-                "parameters": [
-                    {
-                        "name": "slug",
-                        "in": "path",
-                        "description": "Slug of a requested order ",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v2/admin/customers/{slug}/orders": {
-            "get": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Get Orders By Customer",
-                "description": "Returns list of orders",
-                "operationId": "getOrdersByCustomer",
-                "parameters": [
-                    {
-                        "name": "slug",
-                        "in": "path",
-                        "description": "Slug of a requested orders",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/v2/admin/orders/{slug}/items": {
             "get": {
                 "tags": [
@@ -4382,6 +4149,228 @@
                         }
                     }
                 },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurant-orders": {
+            "get": {
+                "tags": [
+                    "Restaurant Orders"
+                ],
+                "summary": "Get list of restaurant orders",
+                "description": "Returns list of restaurant orders",
+                "operationId": "getRestaurantOrderLists",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Current Page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "description": "Filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Restaurant Orders"
+                ],
+                "summary": "Create Restaurant Order",
+                "description": "Returns newly created order",
+                "operationId": "storeRestaurantOrder",
+                "requestBody": {
+                    "description": "Created order",
+                    "required": true,
+                    "content": {
+                        "applications/json": {
+                            "schema": {
+                                "properties": {
+                                    "customer_slug": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "restaurant_branch_slug": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "order_date": {
+                                        "type": "string",
+                                        "example": "2021-02-19"
+                                    },
+                                    "special_instruction": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "payment_mode": {
+                                        "type": "string",
+                                        "example": "COD"
+                                    },
+                                    "delivery_mode": {
+                                        "type": "string",
+                                        "example": "delivery"
+                                    },
+                                    "customer_info": {
+                                        "$ref": "#/components/schemas/OrderContact"
+                                    },
+                                    "order_items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "menu_slug": {
+                                                    "type": "string",
+                                                    "example": ""
+                                                },
+                                                "menu_name": {
+                                                    "type": "string",
+                                                    "example": ""
+                                                },
+                                                "amount": {
+                                                    "type": "number",
+                                                    "example": 0
+                                                },
+                                                "quantity": {
+                                                    "type": "number",
+                                                    "example": 0
+                                                },
+                                                "tax": {
+                                                    "type": "number",
+                                                    "example": 0
+                                                },
+                                                "discount": {
+                                                    "type": "number",
+                                                    "example": 0
+                                                },
+                                                "variations": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": ""
+                                                            },
+                                                            "value": {
+                                                                "type": "number",
+                                                                "example": 0
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "toppings": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": ""
+                                                            },
+                                                            "value": {
+                                                                "type": "number",
+                                                                "example": 0
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v2/admin/restaurant-orders/{slug}": {
+            "get": {
+                "tags": [
+                    "Restaurant Orders"
+                ],
+                "summary": "Get One Restaurant Order",
+                "description": "Returns a requested restaurant order",
+                "operationId": "getOneRestaurantOrder",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested restaurant Order",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Restaurant Orders"
+                ],
+                "summary": "Delete One Restaurant Order",
+                "description": "Delete one specific restaurant order",
+                "operationId": "deleteRestaurantOrder",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug of a requested restaurant order",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful operation"
@@ -6474,55 +6463,11 @@
                     "name": "MenuVariationValue"
                 }
             },
-            "Order": {
-                "properties": {
-                    "customer_slug": {
-                        "type": "string",
-                        "example": "D16AAF"
-                    },
-                    "order_date": {
-                        "type": "string",
-                        "example": "2021-02-19"
-                    },
-                    "order_type": {
-                        "type": "string",
-                        "example": "shop"
-                    },
-                    "special_instruction": {
-                        "type": "string",
-                        "example": "special_instruction"
-                    },
-                    "payment_mode": {
-                        "type": "string",
-                        "example": "CBPay"
-                    },
-                    "delivery_mode": {
-                        "type": "string",
-                        "example": "delivery"
-                    },
-                    "rating": {
-                        "type": "string",
-                        "example": "1"
-                    },
-                    "slug": {
-                        "type": "string",
-                        "readOnly": true
-                    }
-                },
-                "type": "object",
-                "xml": {
-                    "name": "Order"
-                }
-            },
             "OrderContact": {
                 "properties": {
-                    "order_slug": {
-                        "type": "string",
-                        "example": "D16AAF"
-                    },
                     "customer_name": {
                         "type": "string",
-                        "example": "U Ba"
+                        "example": ""
                     },
                     "phone_number": {
                         "type": "string",
@@ -6530,15 +6475,15 @@
                     },
                     "house_number": {
                         "type": "string",
-                        "example": "somethings"
+                        "example": ""
                     },
                     "floor": {
                         "type": "string",
-                        "example": "first"
+                        "example": ""
                     },
                     "street_name": {
                         "type": "string",
-                        "example": "somewhere"
+                        "example": ""
                     },
                     "latitude": {
                         "type": "number",
@@ -6972,6 +6917,42 @@
                 "type": "object",
                 "xml": {
                     "name": "RestaurantCategory"
+                }
+            },
+            "RestaurantOrder": {
+                "properties": {
+                    "order_date": {
+                        "type": "string",
+                        "example": "2021-02-19"
+                    },
+                    "restaurant_branch_slug": {
+                        "type": "string",
+                        "example": ""
+                    },
+                    "customer_slug": {
+                        "type": "string",
+                        "example": "D16AAF"
+                    },
+                    "special_instruction": {
+                        "type": "string",
+                        "example": "special_instruction"
+                    },
+                    "payment_mode": {
+                        "type": "string",
+                        "example": "COD"
+                    },
+                    "delivery_mode": {
+                        "type": "string",
+                        "example": "delivery"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "RestaurantOrder"
                 }
             },
             "RestaurantTag": {
