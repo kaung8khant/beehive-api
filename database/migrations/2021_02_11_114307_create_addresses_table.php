@@ -16,6 +16,7 @@ class CreateAddressesTable extends Migration
         Schema::create('addresses', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique();
+            $table->string('label');
             $table->string('house_number');
             $table->string('floor')->nullable();
             $table->string('street_name');
@@ -24,6 +25,7 @@ class CreateAddressesTable extends Migration
             $table->boolean('is_primary')->default(0);
             $table->unsignedBigInteger('township_id');
             $table->unsignedBigInteger('customer_id');
+            $table->unique(['label', 'customer_id']);
             $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
             $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
             $table->timestamps();

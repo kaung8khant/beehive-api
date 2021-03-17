@@ -11,6 +11,7 @@ class Address extends Model
 
     protected $fillable = [
         'slug',
+        'label',
         'house_number',
         'floor',
         'street_name',
