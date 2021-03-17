@@ -42,6 +42,9 @@ class AddressController extends Controller
         $validatedData = $validator->validated();
         $validatedData['township_id'] = Township::where('slug', $request->township_slug)->first()->id;
         $validatedData['customer_id'] = $this->customer_id;
+        $validatedData['is_primary'] = true;
+
+        $this->setNonPrimary();
 
         $address = Address::create($validatedData);
         return $this->generateResponse($address->refresh()->load('township'), 201);
@@ -96,7 +99,7 @@ class AddressController extends Controller
 
     public function setPrimaryAddress($slug)
     {
-        Address::where('customer_id', $this->customer_id)->update(['is_primary' => 0]);
+        $this->setNonPrimary();
 
         $address = $this->getAddress($slug);
         $address->is_primary = !$address->is_primary;
@@ -120,5 +123,10 @@ class AddressController extends Controller
     private function getAddress($slug)
     {
         return Address::with('township')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
+    }
+
+    private function setNonPrimary()
+    {
+        Address::where('customer_id', $this->customer_id)->update(['is_primary' => 0]);
     }
 }
