@@ -348,7 +348,7 @@ class MenuController extends Controller
      *      }
      *)
      */
-    public function getAvailableMenusByRestaurantBranch(Request $request, $slug)
+    public function getMenusByBranch(Request $request, $slug)
     {
         $branch = RestaurantBranch::with(['availableMenus' => function ($q) use ($request) {
             $q->offset($request->page * $request->size)->limit($request->size);
@@ -364,6 +364,24 @@ class MenuController extends Controller
             $menu->setAppends(['is_available']);
         }
         return $this->generateResponse($branch->availableMenus, 200);
+    }
+
+    public function getAvailableMenusByBranch(Request $request, $slug)
+    {
+        $branch = RestaurantBranch::with('availableMenus')
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        $availableMenus = $branch->availableMenus()->with('restaurantCategory')
+            ->with('menuVariations')->with('menuVariations.menuVariationValues')
+            ->with('menuToppings')->where('is_available', true)
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+            })
+            ->paginate(10);
+        return $this->generateResponse($availableMenus, 200);
     }
 
     private function getParamsToValidate($slug = false)
