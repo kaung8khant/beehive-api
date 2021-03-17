@@ -27,6 +27,17 @@ class Brand extends Model
         'updatd_at'
     ];
 
+
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'brands')
+            ->where('source_id', $this->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
     public function products()
     {
         return $this->hasMany(Product::class);

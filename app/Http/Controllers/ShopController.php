@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
+use App\Helpers\FileHelper;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopTag;
@@ -12,7 +13,7 @@ use App\Models\Township;
 
 class ShopController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
 
     /**
      * @OA\Get(
@@ -58,30 +59,30 @@ class ShopController extends Controller
     }
 
 
-     /**
-     * @OA\Post(
-     *      path="/api/v2/admin/shops",
-     *      operationId="storeShop",
-     *      tags={"Shops"},
-     *      summary="Create a Shop",
-     *      description="Returns newly created shop",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created shop object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Shop")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
+    /**
+    * @OA\Post(
+    *      path="/api/v2/admin/shops",
+    *      operationId="storeShop",
+    *      tags={"Shops"},
+    *      summary="Create a Shop",
+    *      description="Returns newly created shop",
+    *      @OA\RequestBody(
+    *          required=true,
+    *          description="Created shop object",
+    *          @OA\MediaType(
+    *              mediaType="applications/json",
+    *              @OA\Schema(ref="#/components/schemas/Shop")
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful operation"
+    *      ),
+    *      security={
+    *          {"bearerAuth": {}}
+    *      }
+    *)
+    */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -103,12 +104,14 @@ class ShopController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'township_slug' => 'required|exists:App\Models\Township,slug',
+            'image_slug' => 'required|exists:App\Models\File,slug',
         ]);
         $townshipId = $this->getTownshipIdBySlug($request->township_slug);
         $validatedData['township_id'] = $townshipId;
         $shop = Shop::create($validatedData, $townshipId);
         $shopId = $shop->id;
 
+        $this->updateFile($request->image_slug, 'shops', $shop->slug);
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->availableTags()->attach($shopTags);
@@ -257,7 +260,13 @@ class ShopController extends Controller
      */
     public function destroy($slug)
     {
-        Shop::where('slug', $slug)->firstOrFail()->delete();
+        $shop =  Shop::where('slug', $slug)->firstOrFail();
+
+        foreach ($shop->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
+        $shop->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 

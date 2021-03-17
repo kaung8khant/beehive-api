@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
@@ -14,7 +15,7 @@ use App\Models\ShopCategory;
 
 class ProductController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
     /**
      * @OA\Get(
      *      path="/api/v2/admin/products",
@@ -114,6 +115,10 @@ class ProductController extends Controller
 
         $product = Product::create($validatedData);
         $productId = $product->id;
+
+        foreach ($product->images as $image) {
+            $this->updateFile($image->slug, 'products', $product->slug);
+        }
 
         if ($request->product_variations) {
             $this->createProductVariation($productId, $validatedData['product_variations']);
@@ -277,7 +282,13 @@ class ProductController extends Controller
      */
     public function destroy($slug)
     {
-        Product::where('slug', $slug)->firstOrFail()->delete();
+        $product = Product::where('slug', $slug)->firstOrFail();
+
+        foreach ($product->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
+        $product->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -294,6 +305,7 @@ class ProductController extends Controller
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
             'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
+            'image_slug' => 'required|exists:App\Models\File,slug',
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',
