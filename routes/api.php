@@ -93,7 +93,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('menus/{slug}/menu-variations', 'MenuVariationController@getVariationsByMenu');
             Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
             Route::resource('restaurant-branches', 'RestaurantBranchController');
-            Route::get('restaurant-branches/{slug}/menus', 'MenuController@getAvailableMenusByRestaurantBranch');
+            Route::get('restaurant-branches/{slug}/menus', 'MenuController@getMenusByBranch');
+            Route::get('restaurant-branches/{slug}/available_menus', 'MenuController@getAvailableMenusByBranch');
             Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
             Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
             Route::patch('restaurant-branches/toggle-enable/{slug}', 'RestaurantBranchController@toggleEnable');
