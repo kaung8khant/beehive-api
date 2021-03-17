@@ -22,7 +22,7 @@ Route::group(['prefix' => 'vendor'], function () {
 
         /* menus */
         Route::get('restaurant-branches/{slug}/menus', 'MenuController@getMenusByBranch');
-        Route::get('restaurant-branches/{slug}/available_menus', 'MenuController@getAvailableMenusByBranch');
+        Route::get('restaurant-branches/{slug}/available-menus', 'MenuController@getAvailableMenusByBranch');
         Route::get('menus/{slug}', 'MenuController@show');
         Route::post('restaurant-branches/{slug}/menus', 'MenuController@createAvailableMenu');
         Route::post('menus', 'MenuController@store');
