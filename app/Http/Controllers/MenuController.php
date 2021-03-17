@@ -103,13 +103,12 @@ class MenuController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $validatedData = $request->validate($this->getParamsToValidate(true));
-        $restaurant = RestaurantBranch::where('slug', $request->restaurant_slug)->firstOrFail();
+        $restaurant = Restaurant::where('slug', $request->restaurant_slug)->firstOrFail();
         $validatedData['restaurant_id'] = $restaurant->id;
         $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
 
         $menu = Menu::create($validatedData);
         $menuId = $menu->id;
-
         $this->createVariations($menuId, $validatedData['menu_variations']);
         $this->createToppings($menuId, $validatedData['menu_toppings']);
         foreach ($restaurant->restaurantBranches as $branch) {
@@ -350,38 +349,18 @@ class MenuController extends Controller
      */
     public function getMenusByBranch(Request $request, $slug)
     {
-        $branch = RestaurantBranch::with(['availableMenus' => function ($query) use ($request) {
-            $query->offset($request->page * $request->size)
-                ->limit($request->size);
-        }])
+        $branch = RestaurantBranch::with('availableMenus')
             ->where('slug', $slug)
             ->whereHas('availableMenus', function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })->firstOrFail();
-        foreach ($branch->availableMenus as $menu) {
+        $menus = $branch->availableMenus()->with('restaurantCategory')->paginate(10);
+        foreach ($menus as $menu) {
             $menu->setAppends(['is_available']);
-            $menu['available'] = boolval($menu->is_available);
         }
-        return $branch->availableMenus;
-
-        // $menus = Menu::with('restaurantCategory')->with(['restaurantBranches' => function ($query) use ($slug) {
-        //     $query->where('slug', $slug);
-        // }])->whereHas('restaurantBranches', function ($query) use ($slug) {
-        //     $query->where('slug', $slug);
-        // })->where('name', 'LIKE', '%' . $request->filter . '%')
-        //     ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-        //     ->orWhere('slug', $request->filter)->get();
-
-        // foreach ($menus as $menu) {
-        //     foreach ($menu->restaurantBranches as $branch) {
-        //         $branch->setAppends(['is_available']);
-        //         $menu['available'] = boolval($branch->is_available);
-        //     }
-        //     unset($menu['restaurantBranches']);
-        // }
-        // return $menus;
+        return $menus;
     }
 
     public function getAvailableMenusByBranch(Request $request, $slug)

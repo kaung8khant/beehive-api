@@ -30,7 +30,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
         Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
         Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
-        Route::post('restaurant-branches/{restaurantSlug}/menus/{slug}', 'RestaurantBranchController@toggleAvailable');
+        Route::post('restaurant-branches/{restaurantBranchSlug}/menus/{slug}', 'RestaurantBranchController@toggleAvailable');
 
         Route::get('menu-variations/{slug}', 'MenuVariationController@show');
         Route::post('menu-variations', 'MenuVariationController@store');

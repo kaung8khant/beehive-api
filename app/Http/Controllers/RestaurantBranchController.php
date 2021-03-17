@@ -505,14 +505,14 @@ class RestaurantBranchController extends Controller
         return response()->json($restaurantBranch->load('restaurant', 'township'), 200);
     }
 
-    public function toggleAvailable(Request $request, $restaurantSlug, $slug)
+    public function toggleAvailable(Request $request, $restaurantBranchSlug, $slug)
     {
         $validatedData = $request->validate([
             'is_available' => 'required|boolean',
         ]);
 
         $restaurantBranch = RestaurantBranch::with('availableMenus')
-            ->where('slug', $restaurantSlug)
+            ->where('slug', $restaurantBranchSlug)
            ->firstOrFail();
 
         $availableMenus = Menu::where('slug', $slug)->firstOrFail();
