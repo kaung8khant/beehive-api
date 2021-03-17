@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 use App\Helpers\ResponseHelper;
 use App\Models\File;
 
@@ -33,7 +34,7 @@ trait FileHelper
             return $this->generateResponse('The selected source field is incorrect.', 422);
         }
 
-        $model = '\App\Models\\' . str_replace(' ', '', ucwords(rtrim(str_replace('_', ' ', $source), 's')));
+        $model = config('model.' . $source);
         $sourceId = $model::where('slug', $sourceSlug)->first()->id;
 
         $file->update([
@@ -42,5 +43,31 @@ trait FileHelper
         ]);
 
         return $this->generateResponse($file, 200);
+    }
+
+    protected function deleteFile($slug)
+    {
+        $file = File::where('slug', $slug)->firstOrFail();
+
+        if ($file->extension === 'png' || $file->extension === 'jpg') {
+            Storage::disk('local')->delete('images/' . $file->file_name);
+            $this->deleteImagesFromStorage($file->file_name);
+        } elseif ($file->extension === 'gif') {
+            Storage::disk('local')->delete('gifs/' . $file->file_name);
+        } elseif ($file->extension === 'pdf') {
+            Storage::disk('local')->delete('documents/' . $file->file_name);
+        }
+
+        $file->delete();
+        return response()->json(['message' => 'Successfully deleted.'], 200);
+    }
+
+    private function deleteImagesFromStorage($fileName)
+    {
+        $imageSizes = array_keys(config('images'));
+
+        foreach ($imageSizes as $size) {
+            Storage::disk('local')->delete('images/' . $size . '/' . $fileName);
+        }
     }
 }

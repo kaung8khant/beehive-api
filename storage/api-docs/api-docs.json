@@ -4218,10 +4218,6 @@
                                         "type": "string",
                                         "example": ""
                                     },
-                                    "restaurant_slug": {
-                                        "type": "string",
-                                        "example": ""
-                                    },
                                     "restaurant_branch_slug": {
                                         "type": "string",
                                         "example": ""
@@ -6928,10 +6924,6 @@
                     "order_date": {
                         "type": "string",
                         "example": "2021-02-19"
-                    },
-                    "restaurant_slug": {
-                        "type": "string",
-                        "example": ""
                     },
                     "restaurant_branch_slug": {
                         "type": "string",

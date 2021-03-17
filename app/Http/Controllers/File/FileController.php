@@ -15,7 +15,7 @@ class FileController extends Controller
 
         return File::where('source', $source)
             ->where('source_id', $sourceId)
-            ->paginate();
+            ->get();
     }
 
     public function getImagesBySource($source, $sourceSlug)
@@ -25,12 +25,12 @@ class FileController extends Controller
         return File::where('source', $source)
             ->where('source_id', $sourceId)
             ->whereIn('extension', ['png', 'jpg'])
-            ->paginate();
+            ->get();
     }
 
     private function getSourceIdBySourceAndSlug($source, $sourceSlug)
     {
-        $model = '\App\Models\\' . str_replace(' ', '', ucwords(rtrim(str_replace('_', ' ', $source), 's')));
+        $model = config('model.' . $source);
         return $model::where('slug', $sourceSlug)->firstOrFail()->id;
     }
 

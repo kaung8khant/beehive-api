@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
  * @OA\Schema(
  *      @OA\Xml(name="RestaurantOrder"),
  *      @OA\Property(property="order_date", type="string", example="2021-02-19"),
- *      @OA\Property(property="restaurant_slug", type="string", example=""),
  *      @OA\Property(property="restaurant_branch_slug", type="string", example=""),
  *      @OA\Property(property="customer_slug", type="string", example="D16AAF"),
  *      @OA\Property(property="special_instruction", type="string", example="special_instruction"),

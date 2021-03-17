@@ -118,7 +118,6 @@ class RestaurantOrderController extends Controller
      *              mediaType="applications/json",
      *              @OA\Schema(
      *               @OA\Property(property="customer_slug", type="string", example=""),
-     *               @OA\Property(property="restaurant_slug", type="string", example=""),
      *               @OA\Property(property="restaurant_branch_slug", type="string", example=""),
      *               @OA\Property(property="order_date", type="string", example="2021-02-19"),
      *               @OA\Property(property="special_instruction", type="string", example=""),
@@ -170,8 +169,11 @@ class RestaurantOrderController extends Controller
 
         $validatedData = $validator->validated();
         $validatedData['customer_id'] = $this->getCustomerId($request->customer_slug);
-        $validatedData['restaurant_id'] = $this->getRestaurantId($validatedData['restaurant_slug']);
-        $validatedData['restaurant_branch_id'] = $this->getRestaurantBranchId($validatedData['restaurant_branch_slug']);
+
+        $restaurantBranch = $this->getRestaurantBranch($validatedData['restaurant_branch_slug']);
+
+        $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
+        $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
 
         $order = RestaurantOrder::create($validatedData);
         $orderId = $order->id;
@@ -228,7 +230,6 @@ class RestaurantOrderController extends Controller
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:package,delivery',
-            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
@@ -280,14 +281,10 @@ class RestaurantOrderController extends Controller
         }
     }
 
-    private function getRestaurantId($slug)
-    {
-        return Restaurant::where('slug', $slug)->first()->id;
-    }
 
-    private function getRestaurantBranchId($slug)
+    private function getRestaurantBranch($slug)
     {
-        return RestaurantBranch::where('slug', $slug)->first()->id;
+        return RestaurantBranch::where('slug', $slug)->first();
     }
 
     public function getCustomerId($slug)
