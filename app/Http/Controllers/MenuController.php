@@ -381,6 +381,7 @@ class MenuController extends Controller
                 ->orWhere('slug', $request->filter);
             })
             ->paginate(10);
+
         return $this->generateResponse($availableMenus, 200);
     }
 
