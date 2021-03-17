@@ -350,20 +350,35 @@ class MenuController extends Controller
      */
     public function getMenusByBranch(Request $request, $slug)
     {
-        $branch = RestaurantBranch::with(['availableMenus' => function ($q) use ($request) {
-            $q->offset($request->page * $request->size)->limit($request->size);
-        }])
-            ->where('slug', $slug)
-            ->whereHas('availableMenus', function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })->firstOrFail();
+        // $branch = RestaurantBranch::with('availableMenus')
+        //     ->where('slug', $slug)
+        //     ->whereHas('availableMenus', function ($q) use ($request) {
+        //         $q->where('name', 'LIKE', '%' . $request->filter . '%')
+        //             ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+        //             ->orWhere('slug', $request->filter);
+        //     })->firstOrFail();
+        // return $branch->availableMenus()->paginate(10);
+        // foreach ($branch->availableMenus as $menu) {
+        //     $menu->setAppends(['is_available']);
+        // }
+        // return $this->generateResponse($branch->availableMenus, 200);
 
-        foreach ($branch->availableMenus as $menu) {
-            $menu->setAppends(['is_available']);
+        $menus = Menu::with(['restaurantBranches' => function ($query) use ($slug) {
+            $query->where('slug', $slug);
+        }])->whereHas('restaurantBranches', function ($query) use ($slug) {
+            $query->where('slug', $slug);
+        })->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)->paginate(10);
+
+        foreach ($menus as $menu) {
+            foreach ($menu->restaurantBranches as $branch) {
+                $branch->setAppends(['is_available']);
+                $menu['available'] = boolval($branch->is_available);
+            }
+            unset($menu['restaurantBranches']);
         }
-        return $this->generateResponse($branch->availableMenus, 200);
+        return $menus;
     }
 
     public function getAvailableMenusByBranch(Request $request, $slug)
@@ -377,12 +392,11 @@ class MenuController extends Controller
             ->with('menuToppings')->where('is_available', true)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
+                    ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
             })
             ->paginate(10);
-
-        return $this->generateResponse($availableMenus, 200);
+        return $availableMenus;
     }
 
     private function getParamsToValidate($slug = false)
