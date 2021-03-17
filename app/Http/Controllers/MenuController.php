@@ -363,7 +363,7 @@ class MenuController extends Controller
         // }
         // return $this->generateResponse($branch->availableMenus, 200);
 
-        $menus = Menu::with(['restaurantBranches' => function ($query) use ($slug) {
+        $menus = Menu::with('restaurantCategory')->with(['restaurantBranches' => function ($query) use ($slug) {
             $query->where('slug', $slug);
         }])->whereHas('restaurantBranches', function ($query) use ($slug) {
             $query->where('slug', $slug);
