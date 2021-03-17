@@ -505,25 +505,19 @@ class RestaurantBranchController extends Controller
         return response()->json($restaurantBranch->load('restaurant', 'township'), 200);
     }
 
-    public function toggleAvailable(Request $request, $restaurantSlug, $slug)
+    public function toggleAvailable(Request $request, $restaurantBranchSlug, $slug)
     {
         $validatedData = $request->validate([
             'is_available' => 'required|boolean',
         ]);
 
         $restaurantBranch = RestaurantBranch::with('availableMenus')
-            ->where('slug', $restaurantSlug)
-            ->whereHas('availableMenus', function ($q) use ($slug) {
-                $q->where('slug', $slug);
-            })->firstOrFail();
+            ->where('slug', $restaurantBranchSlug)
+           ->firstOrFail();
 
         $availableMenus = Menu::where('slug', $slug)->firstOrFail();
-        // $restaurantBranch->availableMenus()->detach($availableMenus);
-        // return $restaurantBranch->availableMenus()->attach($availableMenus, [$request->has('is_available')?1:0]);
-        // $restaurantBranch->availableMenus()->sync([$availableMenus->id => [ 'is_available' => $validatedData['is_available']?1:0] ], false);
-
-        $restaurantBranch->availableMenus()->save($availableMenus, ['is_available' => $validatedData['is_available']]);
-
+        $restaurantBranch->availableMenus()->sync([$availableMenus->id => [ 'is_available' => $validatedData['is_available']] ], false);
+        // $restaurantBranch->availableMenus()->save($availableMenus, ['is_available' => $validatedData['is_available']]);
         return response()->json(['message' => 'Success.'], 200);
     }
 }
