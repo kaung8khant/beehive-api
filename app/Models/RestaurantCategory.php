@@ -31,6 +31,16 @@ class RestaurantCategory extends Model
         'pivot',
     ];
 
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'restaurant_categories')
+            ->where('source_id', $this->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
     public function restaurants()
     {
         return $this->belongsToMany(Restaurant::class, 'restaurant_restaurant_category_map');

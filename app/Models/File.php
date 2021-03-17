@@ -20,6 +20,8 @@ class File extends Model
 
     protected $hidden = [
         'id',
+        'source',
+        'srouce_id',
         'created_at',
         'updated_at',
     ];
