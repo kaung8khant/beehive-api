@@ -302,7 +302,7 @@ class ProductController extends Controller
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
             'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
-            'image_slug' => 'required|exists:App\Models\File,slug',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',

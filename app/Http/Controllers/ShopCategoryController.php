@@ -101,7 +101,7 @@ class ShopCategoryController extends Controller
             [
                 'name' => 'required|unique:shop_categories',
                 'slug' => 'required|unique:shop_categories',
-                'image_slug' => 'required|exists:App\Models\File,slug',
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
             ]
         ));
 
@@ -199,7 +199,8 @@ class ShopCategoryController extends Controller
             'name' => [
                 'required',
                 Rule::unique('shop_categories')->ignore($shopCategory->id),
-            ]
+            ],
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
 
         return response()->json($shopCategory, 200);

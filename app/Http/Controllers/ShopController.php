@@ -102,7 +102,7 @@ class ShopController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'township_slug' => 'required|exists:App\Models\Township,slug',
-            'image_slug' => 'required|exists:App\Models\File,slug',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
         $townshipId = $this->getTownshipIdBySlug($request->township_slug);
         $validatedData['township_id'] = $townshipId;
@@ -209,6 +209,7 @@ class ShopController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'township_slug' => 'required|exists:App\Models\Township,slug',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
 
         $validatedData['township_id'] = $this->getTownshipIdBySlug($request->township_slug);
