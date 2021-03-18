@@ -20,7 +20,7 @@ class CreateCustomersTable extends Migration
             $table->string('name');
             $table->string('phone_number');
             $table->string('password');
-            $table->enum('gender', ['male', 'female'])->nullable();
+            $table->enum('gender', ['Male', 'Female'])->nullable();
             $table->date('date_of_birth')->nullable();
             $table->boolean('is_enable')->default(1);
             $table->date('verified_at')->nullable();
