@@ -386,7 +386,6 @@ class MenuController extends Controller
         $menus = $branch->availableMenus()->with('restaurantCategory')
         ->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })
         ->paginate(10);
