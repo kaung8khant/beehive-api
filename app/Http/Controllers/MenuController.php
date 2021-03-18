@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
+use App\Models\File;
 use App\Models\Menu;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
@@ -214,12 +215,24 @@ class MenuController extends Controller
 
         $menuId = $menu->id;
 
-        $menu->menuVariations()->delete();
-        $menu->menuToppings()->delete();
+        if ($menu->images === []) {
+            $this->updateFile($request->image_slug, 'menus', $slug);
+        } else {
+            foreach ($menu->images as $image) {
+                $this->deleteFile($$image->slug);
+                $this->updateFile($request->image_slug, 'menus', $slug);
+            }
+        }
 
-        $this->createVariations($menuId, $validatedData['menu_variations']);
-        $this->createToppings($menuId, $validatedData['menu_toppings']);
+        if ($request->menu_variations) {
+            $menu->menuVariations()->delete();
+            $this->createVariations($menuId, $validatedData['menu_variations']);
+        }
 
+        if ($request->menu_toppings) {
+            $menu->menuToppings()->delete();
+            $this->createToppings($menuId, $validatedData['menu_toppings']);
+        }
         return response()->json($menu->load('restaurant'), 200);
     }
 
@@ -358,21 +371,30 @@ class MenuController extends Controller
     public function getMenusByBranch(Request $request, $slug)
     {
         $branch = RestaurantBranch::with('availableMenus')
-            ->where('slug', $slug)
-            ->whereHas('availableMenus', function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })->firstOrFail();
-        $menus = $branch->availableMenus()->with('restaurantCategory')->paginate(10);
+        ->where('slug', $slug)
+        ->firstOrFail();
+
+        $menus = $branch->availableMenus()->with('restaurantCategory')
+        ->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })
+        ->paginate(10);
+
         foreach ($menus as $menu) {
             $menu->setAppends(['is_available']);
+            $menu['images']=File::where('source', 'menus')
+            ->where('source_id', $menu->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
         }
         return $menus;
     }
 
     public function getAvailableMenusByBranch(Request $request, $slug)
     {
-        $branch = RestaurantBranch::with('availableMenus')
+        $branch = RestaurantBranch::with('availableMenus')->with('availableMenus.images')
             ->where('slug', $slug)
             ->firstOrFail();
 
