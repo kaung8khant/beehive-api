@@ -53,16 +53,19 @@ class RestaurantBranch extends Model
         'is_enable' => 'boolean',
     ];
 
-    protected $appends = ['image_url'];
+    protected $appends = ['images'];
 
     public function getIsAvailableAttribute()
     {
         return boolval($this->pivot->is_available);
     }
 
-    public function getImageUrlAttribute()
+    public function getImagesAttribute()
     {
-        return '';
+        return File::where('source', 'restaurant_branches')
+            ->where('source_id', $this->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
     }
 
     public function restaurant()
