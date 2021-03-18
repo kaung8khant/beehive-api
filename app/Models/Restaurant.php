@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
  * @OA\Schema(
  *      @OA\Xml(name="Restaurant"),
  *      @OA\Property(property="name", type="string", example="Restaurant Name"),
- *      @OA\Property(property="name_mm", type="string", example="ဆိုင်အမည်"),
  *      @OA\Property(property="is_enable", type="boolean", example="true"),
  *      @OA\Property(property="restaurant_tags", type="array", @OA\Items(oneOf={
  *        @OA\Schema(
@@ -18,7 +17,6 @@ use Illuminate\Database\Eloquent\Model;
  *     })),
  *      @OA\Property(property="restaurant_branch", type="object",
  *      @OA\Property(property="name", type="string",example="Name" ),
- *      @OA\Property(property="name_mm", type="string",example="အမည်"),
  *      @OA\Property(property="contact_number", type="string",example="contact_number"),
  *      @OA\Property(property="opening_time", type="time",example="00:00"),
  *      @OA\Property(property="closing_time", type="time",example="00:00"),
@@ -40,7 +38,6 @@ class Restaurant extends Model
     protected $fillable = [
         'slug',
         'name',
-        'name_mm',
         'is_enable',
     ];
 
