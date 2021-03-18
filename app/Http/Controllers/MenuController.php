@@ -215,12 +215,20 @@ class MenuController extends Controller
 
         $menuId = $menu->id;
 
-        if ($menu->images === []) {
-            $this->updateFile($request->image_slug, 'menus', $slug);
-        } else {
-            foreach ($menu->images as $image) {
-                $this->deleteFile($$image->slug);
+        if ($request->image_slug) {
+            if ($menu->images === []) {
                 $this->updateFile($request->image_slug, 'menus', $slug);
+            } else {
+                foreach ($menu->images as $image) {
+                    $this->deleteFile($image->slug);
+                    $this->updateFile($request->image_slug, 'menus', $slug);
+                }
+            }
+        } else {
+            if (!$menu->images === []) {
+                foreach ($menu->images as $image) {
+                    $this->deleteFile($image->slug);
+                }
             }
         }
 
