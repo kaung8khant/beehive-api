@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
+use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
 use App\Models\Menu;
 use App\Models\Restaurant;
@@ -15,7 +16,7 @@ use App\Models\RestaurantBranch;
 
 class MenuController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
 
     use ResponseHelper;
 
@@ -109,13 +110,16 @@ class MenuController extends Controller
 
         $menu = Menu::create($validatedData);
         $menuId = $menu->id;
+
+        $this->updateFile($request->image_slug, 'menus', $menu->slug);
+
         $this->createVariations($menuId, $validatedData['menu_variations']);
         $this->createToppings($menuId, $validatedData['menu_toppings']);
         foreach ($restaurant->restaurantBranches as $branch) {
             $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
             $branch->availableMenus()->attach($availableMenus);
         }
-        return response()->json($menu->refresh()->load('menuVariations', 'menuToppings', 'menuVariations.menuVariationValues'), 201);
+        return response()->json($menu->load('restaurant'), 200);
     }
 
     /**
@@ -253,7 +257,13 @@ class MenuController extends Controller
      */
     public function destroy($slug)
     {
-        Menu::where('slug', $slug)->firstOrFail()->delete();
+        $menu = Menu::where('slug', $slug)->firstOrFail();
+
+        foreach ($menu->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
+        $menu->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -402,6 +412,7 @@ class MenuController extends Controller
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
+            'image_slug' => 'required|exists:App\Models\File,slug',
         ];
 
         if ($slug) {
@@ -483,61 +494,5 @@ class MenuController extends Controller
         $menu->is_enable = !$menu->is_enable;
         $menu->save();
         return response()->json(['message' => 'Success.'], 200);
-    }
-
-    /**
-     * @OA\Post(
-     *      path="/api/v2/vendor/restaurant-branches/{slug}/menus",
-     *      operationId="createAvailableMenu",
-     *      tags={"Menus"},
-     *      summary="Create AvailableMenu",
-     *      description="Create a requested menu ",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a restaurant branches ",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New menu data to be create.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Menu"),
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
-    public function createAvailableMenu(Request $request, $slug)
-    {
-        $request['slug'] = $this->generateUniqueSlug();
-
-        $validatedData = $request->validate($this->getParamsToValidate(true));
-
-        $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
-        $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
-
-        $menu = Menu::create($validatedData);
-        $menuId = $menu->id;
-
-        $this->createVariations($menuId, $validatedData['menu_variations']);
-        $this->createToppings($menuId, $validatedData['menu_toppings']);
-
-        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
-
-        $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
-        $restaurantBranch->availableMenus()->attach($availableMenus);
-
-        return response()->json($menu->refresh()->load('menuVariations', 'menuToppings', 'menuVariations.menuVariationValues'), 201);
     }
 }

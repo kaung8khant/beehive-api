@@ -68,11 +68,14 @@ class Product extends Model
         'is_enable' => 'boolean',
     ];
 
-    protected $appends = ['image_url'];
+    protected $appends = ['images'];
 
-    public function getImageUrlAttribute()
+    public function getImagesAttribute()
     {
-        return '';
+        return File::where('source', 'products')
+            ->where('source_id', $this->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
     }
 
     public function shop()

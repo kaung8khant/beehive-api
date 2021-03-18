@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
+use App\Helpers\FileHelper;
 use App\Models\ShopCategory;
 
 class ShopCategoryController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
 
     /**
      * Display a listing of the resource.
@@ -17,40 +18,40 @@ class ShopCategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     /**
-     * @OA\Get(
-     *      path="/api/v2/admin/shop-categories",
-     *      operationId="getShopCategoryLists",
-     *      tags={"Shop Category"},
-     *      summary="Get list of shop categories",
-     *      description="Returns list of shop categories",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          ),
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
+    /**
+    * @OA\Get(
+    *      path="/api/v2/admin/shop-categories",
+    *      operationId="getShopCategoryLists",
+    *      tags={"Shop Category"},
+    *      summary="Get list of shop categories",
+    *      description="Returns list of shop categories",
+    *      @OA\Parameter(
+    *          name="page",
+    *          description="Current Page",
+    *          required=false,
+    *          in="query",
+    *          @OA\Schema(
+    *              type="integer"
+    *          ),
+    *      ),
+    *      @OA\Parameter(
+    *          name="filter",
+    *          description="Filter",
+    *          required=false,
+    *          in="query",
+    *          @OA\Schema(
+    *              type="string"
+    *          ),
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful operation"
+    *      ),
+    *      security={
+    *          {"bearerAuth": {}}
+    *      }
+    *)
+    */
 
     public function index(Request $request)
     {
@@ -68,30 +69,30 @@ class ShopCategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     /**
-     * @OA\Post(
-     *      path="/api/v2/admin/shop-categories",
-     *      operationId="storeShopCategory",
-     *      tags={"Shop Category"},
-     *      summary="Create a Shop Category",
-     *      description="Returns newly created shop category",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created shop category object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/ShopCategory")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
+    /**
+    * @OA\Post(
+    *      path="/api/v2/admin/shop-categories",
+    *      operationId="storeShopCategory",
+    *      tags={"Shop Category"},
+    *      summary="Create a Shop Category",
+    *      description="Returns newly created shop category",
+    *      @OA\RequestBody(
+    *          required=true,
+    *          description="Created shop category object",
+    *          @OA\MediaType(
+    *              mediaType="applications/json",
+    *              @OA\Schema(ref="#/components/schemas/ShopCategory")
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful operation"
+    *      ),
+    *      security={
+    *          {"bearerAuth": {}}
+    *      }
+    *)
+    */
 
     public function store(Request $request)
     {
@@ -102,8 +103,11 @@ class ShopCategoryController extends Controller
                 'name' => 'required|unique:shop_categories',
                 'name_mm' => 'nullable|unique:shop_categories',
                 'slug' => 'required|unique:shop_categories',
+                'image_slug' => 'required|exists:App\Models\File,slug',
             ]
         ));
+
+        $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
 
         return response()->json($shopCategory, 201);
     }
@@ -115,31 +119,31 @@ class ShopCategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     /**
-     * @OA\Get(
-     *      path="/api/v2/admin/shop-categories/{slug}",
-     *      operationId="showShopCategory",
-     *      tags={"Shop Category"},
-     *      summary="Get One Shop Category",
-     *      description="Returns a requested shop category",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested shop category",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
+    /**
+    * @OA\Get(
+    *      path="/api/v2/admin/shop-categories/{slug}",
+    *      operationId="showShopCategory",
+    *      tags={"Shop Category"},
+    *      summary="Get One Shop Category",
+    *      description="Returns a requested shop category",
+    *      @OA\Parameter(
+    *          name="slug",
+    *          description="Slug of a requested shop category",
+    *          required=true,
+    *          in="path",
+    *          @OA\Schema(
+    *              type="string"
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful operation"
+    *      ),
+    *      security={
+    *          {"bearerAuth": {}}
+    *      }
+    *)
+    */
 
     public function show($slug)
     {
@@ -155,39 +159,39 @@ class ShopCategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     /**
-     * @OA\Put(
-     *      path="/api/v2/admin/shop-categories/{slug}",
-     *      operationId="updateShopCategory",
-     *      tags={"Shop Category"},
-     *      summary="Update a Shop Category",
-     *      description="Update a requested shop category",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a shop category",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New shop category data to be updated.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/ShopCategory")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
+    /**
+    * @OA\Put(
+    *      path="/api/v2/admin/shop-categories/{slug}",
+    *      operationId="updateShopCategory",
+    *      tags={"Shop Category"},
+    *      summary="Update a Shop Category",
+    *      description="Update a requested shop category",
+    *      @OA\Parameter(
+    *          name="slug",
+    *          description="Slug to identify a shop category",
+    *          required=true,
+    *          in="path",
+    *          @OA\Schema(
+    *              type="string"
+    *          )
+    *      ),
+    *      @OA\RequestBody(
+    *          required=true,
+    *          description="New shop category data to be updated.",
+    *          @OA\MediaType(
+    *              mediaType="applications/json",
+    *              @OA\Schema(ref="#/components/schemas/ShopCategory")
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful operation"
+    *      ),
+    *      security={
+    *          {"bearerAuth": {}}
+    *      }
+    *)
+    */
 
     public function update(Request $request, $slug)
     {
@@ -214,35 +218,42 @@ class ShopCategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/shop-categories/{slug}",
-     *      operationId="deleteShopCategory",
-     *      tags={"Shop Category"},
-     *      summary="Delete One Shop Category",
-     *      description="Delete one specific shop category",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested shop category",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
+    /**
+    * @OA\Delete(
+    *      path="/api/v2/admin/shop-categories/{slug}",
+    *      operationId="deleteShopCategory",
+    *      tags={"Shop Category"},
+    *      summary="Delete One Shop Category",
+    *      description="Delete one specific shop category",
+    *      @OA\Parameter(
+    *          name="slug",
+    *          description="Slug of a requested shop category",
+    *          required=true,
+    *          in="path",
+    *          @OA\Schema(
+    *              type="string"
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful operation"
+    *      ),
+    *      security={
+    *          {"bearerAuth": {}}
+    *      }
+    *)
+    */
 
     public function destroy($slug)
     {
-        ShopCategory::where('slug', $slug)->firstOrFail()->delete();
+        $shopCategory = ShopCategory::where('slug', $slug)->firstOrFail();
+
+        foreach ($shopCategory->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
+        $shopCategory->delete();
+
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
@@ -251,40 +262,40 @@ class ShopCategoryController extends Controller
      * Display a listing of the shop categories by one shop.
      */
 
-     /**
-     * @OA\Get(
-     *      path="/api/v2/admin/shops/{slug}/shop-categories",
-     *      operationId="getshopCategoryListsByShop",
-     *      tags={"Shop Category"},
-     *      summary="Get Shop Categories By Shop",
-     *      description="Returns list of shop categories",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested shop",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
+    /**
+    * @OA\Get(
+    *      path="/api/v2/admin/shops/{slug}/shop-categories",
+    *      operationId="getshopCategoryListsByShop",
+    *      tags={"Shop Category"},
+    *      summary="Get Shop Categories By Shop",
+    *      description="Returns list of shop categories",
+    *      @OA\Parameter(
+    *          name="slug",
+    *          description="Slug of a requested shop",
+    *          required=true,
+    *          in="path",
+    *          @OA\Schema(
+    *              type="string"
+    *          )
+    *      ),
+    *      @OA\Parameter(
+    *          name="filter",
+    *          description="Filter",
+    *          required=false,
+    *          in="query",
+    *          @OA\Schema(
+    *              type="string"
+    *          ),
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful operation"
+    *      ),
+    *      security={
+    *          {"bearerAuth": {}}
+    *      }
+    *)
+    */
     public function getCategoriesByShop(Request $request, $slug)
     {
         return ShopCategory::whereHas('shops', function ($q) use ($slug) {
