@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
+use App\Models\File;
 use App\Models\Menu;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
@@ -64,7 +65,6 @@ class MenuController extends Controller
         return Menu::with('restaurant')
             ->with('restaurantCategory')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -215,12 +215,32 @@ class MenuController extends Controller
 
         $menuId = $menu->id;
 
-        $menu->menuVariations()->delete();
-        $menu->menuToppings()->delete();
+        if ($request->image_slug) {
+            if ($menu->images === []) {
+                $this->updateFile($request->image_slug, 'menus', $slug);
+            } else {
+                foreach ($menu->images as $image) {
+                    $this->deleteFile($image->slug);
+                    $this->updateFile($request->image_slug, 'menus', $slug);
+                }
+            }
+        } else {
+            if (!$menu->images === []) {
+                foreach ($menu->images as $image) {
+                    $this->deleteFile($image->slug);
+                }
+            }
+        }
 
-        $this->createVariations($menuId, $validatedData['menu_variations']);
-        $this->createToppings($menuId, $validatedData['menu_toppings']);
+        if ($request->menu_variations) {
+            $menu->menuVariations()->delete();
+            $this->createVariations($menuId, $validatedData['menu_variations']);
+        }
 
+        if ($request->menu_toppings) {
+            $menu->menuToppings()->delete();
+            $this->createToppings($menuId, $validatedData['menu_toppings']);
+        }
         return response()->json($menu->load('restaurant'), 200);
     }
 
@@ -313,7 +333,6 @@ class MenuController extends Controller
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
@@ -360,22 +379,30 @@ class MenuController extends Controller
     public function getMenusByBranch(Request $request, $slug)
     {
         $branch = RestaurantBranch::with('availableMenus')
-            ->where('slug', $slug)
-            ->whereHas('availableMenus', function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })->firstOrFail();
-        $menus = $branch->availableMenus()->with('restaurantCategory')->paginate(10);
+        ->where('slug', $slug)
+        ->firstOrFail();
+
+        $menus = $branch->availableMenus()->with('restaurantCategory')
+        ->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })
+        ->paginate(10);
+
         foreach ($menus as $menu) {
             $menu->setAppends(['is_available']);
+            $menu['images']=File::where('source', 'menus')
+            ->where('source_id', $menu->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
         }
         return $menus;
     }
 
     public function getAvailableMenusByBranch(Request $request, $slug)
     {
-        $branch = RestaurantBranch::with('availableMenus')
+        $branch = RestaurantBranch::with('availableMenus')->with('availableMenus.images')
             ->where('slug', $slug)
             ->firstOrFail();
 
@@ -384,7 +411,6 @@ class MenuController extends Controller
             ->with('menuToppings')->where('is_available', true)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
             ->paginate(10);
@@ -395,7 +421,6 @@ class MenuController extends Controller
     {
         $params = [
             'name' => 'required',
-            'name_mm' => 'nullable',
             'description' => 'required',
             'description_mm' => 'nullable',
             'price' => 'required|numeric',
@@ -404,20 +429,17 @@ class MenuController extends Controller
             'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
             'menu_variations' => 'nullable|array',
             'menu_variations.*.name' => 'required|string',
-            'menu_variations.*.name_mm' => 'nullable|string',
             'menu_toppings' => 'nullable|array',
             'menu_toppings.*.name' => 'required|string',
-            'menu_toppings.*.name_mm' => 'nullable|string',
             'menu_toppings.*.price' => 'required|numeric',
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
-
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ];
 
         if ($slug) {
             $params['slug'] = 'required|unique:menus';
-            $params['image_slug'] = 'required|exists:App\Models\File,slug';
         }
 
         return $params;

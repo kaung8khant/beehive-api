@@ -17,7 +17,6 @@ class CreateRestaurantBranchesTable extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->string('name');
-            $table->string('name_mm')->unique()->nullable();
             $table->string('address');
             $table->string('contact_number');
             $table->time('opening_time');

@@ -1329,10 +1329,6 @@
                                                             "type": "string",
                                                             "example": "Name"
                                                         },
-                                                        "name_mm": {
-                                                            "type": "string",
-                                                            "example": "အမည်"
-                                                        },
                                                         "price": {
                                                             "type": "number",
                                                             "example": 1000
@@ -1555,10 +1551,6 @@
                                                         "name": {
                                                             "type": "string",
                                                             "example": "Name"
-                                                        },
-                                                        "name_mm": {
-                                                            "type": "string",
-                                                            "example": "အမည်"
                                                         },
                                                         "menu_variation_values": {
                                                             "type": "array",
@@ -5833,10 +5825,7 @@
                         "type": "string",
                         "example": "City Name"
                     },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "မြို့အမည်"
-                    },
+
                     "slug": {
                         "type": "string",
                         "readOnly": true
@@ -5889,10 +5878,7 @@
                         "type": "string",
                         "example": "Name"
                     },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "အမည်"
-                    },
+
                     "description": {
                         "type": "string",
                         "example": "description"
@@ -5931,10 +5917,7 @@
                                             "type": "string",
                                             "example": "Name"
                                         },
-                                        "name_mm": {
-                                            "type": "string",
-                                            "example": "အမည်"
-                                        },
+
                                         "menu_variation_values": {
                                             "type": "array",
                                             "items": {
@@ -5971,10 +5954,7 @@
                                             "type": "string",
                                             "example": "Name"
                                         },
-                                        "name_mm": {
-                                            "type": "string",
-                                            "example": "NameMM"
-                                        },
+
                                         "price": {
                                             "type": "number",
                                             "example": 1000
@@ -5997,10 +5977,7 @@
                         "type": "string",
                         "example": "Name"
                     },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "အမည်"
-                    },
+
                     "menu_slug": {
                         "type": "string",
                         "example": "D16AAF"
@@ -6025,10 +6002,7 @@
                         "type": "string",
                         "example": "Name"
                     },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "အမည်"
-                    },
+
                     "menu_slug": {
                         "type": "string",
                         "example": "D16AAF"
@@ -6149,10 +6123,7 @@
                         "type": "string",
                         "example": "Product Name"
                     },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "အမည်"
-                    },
+
                     "description": {
                         "type": "string",
                         "example": "Description"
@@ -6193,10 +6164,7 @@
                                     "type": "string",
                                     "example": "Variation Name"
                                 },
-                                "name_mm": {
-                                    "type": "string",
-                                    "example": "အမည်"
-                                },
+
                                 "slug": {
                                     "type": "string",
                                     "readOnly": true
@@ -6245,10 +6213,7 @@
                                     "type": "string",
                                     "example": "Variation Name"
                                 },
-                                "name_mm": {
-                                    "type": "string",
-                                    "example": "အမည်"
-                                },
+
                                 "product_variation_values": {
                                     "type": "array",
                                     "items": {
@@ -6369,10 +6334,7 @@
                         "type": "string",
                         "example": "Restaurant Name"
                     },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "ဆိုင်အမည်"
-                    },
+
                     "is_enable": {
                         "type": "boolean",
                         "example": "true"
@@ -6394,10 +6356,7 @@
                                 "type": "string",
                                 "example": "Name"
                             },
-                            "name_mm": {
-                                "type": "string",
-                                "example": "အမည်"
-                            },
+
                             "contact_number": {
                                 "type": "string",
                                 "example": "contact_number"
@@ -6453,10 +6412,6 @@
                         "type": "string",
                         "example": "name"
                     },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "name_mm"
-                    },
                     "address": {
                         "type": "string",
                         "example": "address"
@@ -6509,10 +6464,6 @@
                         "type": "string",
                         "example": "Name"
                     },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "အမည်"
-                    },
                     "slug": {
                         "type": "string",
                         "readOnly": true
@@ -6564,10 +6515,6 @@
                     "name": {
                         "type": "string",
                         "example": "Product Name"
-                    },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "အမည်"
                     },
                     "slug": {
                         "type": "string",
@@ -6622,10 +6569,6 @@
                     "name": {
                         "type": "string",
                         "example": "name"
-                    },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "အမည်"
                     },
                     "slug": {
                         "type": "string",
@@ -6690,10 +6633,6 @@
                         "type": "string",
                         "example": "ShopCategory Name"
                     },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "ShopCategory အမည်"
-                    },
                     "slug": {
                         "type": "string",
                         "readOnly": true
@@ -6709,10 +6648,6 @@
                     "name": {
                         "type": "string",
                         "example": "name"
-                    },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "အမည်"
                     },
                     "shop_category_slug": {
                         "type": "string",
@@ -6734,10 +6669,6 @@
                         "type": "string",
                         "example": "name"
                     },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "အမည်"
-                    },
                     "slug": {
                         "type": "string",
                         "readOnly": true
@@ -6753,10 +6684,6 @@
                     "name": {
                         "type": "string",
                         "example": "Tamwe"
-                    },
-                    "name_mm": {
-                        "type": "string",
-                        "example": "တာမွေ"
                     },
                     "city_slug": {
                         "type": "string",

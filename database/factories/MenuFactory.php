@@ -30,7 +30,6 @@ class MenuFactory extends Factory
         return [
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->text(30),
-            'name_mm' => $mmFaker->name(5),
             'description' => $this->faker->paragraph(),
             'description_mm' => $mmFaker->name(10),
             'price' => $this->faker->numberBetween(1000, 10000),
