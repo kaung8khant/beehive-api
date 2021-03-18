@@ -396,11 +396,6 @@ class TownshipSeeder extends Seeder
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
-                "name" => "Ahlone",
-                "city_id" => "10",
-            ],
-            [
-                'slug' => $this->generateUniqueSlug(),
                 "name" => "Budalin",
                 "city_id" => "10",
             ],
@@ -724,11 +719,7 @@ class TownshipSeeder extends Seeder
                 "name" => "Mataing",
                 "city_id" => "13",
             ],
-            [
-                'slug' => $this->generateUniqueSlug(),
-                "name" => "Minhla",
-                "city_id" => "13",
-            ],
+
             [
                 'slug' => $this->generateUniqueSlug(),
                 "name" => "PaukKaung",
@@ -742,11 +733,6 @@ class TownshipSeeder extends Seeder
             [
                 'slug' => $this->generateUniqueSlug(),
                 "name" => "Tarpon",
-                "city_id" => "13",
-            ],
-            [
-                'slug' => $this->generateUniqueSlug(),
-                "name" => "Tharyarwady",
                 "city_id" => "13",
             ],
             [
@@ -1421,11 +1407,6 @@ class TownshipSeeder extends Seeder
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
-                "name" => "Htantapin",
-                "city_id" => "17",
-            ],
-            [
-                'slug' => $this->generateUniqueSlug(),
                 "name" => "Shwe Pyi Thar",
                 "city_id" => "17",
             ],
@@ -1512,11 +1493,6 @@ class TownshipSeeder extends Seeder
             [
                 'slug' => $this->generateUniqueSlug(),
                 "name" => "Loilem",
-                "city_id" => "8",
-            ],
-            [
-                'slug' => $this->generateUniqueSlug(),
-                "name" => "Laihka",
                 "city_id" => "8",
             ],
             [
@@ -1616,11 +1592,6 @@ class TownshipSeeder extends Seeder
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
-                "name" => "Kyauktan",
-                "city_id" => "8",
-            ],
-            [
-                'slug' => $this->generateUniqueSlug(),
                 "name" => "Kyauk Ta Lone",
                 "city_id" => "8",
             ],
@@ -1697,11 +1668,6 @@ class TownshipSeeder extends Seeder
             [
                 'slug' => $this->generateUniqueSlug(),
                 "name" => "Moebyel",
-                "city_id" => "8",
-            ],
-            [
-                'slug' => $this->generateUniqueSlug(),
-                "name" => "Pekon",
                 "city_id" => "8",
             ],
             [
