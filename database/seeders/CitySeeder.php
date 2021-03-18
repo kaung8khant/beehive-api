@@ -7,7 +7,6 @@ use App\Helpers\StringHelper;
 use App\Models\City;
 use App\Models\Township;
 
-use function Ramsey\Uuid\v1;
 
 class CitySeeder extends Seeder
 {
@@ -27,6 +26,10 @@ class CitySeeder extends Seeder
         //     ],
         //     [
         //         'name' => 'Kaya',
+        //         'slug' => $this->generateUniqueSlug(),
+        //     ],
+        //     [
+        //         'name' => 'Kayin',
         //         'slug' => $this->generateUniqueSlug(),
         //     ],
         //     [
