@@ -17,7 +17,6 @@ class CreateShopsTable extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->string('name')->unique();
-            $table->string('name_mm')->unique()->nullable();
             $table->boolean('is_official')->default(0);
             $table->boolean('is_enable')->default(1);
             $table->string('address');

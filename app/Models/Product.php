@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
  * @OA\Schema(
  *      @OA\Xml(name="Product"),
  *      @OA\Property(property="name", type="string", example="Product Name"),
- *      @OA\Property(property="name_mm", type="string", example="အမည်"),
  *      @OA\Property(property="description", type="string", example="Description"),
  *      @OA\Property(property="description_mm", type="string", example="ဖော်ပြချက်"),
  *      @OA\Property(property="price", type="decimal", example=0.00),
@@ -21,7 +20,6 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="product_variations", type="array",
  *      @OA\Items(type="object",
  *      @OA\Property(property="name", type="string", example="Variation Name"),
- *      @OA\Property(property="name_mm", type="string", example="အမည်"),
  *      @OA\Property(property="slug", type="string", readOnly=true),
  *      @OA\Property(property="product_variation_values", type="array",
  *      @OA\Items(type="object",
@@ -43,7 +41,6 @@ class Product extends Model
     protected $fillable = [
         'slug',
         'name',
-        'name_mm',
         'description',
         'description_mm',
         'price',

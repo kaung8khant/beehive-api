@@ -28,7 +28,6 @@ class TownshipFactory extends Factory
         return [
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->unique()->state(),
-            'name_mm' => $mmFaker->name(),
         ];
     }
 }

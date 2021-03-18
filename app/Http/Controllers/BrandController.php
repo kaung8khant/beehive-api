@@ -94,7 +94,7 @@ class BrandController extends Controller
             [
                 'name' => 'required|unique:brands',
                 'slug' => 'required|unique:brands',
-                'image_slug' => 'required|exists:App\Models\File,slug',
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
             ]
         ));
 
@@ -190,6 +190,7 @@ class BrandController extends Controller
                 'required',
                 Rule::unique('brands')->ignore($brand->id),
             ],
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
 
         return response()->json($brand, 200);

@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
  * @OA\Schema(
  *      @OA\Xml(name="ShopSubCategory"),
  *      @OA\Property(property="name", type="string", example="name"),
- *      @OA\Property(property="name_mm", type="string", example="အမည်"),
  *      @OA\Property(property="shop_category_slug", type="string", example="E1367A"),
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
@@ -22,7 +21,6 @@ class ShopSubCategory extends Model
     protected $fillable = [
         'slug',
         'name',
-        'name_mm',
         'shop_category_id',
     ];
 

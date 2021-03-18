@@ -29,46 +29,44 @@ class ShopController extends Controller
     {
         $shop = Shop::with('availableCategories', 'availableTags')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate($request->size)->items();
-        return $this->generateResponse($shop,200);
+        return $this->generateResponse($shop, 200);
     }
 
     public function show($slug)
     {
         $shop =  Shop::with('availableCategories', 'availableTags')->where('slug', $slug)->first();
-        return $this->generateResponse($shop,200);
+        return $this->generateResponse($shop, 200);
     }
 
 
-    public function getCategories(Request $request){
-        
+    public function getCategories(Request $request)
+    {
+
         $shopCategories = ShopCategory::with('shopSubCategories')
-        ->where('name', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('slug', $request->filter)
-        ->get();
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->get();
 
-        return $this->generateResponse($shopCategories,200);
+        return $this->generateResponse($shopCategories, 200);
     }
-    public function getCatgorizedProduct(Request $request){
-        $shopCategories = ShopCategory::with('shopSubCategories','shops.products')
-        ->where('name', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-        ->orWhere('slug', $request->filter)
-        ->get();
+    public function getCatgorizedProduct(Request $request)
+    {
+        $shopCategories = ShopCategory::with('shopSubCategories', 'shops.products')
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->get();
 
         $shopCategories = $this->getProductFromShop($shopCategories);
 
-        return $this->generateResponse($shopCategories,200);
+        return $this->generateResponse($shopCategories, 200);
     }
 
     public function getTags(Request $request)
     {
         $shopTags =  ShopTag::with('shops.products')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->get();
 
@@ -79,26 +77,26 @@ class ShopController extends Controller
     public function getByTag(Request $request, $slug)
     {
 
-        $shopTag = ShopTag::with('shops','shops.products','shops.products.shop')->where('slug', $slug)->firstOrFail();
+        $shopTag = ShopTag::with('shops', 'shops.products', 'shops.products.shop')->where('slug', $slug)->firstOrFail();
 
         $shopTag = $this->replaceShopWithProduct($shopTag);
 
         return $this->generateResponse($shopTag, 200);
     }
-    public function getByCategory(Request $request,$slug)
+    public function getByCategory(Request $request, $slug)
     {
-        $shopCategory = ShopCategory::with('shops','shops.products','shops.products.shop')->where('slug', $slug)->firstOrFail();
+        $shopCategory = ShopCategory::with('shops', 'shops.products', 'shops.products.shop')->where('slug', $slug)->firstOrFail();
         $shopCategory = $this->replaceShopWithProduct($shopCategory);
         return  $this->generateResponse($shopCategory, 200);
     }
-    
-    public function getBySubCategory(Request $request,$slug)
+
+    public function getBySubCategory(Request $request, $slug)
     {
         $shop = ShopSubCategory::with('shopCategory')->with('shopCategory.shops')->where('slug', $slug)->paginate($request->size)->items();
-        
+
         return  $this->generateResponse($shop, 200);
     }
-    
+
 
     private function getShopId($slug)
     {
@@ -117,7 +115,7 @@ class ShopController extends Controller
     private function replaceShopWithProduct($data)
     {
         $products = [];
-        
+
         foreach ($data['shops'] as $shop) {
             array_push($products, $shop['products']);
         }
@@ -127,21 +125,20 @@ class ShopController extends Controller
         unset($data['shops']);
 
         return $data;
-    } 
+    }
 
     //redundant from ProductController 
-    private function checkProductFav($data,$type="array"){
-        if($type==="array"){
-            foreach($data as $product){
-                $product['is_favorite'] = empty(json_decode($product['customers']))?false:true;
+    private function checkProductFav($data, $type = "array")
+    {
+        if ($type === "array") {
+            foreach ($data as $product) {
+                $product['is_favorite'] = empty(json_decode($product['customers'])) ? false : true;
                 unset($product['customers']);
             }
-        }else{
-            $data['is_favorite'] = empty(json_decode($data['customers']))?false:true;
+        } else {
+            $data['is_favorite'] = empty(json_decode($data['customers'])) ? false : true;
             unset($data['customers']);
         }
         return $data;
     }
-
-    
 }

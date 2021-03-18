@@ -98,7 +98,6 @@ class ProductVariationController extends Controller
             'product_variations' => 'required|array',
             'product_variations.*.slug' => '',
             'product_variations.*.name' => 'required|string',
-            'product_variations.*.name_mm' => 'nullable|string',
             'product_slug' => 'required|exists:App\Models\Product,slug',
 
             'product_variations.*.product_variation_values' => 'required|array',
@@ -203,7 +202,6 @@ class ProductVariationController extends Controller
 
         $validatedData = $request->validate([
             'name' => 'required|string',
-            'name_mm' => 'nullable|string',
             'product_slug' => 'required|exists:App\Models\Product,slug',
         ]);
 
