@@ -118,9 +118,6 @@ class ProductController extends Controller
 
         $this->updateFile($request->image_slug, 'products', $product->slug);
 
-        // foreach ($request->images as $image) {
-        //     $this->updateFile($image, 'products', $product->slug);
-        // }
 
         if ($request->product_variations) {
             $this->createProductVariation($productId, $validatedData['product_variations']);
