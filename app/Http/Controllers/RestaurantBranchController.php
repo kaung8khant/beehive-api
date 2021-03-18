@@ -504,4 +504,20 @@ class RestaurantBranchController extends Controller
         }
         return response()->json($restaurantBranch->load('restaurant', 'township'), 200);
     }
+
+    public function toggleAvailable(Request $request, $restaurantBranchSlug, $slug)
+    {
+        $validatedData = $request->validate([
+            'is_available' => 'required|boolean',
+        ]);
+
+        $restaurantBranch = RestaurantBranch::with('availableMenus')
+            ->where('slug', $restaurantBranchSlug)
+           ->firstOrFail();
+
+        $availableMenus = Menu::where('slug', $slug)->firstOrFail();
+        $restaurantBranch->availableMenus()->sync([$availableMenus->id => [ 'is_available' => $validatedData['is_available']] ], false);
+        // $restaurantBranch->availableMenus()->save($availableMenus, ['is_available' => $validatedData['is_available']]);
+        return response()->json(['message' => 'Success.'], 200);
+    }
 }

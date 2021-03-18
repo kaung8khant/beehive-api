@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
+use App\Helpers\FileHelper;
 use App\Models\RestaurantCategory;
 
 class RestaurantCategoryController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
 
     /**
      * Display a listing of the resource.
@@ -87,8 +88,10 @@ class RestaurantCategoryController extends Controller
             'name' => 'required|unique:restaurant_categories',
             'name_mm' => 'nullable|unique:restaurant_categories',
             'slug' => 'required|unique:restaurant_categories',
+            'image_slug' => 'required|exists:App\Models\File,slug',
         ]));
 
+        $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
         return response()->json($restaurantCategory, 201);
     }
 
@@ -220,7 +223,13 @@ class RestaurantCategoryController extends Controller
      */
     public function destroy($slug)
     {
-        RestaurantCategory::where('slug', $slug)->firstOrFail()->delete();
+        $restaurantCategory = RestaurantCategory::where('slug', $slug)->firstOrFail();
+
+        foreach ($restaurantCategory->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
+        $restaurantCategory->delete();
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 

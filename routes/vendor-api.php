@@ -21,15 +21,13 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('restaurant-tags', 'RestaurantTagController@index');
 
         /* menus */
-        Route::get('restaurants/{slug}/menus', 'MenuController@getMenusByRestaurant');
-        Route::get('restaurant-branches/{slug}/menus', 'MenuController@getAvailableMenusByRestaurantBranch');
+        Route::get('restaurant-branches/{slug}/menus', 'MenuController@getMenusByBranch');
+        Route::get('restaurant-branches/{slug}/available-menus', 'MenuController@getAvailableMenusByBranch');
         Route::get('menus/{slug}', 'MenuController@show');
-        Route::post('restaurant-branches/{slug}/menus', 'MenuController@createAvailableMenu');
         Route::post('menus', 'MenuController@store');
         Route::put('menus/{slug}', 'MenuController@update');
         Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
-        Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
-        Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
+        Route::post('restaurant-branches/{restaurantBranchSlug}/menus/{slug}', 'RestaurantBranchController@toggleAvailable');
 
         Route::get('menu-variations/{slug}', 'MenuVariationController@show');
         Route::post('menu-variations', 'MenuVariationController@store');
