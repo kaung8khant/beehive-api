@@ -46,12 +46,8 @@ class AddressController extends Controller
 
         $this->setNonPrimary();
 
-        try {
-            $address = Address::create($validatedData);
-            return $this->generateResponse($address->refresh()->load('township'), 201);
-        } catch (\Exception $e) {
-            return $this->generateResponse('The label has already been taken.', 409, TRUE);
-        }
+        $address = Address::create($validatedData);
+        return $this->generateResponse($address->refresh()->load('township'), 201);
     }
 
     public function show($slug)
@@ -73,12 +69,8 @@ class AddressController extends Controller
         $validatedData['township_id'] = Township::where('slug', $request->township_slug)->first()->id;
         $validatedData['customer_id'] = $this->customer_id;
 
-        try {
-            $address->update($validatedData);
-            return $this->generateResponse($address, 200);
-        } catch (\Exception $e) {
-            return $this->generateResponse('The label has already been taken.', 409, TRUE);
-        }
+        $address->update($validatedData);
+        return $this->generateResponse($address, 200);
     }
 
     public function destroy($slug)
