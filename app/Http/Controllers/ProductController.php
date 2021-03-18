@@ -54,7 +54,6 @@ class ProductController extends Controller
     {
         return Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -295,7 +294,6 @@ class ProductController extends Controller
     {
         $params = [
             'name' => 'required|string',
-            'name_mm' => 'nullable|string',
             'description' => 'required|string',
             'description_mm' => 'nullable|string',
             'price' => 'required|max:99999999',
@@ -304,12 +302,11 @@ class ProductController extends Controller
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
             'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
-            'image_slug' => 'required|exists:App\Models\File,slug',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',
             'product_variations.*.name' => 'required|string',
-            'product_variations.*.name_mm' => 'nullable|string',
 
             'product_variations.*.product_variation_values' => 'required|array',
             'product_variations.*.product_variation_values.*.value' => 'required|string',
@@ -382,7 +379,6 @@ class ProductController extends Controller
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
@@ -396,7 +392,6 @@ class ProductController extends Controller
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
@@ -501,7 +496,6 @@ class ProductController extends Controller
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }

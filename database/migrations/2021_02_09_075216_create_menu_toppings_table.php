@@ -17,7 +17,6 @@ class CreateMenuToppingsTable extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->string('name');
-            $table->string('name_mm')->nullable();
             $table->decimal('price', 12, 0);
             $table->unsignedBigInteger('menu_id');
             $table->timestamps();

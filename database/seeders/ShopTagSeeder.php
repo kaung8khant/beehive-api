@@ -19,12 +19,10 @@ class ShopTagSeeder extends Seeder
         $tags = [
             [
                 "name" => "Handbag",
-                "name_mm" => "လက်ကိုင်အိတ်",
                 "slug" => $this->generateUniqueSlug(),
             ],
             [
                 "name" => "Plate",
-                "name_mm" => "ပန်းကန်",
                 "slug" => $this->generateUniqueSlug(),
             ],
         ];

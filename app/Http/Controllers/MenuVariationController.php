@@ -84,7 +84,6 @@ class MenuVariationController extends Controller
      *               @OA\Property(property="menu_variations", type="array", @OA\Items(oneOf={
      *                  @OA\Schema(
      *                   @OA\Property(property="name", type="string", example="Name"),
-     *                   @OA\Property(property="name_mm", type="string", example="အမည်"),
      *                   @OA\Property(property="menu_variation_values", type="array", @OA\Items(oneOf={
      *                    @OA\Schema(
      *                      @OA\Property(property="value", type="string", example="Name"),
@@ -110,7 +109,6 @@ class MenuVariationController extends Controller
         $validatedData = $request->validate([
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
             'menu_variations.*.name' => 'required|string',
-            'menu_variations.*.name_mm' => 'nullable|string',
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
@@ -269,7 +267,6 @@ class MenuVariationController extends Controller
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
@@ -315,7 +312,6 @@ class MenuVariationController extends Controller
     {
         $params = [
             'name' => 'required|string',
-            'name_mm' => 'nullable|string',
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
         ];
 

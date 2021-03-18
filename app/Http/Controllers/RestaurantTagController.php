@@ -44,7 +44,6 @@ class RestaurantTagController extends Controller
     public function index(Request $request)
     {
         return RestaurantTag::where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -86,7 +85,6 @@ class RestaurantTagController extends Controller
         $tag = RestaurantTag::create($request->validate(
             [
                 'name' => 'required|unique:restaurant_tags',
-                'name_mm' => 'nullable|unique:restaurant_tags',
                 'slug' => 'required|unique:restaurant_tags',
             ]
         ));
@@ -177,11 +175,7 @@ class RestaurantTagController extends Controller
             'name' => [
                 'required',
                 Rule::unique('restaurant_tags')->ignore($tag->id),
-            ],
-            'name_mm' => [
-                'nullable',
-                Rule::unique('restaurant_tags')->ignore($tag->id),
-            ],
+            ]
         ]));
 
         return response()->json($tag, 200);
@@ -258,7 +252,6 @@ class RestaurantTagController extends Controller
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }

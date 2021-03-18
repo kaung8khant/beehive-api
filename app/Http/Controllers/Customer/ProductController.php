@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
 class ProductController extends Controller
 {
     use ResponseHelper;
-    
+
     public function __construct()
     {
         if (Auth::guard('customers')->check()) {
@@ -30,7 +30,6 @@ class ProductController extends Controller
             ->with('productVariations')
             ->with('productVariations.productVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate($request->size)->items();
 
@@ -38,7 +37,7 @@ class ProductController extends Controller
 
         return $this->generateResponse($product, 200);
     }
-   
+
 
     public function show($slug)
     {
@@ -47,7 +46,7 @@ class ProductController extends Controller
             ->with('productVariations.productVariationValues')
             ->where('slug', $slug)->first();
 
-        $product = $this->checkProductFav($product,'obj');
+        $product = $this->checkProductFav($product, 'obj');
 
         return $this->generateResponse($product, 200);
     }
@@ -70,14 +69,16 @@ class ProductController extends Controller
 
         return $this->generateResponse($product, 200);
     }
-    public function getAllBrand(Request $request){
-    
+    public function getAllBrand(Request $request)
+    {
+
         $brand = Brand::all();
         return $this->generateResponse($brand, 200);
     }
-    public function getByBrand(Request $request,$slug){
+    public function getByBrand(Request $request, $slug)
+    {
         $brandId = $this->getBrandId($slug);
-        $product =  Product::where("brand_id",$brandId)->paginate($request->size)->items();
+        $product =  Product::where("brand_id", $brandId)->paginate($request->size)->items();
         $product = $this->checkProductFav($product);
 
         return $this->generateResponse($product, 200);
@@ -85,8 +86,8 @@ class ProductController extends Controller
     //fav
     public function getFavorite(Request $request)
     {
-        $shop = $this->customer->product()->with('shopCategory', 'shopSubCategory','brand')->paginate($request->size)->items();
-        return $this->generateResponse($shop,200);
+        $shop = $this->customer->product()->with('shopCategory', 'shopSubCategory', 'brand')->paginate($request->size)->items();
+        return $this->generateResponse($shop, 200);
     }
 
     public function setFavorite($slug)
@@ -110,16 +111,19 @@ class ProductController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    private function getProductId($slug){
+    private function getProductId($slug)
+    {
         return Product::where('slug', $slug)->firstOrFail()->id;
     }
 
-    private function getBrandId($slug){
+    private function getBrandId($slug)
+    {
         return Brand::where('slug', $slug)->firstOrFail()->id;
     }
 
-    private function getShopCategoryId($slug){
-        return ShopCategory::where('slug',$slug)->firstOrFail()->id;
+    private function getShopCategoryId($slug)
+    {
+        return ShopCategory::where('slug', $slug)->firstOrFail()->id;
     }
 
     private function getShopId($slug)
@@ -127,14 +131,15 @@ class ProductController extends Controller
         return Shop::where('slug', $slug)->firstOrFail()->id;
     }
 
-    private function checkProductFav($data,$type="array"){
-        if($type==="array"){
-            foreach($data as $product){
-                $product['is_favorite'] = empty(json_decode($product['customers']))?false:true;
+    private function checkProductFav($data, $type = "array")
+    {
+        if ($type === "array") {
+            foreach ($data as $product) {
+                $product['is_favorite'] = empty(json_decode($product['customers'])) ? false : true;
                 unset($product['customers']);
             }
-        }else{
-            $data['is_favorite'] = empty(json_decode($data['customers']))?false:true;
+        } else {
+            $data['is_favorite'] = empty(json_decode($data['customers'])) ? false : true;
             unset($data['customers']);
         }
         return $data;

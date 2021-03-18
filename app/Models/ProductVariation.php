@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="product_variations", type="array",
  *      @OA\Items(type="object",
  *      @OA\Property(property="name", type="string", example="Variation Name"),
- *      @OA\Property(property="name_mm", type="string", example="အမည်"),
  *      @OA\Property(property="product_variation_values", type="array",
  *      @OA\Items(type="object",
  *      @OA\Property(property="value", type="string", example="value"),
@@ -34,7 +33,6 @@ class ProductVariation extends Model
     protected $fillable = [
         'slug',
         'name',
-        'name_mm',
         'product_id',
     ];
 

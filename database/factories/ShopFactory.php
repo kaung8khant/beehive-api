@@ -30,7 +30,6 @@ class ShopFactory extends Factory
         return [
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->unique()->company(),
-            'name_mm' => $mmFaker->name(),
             'is_official' => $this->faker->boolean(),
             'address' => $this->faker->address(),
             'contact_number' => $this->faker->phoneNumber(),

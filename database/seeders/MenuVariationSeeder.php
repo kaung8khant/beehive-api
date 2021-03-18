@@ -20,13 +20,11 @@ class MenuVariationSeeder extends Seeder
         $menuVariations = [
             [
                 'name' => 'Spicy Level',
-                'name_mm' => 'Spicy Level',
                 'slug' => $this->generateUniqueSlug(),
                 'menu_id' => 1,
             ],
             [
                 'name' => 'Bowl Size',
-                'name_mm' => 'Bowl Size',
                 'slug' => $this->generateUniqueSlug(),
                 'menu_id' => 2,
             ],
