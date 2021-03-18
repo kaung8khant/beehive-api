@@ -106,7 +106,7 @@ class RestaurantController extends Controller
             'restaurant_branch.latitude' => 'nullable|numeric',
             'restaurant_branch.longitude' => 'nullable|numeric',
             'restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
-            'image_slug' => 'required|exists:App\Models\File,slug',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
 
         $townshipId = $this->getTownshipIdBySlug($request->restaurant_branch['township_slug']);
@@ -212,6 +212,7 @@ class RestaurantController extends Controller
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
             'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
 
         $restaurant->update($validatedData);

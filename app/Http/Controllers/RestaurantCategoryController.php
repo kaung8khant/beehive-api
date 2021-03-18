@@ -88,7 +88,7 @@ class RestaurantCategoryController extends Controller
             'name' => 'required|unique:restaurant_categories',
             'name_mm' => 'nullable|unique:restaurant_categories',
             'slug' => 'required|unique:restaurant_categories',
-            'image_slug' => 'required|exists:App\Models\File,slug',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
 
         $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
@@ -184,7 +184,8 @@ class RestaurantCategoryController extends Controller
             'name_mm' => [
                 'nullable',
                 Rule::unique('restaurant_categories')->ignore($restaurantCategory->id),
-            ]
+            ],
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
 
         return response()->json($restaurantCategory, 200);

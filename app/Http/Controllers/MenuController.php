@@ -412,12 +412,11 @@ class MenuController extends Controller
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
-
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ];
 
         if ($slug) {
             $params['slug'] = 'required|unique:menus';
-            $params['image_slug'] = 'required|exists:App\Models\File,slug';
         }
 
         return $params;
