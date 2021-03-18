@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
@@ -13,7 +14,7 @@ use App\Models\Township;
 
 class RestaurantController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurants",
@@ -105,11 +106,16 @@ class RestaurantController extends Controller
             'restaurant_branch.latitude' => 'nullable|numeric',
             'restaurant_branch.longitude' => 'nullable|numeric',
             'restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
+            'image_slug' => 'required|exists:App\Models\File,slug',
         ]);
+
         $townshipId = $this->getTownshipIdBySlug($request->restaurant_branch['township_slug']);
 
         $restaurant = Restaurant::create($validatedData);
+
         $restaurantId = $restaurant->id;
+
+        $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
 
         $this->createRestaurantBranch($restaurantId, $townshipId, $validatedData['restaurant_branch']);
 
@@ -250,7 +256,13 @@ class RestaurantController extends Controller
      */
     public function destroy($slug)
     {
-        Restaurant::where('slug', $slug)->firstOrFail()->delete();
+        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+
+        foreach ($restaurant->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
+        $restaurant->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 

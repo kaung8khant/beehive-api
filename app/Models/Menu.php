@@ -68,6 +68,16 @@ class Menu extends Model
         'is_enable' => 'boolean',
     ];
 
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'menus')
+            ->where('source_id', $this->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
     public function getIsAvailableAttribute()
     {
         return boolval($this->pivot->is_available);

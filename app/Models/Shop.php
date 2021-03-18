@@ -61,6 +61,16 @@ class Shop extends Model
         'is_enable' => 'boolean',
     ];
 
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'shops')
+            ->where('source_id', $this->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
     public function availableTags()
     {
         return $this->belongsToMany(ShopTag::class, 'shop_shop_tag_map');
@@ -81,7 +91,8 @@ class Shop extends Model
         return $this->belongsTo(Township::class);
     }
 
-    public function user(){
-        return $this->belongsTo(User::class,'users','id');
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'users', 'id');
     }
 }
