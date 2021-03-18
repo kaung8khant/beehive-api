@@ -29,7 +29,6 @@ class RestaurantTagFactory extends Factory
         return [
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->unique()->text(10),
-            'name_mm' => $mmFaker->name(5),
         ];
     }
 }

@@ -6,14 +6,13 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\Customer;
 use App\Models\Menu;
-use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderContact;
 use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+// use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class RestaurantOrderController extends Controller

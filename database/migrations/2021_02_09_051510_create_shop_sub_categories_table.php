@@ -17,7 +17,6 @@ class CreateShopSubCategoriesTable extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->string('name')->unique();
-            $table->string('name_mm')->unique()->nullable();
             $table->unsignedBigInteger('shop_category_id');
             $table->timestamps();
             $table->foreign('shop_category_id')->references('id')->on('shop_categories')->onDelete('cascade');

@@ -49,7 +49,6 @@ class CityController extends Controller
     {
         return City::with('townships')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -84,7 +83,6 @@ class CityController extends Controller
 
         $city = City::create($request->validate([
             'name' => 'required|unique:cities',
-            'name_mm' => 'nullable|unique:cities',
             'slug' => 'required|unique:cities',
         ]));
 
@@ -162,11 +160,7 @@ class CityController extends Controller
             'name' => [
                 'required',
                 Rule::unique('cities')->ignore($city->id),
-            ],
-            'name_mm' => [
-                'nullable',
-                Rule::unique('cities')->ignore($city->id),
-            ],
+            ]
         ]));
 
         return response()->json($city, 200);

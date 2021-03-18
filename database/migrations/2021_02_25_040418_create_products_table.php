@@ -17,7 +17,6 @@ class CreateProductsTable extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->string('name');
-            $table->string('name_mm')->nullable();
             $table->text('description');
             $table->text('description_mm')->nullable();
             $table->decimal('price', 12, 0);

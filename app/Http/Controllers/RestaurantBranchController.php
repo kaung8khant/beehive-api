@@ -53,7 +53,6 @@ class RestaurantBranchController extends Controller
     {
         return RestaurantBranch::with('restaurant', 'township')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('contact_number', $request->filter)
             ->orWhere('slug', $request->filter)
             ->paginate(10);
@@ -90,7 +89,6 @@ class RestaurantBranchController extends Controller
         $validatedData = $request->validate([
             'slug' => 'required|unique:restaurant_branches',
             'name' => 'required|unique:restaurant_branches',
-            'name_mm' => 'nullable|unique:restaurant_branches',
             'address' => 'required',
             'contact_number' => 'required',
             'opening_time' => 'required|date_format:H:i',
@@ -180,10 +178,6 @@ class RestaurantBranchController extends Controller
         $validatedData = $request->validate([
             'name' => [
                 'required',
-                Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
-            ],
-            'name_mm' => [
-                'nullable',
                 Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
             ],
             'address' => 'required',
@@ -327,7 +321,6 @@ class RestaurantBranchController extends Controller
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
@@ -468,10 +461,6 @@ class RestaurantBranchController extends Controller
                 'required',
                 Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
             ],
-            'name_mm' => [
-                'nullable',
-                Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
-            ],
             'address' => 'required',
             'contact_number' => 'required',
             'opening_time' => 'required|date_format:H:i',
@@ -513,10 +502,10 @@ class RestaurantBranchController extends Controller
 
         $restaurantBranch = RestaurantBranch::with('availableMenus')
             ->where('slug', $restaurantBranchSlug)
-           ->firstOrFail();
+            ->firstOrFail();
 
         $availableMenus = Menu::where('slug', $slug)->firstOrFail();
-        $restaurantBranch->availableMenus()->sync([$availableMenus->id => [ 'is_available' => $validatedData['is_available']] ], false);
+        $restaurantBranch->availableMenus()->sync([$availableMenus->id => ['is_available' => $validatedData['is_available']]], false);
         // $restaurantBranch->availableMenus()->save($availableMenus, ['is_available' => $validatedData['is_available']]);
         return response()->json(['message' => 'Success.'], 200);
     }

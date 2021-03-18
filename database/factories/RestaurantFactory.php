@@ -29,7 +29,6 @@ class RestaurantFactory extends Factory
         return [
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->unique()->company() . ' Restaurant',
-            'name_mm' => $mmFaker->name() . 'စားသောက်ဆိုင်',
         ];
     }
 }

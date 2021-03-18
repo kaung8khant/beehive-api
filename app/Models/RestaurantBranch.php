@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
  * @OA\Schema(
  *      @OA\Xml(name="RestaurantBranch"),
  *      @OA\Property(property="name", type="string", example="name"),
- *      @OA\Property(property="name_mm", type="string", example="name_mm"),
  *      @OA\Property(property="address", type="string", example="address"),
  *      @OA\Property(property="contact_number", type="string", example="string"),
  *      @OA\Property(property="opening_time", type="time", example="00:00"),
@@ -30,7 +29,6 @@ class RestaurantBranch extends Model
     protected $fillable = [
         'slug',
         'name',
-        'name_mm',
         'is_enable',
         'address',
         'contact_number',

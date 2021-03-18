@@ -65,7 +65,6 @@ class MenuController extends Controller
         return Menu::with('restaurant')
             ->with('restaurantCategory')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -326,7 +325,6 @@ class MenuController extends Controller
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
@@ -405,7 +403,6 @@ class MenuController extends Controller
             ->with('menuToppings')->where('is_available', true)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
             ->paginate(10);
@@ -416,7 +413,6 @@ class MenuController extends Controller
     {
         $params = [
             'name' => 'required',
-            'name_mm' => 'nullable',
             'description' => 'required',
             'description_mm' => 'nullable',
             'price' => 'required|numeric',
@@ -425,15 +421,13 @@ class MenuController extends Controller
             'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
             'menu_variations' => 'nullable|array',
             'menu_variations.*.name' => 'required|string',
-            'menu_variations.*.name_mm' => 'nullable|string',
             'menu_toppings' => 'nullable|array',
             'menu_toppings.*.name' => 'required|string',
-            'menu_toppings.*.name_mm' => 'nullable|string',
             'menu_toppings.*.price' => 'required|numeric',
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
-            'image_slug' => 'required|exists:App\Models\File,slug',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ];
 
         if ($slug) {

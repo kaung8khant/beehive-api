@@ -26,7 +26,6 @@ class CityFactory extends Factory
         return [
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->unique()->city(),
-            'name_mm' => $this->faker->unique()->city(),
         ];
     }
 }

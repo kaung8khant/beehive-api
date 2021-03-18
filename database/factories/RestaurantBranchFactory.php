@@ -31,7 +31,6 @@ class RestaurantBranchFactory extends Factory
         return [
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->unique()->company() . ' Restaurant',
-            'name_mm' => $mmFaker->name() . 'ဆိုင်ခွဲ',
             'address' => $this->faker->address(),
             'contact_number' => $this->faker->phoneNumber(),
             'opening_time' => rand(0, 11) . ':' . rand(0, 59),
@@ -41,7 +40,7 @@ class RestaurantBranchFactory extends Factory
             'township_id' => function () {
                 return  Township::pluck('id')->random(1)[0];
             },
-            'restaurant_id' => function (){
+            'restaurant_id' => function () {
                 return Restaurant::pluck('id')->random(1)[0];
             }
         ];
