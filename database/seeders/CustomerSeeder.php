@@ -20,7 +20,7 @@ class CustomerSeeder extends Seeder
             'name' => 'Test Customer',
             'phone_number' => '+959799655400',
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-            'gender' => 'male',
+            'gender' => 'Male',
             'date_of_birth' => '1993-11-16',
         ]);
     }
