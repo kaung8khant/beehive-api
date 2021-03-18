@@ -46,8 +46,12 @@ class AddressController extends Controller
 
         $this->setNonPrimary();
 
-        $address = Address::create($validatedData);
-        return $this->generateResponse($address->refresh()->load('township'), 201);
+        try {
+            $address = Address::create($validatedData);
+            return $this->generateResponse($address->refresh()->load('township'), 201);
+        } catch (\Exception $e) {
+            return $this->generateResponse('The label has already been taken.', 409, TRUE);
+        }
     }
 
     public function show($slug)
@@ -69,8 +73,12 @@ class AddressController extends Controller
         $validatedData['township_id'] = Township::where('slug', $request->township_slug)->first()->id;
         $validatedData['customer_id'] = $this->customer_id;
 
-        $address->update($validatedData);
-        return $this->generateResponse($address, 200);
+        try {
+            $address->update($validatedData);
+            return $this->generateResponse($address, 200);
+        } catch (\Exception $e) {
+            return $this->generateResponse('The label has already been taken.', 409, TRUE);
+        }
     }
 
     public function destroy($slug)
@@ -82,6 +90,7 @@ class AddressController extends Controller
     private function getParamsToValidate($slug = FALSE)
     {
         $params = [
+            'label' => 'required',
             'house_number' => 'required',
             'floor' => 'nullable|min:0|max:50',
             'street_name' => 'required',
