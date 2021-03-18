@@ -17,7 +17,6 @@ class CreateMenuVariationsTable extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->string('name');
-            $table->string('name_mm')->nullable();
             $table->unsignedBigInteger('menu_id');
             $table->timestamps();
             $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');

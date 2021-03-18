@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
  * @OA\Schema(
  *      @OA\Xml(name="City"),
  *      @OA\Property(property="name", type="string", example="City Name"),
- *      @OA\Property(property="name_mm", type="string", example="မြို့အမည်"),
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
@@ -19,7 +18,6 @@ class City extends Model
 
     protected $fillable = [
         'name',
-        'name_mm',
         'slug',
     ];
 

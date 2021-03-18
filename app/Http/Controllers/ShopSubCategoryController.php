@@ -18,7 +18,7 @@ class ShopSubCategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     /**
+    /**
      * @OA\Get(
      *      path="/api/v2/admin/sub-categories",
      *      operationId="getSubcategoryLists",
@@ -56,7 +56,6 @@ class ShopSubCategoryController extends Controller
     {
         return ShopSubCategory::with('shopCategory')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -68,7 +67,7 @@ class ShopSubCategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     /**
+    /**
      * @OA\Post(
      *      path="/api/v2/admin/sub-categories",
      *      operationId="storeSubcategory",
@@ -99,7 +98,6 @@ class ShopSubCategoryController extends Controller
 
         $validatedData = $request->validate([
             'name' => 'required|unique:shop_sub_categories',
-            'name_mm' => 'nullable|unique:shop_sub_categories',
             'slug' => 'required|unique:shop_sub_categories',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ]);
@@ -117,7 +115,7 @@ class ShopSubCategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-          /**
+    /**
      * @OA\Get(
      *      path="/api/v2/admin/sub-categories/{slug}",
      *      operationId="showSubcategory",
@@ -156,7 +154,7 @@ class ShopSubCategoryController extends Controller
      * @param  string  $slug
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @OA\Put(
      *      path="/api/v2/admin/sub-categories/{slug}",
      *      operationId="updateSubCategory",
@@ -198,10 +196,6 @@ class ShopSubCategoryController extends Controller
                 'required',
                 Rule::unique('shop_sub_categories')->ignore($subCategory->id),
             ],
-            'name_mm' => [
-                'nullable',
-                Rule::unique('shop_sub_categories')->ignore($subCategory->id),
-            ],
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ]);
 
@@ -225,7 +219,7 @@ class ShopSubCategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-       /**
+    /**
      * @OA\Delete(
      *      path="/api/v2/admin/sub-categories/{slug}",
      *      operationId="deleteSubcategory",
@@ -263,13 +257,13 @@ class ShopSubCategoryController extends Controller
     }
 
     /**
-    * Display a listing of the sub categories by one shop category.
-    *
-    * @param  \Illuminate\Http\Request  $request
-    * @param  string  $slug
-    * @return \Illuminate\Http\Response
-    */
-     /**
+     * Display a listing of the sub categories by one shop category.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $slug
+     * @return \Illuminate\Http\Response
+     */
+    /**
      * @OA\Get(
      *      path="/api/v2/admin/shop-categories/{slug}/sub-categories",
      *      operationId="getSubCategoriesByCategory",
@@ -308,9 +302,8 @@ class ShopSubCategoryController extends Controller
         return ShopSubCategory::whereHas('shopCategory', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter .'%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter);
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 }

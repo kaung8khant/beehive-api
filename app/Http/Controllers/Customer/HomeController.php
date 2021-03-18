@@ -57,7 +57,7 @@ class HomeController extends Controller
         $radius = config('system.restaurant_search_radius');
 
         return RestaurantBranch::with('restaurant')
-            ->selectRaw('id, slug, name, name_mm, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
+            ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
             ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
                 + sin(radians(?)) * sin(radians(latitude)) )
@@ -108,22 +108,17 @@ class HomeController extends Controller
 
         $restaurantBranches = $this->getRestaurantBranches($request)
             ->where('name', 'LIKE', '%' . $request->keyword . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%')
             ->orWhereHas('restaurant', function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->keyword . '%')
-                    ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%')
                     ->orWhereHas('availableCategories', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->keyword . '%')
-                            ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%');
+                        $q->where('name', 'LIKE', '%' . $request->keyword . '%');
                     })
                     ->orWhereHas('availableTags', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->keyword . '%')
-                            ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%');
+                        $q->where('name', 'LIKE', '%' . $request->keyword . '%');
                     });
             })
             ->orWhereHas('availableMenus', function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->keyword . '%')
-                    ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%')
                     ->orWhere('description', 'LIKE', '%' . $request->keyword . '%')
                     ->orWhere('description_mm', 'LIKE', '%' . $request->keyword . '%');
             })
@@ -137,34 +132,30 @@ class HomeController extends Controller
 
         return $this->generateResponse($restaurantBranches, 200);
     }
-    public function searchProduct(Request $request, $homeSearch = FALSE){
+    public function searchProduct(Request $request, $homeSearch = FALSE)
+    {
 
-        $validator  = Validator::make($request->all(),[
-                        'keyword' => 'required|string',
-                    ]);
-        if($validator->fails()){
+        $validator  = Validator::make($request->all(), [
+            'keyword' => 'required|string',
+        ]);
+        if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, TRUE);
         }
         $product = Product::with('shop')
             ->where('name', 'LIKE', '%' . $request->keyword . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%')
             ->orWhere('description', 'LIKE', '%' . $request->keyword . '%')
             ->orWhere('description_mm', 'LIKE', '%' . $request->keyword . '%')
-            ->whereHas('shop', function ($query) use ($request){
-                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
-                    ->orWhere('name_mm','LIKE', '%' . $request->keyword . '%');
+            ->whereHas('shop', function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->keyword . '%');
             })
-            ->orWhereHas('shopCategory', function ($query) use ($request){
-                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
-                    ->orWhere('name_mm','LIKE', '%' . $request->keyword . '%');
+            ->orWhereHas('shopCategory', function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->keyword . '%');
             })
-            ->orWhereHas('brand', function ($query) use ($request){
-                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
-                    ->orWhere('name_mm','LIKE', '%' . $request->keyword . '%');
+            ->orWhereHas('brand', function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->keyword . '%');
             })
-            ->orWhereHas('shopSubCategory', function ($query) use ($request){
-                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
-                    ->orWhere('name_mm','LIKE', '%' . $request->keyword . '%');
+            ->orWhereHas('shopSubCategory', function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->keyword . '%');
             })
             ->with('productVariations')
             ->with('productVariations.productVariationValues')
@@ -185,7 +176,8 @@ class HomeController extends Controller
             'lng' => 'required|numeric',
         ]);
     }
-    public function noti(Request $request,FirebaseService $firebase){
+    public function noti(Request $request, FirebaseService $firebase)
+    {
         $firebase->sendNotification($request);
     }
 }

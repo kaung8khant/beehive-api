@@ -157,7 +157,6 @@ class RestaurantController extends Controller
                 $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
             }])
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate($request->size)
             ->items();
@@ -178,7 +177,6 @@ class RestaurantController extends Controller
                 $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
             }])
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate($request->size)
             ->items();
@@ -242,7 +240,7 @@ class RestaurantController extends Controller
         $radius = config('system.restaurant_search_radius');
 
         return $query->with('restaurant')
-            ->selectRaw('id, slug, name, name_mm, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
+            ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
             ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
                 + sin(radians(?)) * sin(radians(latitude)) )

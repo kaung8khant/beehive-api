@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
  * @OA\Schema(
  *      @OA\Xml(name="Shop"),
  *      @OA\Property(property="name", type="string", example="name"),
- *      @OA\Property(property="name_mm", type="string", example="အမည်"),
  *      @OA\Property(property="slug", type="string", readOnly=true),
  *      @OA\Property(property="is_official", type="boolean", example=true),
  *      @OA\Property(property="is_enable", type="boolean", example=true),
@@ -35,7 +34,6 @@ class Shop extends Model
     protected $fillable = [
         'slug',
         'name',
-        'name_mm',
         'is_official',
         'is_enable',
         'address',

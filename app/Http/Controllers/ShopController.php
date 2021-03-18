@@ -53,36 +53,35 @@ class ShopController extends Controller
     {
         return Shop::with('availableCategories', 'availableTags')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
 
 
     /**
-    * @OA\Post(
-    *      path="/api/v2/admin/shops",
-    *      operationId="storeShop",
-    *      tags={"Shops"},
-    *      summary="Create a Shop",
-    *      description="Returns newly created shop",
-    *      @OA\RequestBody(
-    *          required=true,
-    *          description="Created shop object",
-    *          @OA\MediaType(
-    *              mediaType="applications/json",
-    *              @OA\Schema(ref="#/components/schemas/Shop")
-    *          )
-    *      ),
-    *      @OA\Response(
-    *          response=200,
-    *          description="Successful operation"
-    *      ),
-    *      security={
-    *          {"bearerAuth": {}}
-    *      }
-    *)
-    */
+     * @OA\Post(
+     *      path="/api/v2/admin/shops",
+     *      operationId="storeShop",
+     *      tags={"Shops"},
+     *      summary="Create a Shop",
+     *      description="Returns newly created shop",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created shop object",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/Shop")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -90,7 +89,6 @@ class ShopController extends Controller
         $validatedData = $request->validate([
             'slug' => 'required|unique:shops',
             'name' => 'required|unique:shops',
-            'name_mm' => 'nullable|unique:shops',
             'is_enable' => 'required|boolean',
             'is_official' => 'required|boolean',
             'shop_tags' => 'required|array',
@@ -196,10 +194,6 @@ class ShopController extends Controller
         $validatedData = $request->validate([
             'name' => [
                 'required',
-                Rule::unique('shops')->ignore($shop->id),
-            ],
-            'name_mm' => [
-                'nullable',
                 Rule::unique('shops')->ignore($shop->id),
             ],
             'is_enable' => 'nullable|boolean',
@@ -384,7 +378,7 @@ class ShopController extends Controller
      */
     public function addShopCategories(Request $request, $slug)
     {
-        $shop =$request->validate([
+        $shop = $request->validate([
             'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]);
 
@@ -438,7 +432,7 @@ class ShopController extends Controller
      */
     public function removeShopCategories(Request $request, $slug)
     {
-        $shop =$request->validate([
+        $shop = $request->validate([
             'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]);
         $shop = Shop::where('slug', $slug)->firstOrFail();

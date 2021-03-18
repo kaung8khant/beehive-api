@@ -16,7 +16,6 @@ class CreateTownshipsTable extends Migration
         Schema::create('townships', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
-            $table->string('name_mm')->unique()->nullable();
             $table->string('slug')->unique();
             $table->unsignedBigInteger('city_id');
             $table->timestamps();

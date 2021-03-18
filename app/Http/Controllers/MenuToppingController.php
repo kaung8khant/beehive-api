@@ -83,7 +83,6 @@ class MenuToppingController extends Controller
      *               @OA\Property(property="menu_toppings", type="array", @OA\Items(oneOf={
      *                @OA\Schema(
      *                   @OA\Property(property="name", type="string", example="Name"),
-     *                   @OA\Property(property="name_mm", type="string", example="အမည်"),
      *                   @OA\Property(property="price", type="number", example=1000),
      *                  ),
      *                })),
@@ -105,7 +104,6 @@ class MenuToppingController extends Controller
         $validatedData = $request->validate([
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
             'menu_toppings.*.name' => 'required|unique:menu_toppings',
-            'menu_toppings.*.name_mm' => 'nullable|unique:menu_toppings',
             'menu_toppings.*.price' => 'required|numeric',
 
         ]);
@@ -221,7 +219,7 @@ class MenuToppingController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-         /**
+    /**
      * @OA\Delete(
      *      path="/api/v2/admin/menu-toppings/{slug}",
      *      operationId="deleteMenuTopping",
@@ -293,7 +291,6 @@ class MenuToppingController extends Controller
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
@@ -303,7 +300,6 @@ class MenuToppingController extends Controller
     {
         $params = [
             'name' => 'required|string',
-            'name_mm' => 'nullable|string',
             'price' => 'required|numeric',
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
         ];

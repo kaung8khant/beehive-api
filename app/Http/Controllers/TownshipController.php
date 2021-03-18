@@ -55,7 +55,6 @@ class TownshipController extends Controller
     {
         return Township::with('city')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -98,7 +97,6 @@ class TownshipController extends Controller
         $validatedData = $request->validate([
             'slug' => 'required|unique:townships',
             'name' => 'required|unique:townships',
-            'name_mm' => 'nullable|unique:townships',
             'city_slug' => 'required|exists:App\Models\City,slug'
         ]);
 
@@ -194,10 +192,6 @@ class TownshipController extends Controller
                 'required',
                 Rule::unique('townships')->ignore($township->id),
             ],
-            'name_mm' => [
-                'nullable',
-                Rule::unique('townships')->ignore($township->id),
-            ],
             'city_slug' => 'required|exists:App\Models\City,slug',
         ]);
 
@@ -213,7 +207,7 @@ class TownshipController extends Controller
      * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @OA\Delete(
      *      path="/api/v2/admin/townships/{slug}",
      *      operationId="deleteTownship",
@@ -250,12 +244,12 @@ class TownshipController extends Controller
     }
 
     /**
-    * Display a listing of the townships by one city.
-    *
-    * @param  \Illuminate\Http\Request  $request
-    * @param  string  $slug
-    * @return \Illuminate\Http\Response
-    */
+     * Display a listing of the townships by one city.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $slug
+     * @return \Illuminate\Http\Response
+     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/cities/{slug}/townships",
@@ -295,9 +289,8 @@ class TownshipController extends Controller
         return Township::whereHas('city', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter .'%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter);
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 }

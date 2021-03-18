@@ -20,7 +20,6 @@ use Ramsey\Uuid\Type\Decimal;
  *      @OA\Property(property="menu_variations", type="array", @OA\Items(oneOf={
  *       @OA\Schema(
  *          @OA\Property(property="name", type="string", example="Name"),
- *          @OA\Property(property="name_mm", type="string", example="အမည်"),
  *          @OA\Property(property="menu_variation_values", type="array", @OA\Items(oneOf={
  *                @OA\Schema(
  *                   @OA\Property(property="value", type="string", example="Name"),
@@ -32,7 +31,6 @@ use Ramsey\Uuid\Type\Decimal;
  *    @OA\Property(property="menu_toppings", type="array", @OA\Items(oneOf={
  *     @OA\Schema(
  *         @OA\Property(property="name", type="string", example="Name"),
- *         @OA\Property(property="name_mm", type="string", example="NameMM"),
  *         @OA\Property(property="price", type="number", example=1000),
  *        ),
  *      })),

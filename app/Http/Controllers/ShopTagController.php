@@ -16,7 +16,7 @@ class ShopTagController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-         /**
+    /**
      * @OA\Get(
      *      path="/api/v2/admin/shop-tags",
      *      operationId="getShopTagLists",
@@ -53,7 +53,6 @@ class ShopTagController extends Controller
     public function index(Request $request)
     {
         return ShopTag::where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -95,7 +94,6 @@ class ShopTagController extends Controller
         $tag = ShopTag::create($request->validate(
             [
                 'name' => 'required|unique:shop_tags',
-                'name_mm' => 'nullable|unique:shop_tags',
                 'slug' => 'required|unique:shop_tags',
             ]
         ));
@@ -187,10 +185,7 @@ class ShopTagController extends Controller
                 'required',
                 Rule::unique('shop_tags')->ignore($tag->id),
             ],
-            'name_mm' => [
-                'nullable',
-                Rule::unique('shop_tags')->ignore($tag->id),
-            ],
+
         ]));
 
         return response()->json($tag, 200);
@@ -203,7 +198,7 @@ class ShopTagController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-      /**
+    /**
      * @OA\Delete(
      *      path="/api/v2/admin/shop-tags/{slug}",
      *      operationId="deleteShopTag",
@@ -237,7 +232,7 @@ class ShopTagController extends Controller
     /**
      * Display a listing of the shop tags by one shop.
      */
-     /**
+    /**
      * @OA\Get(
      *      path="/api/v2/admin/shops/{slug}/shop-tags",
      *      operationId="getShopTagsByShop",
@@ -276,9 +271,8 @@ class ShopTagController extends Controller
         return ShopTag::whereHas('shops', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter .'%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter);
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
 }
