@@ -69,6 +69,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('products', 'Customer\ProductController@index');
         Route::get('products/brands','Customer\ProductController@getAllBrand');
         Route::get('products/favorites', 'Customer\ProductController@getFavorite');
+        Route::get('products/search', 'Customer\HomeController@searchProduct');
         Route::get('products/{slug}', 'Customer\ProductController@show');
         Route::post('products/{slug}/set-favorite', 'Customer\ProductController@setFavorite');
         Route::post('products/{slug}/remove-favorite', 'Customer\ProductController@removeFavorite');
@@ -79,5 +80,6 @@ Route::group(['prefix' => 'user'], function () {
         
         Route::resource('shop-orders', 'Customer\ShopOrderController');
         Route::put('shop-orders/cancel/{slug}','Customer\ShopOrderController@cancelOrder');
+
     });
 });
