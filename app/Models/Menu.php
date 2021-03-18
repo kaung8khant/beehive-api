@@ -10,7 +10,6 @@ use Ramsey\Uuid\Type\Decimal;
  * @OA\Schema(
  *      @OA\Xml(name="Menu"),
  *      @OA\Property(property="name", type="string", example="Name"),
- *      @OA\Property(property="name_mm", type="string", example="အမည်"),
  *      @OA\Property(property="description", type="string", example="description"),
  *      @OA\Property(property="description_mm", type="string", example="description mm"),
  *      @OA\Property(property="restaurant_slug", type="string", example="D16AAF"),
@@ -46,7 +45,6 @@ class Menu extends Model
     protected $fillable = [
         'slug',
         'name',
-        'name_mm',
         'description',
         'description_mm',
         'price',

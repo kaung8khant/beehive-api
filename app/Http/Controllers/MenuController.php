@@ -64,7 +64,6 @@ class MenuController extends Controller
         return Menu::with('restaurant')
             ->with('restaurantCategory')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -313,7 +312,6 @@ class MenuController extends Controller
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
@@ -363,7 +361,6 @@ class MenuController extends Controller
             ->where('slug', $slug)
             ->whereHas('availableMenus', function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })->firstOrFail();
         $menus = $branch->availableMenus()->with('restaurantCategory')->paginate(10);
@@ -384,7 +381,6 @@ class MenuController extends Controller
             ->with('menuToppings')->where('is_available', true)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name_mm', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
             ->paginate(10);
@@ -395,7 +391,6 @@ class MenuController extends Controller
     {
         $params = [
             'name' => 'required',
-            'name_mm' => 'nullable',
             'description' => 'required',
             'description_mm' => 'nullable',
             'price' => 'required|numeric',
