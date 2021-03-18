@@ -7,7 +7,6 @@ use App\Helpers\StringHelper;
 use App\Models\City;
 use App\Models\Township;
 
-
 class CitySeeder extends Seeder
 {
     use StringHelper;

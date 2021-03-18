@@ -114,8 +114,9 @@ class ProductController extends Controller
 
         $product = Product::create($validatedData);
         $productId = $product->id;
-
-        $this->updateFile($request->image_slug, 'products', $product->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'products', $product->slug);
+        }
 
         if ($request->product_variations) {
             $this->createProductVariation($productId, $validatedData['product_variations']);
@@ -234,12 +235,20 @@ class ProductController extends Controller
 
         $productId = $product->id;
 
-        if ($product->images === []) {
-            $this->updateFile($request->image_slug, 'products', $slug);
-        } else {
-            foreach ($product->images as $image) {
-                $this->deleteFile($image->slug);
+        if ($request->image_slug) {
+            if ($product->images === []) {
                 $this->updateFile($request->image_slug, 'products', $slug);
+            } else {
+                foreach ($product->images as $image) {
+                    $this->deleteFile($image->slug);
+                    $this->updateFile($request->image_slug, 'products', $slug);
+                }
+            }
+        } else {
+            if (!$product->images === []) {
+                foreach ($product->images as $image) {
+                    $this->deleteFile($image->slug);
+                }
             }
         }
 
