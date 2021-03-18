@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Helpers\ResponseHelper;
 use App\Models\RestaurantBranch;
 use App\Models\Product;
+use App\Services\FirebaseService;
 
 class HomeController extends Controller
 {
@@ -92,7 +93,7 @@ class HomeController extends Controller
 
         $result = [
             'restaurant_branches' => $this->searchRestaurantBranches($request, TRUE),
-            'products' => null,
+            'products' => $this->searchProduct($request, TRUE),
         ];
 
         return $this->generateResponse($result, 200);
@@ -136,6 +137,45 @@ class HomeController extends Controller
 
         return $this->generateResponse($restaurantBranches, 200);
     }
+    public function searchProduct(Request $request, $homeSearch = FALSE){
+
+        $validator  = Validator::make($request->all(),[
+                        'keyword' => 'required|string',
+                    ]);
+        if($validator->fails()){
+            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+        }
+        $product = Product::with('shop')
+            ->where('name', 'LIKE', '%' . $request->keyword . '%')
+            ->orWhere('name_mm', 'LIKE', '%' . $request->keyword . '%')
+            ->orWhere('description', 'LIKE', '%' . $request->keyword . '%')
+            ->orWhere('description_mm', 'LIKE', '%' . $request->keyword . '%')
+            ->whereHas('shop', function ($query) use ($request){
+                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
+                    ->orWhere('name_mm','LIKE', '%' . $request->keyword . '%');
+            })
+            ->orWhereHas('shopCategory', function ($query) use ($request){
+                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
+                    ->orWhere('name_mm','LIKE', '%' . $request->keyword . '%');
+            })
+            ->orWhereHas('brand', function ($query) use ($request){
+                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
+                    ->orWhere('name_mm','LIKE', '%' . $request->keyword . '%');
+            })
+            ->orWhereHas('shopSubCategory', function ($query) use ($request){
+                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
+                    ->orWhere('name_mm','LIKE', '%' . $request->keyword . '%');
+            })
+            ->with('productVariations')
+            ->with('productVariations.productVariationValues')
+            ->get();
+
+        if ($homeSearch) {
+            return $product;
+        }
+
+        return $this->generateResponse($product, 200);
+    }
 
     private function validateSearch($request)
     {
@@ -144,5 +184,8 @@ class HomeController extends Controller
             'lat' => 'required|numeric',
             'lng' => 'required|numeric',
         ]);
+    }
+    public function noti(Request $request,FirebaseService $firebase){
+        $firebase->sendNotification($request);
     }
 }

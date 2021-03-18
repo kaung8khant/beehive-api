@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+
 /**
  * @OA\Schema(
  *      @OA\Xml(name="ShopCategory"),
@@ -27,6 +28,16 @@ class ShopCategory extends Model
         'updated_at',
         'pivot',
     ];
+
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'shop_categories')
+            ->where('source_id', $this->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
 
     public function shopSubCategories()
     {

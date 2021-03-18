@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
 use Illuminate\Http\Request;
@@ -9,46 +10,46 @@ use Illuminate\Validation\Rule;
 
 class BrandController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-     /**
-     * @OA\Get(
-     *      path="/api/v2/admin/brands",
-     *      operationId="getBrandLists",
-     *      tags={"Brands"},
-     *      summary="Get list of brands",
-     *      description="Returns list of brand",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
+    /**
+    * @OA\Get(
+    *      path="/api/v2/admin/brands",
+    *      operationId="getBrandLists",
+    *      tags={"Brands"},
+    *      summary="Get list of brands",
+    *      description="Returns list of brand",
+    *      @OA\Parameter(
+    *          name="page",
+    *          description="Current Page",
+    *          required=false,
+    *          in="query",
+    *          @OA\Schema(
+    *              type="integer"
+    *          )
+    *      ),
+    *      @OA\Parameter(
+    *          name="filter",
+    *          description="Filter",
+    *          required=false,
+    *          in="query",
+    *          @OA\Schema(
+    *              type="string"
+    *          ),
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful operation"
+    *      ),
+    *      security={
+    *          {"bearerAuth": {}}
+    *      }
+    *)
+    */
     public function index(Request $request)
     {
         return Brand::where('name', 'LIKE', '%' . $request->filter . '%')
@@ -93,8 +94,11 @@ class BrandController extends Controller
             [
                 'name' => 'required|unique:brands',
                 'slug' => 'required|unique:brands',
+                'image_slug' => 'required|exists:App\Models\File,slug',
             ]
         ));
+
+        $this->updateFile($request->image_slug, 'brands', $brand->slug);
 
         return response()->json($brand, 201);
     }
@@ -106,7 +110,7 @@ class BrandController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-      /**
+    /**
      * @OA\Get(
      *      path="/api/v2/admin/brands/{slug}",
      *      operationId="showBrands",
@@ -197,34 +201,40 @@ class BrandController extends Controller
      * @param  \App\Models\Brand  $brand
      * @return \Illuminate\Http\Response
      */
-     /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/brands/{slug}",
-     *      operationId="deleteBrand",
-     *      tags={"Brands"},
-     *      summary="Delete One Brand",
-     *      description="Delete one specific brand",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested brand",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
+    /**
+    * @OA\Delete(
+    *      path="/api/v2/admin/brands/{slug}",
+    *      operationId="deleteBrand",
+    *      tags={"Brands"},
+    *      summary="Delete One Brand",
+    *      description="Delete one specific brand",
+    *      @OA\Parameter(
+    *          name="slug",
+    *          description="Slug of a requested brand",
+    *          required=true,
+    *          in="path",
+    *          @OA\Schema(
+    *              type="string"
+    *          )
+    *      ),
+    *      @OA\Response(
+    *          response=200,
+    *          description="Successful operation"
+    *      ),
+    *      security={
+    *          {"bearerAuth": {}}
+    *      }
+    *)
+    */
     public function destroy($slug)
     {
-        Brand::where('slug', $slug)->firstOrFail()->delete();
+        $brand =    Brand::where('slug', $slug)->firstOrFail();
+
+        foreach ($brand->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
+        $brand->delete();
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 }

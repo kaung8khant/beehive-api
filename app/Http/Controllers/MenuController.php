@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
+use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
 use App\Models\Menu;
 use App\Models\Restaurant;
@@ -15,7 +16,7 @@ use App\Models\RestaurantBranch;
 
 class MenuController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
 
     use ResponseHelper;
 
@@ -109,6 +110,9 @@ class MenuController extends Controller
 
         $menu = Menu::create($validatedData);
         $menuId = $menu->id;
+
+        $this->updateFile($request->image_slug, 'menus', $menu->slug);
+
         $this->createVariations($menuId, $validatedData['menu_variations']);
         $this->createToppings($menuId, $validatedData['menu_toppings']);
         foreach ($restaurant->restaurantBranches as $branch) {
@@ -253,7 +257,13 @@ class MenuController extends Controller
      */
     public function destroy($slug)
     {
-        Menu::where('slug', $slug)->firstOrFail()->delete();
+        $menu = Menu::where('slug', $slug)->firstOrFail();
+
+        foreach ($menu->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
+        $menu->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -402,6 +412,7 @@ class MenuController extends Controller
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
+            'image_slug' => 'required|exists:App\Models\File,slug',
         ];
 
         if ($slug) {

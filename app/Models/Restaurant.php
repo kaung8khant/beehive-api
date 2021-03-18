@@ -55,6 +55,16 @@ class Restaurant extends Model
         'is_enable' => 'boolean',
     ];
 
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'restaurants')
+            ->where('source_id', $this->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
     public function availableTags()
     {
         return $this->belongsToMany(RestaurantTag::class, 'restaurant_restaurant_tag_map');
