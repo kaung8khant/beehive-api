@@ -114,6 +114,7 @@ class ProductController extends Controller
 
         $product = Product::create($validatedData);
         $productId = $product->id;
+
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'products', $product->slug);
         }
