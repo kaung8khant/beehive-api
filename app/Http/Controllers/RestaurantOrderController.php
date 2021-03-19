@@ -75,7 +75,7 @@ class RestaurantOrderController extends Controller
             ->whereHas('restaurantBranch', function ($q) use ($slug) {
                 $q->where('slug', $slug);
             })
-            ->whereHas('orderContact', function ($q) use ($request) {
+            ->whereHas('restaurantOrderContact', function ($q) use ($request) {
                 $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('phone_number', $request->filter);
             })->orWhere('slug', $request->filter)
