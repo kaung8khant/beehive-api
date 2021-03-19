@@ -69,7 +69,6 @@ class RestaurantOrderController extends Controller
     public function getBranchOrders(Request $request, $slug)
     {
         $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
-            ->with('restaurantOrderItems')
             // ->whereDate('order_date', '>=', $request->from)
             // ->whereDate('order_date', '<=', $request->to)
             ->whereHas('restaurantBranch', function ($q) use ($slug) {
