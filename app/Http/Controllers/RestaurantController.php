@@ -214,6 +214,10 @@ class RestaurantController extends Controller
         $restaurant->availableTags()->detach();
         $restaurant->availableTags()->attach($restaurantTags);
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
+        }
+
         if ($request->available_categories) {
             $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
             $restaurant->availableCategories()->detach();

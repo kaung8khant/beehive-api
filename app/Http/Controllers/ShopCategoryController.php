@@ -203,6 +203,10 @@ class ShopCategoryController extends Controller
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
+        }
+
         return response()->json($shopCategory, 200);
     }
 
