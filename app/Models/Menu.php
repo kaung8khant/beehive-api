@@ -62,7 +62,6 @@ class Menu extends Model
 
     protected $casts = [
         'is_enable' => 'boolean',
-        'price' => 'integer',
     ];
 
     protected $appends = ['images'];
