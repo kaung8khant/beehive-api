@@ -193,6 +193,10 @@ class BrandController extends Controller
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'brands', $brand->slug);
+        }
+
         return response()->json($brand, 200);
     }
 
