@@ -39,7 +39,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('townships', 'Customer\AddressController@getAllTownships');
         Route::get('addresses/get-primary', 'Customer\AddressController@getPrimaryAddress');
         Route::patch('addresses/{slug}/set-primary', 'Customer\AddressController@setPrimaryAddress');
-        Route::resource('addresses', 'Customer\AddressController');
+        Route::resource('addresses', 'Customer\AddressController', ['as' => 'customer.addresses']);
 
         /* Restaurant */
         // Route::get('restaurants', 'Customer\RestaurantController@index');
@@ -47,7 +47,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('restaurants/{slug}/favorites', 'Customer\RestaurantController@setFavoriteRestaurant');
         Route::delete('restaurants/{slug}/favorites', 'Customer\RestaurantController@removeFavoriteRestaurant');
 
-        Route::resource('restaurants/orders', 'Customer\RestaurantOrderController');
+        Route::resource('restaurants/orders', 'Customer\RestaurantOrderController', ['as' => 'customer.restaurants']);
         /* Restaurant */
 
         /* Shop */
@@ -80,7 +80,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('product-brands/{slug}', 'Customer\ProductController@getByBrand');
         /* Product */
 
-        Route::resource('shop-orders', 'Customer\ShopOrderController');
+        Route::resource('shop-orders', 'Customer\ShopOrderController', ['as' => 'customer']);
         Route::put('shop-orders/cancel/{slug}', 'Customer\ShopOrderController@cancelOrder');
     });
 });

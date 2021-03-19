@@ -47,7 +47,7 @@ Route::group(['prefix' => 'vendor'], function () {
 
         /* shop */
         /* shop categories */
-        Route::resource('shops', 'ShopController');
+        Route::resource('shops', 'ShopController', ['as' => 'vendor']);
         Route::get('shop-tags', 'ShopTagController@index');
         Route::get('shop-categories', 'ShopCategoryController@index');
         Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
