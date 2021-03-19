@@ -21,6 +21,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
         Route::middleware(['auth:users', 'user.enable'])->group(function () {
             Route::get('profile', 'Auth\UserAuthController@getProfile');
             Route::put('profile/update', 'Auth\UserAuthController@updateProfile');
+            Route::patch('password/update', 'Auth\UserAuthController@updatePassword');
             Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
             Route::post('logout', 'Auth\UserAuthController@logout');
 
