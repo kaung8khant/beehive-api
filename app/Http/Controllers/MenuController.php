@@ -378,17 +378,17 @@ class MenuController extends Controller
 
         foreach ($menus as $menu) {
             $menu->setAppends(['is_available']);
-            $menu['images']=File::where('source', 'menus')
-            ->where('source_id', $menu->id)
-            ->whereIn('extension', ['png', 'jpg'])
-            ->get();
+            // $menu['images']=File::where('source', 'menus')
+            // ->where('source_id', $menu->id)
+            // ->whereIn('extension', ['png', 'jpg'])
+            // ->get();
         }
         return $menus;
     }
 
     public function getAvailableMenusByBranch(Request $request, $slug)
     {
-        $branch = RestaurantBranch::with('availableMenus')->with('availableMenus.images')
+        $branch = RestaurantBranch::with('availableMenus')
             ->where('slug', $slug)
             ->firstOrFail();
 

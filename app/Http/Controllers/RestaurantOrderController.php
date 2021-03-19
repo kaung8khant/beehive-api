@@ -66,6 +66,25 @@ class RestaurantOrderController extends Controller
         return $this->generateResponse($restaurantOrders, 200);
     }
 
+    public function getBranchOrders(Request $request, $slug)
+    {
+        $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
+            ->with('restaurantOrderItems')
+            // ->whereDate('order_date', '>=', $request->from)
+            // ->whereDate('order_date', '<=', $request->to)
+            ->whereHas('restaurantBranch', function ($q) use ($slug) {
+                $q->where('slug', $slug);
+            })
+            ->whereHas('orderContact', function ($q) use ($request) {
+                $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', $request->filter);
+            })->orWhere('slug', $request->filter)
+            ->latest()
+            ->paginate(10)
+            ->items();
+
+        return $this->generateResponse($restaurantOrders, 200);
+    }
     /**
     * @OA\Get(
     *      path="/api/v2/admin/restaurant-orders/{slug}",
