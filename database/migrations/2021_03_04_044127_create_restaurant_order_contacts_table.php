@@ -23,8 +23,10 @@ class CreateRestaurantOrderContactsTable extends Migration
             $table->double('latitude')->nullable();
             $table->double('longitude')->nullable();
             $table->unsignedBigInteger('restaurant_order_id');
+            $table->unsignedBigInteger('township_id');
             $table->timestamps();
             $table->foreign('restaurant_order_id')->references('id')->on('restaurant_orders')->onDelete('cascade');
+            $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
         });
     }
 

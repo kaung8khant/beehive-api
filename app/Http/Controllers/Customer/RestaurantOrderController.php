@@ -8,28 +8,29 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Helpers\StringHelper;
 use App\Helpers\ResponseHelper;
-use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderStatus;
 use App\Models\RestaurantOrderContact;
 use App\Models\RestaurantOrderItem;
 use App\Models\Menu;
+use App\Models\Township;
 
 class RestaurantOrderController extends Controller
 {
     use StringHelper, ResponseHelper;
 
-    public function index()
+    public function index(Request $request)
     {
         $customer_id = Auth::guard('customers')->user()->id;
         $restaurantOrders = RestaurantOrder::with('restaurant')
             ->with('restaurantBranch')
             ->with('RestaurantOrderContact')
+            ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
             ->where('customer_id', $customer_id)
             ->latest()
-            ->paginate(10)
+            ->paginate($request->size)
             ->items();
 
         return $this->generateResponse($restaurantOrders, 200);
@@ -41,6 +42,7 @@ class RestaurantOrderController extends Controller
         $order = RestaurantOrder::with('restaurant')
             ->with('restaurantBranch')
             ->with('RestaurantOrderContact')
+            ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
             ->where('slug', $slug)
             ->where('customer_id', $customer_id)
@@ -63,6 +65,7 @@ class RestaurantOrderController extends Controller
 
         $restaurantBranch = $this->getRestaurantBranch($validatedData['restaurant_branch_slug']);
 
+        $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
 
@@ -73,7 +76,10 @@ class RestaurantOrderController extends Controller
         $this->createOrderContact($orderId, $validatedData['customer_info']);
         $this->createOrderItems($orderId, $validatedData['order_items']);
 
-        return $this->generateResponse($order->refresh()->load('restaurant', 'restaurantBranch', 'restaurantOrderContact', 'restaurantOrderItems'), 201);
+        return $this->generateResponse(
+            $order->refresh()->load('restaurant', 'restaurantBranch', 'restaurantOrderContact', 'restaurantOrderContact.township', 'restaurantOrderItems'),
+            201,
+        );
     }
 
     public function destroy($slug)
@@ -105,6 +111,7 @@ class RestaurantOrderController extends Controller
             'customer_info.street_name' => 'required|string',
             'customer_info.latitude' => 'nullable|numeric',
             'customer_info.longitude' => 'nullable|numeric',
+            'customer_info.township_slug' => 'required|exists:App\Models\Township,slug',
             'order_items' => 'required|array',
             'order_items.*.menu_slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.menu_name' => 'required|string',
@@ -132,6 +139,7 @@ class RestaurantOrderController extends Controller
     private function createOrderContact($orderId, $customerInfo)
     {
         $customerInfo['restaurant_order_id'] = $orderId;
+        $customerInfo['township_id'] = $this->getTownshipId($customerInfo['township_slug']);
         RestaurantOrderContact::create($customerInfo);
     }
 
@@ -149,11 +157,16 @@ class RestaurantOrderController extends Controller
 
     private function getRestaurantBranch($slug)
     {
-        return RestaurantBranch::where('slug', $slug)->first();
+        return RestaurantBranch::with('restaurant')->where('slug', $slug)->first();
     }
 
     private function getMenuId($slug)
     {
         return Menu::where('slug', $slug)->first()->id;
+    }
+
+    private function getTownshipId($slug)
+    {
+        return Township::where('slug', $slug)->first()->id;
     }
 }

@@ -105,7 +105,10 @@ class RestaurantController extends Controller
 
     public function getOneBranch($slug)
     {
-        $restaurantBranch = RestaurantBranch::with('restaurant')->where('slug', $slug)->firstOrFail();
+        $restaurantBranch = RestaurantBranch::with('restaurant')
+            ->with('township')
+            ->where('slug', $slug)
+            ->firstOrFail();
         return $this->generateBranchResponse($restaurantBranch, 200, 'obj');
     }
 

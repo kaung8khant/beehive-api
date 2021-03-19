@@ -18,11 +18,13 @@ class RestaurantOrderContact extends Model
         'latitude',
         'longitude',
         'restaurant_order_id',
+        'township_id',
     ];
 
     protected $hidden = [
         'id',
         'restaurant_order_id',
+        'township_id',
         'created_at',
         'updated_at',
     ];
@@ -30,5 +32,10 @@ class RestaurantOrderContact extends Model
     public function restaurantOrder()
     {
         return $this->belongsTo(RestaurantOrder::class);
+    }
+
+    public function township()
+    {
+        return $this->belongsTo(Township::class);
     }
 }
