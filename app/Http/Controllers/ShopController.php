@@ -219,6 +219,10 @@ class ShopController extends Controller
         $shop->availableTags()->detach();
         $shop->availableTags()->attach($shopTags);
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'shops', $shop->slug);
+        }
+
         if ($request->available_categories) {
             $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
             $shop->availableCategories()->detach();

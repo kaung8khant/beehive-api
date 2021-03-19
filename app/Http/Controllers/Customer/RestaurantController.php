@@ -55,7 +55,7 @@ class RestaurantController extends Controller
             ->pluck('restaurantBranches')
             ->collapse();
 
-        return $this->generateResponse($favoriteRestaurants, 200);
+        return $this->generateBranchResponse($favoriteRestaurants, 200);
     }
 
     public function getRecommendations(Request $request)
@@ -70,7 +70,7 @@ class RestaurantController extends Controller
             ->paginate($request->size)
             ->items();
 
-        return $this->generateResponse($recommendedBranches, 200);
+        return $this->generateBranchResponse($recommendedBranches, 200);
     }
 
     public function getNewArrivals(Request $request)
@@ -85,7 +85,7 @@ class RestaurantController extends Controller
             ->paginate($request->size)
             ->items();
 
-        return $this->generateResponse($newArrivals, 200);
+        return $this->generateBranchResponse($newArrivals, 200);
     }
 
     public function getAllBranches(Request $request)
@@ -100,13 +100,13 @@ class RestaurantController extends Controller
             ->paginate($request->size)
             ->items();
 
-        return $this->generateResponse($restaurantBranches, 200);
+        return $this->generateBranchResponse($restaurantBranches, 200);
     }
 
     public function getOneBranch($slug)
     {
         $restaurantBranch = RestaurantBranch::with('restaurant')->where('slug', $slug)->firstOrFail();
-        return $this->generateResponse($restaurantBranch, 200);
+        return $this->generateBranchResponse($restaurantBranch, 200, 'obj');
     }
 
     public function getAvailableMenusByBranch($slug)
@@ -162,7 +162,7 @@ class RestaurantController extends Controller
             ->items();
 
         $restaurantCategories = $this->getBranchesFromRestaurants($restaurantCategories);
-        return $this->generateResponse($restaurantCategories, 200);
+        return $this->generateBranchResponse($restaurantCategories, 200, 'arrobj');
     }
 
     public function getTags(Request $request)
@@ -182,7 +182,7 @@ class RestaurantController extends Controller
             ->items();
 
         $restaurantTags = $this->getBranchesFromRestaurants($restaurantTags);
-        return $this->generateResponse($restaurantTags, 200);
+        return $this->generateBranchResponse($restaurantTags, 200, 'arrobj');
     }
 
     public function getByCategory(Request $request, $slug)
@@ -200,7 +200,7 @@ class RestaurantController extends Controller
             ->firstOrFail();
 
         $restaurantCategory = $this->replaceRestaurantsWtihBranches($restaurantCategory);
-        return $this->generateResponse($restaurantCategory, 200);
+        return $this->generateBranchResponse($restaurantCategory, 200, 'cattag');
     }
 
     public function getByTag(Request $request, $slug)
@@ -218,7 +218,7 @@ class RestaurantController extends Controller
             ->firstOrFail();
 
         $restaurantTag = $this->replaceRestaurantsWtihBranches($restaurantTag);
-        return $this->generateResponse($restaurantTag, 200);
+        return $this->generateBranchResponse($restaurantTag, 200, 'cattag');
     }
 
     private function validateLocation($request)

@@ -130,7 +130,7 @@ class HomeController extends Controller
             return $restaurantBranches;
         }
 
-        return $this->generateResponse($restaurantBranches, 200);
+        return $this->generateBranchResponse($restaurantBranches, 200);
     }
     public function searchProduct(Request $request, $homeSearch = FALSE)
     {
