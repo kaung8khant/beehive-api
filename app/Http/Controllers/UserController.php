@@ -60,7 +60,7 @@ class UserController extends Controller
     {
         return User::with('roles')
             ->whereHas('roles', function ($q) {
-                $q->whereNotIn('name', ['Driver', 'Collector']);
+                $q->where('name', 'Admin');
             })
             ->where(function ($q) use ($request) {
                 $q->where('username', 'LIKE', '%' . $request->filter . '%')
@@ -73,7 +73,7 @@ class UserController extends Controller
 
     public function getShopUsers(Request $request)
     {
-        return User::with('roles')
+        return User::with('roles')->with('shop')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Shop');
             })
@@ -88,7 +88,7 @@ class UserController extends Controller
 
     public function getRestaurantUsers(Request $request)
     {
-        return User::with('roles')
+        return User::with('roles')->with('restaurantBranch')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Restaurant');
             })
@@ -245,15 +245,6 @@ class UserController extends Controller
         return User::with('roles')->where('slug', $slug)->firstOrFail();
     }
 
-    public function showShopUser($slug)
-    {
-        return User::with('roles')->with('shop')->where('slug', $slug)->firstOrFail();
-    }
-
-    public function showRestaurantUser($slug)
-    {
-        return User::with('roles')->with('restaurant')->where('slug', $slug)->firstOrFail();
-    }
     /**
      * Update the specified resource in storage.
      *
@@ -317,6 +308,52 @@ class UserController extends Controller
         // $roles = Role::whereIn('slug', $request->roles)->pluck('id');
         // $user->roles()->detach();
         // $user->roles()->attach($roles);
+
+        return response()->json($user->load('roles'), 200);
+    }
+
+    public function updateShopUser(Request $request, $slug)
+    {
+        $user = User::where('slug', $slug)->firstOrFail();
+
+        $validatedData = $request->validate([
+            'username' => [
+                'required',
+                Rule::unique('users')->ignore($user->id),
+            ],
+            'name' => 'required',
+            'phone_number' => [
+                'required',
+                Rule::unique('users')->ignore($user->id),
+            ],
+            'shop_slug' => 'required|exists:App\Models\Shop,slug',
+        ]);
+        $validatedData['shop_id']=$this->getShopId($request->shop_slug);
+
+        $user->update($validatedData);
+
+        return response()->json($user->load('roles'), 200);
+    }
+
+    public function updateRestaurantUser(Request $request, $slug)
+    {
+        $user = User::where('slug', $slug)->firstOrFail();
+
+        $validatedData = $request->validate([
+            'username' => [
+                'required',
+                Rule::unique('users')->ignore($user->id),
+            ],
+            'name' => 'required',
+            'phone_number' => [
+                'required',
+                Rule::unique('users')->ignore($user->id),
+            ],
+            'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
+        ]);
+        $validatedData['restaurant_branch_id']=$this->getRestaruantBranchId($request->restaurant_branch_slug);
+
+        $user->update($validatedData);
 
         return response()->json($user->load('roles'), 200);
     }
