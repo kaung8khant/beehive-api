@@ -41,6 +41,8 @@ Route::group(['prefix' => 'user'], function () {
         Route::patch('addresses/{slug}/set-primary', 'Customer\AddressController@setPrimaryAddress');
         Route::resource('addresses', 'Customer\AddressController', ['as' => 'customer.addresses']);
 
+        Route::get('favorites-count', 'Auth\CustomerAuthController@getFavoritesCount');
+
         /* Restaurant */
         // Route::get('restaurants', 'Customer\RestaurantController@index');
         Route::get('restaurants/favorites', 'Customer\RestaurantController@getFavoriteRestaurants');
