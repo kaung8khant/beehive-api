@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
@@ -10,7 +11,7 @@ use App\Models\ProductVariation;
 
 class ProductVariationValueController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
 
     /**
      * Display a listing of the resource.
@@ -84,10 +85,13 @@ class ProductVariationValueController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate($this->getParamsToValidate(TRUE));
+        $validatedData = $request->validate($this->getParamsToValidate(true));
         $validatedData['product_variation_id'] = $this->getProductVariationId($request->product_variation_slug);
 
         $productVariationValue = ProductVariationValue::create($validatedData);
+
+        $this->updateFile($request->image_slug, 'product_variation_values', $productVariationValue->slug);
+
         return response()->json($productVariationValue->load('productVariation'), 201);
     }
 
@@ -176,6 +180,11 @@ class ProductVariationValueController extends Controller
         $validatedData['product_variation_id'] = $this->getProductVariationId($request->product_variation_slug);
 
         $productVariationValue->update($request->all());
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'product_variation_values', $productVariationValue->slug);
+        }
+
         return response()->json($productVariationValue->load('productVariation'), 200);
     }
 
@@ -212,16 +221,24 @@ class ProductVariationValueController extends Controller
      */
     public function destroy($slug)
     {
-        ProductVariationValue::where('slug', $slug)->firstOrFail()->delete();
+        $productVariationValue = ProductVariationValue::where('slug', $slug)->firstOrFail();
+
+        foreach ($productVariationValue->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
+        $productVariationValue->delete();
+
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    private function getParamsToValidate($slug = FALSE)
+    private function getParamsToValidate($slug = false)
     {
         $params = [
             'value' => 'required',
             'price' => 'required|numeric',
             'product_variation_slug' => 'required|exists:App\Models\ProductVariation,slug',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ];
 
         if ($slug) {

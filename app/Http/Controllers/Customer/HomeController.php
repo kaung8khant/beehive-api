@@ -120,7 +120,6 @@ class HomeController extends Controller
             ->orWhereHas('availableMenus', function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->keyword . '%')
                     ->orWhere('description', 'LIKE', '%' . $request->keyword . '%')
-                    ->orWhere('description_mm', 'LIKE', '%' . $request->keyword . '%');
             })
             ->orderBy('distance', 'asc')
             ->paginate($request->size)
@@ -144,7 +143,6 @@ class HomeController extends Controller
         $product = Product::with('shop')
             ->where('name', 'LIKE', '%' . $request->keyword . '%')
             ->orWhere('description', 'LIKE', '%' . $request->keyword . '%')
-            ->orWhere('description_mm', 'LIKE', '%' . $request->keyword . '%')
             ->whereHas('shop', function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->keyword . '%');
             })

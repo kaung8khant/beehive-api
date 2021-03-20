@@ -32,6 +32,16 @@ class MenuVariationValue extends Model
         'updated_at',
     ];
 
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'menu_variation_values')
+            ->where('source_id', $this->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
     public function menuVariation()
     {
         return $this->belongsTo(MenuVariation::class);

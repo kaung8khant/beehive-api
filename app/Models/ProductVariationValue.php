@@ -33,6 +33,16 @@ class ProductVariationValue extends Model
         'updated_at',
     ];
 
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'product_variation_values')
+            ->where('source_id', $this->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
     public function productVariation()
     {
         return $this->belongsTo(ProductVariation::class);
