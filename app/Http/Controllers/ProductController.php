@@ -300,7 +300,6 @@ class ProductController extends Controller
         $params = [
             'name' => 'required|string',
             'description' => 'required|string',
-            'description_mm' => 'nullable|string',
             'price' => 'required|max:99999999',
             'is_enable' => 'required|boolean',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
