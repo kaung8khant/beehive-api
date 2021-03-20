@@ -106,6 +106,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /* Order */
             Route::resource('restaurant-orders', 'RestaurantOrderController');
+            Route::resource('shop-orders', 'ShopOrderController');
             Route::resource('orders', 'OrderController');
             Route::get('customers/{slug}/orders', 'OrderController@getOrdersByCustomer');
 
