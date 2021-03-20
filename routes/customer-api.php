@@ -48,6 +48,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::delete('restaurants/{slug}/favorites', 'Customer\RestaurantController@removeFavoriteRestaurant');
 
         Route::resource('restaurants/orders', 'Customer\RestaurantOrderController', ['as' => 'customer.restaurants']);
+        Route::post('restaurants/ratings', 'Customer\RestaurantRatingController@store');
         /* Restaurant */
 
         /* Shop */

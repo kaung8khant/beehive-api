@@ -52,7 +52,16 @@ class Restaurant extends Model
         'is_enable' => 'boolean',
     ];
 
-    protected $appends = ['images'];
+    protected $appends = ['rating', 'images'];
+
+    public function getRatingAttribute()
+    {
+        $rating = RestaurantRating::where('target_id', $this->id)
+            ->where('target_type', 'restaurant')
+            ->avg('rating');
+        
+        return $rating ? round($rating, 1) : null;
+    }
 
     public function getImagesAttribute()
     {
