@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class VendorAuthController extends Controller
 {
+    use ResponseHelper;
+
     public function login(Request $request)
     {
         $request->validate([
@@ -83,5 +87,26 @@ class VendorAuthController extends Controller
         ]));
 
         return response()->json($request, 200);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'old_password' => 'required|string',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, true);
+        }
+
+        $user = Auth::guard('vendors')->user();
+
+        if (Hash::check($request->old_password, $user->password)) {
+            $user->update(['password' => Hash::make($request->new_password)]);
+            return $this->generateResponse('Your password has been successfully updated.', 200, true);
+        }
+
+        return $this->generateResponse('Your old password is incorrect.', 403, true);
     }
 }

@@ -27,6 +27,7 @@ class RestaurantOrder extends Model
         'special_instruction',
         'payment_mode',
         'delivery_mode',
+        'restaurant_branch_info',
         'customer_id',
         'restaurant_id',
         'restaurant_branch_id',

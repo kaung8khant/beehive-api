@@ -8,6 +8,7 @@ Route::group(['prefix' => 'vendor'], function () {
     Route::middleware(['auth:vendors', 'user.enable'])->group(function () {
         Route::get('profile', 'Auth\VendorAuthController@getProfile');
         Route::put('profile/update', 'Auth\VendorAuthController@updateProfile');
+        Route::patch('password/update', 'Auth\VendorAuthController@updatePassword');
         Route::post('refresh-token', 'Auth\VendorAuthController@refreshToken');
         Route::post('logout', 'Auth\VendorAuthController@logout');
 
