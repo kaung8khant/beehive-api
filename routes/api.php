@@ -32,6 +32,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('roles', 'RoleController');
             Route::resource('users', 'UserController');
             Route::patch('users/toggle-enable/{slug}', 'UserController@toggleEnable');
+            Route::get('shop-users', 'UserController@getShopUsers');
+            Route::post('shop-users', 'UserController@storeShopUser');
+            Route::put('shop-users/{slug}', 'UserController@updateShopUser');
+            Route::get('restaurant-users', 'UserController@getRestaurantUsers');
+            Route::post('restaurant-users', 'UserController@storeRestaurantUser');
+            Route::put('restaurant-users/{slug}', 'UserController@updateRestaurantUser');
 
             Route::resource('customers', 'CustomerController');
             Route::patch('customers/toggle-enable/{slug}', 'CustomerController@toggleEnable');
@@ -106,6 +112,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /* Order */
             Route::resource('restaurant-orders', 'RestaurantOrderController');
+            Route::resource('shop-orders', 'ShopOrderController');
             Route::resource('orders', 'OrderController');
             Route::get('customers/{slug}/orders', 'OrderController@getOrdersByCustomer');
 

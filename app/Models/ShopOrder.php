@@ -36,8 +36,8 @@ class ShopOrder extends Model
     {
         return $this->hasOne(ShopOrderStatus::class);
     }
-    public function items(){
+    public function items()
+    {
         return $this->hasMany(ShopOrderItem::class);
     }
-   
 }
