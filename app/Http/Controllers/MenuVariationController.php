@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\MenuVariation;
@@ -10,7 +11,7 @@ use App\Models\MenuVariationValue;
 
 class MenuVariationController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
 
     /**
      * Display a listing of the resource.
@@ -112,6 +113,7 @@ class MenuVariationController extends Controller
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
+            'menu_variations.*.menu_variation_values.*.image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
 
         $menu = $this->getMenu($validatedData['menu_slug']);
@@ -123,11 +125,10 @@ class MenuVariationController extends Controller
             $menuVariationId = MenuVariation::create($menuVariation)->id;
 
             foreach ($menuVariation['menu_variation_values'] as $menuVariationValue) {
-
                 $menuVariationValue['slug'] = $this->generateUniqueSlug();
                 $menuVariationValue['menu_variation_id'] = $menuVariationId;
-
                 MenuVariationValue::create($menuVariationValue);
+                $this->updateFile($menuVariationValue['image_slug'], 'menu_variation_values', $menuVariationValue['slug']);
             }
         }
 
@@ -308,7 +309,7 @@ class MenuVariationController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    private function getParamsToValidate($slug = FALSE)
+    private function getParamsToValidate($slug = false)
     {
         $params = [
             'name' => 'required|string',
