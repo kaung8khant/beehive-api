@@ -65,4 +65,21 @@ class ShopOrderController extends Controller
 
         return $this->generateResponse($shopOrders, 200);
     }
+
+    public function getShopOrders(Request $request, $slug)
+    {
+        $shopOrders = ShopOrder::with('shopOrderContacts')->with('shopOrderItems')
+            // ->whereDate('order_date', '>=', $request->from)
+            // ->whereDate('order_date', '<=', $request->to)
+            ->where('slug', $slug)
+            ->whereHas('shopOrderContacts', function ($q) use ($request) {
+                $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', $request->filter);
+            })->orWhere('slug', $request->filter)
+            ->latest()
+            ->paginate(10)
+            ->items();
+
+        return $this->generateResponse($shopOrders, 200);
+    }
 }
