@@ -28,16 +28,16 @@ class ShopOrder extends Model
         'pivot',
     ];
 
-    public function contact()
+    public function shopOrderContacts()
     {
         return $this->hasOne(ShopOrderContact::class);
     }
-    public function status()
+    public function shopOrderStatus()
     {
         return $this->hasOne(ShopOrderStatus::class);
     }
-    public function items(){
+    public function shopOrderItems()
+    {
         return $this->hasMany(ShopOrderItem::class);
     }
-   
 }
