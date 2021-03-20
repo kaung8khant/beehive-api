@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\ProductVariation;
@@ -10,7 +11,7 @@ use App\Models\ProductVariationValue;
 
 class ProductVariationController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
 
     /**
      * Display a listing of the resource.
@@ -103,6 +104,7 @@ class ProductVariationController extends Controller
             'product_variations.*.product_variation_values' => 'required|array',
             'product_variations.*.product_variation_values.*.value' => 'required|string',
             'product_variations.*.product_variation_values.*.price' => 'required|numeric',
+            'product_variations.*.product_variation_values.*.image_slug' =>  'nullable|exists:App\Models\File,slug',
 
         ]);
 
@@ -113,6 +115,7 @@ class ProductVariationController extends Controller
             $variation['slug'] = $this->generateUniqueSlug();
             $variation['product_id'] = $productId;
             $productVariation = ProductVariation::create($variation);
+
             $variationId = $productVariation->id;
             $this->createVariationValues($variationId, $variation['product_variation_values']);
         }
@@ -303,6 +306,7 @@ class ProductVariationController extends Controller
             $variationValue['slug'] = $this->generateUniqueSlug();
             $variationValue['product_variation_id'] = $variationId;
             ProductVariationValue::create($variationValue);
+            $this->updateFile($variationValue['image_slug'], 'product_variation_values', $variationValue['slug']);
         }
     }
 }

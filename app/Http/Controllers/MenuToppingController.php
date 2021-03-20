@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\MenuTopping;
@@ -10,7 +11,7 @@ use App\Models\Menu;
 
 class MenuToppingController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
 
     /**
      * Display a listing of the resource.
@@ -105,17 +106,18 @@ class MenuToppingController extends Controller
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
             'menu_toppings.*.name' => 'required|unique:menu_toppings',
             'menu_toppings.*.price' => 'required|numeric',
-
-        ]);
+            'menu_toppings.*.image_slug' => 'nullable|exists:App\Models\File,slug',
+         ]);
 
         $menuId = $this->getMenuId($validatedData['menu_slug']);
 
         foreach ($validatedData['menu_toppings'] as $menuTopping) {
             $menuTopping['slug'] = $this->generateUniqueSlug();
             $menuTopping['menu_id'] = $menuId;
-
             MenuTopping::create($menuTopping)->id;
+            $this->updateFile($menuTopping['image_slug'], 'menu_toppings', $menuTopping['slug']);
         }
+
 
         return response()->json(['message' => 'Successfully Created.'], 201);
     }
@@ -209,6 +211,11 @@ class MenuToppingController extends Controller
         $validatedData['menu_id'] = $this->getMenuId($request->menu_slug);
 
         $menuTopping->update($validatedData);
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'menu_toppings', $menuTopping->slug);
+        }
+
         return response()->json($menuTopping->load('menu'), 200);
     }
 
@@ -246,7 +253,14 @@ class MenuToppingController extends Controller
      */
     public function destroy($slug)
     {
-        MenuTopping::where('slug', $slug)->firstOrFail()->delete();
+        $menuTopping = MenuTopping::where('slug', $slug)->firstOrFail();
+
+        foreach ($menuTopping->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
+        $menuTopping->delete();
+
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 

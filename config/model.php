@@ -8,4 +8,7 @@ return [
     'brands' => 'App\Models\Brand',
     'menus' => 'App\Models\Menu',
     'products' => 'App\Models\Product',
+    'menu_variation_values' => 'App\Models\MenuVariationValue',
+    'menu_toppings' => 'App\Models\MenuTopping',
+    'product_variation_values' => 'App\Models\ProductVariationValue'
 ];
