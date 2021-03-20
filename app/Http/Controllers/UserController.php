@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
+use App\Models\RestaurantBranch;
+use App\Models\Shop;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -66,9 +68,39 @@ class UserController extends Controller
                     ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
-
             ->paginate(10);
     }
+
+    public function getShopUsers(Request $request)
+    {
+        return User::with('roles')
+            ->whereHas('roles', function ($q) {
+                $q->where('name', 'Shop');
+            })
+            ->where(function ($q) use ($request) {
+                $q->where('username', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->paginate(10);
+    }
+
+    public function getRestaurantUsers(Request $request)
+    {
+        return User::with('roles')
+            ->whereHas('roles', function ($q) {
+                $q->where('name', 'Restaurant');
+            })
+            ->where(function ($q) use ($request) {
+                $q->where('username', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->paginate(10);
+    }
+
 
     /**
      * Store a newly created resource in storage.
@@ -110,17 +142,71 @@ class UserController extends Controller
             'name' => 'required',
             'phone_number' => 'required|unique:users',
             'password' => 'required|min:6',
-            'roles' => 'required|array',
-            'roles.*' => 'exists:App\Models\Role,slug',
         ]);
 
         $validatedData['password'] = Hash::make($validatedData['password']);
         $user = User::create($validatedData);
 
-        $roles = Role::whereIn('slug', $request->roles)->pluck('id');
-        $user->roles()->attach($roles);
+        $adminRoleId = Role::where('name', 'Admin')->first()->id;
+        $user->roles()->attach($adminRoleId);
 
         return response()->json($user->refresh()->load('roles'), 201);
+    }
+
+    public function storeShopUser(Request $request)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $validatedData = $request->validate([
+            'slug' => 'required|unique:users',
+            'username' => 'required|unique:users',
+            'name' => 'required',
+            'phone_number' => 'required|unique:users',
+            'password' => 'required|min:6',
+            'shop_slug' => 'required|exists:App\Models\Shop,slug',
+        ]);
+
+        $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData['shop_id']=$this->getShopId($request->shop_slug);
+        $user = User::create($validatedData);
+
+        $shopRoleId = Role::where('name', 'Shop')->first()->id;
+        $user->roles()->attach($shopRoleId);
+
+        return response()->json($user->refresh()->load('roles'), 201);
+    }
+
+    public function storeRestaurantUser(Request $request)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $validatedData = $request->validate([
+            'slug' => 'required|unique:users',
+            'username' => 'required|unique:users',
+            'name' => 'required',
+            'phone_number' => 'required|unique:users',
+            'password' => 'required|min:6',
+            'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
+        ]);
+
+        $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData['restaurant_branch_id']=$this->getRestaruantBranchId($request->restaurant_branch_slug);
+        $user = User::create($validatedData);
+
+        $restaurantRoleId = Role::where('name', 'Restaruant')->first()->id;
+        $user->roles()->attach($restaurantRoleId);
+
+        return response()->json($user->refresh()->load('roles'), 201);
+    }
+
+    private function getShopId($slug)
+    {
+        return Shop::where('slug', $slug)->first()->id;
+    }
+
+    private function getRestaruantBranchId($slug)
+    {
+        return RestaurantBranch::where('slug', $slug)->first()->id;
     }
 
     /**
@@ -159,6 +245,15 @@ class UserController extends Controller
         return User::with('roles')->where('slug', $slug)->firstOrFail();
     }
 
+    public function showShopUser($slug)
+    {
+        return User::with('roles')->with('shop')->where('slug', $slug)->firstOrFail();
+    }
+
+    public function showRestaurantUser($slug)
+    {
+        return User::with('roles')->with('restaurant')->where('slug', $slug)->firstOrFail();
+    }
     /**
      * Update the specified resource in storage.
      *
@@ -213,15 +308,15 @@ class UserController extends Controller
                 'required',
                 Rule::unique('users')->ignore($user->id),
             ],
-            'roles' => 'required|array',
-            'roles.*' => 'exists:App\Models\Role,slug',
+            // 'roles' => 'required|array',
+            // 'roles.*' => 'exists:App\Models\Role,slug',
         ]);
 
         $user->update($validatedData);
 
-        $roles = Role::whereIn('slug', $request->roles)->pluck('id');
-        $user->roles()->detach();
-        $user->roles()->attach($roles);
+        // $roles = Role::whereIn('slug', $request->roles)->pluck('id');
+        // $user->roles()->detach();
+        // $user->roles()->attach($roles);
 
         return response()->json($user->load('roles'), 200);
     }
