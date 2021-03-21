@@ -56,9 +56,26 @@ class ShopOrderController extends Controller
     public function index()
     {
         // $customer_id = Auth::guard('customers')->user()->id;
-        $shopOrders = ShopOrder::with('shopOrderContact')
-            ->with('shopOrderItems')
+        $shopOrders = ShopOrder::with('contact')
+            ->with('items')
             // ->where('customer_id', $customer_id)
+            ->latest()
+            ->paginate(10)
+            ->items();
+
+        return $this->generateResponse($shopOrders, 200);
+    }
+
+    public function getShopOrders(Request $request, $slug)
+    {
+        $shopOrders = ShopOrder::with('contact')->with('items')
+            // ->whereDate('order_date', '>=', $request->from)
+            // ->whereDate('order_date', '<=', $request->to)
+            ->where('slug', $slug)
+            ->whereHas('contact', function ($q) use ($request) {
+                $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', $request->filter);
+            })->orWhere('slug', $request->filter)
             ->latest()
             ->paginate(10)
             ->items();

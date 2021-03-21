@@ -89,7 +89,7 @@ class UserController extends Controller
 
     public function getRestaurantUsers(Request $request)
     {
-        return User::with('roles')->with('restaurantBranch')
+        return User::with('roles')->with('restaurantBranch')->with('restaurantBranch.restaurant')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Restaurant');
             })
@@ -174,7 +174,7 @@ class UserController extends Controller
         $shopRoleId = Role::where('name', 'Shop')->first()->id;
         $user->roles()->attach($shopRoleId);
 
-        return response()->json($user->refresh()->load('roles'), 201);
+        return response()->json($user->refresh()->load(['shop']), 201);
     }
 
     public function storeRestaurantUser(Request $request)
@@ -194,10 +194,10 @@ class UserController extends Controller
         $validatedData['restaurant_branch_id']=$this->getRestaruantBranchId($request->restaurant_branch_slug);
         $user = User::create($validatedData);
 
-        $restaurantRoleId = Role::where('name', 'Restaruant')->first()->id;
+        $restaurantRoleId = Role::where('name', 'Restaurant')->first()->id;
         $user->roles()->attach($restaurantRoleId);
 
-        return response()->json($user->refresh()->load('roles'), 201);
+        return response()->json($user->refresh()->load(['restaurantBranch','restaurantBranch.restaurant']), 201);
     }
 
     private function getShopId($slug)
@@ -310,7 +310,7 @@ class UserController extends Controller
         // $user->roles()->detach();
         // $user->roles()->attach($roles);
 
-        return response()->json($user->load('roles'), 200);
+        return response()->json($user, 200);
     }
 
     public function updateShopUser(Request $request, $slug)
@@ -333,7 +333,7 @@ class UserController extends Controller
 
         $user->update($validatedData);
 
-        return response()->json($user->load('roles'), 200);
+        return response()->json($user->refresh()->load(['shop']), 200);
     }
 
     public function updateRestaurantUser(Request $request, $slug)
@@ -356,7 +356,7 @@ class UserController extends Controller
 
         $user->update($validatedData);
 
-        return response()->json($user->load('roles'), 200);
+        return response()->json($user->refresh()->load(['restaurantBranch','restaurantBranch.restaurant']), 201);
     }
 
     /**

@@ -172,4 +172,14 @@ class CustomerAuthController extends Controller
             ['phone_number.phone' => 'Invalid phone number.']
         );
     }
+
+    public function getFavoritesCount()
+    {
+        $customer = Auth::guard('customers')->user();
+
+        $favoriteRestaurants = $customer->favoriteRestaurants()->count();
+        $favoriteProducts = $customer->product()->count();
+
+        return $this->generateResponse(['favorites_count' => $favoriteRestaurants + $favoriteProducts], 200);
+    }
 }

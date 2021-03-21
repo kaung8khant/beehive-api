@@ -31,7 +31,6 @@ class MenuFactory extends Factory
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->text(30),
             'description' => $this->faker->paragraph(),
-            'description_mm' => $mmFaker->name(10),
             'price' => $this->faker->numberBetween(1000, 10000),
             'restaurant_id' => Restaurant::pluck('id')->random(1)[0],
             'restaurant_category_id' => function (array $attributes) {

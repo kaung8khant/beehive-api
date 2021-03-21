@@ -37,6 +37,8 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'is_enable',
         'is_locked',
+        'shop_id',
+        'restaurant_branch_id',
     ];
 
     protected $hidden = [
@@ -46,6 +48,8 @@ class User extends Authenticatable implements JWTSubject
         'created_at',
         'updated_at',
         'pivot',
+        'shop_id',
+        'restaurant_branch_id',
     ];
 
     protected $casts = [

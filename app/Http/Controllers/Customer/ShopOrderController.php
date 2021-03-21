@@ -70,15 +70,24 @@ class ShopOrderController extends Controller
 
     public function destroy($slug)
     {
-        //destory function
-    }
-    public function cancelOrder($slug){
-        $shopOrderID = $this->getShopOrderId($slug);
-        $shopOrderStatus = ShopOrderStatus::where('shop_order_id',$shopOrderID)->firstOrFail();
+        $shopOrder = ShopOrder::where('slug',$slug)->firstOrFail();
+
+        if($this->customer_id!==$shopOrder->customer_id){
+            return $this->generateResponse(['Unauthorize process.'],401);
+        }
+
+        $shopOrderStatus = ShopOrderStatus::where('shop_order_id',$shopOrder->id)->firstOrFail();
+        
+        if ($shopOrderStatus->status === 'delivered' || $shopOrderStatus->status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, TRUE);
+        }
+        
         $shopOrderStatus->status = "cancelled";
         $shopOrderStatus->update();
+        
         return $this->generateResponse($shopOrderStatus,200);
     }
+
     private function validateOrder(Request $request)
     {
         $rules = [

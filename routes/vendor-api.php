@@ -58,7 +58,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
         Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
         Route::get('shop-categories/{slug}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
-        Route::resource('shop-orders', 'ShopOrderController', ['as' => 'vendor']);
+        Route::get('shops/{slug}/shop-orders', 'ShopOrderController@getShopOrders');
 
         /* products */
         Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');

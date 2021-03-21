@@ -33,7 +33,6 @@ class ProductFactory extends Factory
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->text(30),
             'description' => $this->faker->paragraph(),
-            'description_mm' => $mmFaker->name(10),
             'price' => $this->faker->numberBetween(1000, 10000),
             'shop_id' => Shop::pluck('id')->random(1)[0],
             'shop_category_id' => function (array $attributes) {

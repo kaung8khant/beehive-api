@@ -40,7 +40,7 @@ trait NotificationHelper
         $dataString = json_encode($data);
     
         $headers = [
-            'Authorization: key=' . $config('broadcasting.server_key'),
+            'Authorization: key=' . config('broadcasting.server_key'),
             'Content-Type: application/json',
         ];
     

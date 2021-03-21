@@ -26,6 +26,8 @@ class CreateUsersTable extends Migration
             $table->unsignedBigInteger('shop_id')->nullable();
             $table->unsignedBigInteger('restaurant_branch_id')->nullable();
             $table->timestamps();
+            $table->foreign('shop_id')->references('id')->on('shops')->onDelete('set null');
+            $table->foreign('restaurant_branch_id')->references('id')->on('restaurant_branches')->onDelete('set null');
         });
     }
 

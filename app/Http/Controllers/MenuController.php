@@ -404,7 +404,6 @@ class MenuController extends Controller
         $params = [
             'name' => 'required',
             'description' => 'required',
-            'description_mm' => 'nullable',
             'price' => 'required|numeric',
             'is_enable' => 'required|boolean',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
