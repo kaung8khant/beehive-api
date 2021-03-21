@@ -80,7 +80,7 @@ Route::group(['prefix' => 'user'], function () {
         /* Shop */
         Route::post('shops/{slug}/set-favorite', 'Customer\ShopController@setFavoriteShop');
         Route::post('shops/{slug}/remove-favorite', 'Customer\ShopController@removeFavoriteShop');
-
+        Route::post('shop/ratings', 'Customer\ShopRatingController@store');
         /* Shop */
 
         //Route::resource('orders', 'Customer\OrderController');

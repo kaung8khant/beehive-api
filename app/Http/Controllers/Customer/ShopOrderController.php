@@ -143,7 +143,8 @@ class ShopOrderController extends Controller
         foreach ($orderItems as $item) {
             $item['shop'] = $this->getShop($item['shop_slug']);
             $item['shop_order_id'] = $orderId;
-            $item['item_id'] = $this->getProductId($item['product_slug']);
+            Log::info($this->getProductId($item['product_slug']));
+            $item['product_id'] = $this->getProductId($item['product_slug']);
             $item['variations'] = $item['variations'];
            
             ShopOrderItem::create($item);
