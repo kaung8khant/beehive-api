@@ -4,6 +4,8 @@ namespace App\Helpers;
 
 use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Support\Facades\Log;
+
 trait ResponseHelper
 {
     protected function generateResponse($data, $status, $message = FALSE)
@@ -45,6 +47,36 @@ trait ResponseHelper
 
         return $this->generateResponse($data, $status);
     }
+    public function generateProductResponse($data, $status, $type = 'array')
+    {
+        if(empty($data)){
+            return $this->generateResponse($data, $status);
+        }
+        if ($type === 'array') {
+            foreach ($data as $product) {
+                $product['is_favorite'] = $this->checkFavoriteProduct($product->id);
+                unset($product->customers);
+            }
+        } elseif($type==='arrobj') {
+            foreach($data as $arrobj){
+                foreach ($arrobj as $product) {
+                    $product['is_favorite'] = $this->checkFavoriteProduct($product->id);
+                    unset($product->customers);
+                }
+            }
+        } elseif($type==='cattag') {
+            foreach($data as $cat){
+                foreach ($cat->products as $product) {
+                    $product->is_favorite = $this->checkFavoriteProduct($product->id);
+                    unset($product->customers);
+                }
+            }
+        } else {
+            $data['is_favorite'] = $this->checkFavoriteProduct($data->id);
+            unset($data['customers']);
+        }
+        return $this->generateResponse($data, $status);
+    }
 
     private function checkFavoriteRestaurant($restaurantId)
     {
@@ -53,5 +85,17 @@ trait ResponseHelper
         }
 
         return false;
+    }
+    
+    private function checkFavoriteProduct($product_id)
+    {
+
+        if ($customer = Auth::guard('customers')->user()) {
+            Log::info($customer->favoriteProducts);
+            return $customer->favoriteProducts->pluck('id')->contains($product_id);
+        }
+
+        return false;
+
     }
 }

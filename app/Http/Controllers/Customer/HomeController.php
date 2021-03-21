@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Validator;
 use App\Helpers\ResponseHelper;
 use App\Models\RestaurantBranch;
 use App\Models\Product;
+use App\Models\Customer;
 use App\Services\FirebaseService;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -176,8 +178,13 @@ class HomeController extends Controller
             'lng' => 'required|numeric',
         ]);
     }
-    public function noti(Request $request, FirebaseService $firebase)
-    {
-        $firebase->sendNotification($request);
+    
+    public function registerCustomerToken(Request $request){
+        $customerId = Auth::guard('customers')->user()->id;
+        $customer = Customer::where('id',$customerId)->firstOrFail();
+        $customer->device_token = $request->token;
+        $customer->update();
+
+        return $this->generateResponse("Success.", 200);
     }
 }

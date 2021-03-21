@@ -101,6 +101,6 @@ class Product extends Model
     }
     public function customers()
     {
-        return $this->belongsToMany(Customer::class, 'favorite_product');
+        return $this->belongsToMany(Customer::class, 'favorite_product','customer_id');
     }
 }

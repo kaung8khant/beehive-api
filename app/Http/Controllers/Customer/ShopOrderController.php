@@ -15,10 +15,11 @@ use App\Models\Menu;
 use App\Models\Shop;
 use Illuminate\Support\Facades\Log;
 use App\Helpers\ResponseHelper;
+use App\Helpers\NotificationHelper;
 
 class ShopOrderController extends Controller
 {
-    use StringHelper,ResponseHelper;
+    use StringHelper,ResponseHelper,NotificationHelper;
 
     protected $customer_id;
 
@@ -50,6 +51,11 @@ class ShopOrderController extends Controller
         $this->createOrderContact($orderId, $validatedData['customer_info']);
         
         $this->createOrderItems($orderId, $validatedData['order_items'], $request->order_type);
+
+        foreach($validatedData['order_items'] as $item){
+            $this->notify($item['shop_slug'],['title'=>'New Order','body'=>"You've just recevied new order. Check now!"]);
+        }
+        
        
         return $this->generateResponse($order->refresh(), 201);
     }
@@ -130,7 +136,7 @@ class ShopOrderController extends Controller
             $item['shop_order_id'] = $orderId;
             $item['item_id'] = $this->getProductId($item['product_slug']);
             $item['variations'] = $item['variations'];
-            Log::info(json_encode($item['shop']));
+           
             ShopOrderItem::create($item);
         }
     }
@@ -141,5 +147,18 @@ class ShopOrderController extends Controller
     private function getShop($slug)
     {
         return Shop::where('slug', $slug)->firstOrFail();
+    }
+
+    private function notify($slug,$data){
+        $this->notifyShop($slug,
+            [
+                'title'=> $data['title'],
+                'body'=> $data['body'],
+                'img'=>'',
+                'data'=>[
+                    'action'=>'',
+                    'type'=>'notification'
+                ]
+            ]);
     }
 }

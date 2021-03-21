@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use App\Models\UserSession;
 
 class VendorAuthController extends Controller
 {
@@ -28,7 +29,7 @@ class VendorAuthController extends Controller
             if ($result === 'disabled') {
                 return response()->json(['message' => 'Your accout is disabled. Contact admin for more information.'], 403);
             }
-
+          
             return response()->json(['token' => $result], 200);
         }
 
@@ -59,9 +60,13 @@ class VendorAuthController extends Controller
         return response()->json(['message' => 'User successfully logged out.'], 200);
     }
 
-    public function refreshToken()
+    public function refreshToken(Request $request)
     {
-        return response()->json(['token' => Auth::guard('vendors')->refresh()], 200);
+        $token = Auth::guard('vendors')->refresh();
+        $userSession = UserSession::where('jwt',str_replace("Bearer ","",$request->header('Authorization')))->first();
+        $userSession->jwt = $token;
+        $userSession->update();
+        return response()->json(['token' => $token], 200);
     }
 
     public function getProfile()

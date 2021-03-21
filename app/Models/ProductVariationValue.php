@@ -33,6 +33,10 @@ class ProductVariationValue extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'price' => 'float',
+    ];
+
     public function productVariation()
     {
         return $this->belongsTo(ProductVariation::class);

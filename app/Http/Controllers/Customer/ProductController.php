@@ -33,9 +33,9 @@ class ProductController extends Controller
             ->orWhere('slug', $request->filter)
             ->paginate($request->size)->items();
 
-        $product = $this->checkProductFav($product);
+       
 
-        return $this->generateResponse($product, 200);
+        return $this->generateProductResponse($product, 200);
     }
 
 
@@ -46,9 +46,8 @@ class ProductController extends Controller
             ->with('productVariations.productVariationValues')
             ->where('slug', $slug)->first();
 
-        $product = $this->checkProductFav($product, 'obj');
 
-        return $this->generateResponse($product, 200);
+        return $this->generateProductResponse($product, 200,'other');
     }
 
     public function getByCategory(Request $request, $slug)
@@ -56,18 +55,18 @@ class ProductController extends Controller
         $category_id = $this->getShopCategoryId($slug);
         $product = Product::where('shop_category_id', $category_id)->paginate($request->size)->items();
 
-        $product = $this->checkProductFav($product);
+        
 
-        return $this->generateResponse($product, 200);
+        return $this->generateProductResponse($product, 200);
     }
 
     public function getByShop(Request $request, $slug)
     {
         $shopId = $this->getShopId($slug);
         $product = Product::where('shop_id', $shopId)->paginate($request->size)->items();
-        $product = $this->checkProductFav($product);
 
-        return $this->generateResponse($product, 200);
+
+        return $this->generateProductResponse($product, 200);
     }
     public function getAllBrand(Request $request)
     {
@@ -79,9 +78,9 @@ class ProductController extends Controller
     {
         $brandId = $this->getBrandId($slug);
         $product =  Product::where("brand_id", $brandId)->paginate($request->size)->items();
-        $product = $this->checkProductFav($product);
 
-        return $this->generateResponse($product, 200);
+
+        return $this->generateProductResponse($product, 200);
     }
     //fav
     public function getFavorite(Request $request)
@@ -131,17 +130,4 @@ class ProductController extends Controller
         return Shop::where('slug', $slug)->firstOrFail()->id;
     }
 
-    private function checkProductFav($data, $type = "array")
-    {
-        if ($type === "array") {
-            foreach ($data as $product) {
-                $product['is_favorite'] = empty(json_decode($product['customers'])) ? false : true;
-                unset($product['customers']);
-            }
-        } else {
-            $data['is_favorite'] = empty(json_decode($data['customers'])) ? false : true;
-            unset($data['customers']);
-        }
-        return $data;
-    }
 }

@@ -15,10 +15,11 @@ use App\Models\RestaurantOrderContact;
 use App\Models\RestaurantOrderItem;
 use App\Models\Menu;
 use App\Models\Township;
+use App\Helpers\NotificationHelper;
 
 class RestaurantOrderController extends Controller
 {
-    use StringHelper, ResponseHelper;
+    use StringHelper, ResponseHelper, NotificationHelper;
 
     public function index(Request $request)
     {
@@ -76,6 +77,8 @@ class RestaurantOrderController extends Controller
         $this->createOrderContact($orderId, $validatedData['customer_info']);
         $this->createOrderItems($orderId, $validatedData['order_items']);
 
+        $this->notify($validatedData['restaurant_branch_slug'],['title'=>'New Order','body'=>"You've just recevied new order. Check now!"]);
+        
         return $this->generateResponse(
             $order->refresh()->load('restaurant', 'restaurantBranch', 'restaurantOrderContact', 'restaurantOrderContact.township', 'restaurantOrderItems'),
             201,
@@ -168,5 +171,17 @@ class RestaurantOrderController extends Controller
     private function getTownshipId($slug)
     {
         return Township::where('slug', $slug)->first()->id;
+    }
+    private function notify($slug,$data){
+        $this->notifyRestaurant($slug,
+            [
+                'title'=> $data['title'],
+                'body'=> $data['body'],
+                'img'=>'',
+                'data'=>[
+                    'action'=>'',
+                    'type'=>'notification'
+                ]
+            ]);
     }
 }

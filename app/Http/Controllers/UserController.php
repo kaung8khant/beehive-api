@@ -11,6 +11,7 @@ use App\Models\Shop;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Models\UserSession;
 
 class UserController extends Controller
 {
@@ -442,6 +443,30 @@ class UserController extends Controller
 
         $user->is_enable = !$user->is_enable;
         $user->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function registerToken(Request $request){
+        $userId = Auth::guard('vendors')->user()->id;
+
+        $jwt = str_replace("Bearer ","",$request->header('Authorization'));
+        $data['user_id'] = $userId;
+        $data['jwt'] = $jwt;
+        $data['device_token'] = $request->token;
+     
+        $userSession = UserSession::where('jwt', $jwt)->orWhere('device_token', $request->token)->first();
+
+        if ($userSession) {
+            
+            $userSession['jwt'] = $data['jwt'];
+            $userSession['device_token'] = $data['device_token'];
+            $userSession->update();
+        }else{
+
+           UserSession::create($data);
+        }
+         
+
         return response()->json(['message' => 'Success.'], 200);
     }
 }

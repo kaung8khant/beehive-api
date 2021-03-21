@@ -40,6 +40,9 @@ return [
                 'useTLS' => true,
             ],
         ],
+        'firebase' => [
+            'server_key' => env('FIREBASE_SERVER_KEY'),
+        ],
 
         'ably' => [
             'driver' => 'ably',

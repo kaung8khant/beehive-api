@@ -93,4 +93,9 @@ class Shop extends Model
     {
         return $this->belongsTo(User::class, 'users', 'id');
     }
+
+    public function customers()
+    {
+        return $this->belongsToMany(Customer::class, 'favorite_product');
+    }
 }

@@ -92,5 +92,8 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('customers', 'CustomerController@store');
 
         /* shop */
+
+        Route::post('/register-device','UserController@registerToken');
+
     });
 });

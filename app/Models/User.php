@@ -82,4 +82,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsTo(RestaurantBranch::class, 'restaurant_branch_id');
     }
+    
+    public function sessions()
+    {
+        return $this->hasMany(UserSession::class);
+    }
 }

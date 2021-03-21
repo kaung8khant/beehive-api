@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\ShopTag;
 use App\Helpers\ResponseHelper;
 use App\Models\ShopSubCategory;
+use App\Helpers\NotificationHelper;
 
 class ShopController extends Controller
 {
@@ -60,7 +61,7 @@ class ShopController extends Controller
 
         $shopCategories = $this->getProductFromShop($shopCategories);
 
-        return $this->generateResponse($shopCategories, 200);
+        return $this->generateProductResponse($shopCategories, 200,'cattag');
     }
 
     public function getTags(Request $request)
@@ -72,7 +73,7 @@ class ShopController extends Controller
 
         $shopTags =  $this->getProductFromShop($shopTags);
 
-        return $this->generateResponse($shopTags, 200);
+        return $this->generateProductResponse($shopTags, 200,'cattag');
     }
     public function getByTag(Request $request, $slug)
     {
@@ -121,24 +122,25 @@ class ShopController extends Controller
         }
 
         $data['products'] = collect($products)->collapse()->values();
-        $data['products'] = $this->checkProductFav($data['products']);
+        $data['products'] = $data['products'];
         unset($data['shops']);
 
         return $data;
     }
 
     //redundant from ProductController 
-    private function checkProductFav($data, $type = "array")
-    {
-        if ($type === "array") {
-            foreach ($data as $product) {
-                $product['is_favorite'] = empty(json_decode($product['customers'])) ? false : true;
-                unset($product['customers']);
-            }
-        } else {
-            $data['is_favorite'] = empty(json_decode($data['customers'])) ? false : true;
-            unset($data['customers']);
-        }
-        return $data;
-    }
+    // private function checkProductFav($data, $type = "array")
+    // {
+    //     Log::info(json_encode($this->customer));
+    //     if ($type === "array") {
+    //         foreach ($data as $product) {
+    //             $product['is_favorite'] = empty(json_decode($product['customers'])) ? false : true;
+    //             unset($product['customers']);
+    //         }
+    //     } else {
+    //         $data['is_favorite'] = empty(json_decode($data['customers'])) ? false : true;
+    //         unset($data['customers']);
+    //     }
+    //     return $data;
+    // }
 }
