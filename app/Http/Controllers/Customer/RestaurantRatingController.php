@@ -22,8 +22,8 @@ class RestaurantRatingController extends Controller
         }
 
         $validatedData = $validator->validated();
-        $restaurantOrder = $this->getRestaurantOrder($validatedData['order_slug']);
         $customerId = Auth::guard('customers')->user()->id;
+        $restaurantOrder = $this->getRestaurantOrder($validatedData['order_slug'], $customerId);
 
         for ($i = 0; $i < count($validatedData['ratings']); $i++) {
             if ($validatedData['ratings'][$i]['target_type'] === 'restaurant') {
@@ -57,9 +57,9 @@ class RestaurantRatingController extends Controller
         ]);
     }
 
-    private function getRestaurantOrder($slug)
+    private function getRestaurantOrder($slug, $customerId)
     {
-        return RestaurantOrder::where('slug', $slug)->first();
+        return RestaurantOrder::where('customer_id', $customerId)->where('slug', $slug)->firstOrFail();
     }
 
     private function getRating($data)
