@@ -21,7 +21,7 @@ trait SmsHelper
                     ],
                     'form_params' => [
                         'from' => 'Beehive',
-                        'to' => $phoneNumber,
+                        'to' => str_replace('+', '', $phoneNumber),
                         'text' => $text,
                     ],
                 ]

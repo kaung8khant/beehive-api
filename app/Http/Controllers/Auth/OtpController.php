@@ -10,21 +10,44 @@ use Carbon\Carbon;
 use App\Helpers\ResponseHelper;
 use App\Helpers\SmsHelper;
 use App\Models\OneTimePassword;
+use App\Models\Customer;
 
 class OtpController extends Controller
 {
     use ResponseHelper;
 
-    public function sendOtp(Request $request)
+    public function sendOtpToRegister(Request $request)
     {
-        $validator = $this->validatePhoneNumber($request);
-
+        $validator = $this->validatePhoneNumber($request, TRUE);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, TRUE);
         }
 
+        $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
+        $checkRegister = Customer::where('phone_number', $phoneNumber)->first();
+
+        if ($checkRegister) {
+            return $this->generateResponse('The phone number has already been taken.', 422, TRUE);
+        }
+
+        return $this->sendOtp($phoneNumber, 'register');
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $validator = $this->validatePhoneNumber($request);
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+        }
+
+        $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
+        return $this->sendOtp($phoneNumber, 'reset');
+    }
+
+    private function sendOtp($phoneNumber, $type)
+    {
         $otpCode = rand(100000, 999999);
-        $checkNumber = OneTimePassword::where('phone_number', $request->phone_number)->latest()->first();
+        $checkNumber = $this->checkOtp($phoneNumber, $type);
 
         if ($checkNumber) {
             $fifteenMinutes = Carbon::parse($checkNumber->created_at)->addMinutes(15);
@@ -35,14 +58,14 @@ class OtpController extends Controller
             }
         }
 
-        $smsResponse = SmsHelper::send($request->phone_number, 'Your OTP code is ' . $otpCode . '.');
+        $smsResponse = SmsHelper::send($phoneNumber, 'Your OTP code is ' . $otpCode . '.');
 
         if ($smsResponse['status'] !== 0) {
-            $this->storeOtp($request->phone_number, $otpCode, $smsResponse['message_id'], 'Error');
+            $this->storeOtp($phoneNumber, $otpCode, $smsResponse['message_id'], 'Error', $type);
             return $this->generateResponse('Something went wrong when sending OTP.', 406, TRUE);
         }
 
-        $this->storeOtp($request->phone_number, $otpCode, $smsResponse['message_id'], 'Success');
+        $this->storeOtp($phoneNumber, $otpCode, $smsResponse['message_id'], 'Success', $type);
         return $this->generateResponse('Otp code has been successfully sent to your phone.', 200, TRUE);
     }
 
@@ -50,18 +73,28 @@ class OtpController extends Controller
     {
         return Validator::make(
             $request->all(),
-            ['phone_number' => 'required|phone:MM|unique:customers'],
+            ['phone_number' => 'required|phone:MM'],
             ['phone_number.phone' => 'Invalid phone number.']
         );
     }
 
-    private function storeOtp($phoneNumber, $otpCode, $messageId, $status)
+    private function checkOtp($phoneNumber, $type)
+    {
+        return OneTimePassword::where('phone_number', $phoneNumber)
+            ->where('type', $type)
+            ->where('is_used', 0)
+            ->latest()
+            ->first();
+    }
+
+    private function storeOtp($phoneNumber, $otpCode, $messageId, $status, $type)
     {
         OneTimePassword::create([
-            'phone_number' => PhoneNumber::make($phoneNumber, 'MM'),
+            'phone_number' => $phoneNumber,
             'otp_code' => $otpCode,
             'status' => $status,
             'message_id' => $messageId,
+            'type' => $type,
         ]);
     }
 }

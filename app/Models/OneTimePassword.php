@@ -14,5 +14,7 @@ class OneTimePassword extends Model
         'otp_code',
         'status',
         'message_id',
+        'type',
+        'is_used',
     ];
 }
