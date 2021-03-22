@@ -128,7 +128,9 @@ class MenuVariationController extends Controller
                 $menuVariationValue['slug'] = $this->generateUniqueSlug();
                 $menuVariationValue['menu_variation_id'] = $menuVariationId;
                 MenuVariationValue::create($menuVariationValue);
-                $this->updateFile($menuVariationValue['image_slug'], 'menu_variation_values', $menuVariationValue['slug']);
+                if (!empty($menuVariation-> image_slug)) {
+                    $this->updateFile($menuVariationValue['image_slug'], 'menu_variation_values', $menuVariationValue['slug']);
+                }
             }
         }
 

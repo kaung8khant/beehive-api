@@ -70,11 +70,8 @@ class ShopOrderController extends Controller
 
     public function destroy($slug)
     {
-        $shopOrder = ShopOrder::where('slug',$slug)->firstOrFail();
-
-        if($this->customer_id!==$shopOrder->customer_id){
-            return $this->generateResponse(['Unauthorize process.'],401);
-        }
+        
+        $shopOrder = ShopOrder::where('slug',$slug)->where('customer_id',$this->customer_id)->firstOrFail();
 
         $shopOrderStatus = ShopOrderStatus::where('shop_order_id',$shopOrder->id)->firstOrFail();
         
