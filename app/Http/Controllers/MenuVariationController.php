@@ -113,7 +113,7 @@ class MenuVariationController extends Controller
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
-            'menu_variations.*.menu_variation_values.*.image_slug' => 'exists:App\Models\File,slug',
+            'menu_variations.*.menu_variation_values.*.image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
 
         $menu = $this->getMenu($validatedData['menu_slug']);
