@@ -5,7 +5,10 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'user'], function () {
     Route::post('login', 'Auth\CustomerAuthController@login');
     Route::post('register', 'Auth\CustomerAuthController@register');
-    Route::post('send-otp', 'Auth\OtpController@sendOtp');
+    Route::post('send-otp', 'Auth\OtpController@sendOtpToRegister');
+
+    Route::post('forgot-password', 'Auth\OtpController@forgotPassword');
+    Route::post('reset-password', 'Auth\CustomerAuthController@resetPassword');
 
     /* Home */
     Route::get('suggestions', 'Customer\HomeController@getSuggestions');
@@ -58,7 +61,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('logout', 'Auth\CustomerAuthController@logout');
 
         /* regist device token */
-        Route::post('/register-device','Customer\HomeController@registerCustomerToken');
+        Route::post('/register-device', 'Customer\HomeController@registerCustomerToken');
 
         Route::get('townships', 'Customer\AddressController@getAllTownships');
         Route::get('addresses/get-primary', 'Customer\AddressController@getPrimaryAddress');

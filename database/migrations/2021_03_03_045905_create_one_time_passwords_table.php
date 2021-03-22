@@ -19,6 +19,8 @@ class CreateOneTimePasswordsTable extends Migration
             $table->string('otp_code');
             $table->string('status')->nullable();
             $table->string('message_id')->nullable();
+            $table->enum('type', ['register', 'reset']);
+            $table->boolean('is_used')->default(0);
             $table->timestamps();
         });
     }

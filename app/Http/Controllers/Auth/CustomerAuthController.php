@@ -80,7 +80,7 @@ class CustomerAuthController extends Controller
         $validatedData = $validator->validated();
         $validatedData['password'] = Hash::make($validatedData['password']);
 
-        $otp = OneTimePassword::where('phone_number', $validatedData['phone_number'])->latest()->first();
+        $otp = $this->getOtp($validatedData['phone_number'], 'register');
 
         if (!$otp || $otp->otp_code !== $validatedData['otp_code']) {
             return $this->generateResponse('The OTP code is incorrect.', 406, TRUE);
@@ -89,6 +89,7 @@ class CustomerAuthController extends Controller
         $customer = Customer::create($validatedData);
         $token = JWTAuth::claims($customer->refresh()->toArray())->fromUser($customer);
 
+        $otp->update(['is_used' => 1]);
         return $this->generateResponse(['token' => $token], 200);
     }
 
@@ -173,6 +174,44 @@ class CustomerAuthController extends Controller
         );
     }
 
+    public function resetPassword(Request $request)
+    {
+        $request['phone_number'] = PhoneNumber::make($request->phone_number, 'MM');
+
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'phone_number' => 'required|phone:MM|exists:App\Models\Customer,phone_number',
+                'otp_code' => 'required|string',
+                'password' => 'required|string|min:6',
+            ],
+            ['phone_number.phone' => 'Invalid phone number.']
+        );
+
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+        }
+
+        $validatedData = $validator->validated();
+        $validatedData['password'] = Hash::make($validatedData['password']);
+
+        $customer = $this->getCustomerWithPhone($validatedData['phone_number']);
+        $otp = $this->getOtp($validatedData['phone_number'], 'reset');
+
+        if (!$otp || $otp->otp_code !== $validatedData['otp_code']) {
+            return $this->generateResponse('The OTP code is incorrect.', 406, TRUE);
+        }
+
+        if (Hash::check($request->password, $customer->password)) {
+            return $this->generateResponse('Your new password must not be same with old password.', 406, TRUE);
+        }
+
+        $customer->update(['password' => Hash::make($request->new_password)]);
+        $otp->update(['is_used' => 1]);
+
+        return $this->generateResponse('Your password has been successfully reset.', 200, TRUE);
+    }
+
     public function getFavoritesCount()
     {
         $customer = Auth::guard('customers')->user();
@@ -181,5 +220,19 @@ class CustomerAuthController extends Controller
         $favoriteProducts = $customer->product()->count();
 
         return $this->generateResponse(['favorites_count' => $favoriteRestaurants + $favoriteProducts], 200);
+    }
+
+    private function getCustomerWithPhone($phoneNumber)
+    {
+        return Customer::where('phone_number', $phoneNumber)->firstOrFail();
+    }
+
+    private function getOtp($phoneNumber, $type)
+    {
+        return OneTimePassword::where('phone_number', $phoneNumber)
+            ->where('type', $type)
+            ->where('is_used', 0)
+            ->latest()
+            ->first();
     }
 }
