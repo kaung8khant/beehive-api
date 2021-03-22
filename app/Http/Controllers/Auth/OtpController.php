@@ -41,6 +41,18 @@ class OtpController extends Controller
         }
 
         $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
+
+        if ($request->source) {
+            $model = config('model.' . $request->source);
+        } else {
+            $model = config('model.customers');
+        }
+
+        $checkUser = $model::where('phone_number', $phoneNumber)->first();
+        if (!$checkUser) {
+            return $this->generateResponse('There is no user with this phone number.', 404, TRUE);
+        }
+        
         return $this->sendOtp($phoneNumber, 'reset');
     }
 
