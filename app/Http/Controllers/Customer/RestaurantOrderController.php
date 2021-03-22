@@ -23,13 +23,13 @@ class RestaurantOrderController extends Controller
 
     public function index(Request $request)
     {
-        $customer_id = Auth::guard('customers')->user()->id;
+        $customerId = Auth::guard('customers')->user()->id;
         $restaurantOrders = RestaurantOrder::with('restaurant')
             ->with('restaurantBranch')
             ->with('RestaurantOrderContact')
             ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
-            ->where('customer_id', $customer_id)
+            ->where('customer_id', $customerId)
             ->latest()
             ->paginate($request->size)
             ->items();
@@ -39,14 +39,14 @@ class RestaurantOrderController extends Controller
 
     public function show($slug)
     {
-        $customer_id = Auth::guard('customers')->user()->id;
+        $customerId = Auth::guard('customers')->user()->id;
         $order = RestaurantOrder::with('restaurant')
             ->with('restaurantBranch')
             ->with('RestaurantOrderContact')
             ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
             ->where('slug', $slug)
-            ->where('customer_id', $customer_id)
+            ->where('customer_id', $customerId)
             ->firstOrFail();
 
         return $this->generateResponse($order, 200);
@@ -77,8 +77,8 @@ class RestaurantOrderController extends Controller
         $this->createOrderContact($orderId, $validatedData['customer_info']);
         $this->createOrderItems($orderId, $validatedData['order_items']);
 
-        $this->notify($validatedData['restaurant_branch_slug'],['title'=>'New Order','body'=>"You've just recevied new order. Check now!"]);
-        
+        $this->notify($validatedData['restaurant_branch_slug'], ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
+
         return $this->generateResponse(
             $order->refresh()->load('restaurant', 'restaurantBranch', 'restaurantOrderContact', 'restaurantOrderContact.township', 'restaurantOrderItems'),
             201,
@@ -87,7 +87,8 @@ class RestaurantOrderController extends Controller
 
     public function destroy($slug)
     {
-        $order = RestaurantOrder::where('slug', $slug)->firstOrFail();
+        $customerId = Auth::guard('customers')->user()->id;
+        $order = RestaurantOrder::where('customer_id', $customerId)->where('slug', $slug)->firstOrFail();
 
         if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
             return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, TRUE);
@@ -172,16 +173,20 @@ class RestaurantOrderController extends Controller
     {
         return Township::where('slug', $slug)->first()->id;
     }
-    private function notify($slug,$data){
-        $this->notifyRestaurant($slug,
+
+    private function notify($slug, $data)
+    {
+        $this->notifyRestaurant(
+            $slug,
             [
-                'title'=> $data['title'],
-                'body'=> $data['body'],
-                'img'=>'',
-                'data'=>[
-                    'action'=>'',
-                    'type'=>'notification'
+                'title' => $data['title'],
+                'body' => $data['body'],
+                'img' => '',
+                'data' => [
+                    'action' => '',
+                    'type' => 'notification'
                 ]
-            ]);
+            ]
+        );
     }
 }
