@@ -104,7 +104,7 @@ class ProductVariationController extends Controller
             'product_variations.*.product_variation_values' => 'required|array',
             'product_variations.*.product_variation_values.*.value' => 'required|string',
             'product_variations.*.product_variation_values.*.price' => 'required|numeric',
-            'product_variations.*.product_variation_values.*.image_slug' =>  'exists:App\Models\File,slug',
+            'product_variations.*.product_variation_values.*.image_slug' =>  'nullable|exists:App\Models\File,slug',
 
         ]);
 
