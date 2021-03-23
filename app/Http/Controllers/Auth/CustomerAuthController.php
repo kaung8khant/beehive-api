@@ -206,7 +206,7 @@ class CustomerAuthController extends Controller
             return $this->generateResponse('Your new password must not be same with old password.', 406, TRUE);
         }
 
-        $customer->update(['password' => Hash::make($request->new_password)]);
+        $customer->update(['password' => Hash::make($request->password)]);
         $otp->update(['is_used' => 1]);
 
         return $this->generateResponse('Your password has been successfully reset.', 200, TRUE);

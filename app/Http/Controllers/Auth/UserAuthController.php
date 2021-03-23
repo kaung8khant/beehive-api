@@ -102,7 +102,6 @@ class UserAuthController extends Controller
         return response()->json(Auth::guard('users')->user());
     }
 
-
     /**
      * @OA\Put(
      *      path="/api/v2/admin/profile/update",
