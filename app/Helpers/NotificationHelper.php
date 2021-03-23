@@ -13,26 +13,34 @@ trait NotificationHelper
 {
     protected function notifyRestaurant($slug, $data)
     {
-        $branchId = RestaurantBranch::where("slug", $slug)->first()->id;
-        $userId = User::where("restaurant_branch_id", $branchId)->first()->id;
+        $branch = RestaurantBranch::where("slug", $slug)->first();
+        $user = User::where("restaurant_branch_id", $branchId)->first();
+        if($branch && $user){
+            $branchId = $branch->id;
+            $userId = $user->id;
 
-        //Delete over 3 days token
-        UserSession::where("updated_at", '<=', Carbon::now()->subDays(3))->forceDelete();
+            //Delete over 3 days token
+            UserSession::where("updated_at", '<=', Carbon::now()->subDays(3))->forceDelete();
 
-        $tokenList = UserSession::where('user_id', $userId)->pluck("device_token")->all();
-        $this->sendNotification($data, $tokenList);
+            $tokenList = UserSession::where('user_id', $userId)->pluck("device_token")->all();
+            $this->sendNotification($data, $tokenList);
+        }
     }
 
     protected function notifyShop($slug, $data)
     {
-        $shopId = Shop::where("slug", $slug)->first()->id;
-        $userId = User::where("shop_id", $shopId)->first()->id;
+        $shop = Shop::where("slug", $slug)->first();
+        $user = User::where("shop_id", $shopId)->first();
+        if($shop && $user){
+            $shopId = $shop->id;
+            $userId = $user->id;
 
-        //Delete over 3 days token
-        UserSession::where("updated_at", '<=', Carbon::now()->subDays(3))->forceDelete();
+            //Delete over 3 days token
+            UserSession::where("updated_at", '<=', Carbon::now()->subDays(3))->forceDelete();
 
-        $tokenList = UserSession::where('user_id', $userId)->pluck("device_token")->all();
-        $this->sendNotification($data, $tokenList);
+            $tokenList = UserSession::where('user_id', $userId)->pluck("device_token")->all();
+            $this->sendNotification($data, $tokenList);
+        }
     }
 
     private function sendNotification($data, $to)
