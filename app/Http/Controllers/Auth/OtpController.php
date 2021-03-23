@@ -11,6 +11,7 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\SmsHelper;
 use App\Models\OneTimePassword;
 use App\Models\Customer;
+use App\Models\User;
 
 class OtpController extends Controller
 {
@@ -18,16 +19,16 @@ class OtpController extends Controller
 
     public function sendOtpToRegister(Request $request)
     {
-        $validator = $this->validatePhoneNumber($request, TRUE);
+        $validator = $this->validatePhoneNumber($request, true);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
         $checkRegister = Customer::where('phone_number', $phoneNumber)->first();
 
         if ($checkRegister) {
-            return $this->generateResponse('The phone number has already been taken.', 422, TRUE);
+            return $this->generateResponse('The phone number has already been taken.', 422, true);
         }
 
         return $this->sendOtp($phoneNumber, 'register');
@@ -37,7 +38,7 @@ class OtpController extends Controller
     {
         $validator = $this->validatePhoneNumber($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
@@ -49,10 +50,11 @@ class OtpController extends Controller
         }
 
         $checkUser = $model::where('phone_number', $phoneNumber)->first();
+
         if (!$checkUser) {
-            return $this->generateResponse('There is no user with this phone number.', 404, TRUE);
+            return $this->generateResponse('There is no user with this phone number.', 404, true);
         }
-        
+
         return $this->sendOtp($phoneNumber, 'reset');
     }
 
@@ -66,7 +68,7 @@ class OtpController extends Controller
 
             if ($fifteenMinutes->gt(Carbon::now())) {
                 $remainingTime = $fifteenMinutes->diff(Carbon::now())->format('%i');
-                return $this->generateResponse('You can send another code after ' . $remainingTime . ' minutes.', 403, TRUE);
+                return $this->generateResponse('You can send another code after ' . $remainingTime . ' minutes.', 403, true);
             }
         }
 
@@ -74,11 +76,11 @@ class OtpController extends Controller
 
         if ($smsResponse['status'] !== 0) {
             $this->storeOtp($phoneNumber, $otpCode, $smsResponse['message_id'], 'Error', $type);
-            return $this->generateResponse('Something went wrong when sending OTP.', 406, TRUE);
+            return $this->generateResponse('Something went wrong when sending OTP.', 406, true);
         }
 
         $this->storeOtp($phoneNumber, $otpCode, $smsResponse['message_id'], 'Success', $type);
-        return $this->generateResponse('Otp code has been successfully sent to your phone.', 200, TRUE);
+        return $this->generateResponse('Otp code has been successfully sent to your phone.', 200, true);
     }
 
     private function validatePhoneNumber($request)

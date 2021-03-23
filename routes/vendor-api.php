@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'vendor'], function () {
     Route::post('login', 'Auth\VendorAuthController@login');
     Route::post('register', 'Auth\VendorAuthController@register');
+
+    Route::post('forgot-password', 'Auth\OtpController@forgotPassword');
+    Route::post('reset-password', 'Auth\VendorAuthController@resetPassword');
+
     Route::middleware(['auth:vendors', 'user.enable'])->group(function () {
         Route::get('profile', 'Auth\VendorAuthController@getProfile');
         Route::put('profile/update', 'Auth\VendorAuthController@updateProfile');
@@ -93,7 +97,6 @@ Route::group(['prefix' => 'vendor'], function () {
 
         /* shop */
 
-        Route::post('/register-device','UserController@registerToken');
-
+        Route::post('/register-device', 'UserController@registerToken');
     });
 });
