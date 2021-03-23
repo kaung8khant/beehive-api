@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\UserSession;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 class VendorAuthController extends Controller
 {
@@ -27,13 +28,13 @@ class VendorAuthController extends Controller
 
         if ($result) {
             if ($result === 'disabled') {
-                return response()->json(['message' => 'Your accout is disabled. Contact admin for more information.'], 403);
+                return response()->json(['message' => 'Your account is disabled. Contact admin for more information.'], 403);
             }
-          
+
             return response()->json(['token' => $result], 200);
         }
 
-        return response()->json(['message' => 'Username or password wrong.' . Hash::make($request->password)], 401);
+        return response()->json(['message' => 'Username or password wrong.'], 401);
     }
 
     private function attemptLogin(Request $request)
@@ -43,6 +44,14 @@ class VendorAuthController extends Controller
         if ($user) {
             if (!$user->is_enable) {
                 return 'disabled';
+            }
+
+            $vendorRole = $user->roles->contains(function ($role) {
+                return $role->name === 'Shop' || $role->name === 'Restaurant';
+            });
+
+            if (!$vendorRole) {
+                return false;
             }
 
             return Auth::guard('vendors')->claims($user->toArray())->attempt([
@@ -63,7 +72,7 @@ class VendorAuthController extends Controller
     public function refreshToken(Request $request)
     {
         $token = Auth::guard('vendors')->refresh();
-        $userSession = UserSession::where('jwt',str_replace("Bearer ","",$request->header('Authorization')))->first();
+        $userSession = UserSession::where('jwt', str_replace("Bearer ", "", $request->header('Authorization')))->first();
         $userSession->jwt = $token;
         $userSession->update();
         return response()->json(['token' => $token], 200);
@@ -113,5 +122,48 @@ class VendorAuthController extends Controller
         }
 
         return $this->generateResponse('Your old password is incorrect.', 403, true);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request['phone_number'] = PhoneNumber::make($request->phone_number, 'MM');
+
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'phone_number' => 'required|phone:MM|exists:App\Models\User,phone_number',
+                'otp_code' => 'required|string',
+                'password' => 'required|string|min:6',
+            ],
+            ['phone_number.phone' => 'Invalid phone number.']
+        );
+
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, true);
+        }
+
+        $validatedData = $validator->validated();
+        $validatedData['password'] = Hash::make($validatedData['password']);
+
+        $user = $this->getUserWithPhone($validatedData['phone_number']);
+        $otp = $this->getOtp($validatedData['phone_number'], 'reset');
+
+        if (!$otp || $otp->otp_code !== $validatedData['otp_code']) {
+            return $this->generateResponse('The OTP code is incorrect.', 406, true);
+        }
+
+        if (Hash::check($request->password, $user->password)) {
+            return $this->generateResponse('Your new password must not be same with old password.', 406, true);
+        }
+
+        $user->update(['password' => Hash::make($request->password)]);
+        $otp->update(['is_used' => 1]);
+
+        return $this->generateResponse('Your password has been successfully reset.', 200, true);
+    }
+
+    private function getUserWithPhone($phoneNumber)
+    {
+        return User::where('phone_number', $phoneNumber)->firstOrFail();
     }
 }
