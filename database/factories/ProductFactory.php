@@ -34,6 +34,7 @@ class ProductFactory extends Factory
             'name' => $this->faker->text(30),
             'description' => $this->faker->paragraph(),
             'price' => $this->faker->numberBetween(1000, 10000),
+            'tax' => $this->faker->numberBetween(0, 100),
             'shop_id' => Shop::pluck('id')->random(1)[0],
             'shop_category_id' => function (array $attributes) {
                 return  Shop::find($attributes['shop_id'])->availableCategories()->pluck('shop_category_id')->random(1)[0];
