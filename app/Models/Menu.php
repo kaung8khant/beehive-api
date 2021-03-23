@@ -15,6 +15,7 @@ use Ramsey\Uuid\Type\Decimal;
  *      @OA\Property(property="restaurant_category_slug", type="string", example="E16AAF"),
  *      @OA\Property(property="is_enable", type="boolean", example=true),
  *      @OA\Property(property="price", type="number", example=1000),
+ *      @OA\Property(property="tax", type="number", example=20),
  *      @OA\Property(property="slug", type="string", readOnly=true),
  *      @OA\Property(property="menu_variations", type="array", @OA\Items(oneOf={
  *       @OA\Schema(
@@ -44,6 +45,7 @@ class Menu extends Model
         'name',
         'description',
         'price',
+        'tax',
         'restaurant_id',
         'restaurant_category_id',
         'is_enable',
