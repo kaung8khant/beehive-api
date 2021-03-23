@@ -176,10 +176,11 @@ class HomeController extends Controller
             'lng' => 'required|numeric',
         ]);
     }
-    
-    public function registerCustomerToken(Request $request){
+
+    public function registerCustomerToken(Request $request)
+    {
         $customerId = Auth::guard('customers')->user()->id;
-        $customer = Customer::where('id',$customerId)->firstOrFail();
+        $customer = Customer::where('id', $customerId)->firstOrFail();
         $customer->device_token = $request->token;
         $customer->update();
 

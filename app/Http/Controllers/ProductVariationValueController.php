@@ -90,7 +90,10 @@ class ProductVariationValueController extends Controller
 
         $productVariationValue = ProductVariationValue::create($validatedData);
 
-        $this->updateFile($request->image_slug, 'product_variation_values', $productVariationValue->slug);
+        if (!empty($request->image_slug)) {
+            $this->updateFile($request->image_slug, 'product_variation_values', $productVariationValue->slug);
+        }
+
 
         return response()->json($productVariationValue->load('productVariation'), 201);
     }

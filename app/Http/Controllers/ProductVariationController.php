@@ -155,7 +155,7 @@ class ProductVariationController extends Controller
      */
     public function show($slug)
     {
-        $productVariation = ProductVariation::with('product')->where('slug', $slug)->firstOrFail();
+        $productVariation = ProductVariation::with('product', 'productVariationValues')->where('slug', $slug)->firstOrFail();
         return response()->json($productVariation, 200);
     }
 
@@ -306,7 +306,9 @@ class ProductVariationController extends Controller
             $variationValue['slug'] = $this->generateUniqueSlug();
             $variationValue['product_variation_id'] = $variationId;
             ProductVariationValue::create($variationValue);
-            $this->updateFile($variationValue['image_slug'], 'product_variation_values', $variationValue['slug']);
+            if (!empty($variationValue['image_slug'])) {
+                $this->updateFile($variationValue['image_slug'], 'product_variation_values', $variationValue['slug']);
+            }
         }
     }
 }

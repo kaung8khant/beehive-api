@@ -12,6 +12,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\UserSession;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserController extends Controller
 {
@@ -137,14 +138,20 @@ class UserController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate([
-            'slug' => 'required|unique:users',
-            'username' => 'required|unique:users',
-            'name' => 'required',
-            'phone_number' => 'required|unique:users',
-            'password' => 'required|min:6',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'slug' => 'required|unique:users',
+                'username' => 'required|unique:users',
+                'name' => 'required',
+                'phone_number' => 'required|phone:MM|unique:users',
+                'password' => 'required|min:6',
+            ],
+            [
+                'phone_number.phone' => 'Invalid phone number.'
+            ]
+        );
 
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
         $validatedData['password'] = Hash::make($validatedData['password']);
         $user = User::create($validatedData);
 
@@ -158,17 +165,23 @@ class UserController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate([
-            'slug' => 'required|unique:users',
-            'username' => 'required|unique:users',
-            'name' => 'required',
-            'phone_number' => 'required|unique:users',
-            'password' => 'required|min:6',
-            'shop_slug' => 'required|exists:App\Models\Shop,slug',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'slug' => 'required|unique:users',
+                'username' => 'required|unique:users',
+                'name' => 'required',
+                'phone_number' => 'required|phone:MM|unique:users',
+                'password' => 'required|min:6',
+                'shop_slug' => 'required|exists:App\Models\Shop,slug',
+            ],
+            [
+                'phone_number.phone' => 'Invalid phone number.'
+            ]
+        );
 
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
         $validatedData['password'] = Hash::make($validatedData['password']);
-        $validatedData['shop_id']=$this->getShopId($request->shop_slug);
+        $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $user = User::create($validatedData);
 
         $shopRoleId = Role::where('name', 'Shop')->first()->id;
@@ -181,23 +194,29 @@ class UserController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate([
-            'slug' => 'required|unique:users',
-            'username' => 'required|unique:users',
-            'name' => 'required',
-            'phone_number' => 'required|unique:users',
-            'password' => 'required|min:6',
-            'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'slug' => 'required|unique:users',
+                'username' => 'required|unique:users',
+                'name' => 'required',
+                'phone_number' => 'required|phone:MM|unique:users',
+                'password' => 'required|min:6',
+                'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
+            ],
+            [
+                'phone_number.phone' => 'Invalid phone number.'
+            ]
+        );
 
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
         $validatedData['password'] = Hash::make($validatedData['password']);
-        $validatedData['restaurant_branch_id']=$this->getRestaruantBranchId($request->restaurant_branch_slug);
+        $validatedData['restaurant_branch_id'] = $this->getRestaruantBranchId($request->restaurant_branch_slug);
         $user = User::create($validatedData);
 
         $restaurantRoleId = Role::where('name', 'Restaurant')->first()->id;
         $user->roles()->attach($restaurantRoleId);
 
-        return response()->json($user->refresh()->load(['restaurantBranch','restaurantBranch.restaurant']), 201);
+        return response()->json($user->refresh()->load(['restaurantBranch', 'restaurantBranch.restaurant']), 201);
     }
 
     private function getShopId($slug)
@@ -291,10 +310,10 @@ class UserController extends Controller
         $user = User::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate([
-            'username' => [
-                'required',
-                Rule::unique('users')->ignore($user->id),
-            ],
+            // 'username' => [
+            //     'required',
+            //     Rule::unique('users')->ignore($user->id),
+            // ],
             'name' => 'required',
             'phone_number' => [
                 'required',
@@ -318,10 +337,10 @@ class UserController extends Controller
         $user = User::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate([
-            'username' => [
-                'required',
-                Rule::unique('users')->ignore($user->id),
-            ],
+            // 'username' => [
+            //     'required',
+            //     Rule::unique('users')->ignore($user->id),
+            // ],
             'name' => 'required',
             'phone_number' => [
                 'required',
@@ -329,7 +348,7 @@ class UserController extends Controller
             ],
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
         ]);
-        $validatedData['shop_id']=$this->getShopId($request->shop_slug);
+        $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
 
         $user->update($validatedData);
 
@@ -341,10 +360,10 @@ class UserController extends Controller
         $user = User::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate([
-            'username' => [
-                'required',
-                Rule::unique('users')->ignore($user->id),
-            ],
+            // 'username' => [
+            //     'required',
+            //     Rule::unique('users')->ignore($user->id),
+            // ],
             'name' => 'required',
             'phone_number' => [
                 'required',
@@ -352,11 +371,11 @@ class UserController extends Controller
             ],
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
         ]);
-        $validatedData['restaurant_branch_id']=$this->getRestaruantBranchId($request->restaurant_branch_slug);
+        $validatedData['restaurant_branch_id'] = $this->getRestaruantBranchId($request->restaurant_branch_slug);
 
         $user->update($validatedData);
 
-        return response()->json($user->refresh()->load(['restaurantBranch','restaurantBranch.restaurant']), 201);
+        return response()->json($user->refresh()->load(['restaurantBranch', 'restaurantBranch.restaurant']), 201);
     }
 
     /**
@@ -446,26 +465,25 @@ class UserController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function registerToken(Request $request){
+    public function registerToken(Request $request)
+    {
         $userId = Auth::guard('vendors')->user()->id;
 
-        $jwt = str_replace("Bearer ","",$request->header('Authorization'));
+        $jwt = str_replace("Bearer ", "", $request->header('Authorization'));
         $data['user_id'] = $userId;
         $data['jwt'] = $jwt;
         $data['device_token'] = $request->token;
-     
+
         $userSession = UserSession::where('jwt', $jwt)->orWhere('device_token', $request->token)->first();
 
         if ($userSession) {
-            
             $userSession['jwt'] = $data['jwt'];
             $userSession['device_token'] = $data['device_token'];
             $userSession->update();
-        }else{
-
-           UserSession::create($data);
+        } else {
+            UserSession::create($data);
         }
-         
+
 
         return response()->json(['message' => 'Success.'], 200);
     }

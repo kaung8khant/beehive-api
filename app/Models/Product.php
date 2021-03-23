@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="name", type="string", example="Product Name"),
  *      @OA\Property(property="description", type="string", example="Description"),
  *      @OA\Property(property="price", type="decimal", example=0.00),
+ *      @OA\Property(property="tax", type="integer", example=0),
  *      @OA\Property(property="shop_slug", type="string", example="shop_slug"),
  *      @OA\Property(property="shop_category_slug", type="string", example="shop_category_slug"),
  *      @OA\Property(property="shop_sub_category_slug", type="string", example="shop_sub_category_slug"),
@@ -42,6 +43,7 @@ class Product extends Model
         'name',
         'description',
         'price',
+        'tax',
         'shop_id',
         'shop_category_id',
         'shop_sub_category_id',
@@ -63,7 +65,7 @@ class Product extends Model
         'is_enable' => 'boolean',
     ];
 
-    protected $appends = ['rating','images'];
+    protected $appends = ['rating', 'images'];
 
 
     public function getRatingAttribute()
@@ -71,7 +73,7 @@ class Product extends Model
         $rating = ShopRating::where('target_id', $this->id)
             ->where('target_type', 'product')
             ->avg('rating');
-            
+
         return $rating ? round($rating, 1) : null;
     }
 
@@ -109,6 +111,6 @@ class Product extends Model
     }
     public function customers()
     {
-        return $this->belongsToMany(Customer::class, 'favorite_product','customer_id');
+        return $this->belongsToMany(Customer::class, 'favorite_product', 'customer_id');
     }
 }
