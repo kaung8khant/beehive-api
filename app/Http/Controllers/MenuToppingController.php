@@ -115,7 +115,7 @@ class MenuToppingController extends Controller
             $menuTopping['slug'] = $this->generateUniqueSlug();
             $menuTopping['menu_id'] = $menuId;
             MenuTopping::create($menuTopping)->id;
-            if (!empty($menuTopping->image_slug)) {
+            if (!empty($menuTopping['image_slug'])) {
                 $this->updateFile($menuTopping['image_slug'], 'menu_toppings', $menuTopping['slug']);
             }
         }
