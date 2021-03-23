@@ -19,6 +19,7 @@ class CreateProductsTable extends Migration
             $table->string('name');
             $table->text('description');
             $table->decimal('price', 12, 0);
+            $table->integer('tax');
             $table->boolean('is_enable')->default(1);
             $table->unsignedBigInteger('shop_id');
             $table->unsignedBigInteger('shop_category_id');

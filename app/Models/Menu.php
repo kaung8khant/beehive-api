@@ -14,7 +14,7 @@ use Ramsey\Uuid\Type\Decimal;
  *      @OA\Property(property="restaurant_slug", type="string", example="D16AAF"),
  *      @OA\Property(property="restaurant_category_slug", type="string", example="E16AAF"),
  *      @OA\Property(property="is_enable", type="boolean", example=true),
- *      @OA\Property(property="price", type="number", example=1000),
+ *      @OA\Property(property="price", type="decimal", example=100.00),
  *      @OA\Property(property="tax", type="number", example=20),
  *      @OA\Property(property="slug", type="string", readOnly=true),
  *      @OA\Property(property="menu_variations", type="array", @OA\Items(oneOf={
