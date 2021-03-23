@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
-use App\Models\File;
 use App\Models\Menu;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
@@ -111,7 +110,9 @@ class MenuController extends Controller
         $menu = Menu::create($validatedData);
         $menuId = $menu->id;
 
-        $this->updateFile($request->image_slug, 'menus', $menu->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'menus', $menu->slug);
+        }
 
         $this->createVariations($menuId, $validatedData['menu_variations']);
         $this->createToppings($menuId, $validatedData['menu_toppings']);
@@ -366,18 +367,18 @@ class MenuController extends Controller
     public function getMenusByBranch(Request $request, $slug)
     {
         $branch = RestaurantBranch::with('availableMenus')
-        ->where('slug', $slug)
-        ->firstOrFail();
+            ->where('slug', $slug)
+            ->firstOrFail();
 
         $menus = $branch->availableMenus()->with('restaurantCategory')
-        ->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })
-        ->paginate(10);
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->paginate(10);
 
         foreach ($menus as $menu) {
-            $menu->setAppends(['is_available','images']);
+            $menu->setAppends(['is_available', 'images']);
         }
         return $menus;
     }
@@ -405,6 +406,7 @@ class MenuController extends Controller
             'name' => 'required',
             'description' => 'required',
             'price' => 'required|numeric',
+            'tax' => 'required|numeric',
             'is_enable' => 'required|boolean',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',

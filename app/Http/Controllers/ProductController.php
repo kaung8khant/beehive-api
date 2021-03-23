@@ -301,6 +301,7 @@ class ProductController extends Controller
             'name' => 'required|string',
             'description' => 'required|string',
             'price' => 'required|max:99999999',
+            'tax' => 'required|numeric',
             'is_enable' => 'required|boolean',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',

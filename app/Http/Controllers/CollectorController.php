@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 class CollectorController extends Controller
 {
@@ -91,14 +92,20 @@ class CollectorController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate([
-            'slug' => 'required|unique:users',
-            'username' => 'required|unique:users',
-            'name' => 'required|string',
-            'phone_number' => 'required|unique:users',
-            'password' => 'required|min:6',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'slug' => 'required|unique:users',
+                'username' => 'required|unique:users',
+                'name' => 'required|string',
+                'phone_number' => 'required|phone:MM|unique:users',
+                'password' => 'required|min:6',
+            ],
+            [
+                'phone_number.phone' => 'Invalid phone number.'
+            ]
+        );
 
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
         $validatedData['password'] = Hash::make($validatedData['password']);
 
         $collector = User::create($validatedData);
