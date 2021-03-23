@@ -110,7 +110,9 @@ class MenuController extends Controller
         $menu = Menu::create($validatedData);
         $menuId = $menu->id;
 
-        $this->updateFile($request->image_slug, 'menus', $menu->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'menus', $menu->slug);
+        }
 
         $this->createVariations($menuId, $validatedData['menu_variations']);
         $this->createToppings($menuId, $validatedData['menu_toppings']);
