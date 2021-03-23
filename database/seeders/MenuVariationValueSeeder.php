@@ -20,19 +20,19 @@ class MenuVariationValueSeeder extends Seeder
         $menuVariationValues = [
             [
                 'value' => 'None Spicy',
-                'price' => 0,
+                'price' => 500,
                 'slug' => $this->generateUniqueSlug(),
                 'menu_variation_id' => 1,
             ],
             [
                 'value' => 'Normal',
-                'price' => 0,
+                'price' => 1000,
                 'slug' => $this->generateUniqueSlug(),
                 'menu_variation_id' => 1,
             ],
             [
                 'value' => 'Too Spicy',
-                'price' => 0,
+                'price' => 1500,
                 'slug' => $this->generateUniqueSlug(),
                 'menu_variation_id' => 1,
             ],

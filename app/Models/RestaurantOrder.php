@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -40,6 +41,10 @@ class RestaurantOrder extends Model
         'restaurant_branch_id',
         'created_at',
         'updated_at',
+    ];
+
+    protected $casts = [
+        'restaurant_branch_info' => AsArrayObject::class,
     ];
 
     protected $appends = array('order_status');

@@ -116,6 +116,8 @@ class RestaurantController extends Controller
     {
         $restaurantBranch = RestaurantBranch::with('availableMenus')
             ->with('availableMenus.restaurantCategory')
+            ->with('availableMenus.menuVariations')
+            ->with('availableMenus.menuToppings')
             ->where('slug', $slug)
             ->firstOrFail()
             ->toArray();

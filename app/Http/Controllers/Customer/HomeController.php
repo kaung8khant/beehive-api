@@ -135,13 +135,14 @@ class HomeController extends Controller
     }
     public function searchProduct(Request $request, $homeSearch = FALSE)
     {
-
         $validator  = Validator::make($request->all(), [
             'keyword' => 'required|string',
         ]);
+
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, TRUE);
         }
+
         $product = Product::with('shop')
             ->where('name', 'LIKE', '%' . $request->keyword . '%')
             ->orWhere('description', 'LIKE', '%' . $request->keyword . '%')
