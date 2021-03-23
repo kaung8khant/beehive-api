@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Propaganistas\LaravelPhone\PhoneNumber;
+use App\Models\OneTimePassword;
 
 class UserAuthController extends Controller
 {
@@ -212,5 +213,14 @@ class UserAuthController extends Controller
     private function getUserWithPhone($phoneNumber)
     {
         return User::where('phone_number', $phoneNumber)->firstOrFail();
+    }
+
+    private function getOtp($phoneNumber, $type)
+    {
+        return OneTimePassword::where('phone_number', $phoneNumber)
+            ->where('type', $type)
+            ->where('is_used', 0)
+            ->latest()
+            ->first();
     }
 }
