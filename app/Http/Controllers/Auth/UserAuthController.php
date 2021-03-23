@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserAuthController extends Controller
 {
@@ -49,7 +50,7 @@ class UserAuthController extends Controller
 
         if ($result) {
             if ($result === 'disabled') {
-                return response()->json(['message' => 'Your accout is disabled. Contact admin for more information.'], 403);
+                return response()->json(['message' => 'Your account is disabled. Contact admin for more information.'], 403);
             }
 
             return response()->json(['token' => $result], 200);
@@ -65,6 +66,14 @@ class UserAuthController extends Controller
         if ($user) {
             if (!$user->is_enable) {
                 return 'disabled';
+            }
+
+            $adminRole = $user->roles->contains(function ($role) {
+                return $role->name === 'Admin';
+            });
+
+            if (!$adminRole) {
+                return false;
             }
 
             return Auth::guard('users')->claims($user->toArray())->attempt([
@@ -160,5 +169,48 @@ class UserAuthController extends Controller
         }
 
         return $this->generateResponse('Your old password is incorrect.', 403, true);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request['phone_number'] = PhoneNumber::make($request->phone_number, 'MM');
+
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'phone_number' => 'required|phone:MM|exists:App\Models\User,phone_number',
+                'otp_code' => 'required|string',
+                'password' => 'required|string|min:6',
+            ],
+            ['phone_number.phone' => 'Invalid phone number.']
+        );
+
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, true);
+        }
+
+        $validatedData = $validator->validated();
+        $validatedData['password'] = Hash::make($validatedData['password']);
+
+        $user = $this->getUserWithPhone($validatedData['phone_number']);
+        $otp = $this->getOtp($validatedData['phone_number'], 'reset');
+
+        if (!$otp || $otp->otp_code !== $validatedData['otp_code']) {
+            return $this->generateResponse('The OTP code is incorrect.', 406, true);
+        }
+
+        if (Hash::check($request->password, $user->password)) {
+            return $this->generateResponse('Your new password must not be same with old password.', 406, true);
+        }
+
+        $user->update(['password' => Hash::make($request->password)]);
+        $otp->update(['is_used' => 1]);
+
+        return $this->generateResponse('Your password has been successfully reset.', 200, true);
+    }
+
+    private function getUserWithPhone($phoneNumber)
+    {
+        return User::where('phone_number', $phoneNumber)->firstOrFail();
     }
 }

@@ -7,6 +7,7 @@ use App\Helpers\StringHelper;
 use App\Models\Customer;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 class CustomerController extends Controller
 {
@@ -18,7 +19,7 @@ class CustomerController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @OA\Get(
      *      path="/api/v2/admin/customers",
      *      operationId="getCustomerLists",
@@ -96,15 +97,21 @@ class CustomerController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate([
-            'slug' => 'required|unique:customers',
-            'email' => 'nullable|email|unique:customers',
-            'name' => 'required|max:255',
-            'phone_number' => 'required|unique:customers',
-            'password' => 'required|string|min:6',
-            'gender' => 'required|in:male,female',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'slug' => 'required|unique:customers',
+                'email' => 'nullable|email|unique:customers',
+                'name' => 'required|max:255',
+                'phone_number' => 'required|phone:MM|unique:customers',
+                'password' => 'required|string|min:6',
+                'gender' => 'required|in:Male,Female',
+            ],
+            [
+                'phone_number.phone' => 'Invalid phone number.'
+            ]
+        );
 
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
         $validatedData['password'] = Hash::make($validatedData['password']);
 
         $customer = Customer::create($validatedData);
@@ -197,7 +204,7 @@ class CustomerController extends Controller
                 'required',
                 Rule::unique('customers')->ignore($customer->id),
             ],
-            'gender' => 'required|in:male,female',
+            'gender' => 'required|in:Male,Female',
         ]);
 
         $customer->update($validatedData);
@@ -210,7 +217,7 @@ class CustomerController extends Controller
      * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @OA\Delete(
      *      path="/api/v2/admin/customers/{slug}",
      *      operationId="showCustomer",
@@ -247,7 +254,7 @@ class CustomerController extends Controller
      * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @OA\Patch(
      *      path="/api/v2/admin/customers/toggle-enable/{slug}",
      *      operationId="enableCustomer",
