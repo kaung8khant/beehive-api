@@ -5,18 +5,53 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="MenuTopping"),
+ *      @OA\Property(property="name", type="string", example="Name"),
+ *      @OA\Property(property="menu_slug", type="string", example="D16AAF"),
+ *      @OA\Property(property="price", type="number", example=1000),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ * )
+ */
+
 class MenuTopping extends Model
 {
     use HasFactory;
-    protected $fillable = ['slug',"name","description","menu_id"];
 
-    public function menus()
+    protected $fillable = [
+        'slug',
+        'name',
+        'price',
+        'is_incremental',
+        'max_quantity',
+        'menu_id',
+    ];
+
+    protected $hidden = [
+        'id',
+        'menu_id',
+        'created_at',
+        'updated_at',
+    ];
+
+
+    protected $casts = [
+        'is_incremental' => 'boolean',
+    ];
+
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
     {
-        return $this->belongsTo(Menu::class);
+        return File::where('source', 'menu_toppings')
+            ->where('source_id', $this->id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
     }
 
-    public function menu_topping_values()
+    public function menu()
     {
-        return $this->hasMany(MenuToppingValue::class);
+        return $this->belongsTo(Menu::class);
     }
 }

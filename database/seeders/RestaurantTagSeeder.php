@@ -2,13 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Helpers\StringHelper;
-use App\Models\RestaurantTag;
 use Illuminate\Database\Seeder;
+use App\Models\RestaurantTag;
 
 class RestaurantTagSeeder extends Seeder
 {
-    use StringHelper;
     /**
      * Run the database seeds.
      *
@@ -16,20 +14,6 @@ class RestaurantTagSeeder extends Seeder
      */
     public function run()
     {
-        $tags = [
-            [
-                "name" => "Italian Food",
-                "name_mm" => "အီတလီအစားအစာ",
-                "slug" => $this->generateUniqueSlug(),
-            ],
-            [
-                "name" => "Chenese Food",
-                "name_mm" => "တရုတ်အစားအစာ",
-                "slug" => $this->generateUniqueSlug(),
-            ],
-        ];
-        foreach ($tags as $tag) {
-            RestaurantTag::create($tag);
-        }
+        RestaurantTag::factory()->count(100)->create();
     }
 }

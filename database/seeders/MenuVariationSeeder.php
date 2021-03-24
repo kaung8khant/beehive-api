@@ -19,18 +19,17 @@ class MenuVariationSeeder extends Seeder
     {
         $menuVariations = [
             [
-                "name" => "Spicy Level",
-                "description"=>"Spicy Level",
-                "slug" => $this->generateUniqueSlug(),
-                "menu_id" => 1,
+                'name' => 'Spicy Level',
+                'slug' => $this->generateUniqueSlug(),
+                'menu_id' => 1,
             ],
             [
-                "name" => "Size",
-                "description"=>"Size",
-                "slug" => $this->generateUniqueSlug(),
-                "menu_id" => 2,
+                'name' => 'Bowl Size',
+                'slug' => $this->generateUniqueSlug(),
+                'menu_id' => 2,
             ],
         ];
+
         foreach ($menuVariations as $menuVariation) {
             MenuVariation::create($menuVariation);
         }

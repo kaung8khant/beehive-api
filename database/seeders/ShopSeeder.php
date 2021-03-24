@@ -2,13 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Helpers\StringHelper;
-use App\Models\Shop;
 use Illuminate\Database\Seeder;
+use App\Models\Shop;
+use App\Models\User;
 
 class ShopSeeder extends Seeder
 {
-    use StringHelper;
     /**
      * Run the database seeds.
      *
@@ -16,24 +15,6 @@ class ShopSeeder extends Seeder
      */
     public function run()
     {
-        $shops = [
-            [
-                "name" => "Impact Myanmar",
-                "name_mm" => "Impact Myanmar",
-                "official" => true ,
-                "enable" => true ,
-                "slug" => $this->generateUniqueSlug(),
-            ],
-            [
-                "name" => "Marigold",
-                "name_mm" => "Marigold",
-                "official" => true ,
-                "enable" => true ,
-                "slug" => $this->generateUniqueSlug(),
-            ],
-        ];
-        foreach ($shops as $shop) {
-            Shop::create($shop);
-        }
+        Shop::factory()->count(50)->create();
     }
 }

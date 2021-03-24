@@ -5,26 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="RestaurantTag"),
+ *      @OA\Property(property="name", type="string", example="Product Name"),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ * )
+ */
+
 class RestaurantTag extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'name',
-        'name_mm',
         'slug',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'id',
         'created_at',
@@ -34,6 +31,6 @@ class RestaurantTag extends Model
 
     public function restaurants()
     {
-        return $this->belongsToMany(Restaurant::class, 'tag_restaurant');
+        return $this->belongsToMany(Restaurant::class, 'restaurant_restaurant_tag_map');
     }
 }

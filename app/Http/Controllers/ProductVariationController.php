@@ -2,28 +2,63 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductVariation;
+use App\Helpers\FileHelper;
 use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
-use Illuminate\Validation\Rule;
+use App\Models\ProductVariation;
+use App\Models\Product;
+use App\Models\ProductVariationValue;
 
 class ProductVariationController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
 
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/product-variations",
+     *      operationId="getProductVariationLists",
+     *      tags={"Product Variations"},
+     *      summary="Get list of product variations",
+     *      description="Returns list of product variations",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function index(Request $request)
     {
-        $filter=$request->filter;
-        return ProductVariation::with('product','product_variation_value')
-        ->where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
+        return ProductVariation::with('product')
+            ->where('name', 'LIKE', '%' . $request->filterr . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -31,19 +66,60 @@ class ProductVariationController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/product-variations",
+     *      operationId="storeProductVariation",
+     *      tags={"Product Variations"},
+     *      summary="Create a product variation",
+     *      description="Returns newly created product variation",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created product variation object",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/ProductVariation")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $request->validate([
-            'slug' => 'required|unique:product_variations',
-            'name'=>'required',
-            'product_id' => 'required|exists:App\Models\Product,id'
+        $validatedData = $request->validate([
+            'product_variations' => 'required|array',
+            'product_variations.*.slug' => '',
+            'product_variations.*.name' => 'required|string',
+            'product_slug' => 'required|exists:App\Models\Product,slug',
+
+            'product_variations.*.product_variation_values' => 'required|array',
+            'product_variations.*.product_variation_values.*.value' => 'required|string',
+            'product_variations.*.product_variation_values.*.price' => 'required|numeric',
+            'product_variations.*.product_variation_values.*.image_slug' =>  'nullable|exists:App\Models\File,slug',
+
         ]);
 
-        $productVariation = ProductVariation::create($request->all());
+        $productId = $this->getProductId($request->product_slug);
+        $productVariations = $validatedData["product_variations"];
 
-        return response()->json($productVariation, 201);
+        foreach ($productVariations as $variation) {
+            $variation['slug'] = $this->generateUniqueSlug();
+            $variation['product_id'] = $productId;
+            $productVariation = ProductVariation::create($variation);
+
+            $variationId = $productVariation->id;
+            $this->createVariationValues($variationId, $variation['product_variation_values']);
+        }
+        return response()->json($productVariation->load('product', 'productVariationValues'), 201);
     }
 
     /**
@@ -52,11 +128,36 @@ class ProductVariationController extends Controller
      * @param  \App\Models\ProductVariation  $productVariation
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/product-variations/{slug}",
+     *      operationId="showProductVariation",
+     *      tags={"Product Variations"},
+     *      summary="Get One Product Variation",
+     *      description="Returns a requested product variation",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested product variation",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function show($slug)
     {
-        return response()->json(ProductVariation::with('product,product_variation_value')->where('slug', $slug)->firstOrFail(), 200);
+        $productVariation = ProductVariation::with('product', 'productVariationValues')->where('slug', $slug)->firstOrFail();
+        return response()->json($productVariation, 200);
     }
-
 
     /**
      * Update the specified resource in storage.
@@ -65,20 +166,52 @@ class ProductVariationController extends Controller
      * @param  \App\Models\ProductVariation  $productVariation
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Put(
+     *      path="/api/v2/admin/product-variations/{slug}",
+     *      operationId="updateProductVariation",
+     *      tags={"Product Variations"},
+     *      summary="Update a product variation",
+     *      description="Update a requested product variation",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug to identify a product variation",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="New product variation data to be updated.",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/ProductVariation")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function update(Request $request, $slug)
     {
         $productVariation = ProductVariation::where('slug', $slug)->firstOrFail();
 
-        $request->validate([
-            'name' => ['required',
-            Rule::unique('product_variations')->ignore($productVariation->id),
-        ],
-            'product_id' => 'required|exists:App\Models\Product,id',
+        $validatedData = $request->validate([
+            'name' => 'required|string',
+            'product_slug' => 'required|exists:App\Models\Product,slug',
         ]);
 
-        $productVariation = ProductVariation::where('slug', $slug)->update($request->all());
+        $validatedData['product_id'] = $this->getProductId($request->product_slug);
 
-        return response()->json($productVariation, 200);
+        $productVariation->update($validatedData);
+        return response()->json($productVariation->load('product'), 200);
     }
 
     /**
@@ -87,9 +220,95 @@ class ProductVariationController extends Controller
      * @param  \App\Models\ProductVariation  $productVariation
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Delete(
+     *      path="/api/v2/admin/product-variations/{slug}",
+     *      operationId="deleteProductVariation",
+     *      tags={"Product Variations"},
+     *      summary="Delete One Product Variation",
+     *      description="Delete one specific product variation",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested product variation",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function destroy($slug)
     {
         ProductVariation::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+    }
+
+    private function getProductId($slug)
+    {
+        return Product::where('slug', $slug)->first()->id;
+    }
+
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/products/{slug}/product-variations",
+     *      operationId="getProductVariationsByProduct",
+     *      tags={"Product Variations"},
+     *      summary="Get Product Variations By Product",
+     *      description="Returns requested list of product variations",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of the Product",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *        name="filter",
+     *        description="Filter",
+     *        required=false,
+     *        in="query",
+     *        @OA\Schema(
+     *            type="string"
+     *        ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
+    public function getProductVariationsByProduct($slug, Request $request)
+    {
+        return ProductVariation::with('productVariationValues')
+            ->whereHas('product', function ($q) use ($slug) {
+                $q->where('slug', $slug);
+            })->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
+    }
+
+    private function createVariationValues($variationId, $variationValues)
+    {
+        foreach ($variationValues as $variationValue) {
+            $variationValue['slug'] = $this->generateUniqueSlug();
+            $variationValue['product_variation_id'] = $variationId;
+            ProductVariationValue::create($variationValue);
+            if (!empty($variationValue['image_slug'])) {
+                $this->updateFile($variationValue['image_slug'], 'product_variation_values', $variationValue['slug']);
+            }
+        }
     }
 }

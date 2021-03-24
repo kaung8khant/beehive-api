@@ -9,6 +9,7 @@ use App\Models\City;
 class CitySeeder extends Seeder
 {
     use StringHelper;
+
     /**
      * Run the database seeds.
      *
@@ -18,16 +19,79 @@ class CitySeeder extends Seeder
     {
         $cities = [
             [
-                "name" => "Yangon",
-                "name_mm" => "ရန်ကုန်",
-                "slug" => $this->generateUniqueSlug(),
+                'name' => 'Kachin',
+                'slug' => $this->generateUniqueSlug(),
             ],
             [
-                "name" => "Mandalay",
-                "name_mm" => "မန္တလေး",
-                "slug" => $this->generateUniqueSlug(),
+                'name' => 'Kaya',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Kayin',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Chin',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Mon',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Yakhine',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Eastern Shan',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Southern Shan',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Nothern Shan',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Sagaing',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Tanintharyi',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Nay Pyi Taw',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Pago(N)',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Pago',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Magway',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Mandalay',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Yangon',
+                'slug' => $this->generateUniqueSlug(),
+            ],
+            [
+                'name' => 'Ayeyarwaddy',
+                'slug' => $this->generateUniqueSlug(),
             ],
         ];
+
         foreach ($cities as $city) {
             City::create($city);
         }

@@ -15,9 +15,8 @@ class CreateShopCategoriesTable extends Migration
     {
         Schema::create('shop_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('name_mm')->unique()->nullable();
             $table->string('slug')->unique();
+            $table->string('name')->unique();
             $table->timestamps();
         });
     }

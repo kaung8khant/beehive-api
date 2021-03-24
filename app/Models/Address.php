@@ -9,13 +9,9 @@ class Address extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'slug',
+        'label',
         'house_number',
         'floor',
         'street_name',
@@ -23,5 +19,23 @@ class Address extends Model
         'longitude',
         'is_primary',
         'township_id',
+        'customer_id',
     ];
+
+    protected $hidden = [
+        'id',
+        'township_id',
+        'customer_id',
+        'created_at',
+        'updated_at',
+    ];
+
+    protected $casts = [
+        'is_primary' => 'boolean',
+    ];
+
+    public function township()
+    {
+        return $this->belongsTo(Township::class);
+    }
 }

@@ -2,13 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Helpers\StringHelper;
-use App\Models\Restaurant;
 use Illuminate\Database\Seeder;
+use App\Models\Restaurant;
+use App\Models\RestaurantBranch;
 
 class RestaurantSeeder extends Seeder
 {
-    use StringHelper;
     /**
      * Run the database seeds.
      *
@@ -16,24 +15,6 @@ class RestaurantSeeder extends Seeder
      */
     public function run()
     {
-        $restaurants = [
-            [
-                "name" => "Shwe Myanmar Restaurant",
-                "name_mm" => "ရွှေမြန်မာစားသောက်ဆိုင်",
-                "official" => true ,
-                "enable" => true ,
-                "slug" => $this->generateUniqueSlug(),
-            ],
-            [
-                "name" => "Danuphyu Daw Saw Yee Myanmar Restaurant",
-                "name_mm" => "ဓနုဖြူဒေါ်စောရီမြန်မာစားသောက်ဆိုင်",
-                "official" => true ,
-                "enable" => true ,
-                "slug" => $this->generateUniqueSlug(),
-            ],
-        ];
-        foreach ($restaurants as $restaurant) {
-            Restaurant::create($restaurant);
-        }
+        Restaurant::factory()->count(50)->has(RestaurantBranch::factory()->count(5))->create();
     }
 }

@@ -5,25 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="Role"),
+ *      @OA\Property(property="name", type="string", example="Name"),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ * )
+ */
 class Role extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'slug',
         'name',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'id',
         'created_at',
@@ -31,11 +28,8 @@ class Role extends Model
         'pivot',
     ];
 
-    /**
-     * The users that belong to the role.
-     */
     public function users()
     {
-        return $this->belongsToMany(User::class, 'user_role');
+        return $this->belongsToMany(User::class, 'user_role_map');
     }
 }

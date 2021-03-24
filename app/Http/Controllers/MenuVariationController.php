@@ -2,35 +2,63 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MenuVariation;
+use App\Helpers\FileHelper;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
+use App\Models\MenuVariation;
+use App\Models\Menu;
+use App\Models\MenuVariationValue;
 
 class MenuVariationController extends Controller
 {
-    use StringHelper;
+    use StringHelper, FileHelper;
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/menu-variations",
+     *      operationId="getMenuVariationLists",
+     *      tags={"MenuVariations"},
+     *      summary="Get list of menu variation",
+     *      description="Returns list of menu variation",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          description="Filter",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function index(Request $request)
     {
-        $filter= $request->filter;
-
-        return MenuVariation::
-        where('name', 'LIKE', '%' . $filter . '%')
-        ->orWhere('slug', $filter)->paginate(10);
-    }
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return MenuVariation::with('menu')
+            ->with('menuVariationValues')
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->paginate(10);
     }
 
     /**
@@ -39,18 +67,76 @@ class MenuVariationController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+
+    /**
+     * @OA\Post(
+     *      path="/api/v2/admin/menu-variations",
+     *      operationId="storeMenuVariations",
+     *      tags={"MenuVariations"},
+     *      summary="Create a menu variation",
+     *      description="Returns newly created menu variation",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Created menu variation",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(
+     *               @OA\Property(property="menu_slug", type="string", example="39463"),
+     *               @OA\Property(property="menu_variations", type="array", @OA\Items(oneOf={
+     *                  @OA\Schema(
+     *                   @OA\Property(property="name", type="string", example="Name"),
+     *                   @OA\Property(property="menu_variation_values", type="array", @OA\Items(oneOf={
+     *                    @OA\Schema(
+     *                      @OA\Property(property="value", type="string", example="Name"),
+     *                      @OA\Property(property="price", type="number", example=1000),
+     *                      ),
+     *                     })),
+     *                  ),
+     *                })),
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
+        $validatedData = $request->validate([
+            'menu_slug' => 'required|exists:App\Models\Menu,slug',
+            'menu_variations.*.name' => 'required|string',
+            'menu_variations.*.menu_variation_values' => 'required|array',
+            'menu_variations.*.menu_variation_values.*.value' => 'required|string',
+            'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
+            'menu_variations.*.menu_variation_values.*.image_slug' => 'nullable|exists:App\Models\File,slug',
+        ]);
 
-        $menuVariation = MenuVariation::create($request->validate([
-            'name' => 'required|unique:menu_variations',
-            'description' => 'required',
-            'slug' => 'required|unique:menu_variations',
-            'menu_id' => 'required|exists:App\Models\Menu,id',
-        ]));
+        $menu = $this->getMenu($validatedData['menu_slug']);
 
-        return response()->json($menuVariation, 201);
+        foreach ($validatedData['menu_variations'] as $menuVariation) {
+            $menuVariation['slug'] = $this->generateUniqueSlug();
+            $menuVariation['menu_id'] = $menu->id;
+
+            $menuVariationId = MenuVariation::create($menuVariation)->id;
+
+            foreach ($menuVariation['menu_variation_values'] as $menuVariationValue) {
+                $menuVariationValue['slug'] = $this->generateUniqueSlug();
+                $menuVariationValue['menu_variation_id'] = $menuVariationId;
+                MenuVariationValue::create($menuVariationValue);
+                if (!empty($menuVariationValue['image_slug'])) {
+                    $this->updateFile($menuVariationValue['image_slug'], 'menu_variation_values', $menuVariationValue['slug']);
+                }
+            }
+        }
+
+        $menuVariation = MenuVariation::where('menu_id', $menu->slug);
+
+        return response()->json(['message' => 'Successfully Created.'], 201);
     }
 
     /**
@@ -59,20 +145,35 @@ class MenuVariationController extends Controller
      * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/menu-variations/{slug}",
+     *      operationId="showMenuVariation",
+     *      tags={"MenuVariations"},
+     *      summary="Get One menu variation",
+     *      description="Returns a requested menu variation",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested menu variation",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function show($slug)
     {
-        return response()->json(MenuVariation::with('menu')->where('slug', $slug)->firstOrFail(), 200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\MenuVariation  $menuVariation
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(MenuVariation $menuVariation)
-    {
-        //
+        $menu = MenuVariation::with('menu')->with('menuVariationValues')->where('slug', $slug)->firstOrFail();
+        return response()->json($menu, 200);
     }
 
     /**
@@ -82,19 +183,95 @@ class MenuVariationController extends Controller
      * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Put(
+     *      path="/api/v2/admin/menu-variations/{slug}",
+     *      operationId="updateMenuVariation",
+     *      tags={"MenuVariations"},
+     *      summary="Update a menu variation",
+     *      description="Update a requested menu variation",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug to identify a menu variation",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="New subcategory data to be updated.",
+     *          @OA\MediaType(
+     *              mediaType="applications/json",
+     *              @OA\Schema(ref="#/components/schemas/MenuVariation")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function update(Request $request, $slug)
     {
         $menuVariation = MenuVariation::where('slug', $slug)->firstOrFail();
 
-        $menuVariation->update($request->validate([
-            'name'=>'required|unique:menu_variations',
-            // 'slug' => 'required|unique:menu_variations',
-            'description'=>'required',
-            'menu_id' => 'required|exists:App\Models\Menu,id',
-            Rule::unique('menu_variations')->ignore($menuVariation->id),
-        ]));
+        $validatedData = $request->validate($this->getParamsToValidate());
+        $validatedData['menu_id'] = $this->getMenu($request->menu_slug)->id;
 
-        return response()->json($menuVariation, 200);
+        $menuVariation->update($validatedData);
+
+        return response()->json($menuVariation->load('menuVariationValues'), 200);
+        // return response()->json(['message' => 'Successfully Updated.'], 201);
+    }
+
+
+    /**
+     * @OA\Get(
+     *      path="/api/v2/admin/menus/{slug}/menu-variations",
+     *      operationId="getVariationsByMenu",
+     *      tags={"MenuVariations"},
+     *      summary="Get Variations By Menu",
+     *      description="Returns list of menu variations",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested menu",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          description="Filter",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
+    public function getVariationsByMenu(Request $request, $slug)
+    {
+        return MenuVariation::with('menuVariationValues')->whereHas('menu', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })->paginate(10);
     }
 
     /**
@@ -103,9 +280,53 @@ class MenuVariationController extends Controller
      * @param  \App\Models\MenuVariation  $menuVariation
      * @return \Illuminate\Http\Response
      */
+    /**
+     * @OA\Delete(
+     *      path="/api/v2/admin/menu-variations/{slug}",
+     *      operationId="deleteMenuVariation",
+     *      tags={"MenuVariations"},
+     *      summary="Delete One Menu Variation",
+     *      description="Delete one specific menu variation",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested menu variation",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function destroy($slug)
     {
         MenuVariation::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+    }
+
+    private function getParamsToValidate($slug = false)
+    {
+        $params = [
+            'name' => 'required|string',
+            'menu_slug' => 'required|exists:App\Models\Menu,slug',
+        ];
+
+        if ($slug) {
+            $params['slug'] = 'required|unique:menu_variations';
+        }
+
+        return $params;
+    }
+
+    private function getMenu($slug)
+    {
+        return Menu::where('slug', $slug)->first();
     }
 }

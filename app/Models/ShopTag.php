@@ -5,28 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema(
+ *      @OA\Xml(name="ShopTag"),
+ *      @OA\Property(property="name", type="string", example="name"),
+ *      @OA\Property(property="slug", type="string", readOnly=true)
+ * )
+ */
+
 class ShopTag extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'name',
-        'name_mm',
         'slug',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
-        'id',
         'created_at',
         'updated_at',
         'pivot',
@@ -34,6 +30,6 @@ class ShopTag extends Model
 
     public function shops()
     {
-        return $this->belongsToMany(Shop::class, 'tag_shop');
+        return $this->belongsToMany(Shop::class, 'shop_shop_tag_map');
     }
 }

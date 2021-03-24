@@ -19,27 +19,25 @@ class MenuVariationValueSeeder extends Seeder
     {
         $menuVariationValues = [
             [
-                "name" => "None Spicy",
-                "value"=>1,
-                "price"=>0,
-                "slug" => $this->generateUniqueSlug(),
-                "menu_variation_id" => 1,
+                'value' => 'None Spicy',
+                'price' => 500,
+                'slug' => $this->generateUniqueSlug(),
+                'menu_variation_id' => 1,
             ],
             [
-                "name" => "Normal",
-                "value"=>2,
-                "price"=>0,
-                "slug" => $this->generateUniqueSlug(),
-                "menu_variation_id" => 1,
+                'value' => 'Normal',
+                'price' => 1000,
+                'slug' => $this->generateUniqueSlug(),
+                'menu_variation_id' => 1,
             ],
             [
-                "name" => "Too Spicy",
-                "value"=>3,
-                "price"=>0,
-                "slug" => $this->generateUniqueSlug(),
-                "menu_variation_id" => 1,
+                'value' => 'Too Spicy',
+                'price' => 1500,
+                'slug' => $this->generateUniqueSlug(),
+                'menu_variation_id' => 1,
             ],
         ];
+
         foreach ($menuVariationValues as $menuVariationValue) {
             MenuVariationValue::create($menuVariationValue);
         }

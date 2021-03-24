@@ -2,13 +2,15 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\ShopCategory;
-use Illuminate\Database\Seeder;
+use App\Models\ShopSubCategory;
 
 class ShopCategorySeeder extends Seeder
 {
     use StringHelper;
+
     /**
      * Run the database seeds.
      *
@@ -16,20 +18,6 @@ class ShopCategorySeeder extends Seeder
      */
     public function run()
     {
-        $shopCategories = [
-            [
-                "name" => "Health & Beauty",
-                "name_mm" => "ကျန်းမာရေးနှင့်အလှအပ",
-                "slug" => $this->generateUniqueSlug(),
-            ],
-            [
-                "name" => "Women's Fashion",
-                "name_mm" => "အမျိုးသမီးဖက်ရှင်",
-                "slug" => $this->generateUniqueSlug(),
-            ],
-        ];
-        foreach ($shopCategories as $shopCategory) {
-            ShopCategory::create($shopCategory);
-        }
+        ShopCategory::factory()->count(30)->has(ShopSubCategory::factory()->count(3))->create();
     }
 }

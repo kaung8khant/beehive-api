@@ -15,12 +15,11 @@ class CreateMenuVariationValuesTable extends Migration
     {
         Schema::create('menu_variation_values', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
             $table->string('slug')->unique();
-            $table->string('name')->unique();
-            $table->string('value')->nullable();
-            $table->string('price')->nullable();
+            $table->string('value');
+            $table->decimal('price', 12, 0);
             $table->unsignedBigInteger('menu_variation_id');
+            $table->timestamps();
             $table->foreign('menu_variation_id')->references('id')->on('menu_variations')->onDelete('cascade');
         });
     }

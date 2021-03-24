@@ -15,11 +15,10 @@ class CreateMenuVariationsTable extends Migration
     {
         Schema::create('menu_variations', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
             $table->string('slug')->unique();
-            $table->string('name')->unique();
-            $table->string('description');
-            $table->unsignedBigInteger('menu_id')->nullable();
+            $table->string('name');
+            $table->unsignedBigInteger('menu_id');
+            $table->timestamps();
             $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
         });
     }

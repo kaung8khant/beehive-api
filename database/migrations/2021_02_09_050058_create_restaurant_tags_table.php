@@ -15,9 +15,8 @@ class CreateRestaurantTagsTable extends Migration
     {
         Schema::create('restaurant_tags', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('name_mm')->unique()->nullable();
             $table->string('slug')->unique();
+            $table->string('name')->unique();
             $table->timestamps();
         });
     }
