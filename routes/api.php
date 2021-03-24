@@ -56,8 +56,11 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /* Shop */
             Route::resource('shop-categories', 'ShopCategoryController');
+            Route::post('shop-categories/import', 'ShopCategoryController@import');
             Route::resource('sub-categories', 'ShopSubCategoryController');
+            Route::post('sub-categories/import', 'ShopSubCategoryController@import');
             Route::resource('shop-tags', 'ShopTagController');
+            Route::post('shop-tags/import', 'ShopTagController@import');
             Route::resource('shops', 'ShopController');
             Route::patch('shops/toggle-enable/{slug}', 'ShopController@toggleEnable');
             Route::patch('shops/toggle-official/{slug}', 'ShopController@toggleOfficial');
@@ -85,7 +88,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /* Restaurant */
             Route::resource('restaurant-categories', 'RestaurantCategoryController');
+            Route::post('restaurant-categories/import', 'RestaurantCategoryController@import');
             Route::resource('restaurant-tags', 'RestaurantTagController');
+            Route::post('restaurant-tags/import', 'RestaurantTagController@import');
             Route::resource('restaurants', 'RestaurantController');
             Route::patch('restaurants/toggle-enable/{slug}', 'RestaurantController@toggleEnable');
             Route::patch('restaurants/toggle-official/{slug}', 'RestaurantController@toggleOfficial');

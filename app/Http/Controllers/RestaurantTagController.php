@@ -255,4 +255,20 @@ class RestaurantTagController extends Controller
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
+
+    public function import(Request $request)
+    {
+        $validatedData=$request->validate([
+            'restaurant_tags' => 'nullable|array',
+            'restaurant_tags.*.name' => 'required|unique:restaurant_tags',
+        ]);
+
+        $restaurantTags=array();
+        foreach ($validatedData['restaurant_tags'] as $data) {
+            $data['slug'] = $this->generateUniqueSlug();
+            array_push($restaurantTags, RestaurantTag::create($data));
+        }
+
+        return response()->json($restaurantTags, 201);
+    }
 }

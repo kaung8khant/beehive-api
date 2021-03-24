@@ -275,4 +275,20 @@ class ShopTagController extends Controller
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
+
+    public function import(Request $request)
+    {
+        $validatedData=$request->validate([
+            'shop_tags' => 'nullable|array',
+            'shop_tags.*.name' => 'required|unique:shop_tags',
+        ]);
+
+        $shopTags=array();
+        foreach ($validatedData['shop_tags'] as $data) {
+            $data['slug'] = $this->generateUniqueSlug();
+            array_push($shopTags, ShopTag::create($data));
+        }
+
+        return response()->json($shopTags, 201);
+    }
 }

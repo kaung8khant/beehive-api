@@ -115,7 +115,9 @@ class MenuController extends Controller
         }
 
         $this->createVariations($menuId, $validatedData['menu_variations']);
+
         $this->createToppings($menuId, $validatedData['menu_toppings']);
+
         foreach ($restaurant->restaurantBranches as $branch) {
             $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
             $branch->availableMenus()->attach($availableMenus);
@@ -415,6 +417,8 @@ class MenuController extends Controller
             'menu_toppings' => 'nullable|array',
             'menu_toppings.*.name' => 'required|string',
             'menu_toppings.*.price' => 'required|numeric',
+            'menu_toppings.*.is_incremental' => 'required|boolean',
+            'menu_toppings.*.max_quantity' => 'nullable|max:10',
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
@@ -424,6 +428,7 @@ class MenuController extends Controller
         if ($slug) {
             $params['slug'] = 'required|unique:menus';
         }
+
 
         return $params;
     }

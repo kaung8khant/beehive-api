@@ -304,4 +304,20 @@ class ShopCategoryController extends Controller
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
+
+    public function import(Request $request)
+    {
+        $validatedData=$request->validate([
+            'shop_categories' => 'nullable|array',
+            'shop_categories.*.name' => 'required|unique:shop_categories',
+        ]);
+
+        $shopCategories=array();
+        foreach ($validatedData['shop_categories'] as $data) {
+            $data['slug'] = $this->generateUniqueSlug();
+            array_push($shopCategories, ShopCategory::create($data));
+        }
+
+        return response()->json($shopCategories, 201);
+    }
 }
