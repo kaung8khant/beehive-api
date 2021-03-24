@@ -3,10 +3,10 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Shop;
+use App\Models\Product;
 use App\Models\Customer;
 
-class FavoriteShopSeeder extends Seeder
+class FavoriteProductSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,8 +16,8 @@ class FavoriteShopSeeder extends Seeder
     public function run()
     {
         $customer = Customer::find(1);
-        $shopId = Shop::find(1)->value('id');
+        $productId = Product::find(1)->id;
 
-        $customer->shops()->attach($shopId);
+        $customer->favoriteProducts()->attach($productId);
     }
 }

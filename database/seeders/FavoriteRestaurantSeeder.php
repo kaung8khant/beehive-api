@@ -16,7 +16,7 @@ class FavoriteRestaurantSeeder extends Seeder
     public function run()
     {
         $customer = Customer::find(1);
-        $restaurantId = Restaurant::find(1)->value('id');
+        $restaurantId = Restaurant::find(1)->id;
 
         $customer->favoriteRestaurants()->attach($restaurantId);
     }

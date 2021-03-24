@@ -24,8 +24,6 @@ class ShopSubCategoryFactory extends Factory
      */
     public function definition()
     {
-        $mmFaker = app('Faker');
-
         return [
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->unique()->text(30),

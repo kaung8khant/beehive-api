@@ -231,6 +231,7 @@ class CustomerAuthController extends Controller
     {
         return OneTimePassword::where('phone_number', $phoneNumber)
             ->where('type', $type)
+            ->where('source', 'customers')
             ->where('is_used', 0)
             ->latest()
             ->first();

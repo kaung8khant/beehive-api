@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\ShopTag;
-use Illuminate\Database\Seeder;
+
 
 class ShopTagSeeder extends Seeder
 {
@@ -18,12 +19,12 @@ class ShopTagSeeder extends Seeder
     {
         $tags = [
             [
-                "name" => "Handbag",
-                "slug" => $this->generateUniqueSlug(),
+                'name' => 'Handbag',
+                'slug' => $this->generateUniqueSlug(),
             ],
             [
-                "name" => "Plate",
-                "slug" => $this->generateUniqueSlug(),
+                'name' => 'Plate',
+                'slug' => $this->generateUniqueSlug(),
             ],
         ];
 

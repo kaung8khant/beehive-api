@@ -15,6 +15,7 @@ class OneTimePassword extends Model
         'status',
         'message_id',
         'type',
+        'source',
         'is_used',
     ];
 }

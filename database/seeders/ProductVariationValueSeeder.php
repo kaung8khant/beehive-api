@@ -8,7 +8,8 @@ use App\Models\ProductVariationValue;
 
 class ProductVariationValueSeeder extends Seeder
 {
-     use StringHelper;
+    use StringHelper;
+
     /**
      * Run the database seeds.
      *
@@ -18,16 +19,16 @@ class ProductVariationValueSeeder extends Seeder
     {
         $productVariationVlaues = [
             [
-                "value" => "Value1",
-                "slug" => $this->generateUniqueSlug(),
-                "price" => 3000,
-                "product_variation_id" => 1
+                'value' => 'Value1',
+                'slug' => $this->generateUniqueSlug(),
+                'price' => 3000,
+                'product_variation_id' => 1
             ],
             [
-                "value" => "Value2",
-                "slug" => $this->generateUniqueSlug(),
-                "price" => 4000,
-                "product_variation_id" => 2
+                'value' => 'Value2',
+                'slug' => $this->generateUniqueSlug(),
+                'price' => 4000,
+                'product_variation_id' => 2
             ],
         ];
 

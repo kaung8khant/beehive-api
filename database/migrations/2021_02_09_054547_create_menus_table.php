@@ -20,9 +20,9 @@ class CreateMenusTable extends Migration
             $table->text('description');
             $table->decimal('price', 12, 0);
             $table->integer('tax');
+            $table->boolean('is_enable')->default(1);
             $table->unsignedBigInteger('restaurant_id');
             $table->unsignedBigInteger('restaurant_category_id');
-            $table->boolean('is_enable')->default(1);
             $table->timestamps();
             $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
             $table->foreign('restaurant_category_id')->references('id')->on('restaurant_categories')->onDelete('cascade');

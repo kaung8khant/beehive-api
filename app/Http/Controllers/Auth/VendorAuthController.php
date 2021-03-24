@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
-use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use App\Models\UserSession;
 use Propaganistas\LaravelPhone\PhoneNumber;
+use App\Helpers\ResponseHelper;
+use App\Models\User;
+use App\Models\UserSession;
 use App\Models\OneTimePassword;
 
 class VendorAuthController extends Controller
@@ -172,6 +172,7 @@ class VendorAuthController extends Controller
     {
         return OneTimePassword::where('phone_number', $phoneNumber)
             ->where('type', $type)
+            ->where('source', 'users')
             ->where('is_used', 0)
             ->latest()
             ->first();
