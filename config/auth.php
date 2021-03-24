@@ -41,11 +41,22 @@ return [
             'provider' => 'users',
         ],
 
-        'api' => [
-            'driver' => 'passport',
+        'users' => [
+            'driver' => 'jwt',
             'provider' => 'users',
             'hash' => false,
         ],
+
+        'customers' => [
+            'driver' => 'jwt',
+            'provider' => 'customers',
+            'hash' => false,
+        ],
+        'vendors'=>[
+            'driver' => 'jwt',
+            'provider' => 'users',
+            'hash' => false,
+        ]
     ],
 
     /*
@@ -70,6 +81,15 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
+
+        'customers' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Customer::class,
+        ],
+        'vendors' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\User::class,
+        ]
 
         // 'users' => [
         //     'driver' => 'database',
