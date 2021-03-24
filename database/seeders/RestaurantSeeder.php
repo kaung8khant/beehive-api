@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
-use App\Models\Menu;
 
 class RestaurantSeeder extends Seeder
 {

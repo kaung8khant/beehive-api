@@ -23,6 +23,8 @@ class MenuTopping extends Model
         'slug',
         'name',
         'price',
+        'is_incremental',
+        'max_quantity',
         'menu_id',
     ];
 
@@ -31,6 +33,11 @@ class MenuTopping extends Model
         'menu_id',
         'created_at',
         'updated_at',
+    ];
+
+
+    protected $casts = [
+        'is_incremental' => 'boolean',
     ];
 
     protected $appends = ['images'];

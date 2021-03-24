@@ -106,12 +106,15 @@ class MenuToppingController extends Controller
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
             'menu_toppings.*.name' => 'required|unique:menu_toppings',
             'menu_toppings.*.price' => 'required|numeric',
+            'menu_toppings.*.is_incremental' => 'required|boolean',
+            'menu_toppings.*.max_quantity' => 'nullable|max:10',
             'menu_toppings.*.image_slug' => 'nullable|exists:App\Models\File,slug',
-         ]);
+        ]);
 
         $menuId = $this->getMenuId($validatedData['menu_slug']);
 
         foreach ($validatedData['menu_toppings'] as $menuTopping) {
+
             $menuTopping['slug'] = $this->generateUniqueSlug();
             $menuTopping['menu_id'] = $menuId;
             MenuTopping::create($menuTopping)->id;
@@ -210,6 +213,7 @@ class MenuToppingController extends Controller
         $menuTopping = MenuTopping::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate($this->getParamsToValidate());
+
         $validatedData['menu_id'] = $this->getMenuId($request->menu_slug);
 
         $menuTopping->update($validatedData);
@@ -317,6 +321,8 @@ class MenuToppingController extends Controller
         $params = [
             'name' => 'required|string',
             'price' => 'required|numeric',
+            'is_incremental' => 'required:boolean',
+            'max_quantity' => 'nullable|max:10',
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
         ];
 
