@@ -8,7 +8,6 @@ use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\Brand;
-use Illuminate\Support\Facades\Log;
 use App\Helpers\ResponseHelper;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,7 +24,6 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $customerId = $this->customer->id;
         $product =  Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
             ->with('productVariations')
             ->with('productVariations.productVariationValues')
@@ -33,11 +31,8 @@ class ProductController extends Controller
             ->orWhere('slug', $request->filter)
             ->paginate($request->size)->items();
 
-       
-
         return $this->generateProductResponse($product, 200);
     }
-
 
     public function show($slug)
     {
@@ -47,7 +42,7 @@ class ProductController extends Controller
             ->where('slug', $slug)->first();
 
 
-        return $this->generateProductResponse($product, 200,'other');
+        return $this->generateProductResponse($product, 200, 'other');
     }
 
     public function getByCategory(Request $request, $slug)
@@ -55,7 +50,7 @@ class ProductController extends Controller
         $category_id = $this->getShopCategoryId($slug);
         $product = Product::where('shop_category_id', $category_id)->paginate($request->size)->items();
 
-        
+
 
         return $this->generateProductResponse($product, 200);
     }
@@ -85,7 +80,7 @@ class ProductController extends Controller
     //fav
     public function getFavorite(Request $request)
     {
-        $shop = $this->customer->product()->with('shopCategory', 'shopSubCategory', 'brand')->paginate($request->size)->items();
+        $shop = $this->customer->favoriteProducts()->with('shopCategory', 'shopSubCategory', 'brand')->paginate($request->size)->items();
         return $this->generateResponse($shop, 200);
     }
 
@@ -94,7 +89,7 @@ class ProductController extends Controller
         $productId = $this->getProductId($slug);
 
         try {
-            $this->customer->product()->attach($productId);
+            $this->customer->favoriteProducts()->attach($productId);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['message' => 'You already set favorite this shop.'], 409);
         }
@@ -106,7 +101,7 @@ class ProductController extends Controller
     {
         $productId = $this->getProductId($slug);
 
-        $this->customer->product()->detach($productId);
+        $this->customer->favoriteProducts()->detach($productId);
         return response()->json(['message' => 'Success.'], 200);
     }
 
@@ -129,5 +124,4 @@ class ProductController extends Controller
     {
         return Shop::where('slug', $slug)->firstOrFail()->id;
     }
-
 }
