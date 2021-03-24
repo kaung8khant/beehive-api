@@ -217,7 +217,7 @@ class CustomerAuthController extends Controller
         $customer = Auth::guard('customers')->user();
 
         $favoriteRestaurants = $customer->favoriteRestaurants()->count();
-        $favoriteProducts = $customer->product()->count();
+        $favoriteProducts = $customer->favoriteProducts()->count();
 
         return $this->generateResponse(['favorites_count' => $favoriteRestaurants + $favoriteProducts], 200);
     }
