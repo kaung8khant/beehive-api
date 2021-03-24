@@ -271,4 +271,20 @@ class RestaurantCategoryController extends Controller
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
+
+    public function import(Request $request)
+    {
+        $validatedData=$request->validate([
+            'restaurant_categories' => 'nullable|array',
+            'restaurant_categories.*.name' => 'required|unique:restaurant_categories',
+        ]);
+
+        $restaurantCategories=array();
+        foreach ($validatedData['restaurant_categories'] as $data) {
+            $data['slug'] = $this->generateUniqueSlug();
+            array_push($restaurantCategories, RestaurantCategory::create($data));
+        }
+
+        return response()->json($restaurantCategories, 201);
+    }
 }
