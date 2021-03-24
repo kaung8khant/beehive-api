@@ -307,20 +307,6 @@ class ShopSubCategoryController extends Controller
         })->paginate(10);
     }
 
-
-    // $request['slug'] = $this->generateUniqueSlug();
-
-    // $validatedData = $request->validate([
-    //     'name' => 'required|unique:shop_sub_categories',
-    //     'slug' => 'required|unique:shop_sub_categories',
-    //     'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
-    // ]);
-
-    // $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
-
-    // $subCategory = ShopSubCategory::create($validatedData);
-    // return response()->json($subCategory->load('shopCategory'), 201);
-
     public function import(Request $request)
     {
         $validatedData=$request->validate([
@@ -332,7 +318,7 @@ class ShopSubCategoryController extends Controller
         $shopCategories=array();
         foreach ($validatedData['shop_categories'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
-            $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
+            $data['shop_category_id'] = $this->getShopCategoryId($data['shop_category_slug']);
             array_push($shopCategories, ShopCategory::create($data));
         }
 
