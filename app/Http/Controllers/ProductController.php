@@ -521,7 +521,6 @@ class ProductController extends Controller
             'products.*.brand_slug' => 'nullable|exists:App\Models\Brand,slug',
         ]);
 
-        $products=array();
         foreach ($validatedData['products'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
             $data['shop_id'] = $this->getShopId($data['shop_slug']);
@@ -538,10 +537,9 @@ class ProductController extends Controller
                 $data['brand_id'] =  $this->getBrandId($data['brand_slug']);
             }
 
-            $product = Product::create($data);
-            array_push($products, $product->load(['shop','brand','shopCategory','shopSubCategory']));
+            Product::create($data);
         }
 
-        return response()->json($products, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

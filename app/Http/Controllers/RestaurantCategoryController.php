@@ -279,12 +279,11 @@ class RestaurantCategoryController extends Controller
             'restaurant_categories.*.name' => 'required|unique:restaurant_categories',
         ]);
 
-        $restaurantCategories=array();
         foreach ($validatedData['restaurant_categories'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($restaurantCategories, RestaurantCategory::create($data));
+            RestaurantCategory::create($data);
         }
 
-        return response()->json($restaurantCategories, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

@@ -312,12 +312,11 @@ class ShopCategoryController extends Controller
             'shop_categories.*.name' => 'required|unique:shop_categories',
         ]);
 
-        $shopCategories=array();
         foreach ($validatedData['shop_categories'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($shopCategories, ShopCategory::create($data));
+            ShopCategory::create($data);
         }
 
-        return response()->json($shopCategories, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }
