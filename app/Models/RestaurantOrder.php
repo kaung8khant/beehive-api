@@ -48,11 +48,24 @@ class RestaurantOrder extends Model
         'restaurant_branch_info' => AsArrayObject::class,
     ];
 
-    protected $appends = array('order_status');
+    protected $appends = ['order_status', 'total_amount'];
 
     public function getOrderStatusAttribute()
     {
         return $this->restaurantOrderStatuses()->latest()->first()->status;
+    }
+
+    public function getTotalAmountAttribute()
+    {
+        $orderItems = $this->restaurantOrderItems;
+        $totalAmount = 0;
+
+        foreach ($orderItems as $item) {
+            $amount = $item->amount + $item->tax + $item->discount;
+            $totalAmount += $amount;
+        }
+
+        return $totalAmount;
     }
 
     public function restaurant()
@@ -84,5 +97,4 @@ class RestaurantOrder extends Model
     {
         return $this->hasMany(RestaurantRating::class);
     }
-
 }
