@@ -504,4 +504,44 @@ class ProductController extends Controller
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
+
+    public function import(Request $request)
+    {
+        $validatedData=$request->validate([
+            'products' => 'nullable|array',
+            'products.*.name' => 'required',
+            'products.*.name' => 'required|string',
+            'products.*.description' => 'required|string',
+            'products.*.price' => 'required|max:99999999',
+            'products.*.tax' => 'required|numeric',
+            'products.*.is_enable' => 'required|boolean',
+            'products.*.shop_slug' => 'required|exists:App\Models\Shop,slug',
+            'products.*.shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
+            'products.*.shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
+            'products.*.brand_slug' => 'nullable|exists:App\Models\Brand,slug',
+        ]);
+
+        $products=array();
+        foreach ($validatedData['products'] as $data) {
+            $data['slug'] = $this->generateUniqueSlug();
+            $data['shop_id'] = $this->getShopId($data['shop_slug']);
+
+            if ($data['shop_sub_category_slug']) {
+                $subCategory = $this->getSubCategory($data['shop_sub_category_slug']);
+                $data['shop_category_id'] = $subCategory->shopCategory->id;
+                $data['shop_sub_category_id'] = $subCategory->id;
+            } else {
+                $data['shop_category_id'] =  $this->getShopCategoryId($data['shop_category_slug']);
+            }
+
+            if ($data['brand_slug']) {
+                $data['brand_id'] =  $this->getBrandId($data['brand_slug']);
+            }
+
+            $product = Product::create($validatedData);
+            array_push($products, $product->load(['shop','brand','shopCategory','shopSubCategory']));
+        }
+
+        return response()->json($products, 201);
+    }
 }
