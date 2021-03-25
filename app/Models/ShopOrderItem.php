@@ -20,7 +20,7 @@ class ShopOrderItem extends Model
         'discount',
         'variations',
         'shop',
-        
+
     ];
 
     protected $hidden = [
@@ -33,7 +33,7 @@ class ShopOrderItem extends Model
 
     protected $casts = [
         'shop' => 'object',
-        'variations'=> 'array'
+        'variations' => 'array'
     ];
 
     public function shopOrder()

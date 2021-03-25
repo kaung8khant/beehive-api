@@ -29,7 +29,6 @@ class DatabaseSeeder extends Seeder
         $this->call(MenuSeeder::class);
         $this->call(MenuVariationSeeder::class);
         $this->call(MenuToppingSeeder::class);
-        $this->call(MenuVariationValueSeeder::class);
         $this->call(RestaurantBranchMenuSeeder::class);
 
         $this->call(ShopCategorySeeder::class);
