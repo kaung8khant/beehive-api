@@ -96,5 +96,9 @@ Route::group(['prefix' => 'user'], function () {
 
         Route::resource('shop-orders', 'Customer\ShopOrderController', ['as' => 'customer']);
         Route::put('shop-orders/cancel/{slug}', 'Customer\ShopOrderController@cancelOrder');
+
+        Route::get('promocode', 'Customer\PromocodeController@index');
+        Route::get('promocode/validate/{slug}', 'Customer\PromocodeController@validatePromoCode');
+
     });
 });

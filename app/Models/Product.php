@@ -33,7 +33,6 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-
 class Product extends Model
 {
     use HasFactory;
@@ -109,6 +108,7 @@ class Product extends Model
     {
         return $this->belongsTo(Brand::class);
     }
+
     public function customers()
     {
         return $this->belongsToMany(Customer::class, 'favorite_product', 'customer_id');

@@ -26,7 +26,6 @@ use Illuminate\Database\Eloquent\Model;
  *     })),
  * )
  */
-
 class Shop extends Model
 {
     use HasFactory;
@@ -59,14 +58,14 @@ class Shop extends Model
         'is_enable' => 'boolean',
     ];
 
-    protected $appends = ['rating','images'];
+    protected $appends = ['rating', 'images'];
 
     public function getRatingAttribute()
     {
         $rating = ShopRating::where('target_id', $this->id)
             ->where('target_type', 'shop')
             ->avg('rating');
-            
+
         return $rating ? round($rating, 1) : null;
     }
 

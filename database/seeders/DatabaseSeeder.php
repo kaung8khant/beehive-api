@@ -29,7 +29,6 @@ class DatabaseSeeder extends Seeder
         $this->call(MenuSeeder::class);
         $this->call(MenuVariationSeeder::class);
         $this->call(MenuToppingSeeder::class);
-        $this->call(MenuVariationValueSeeder::class);
         $this->call(RestaurantBranchMenuSeeder::class);
 
         $this->call(ShopCategorySeeder::class);
@@ -46,5 +45,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SettingSeeder::class);
         $this->call(FavoriteProductSeeder::class);
         $this->call(FavoriteRestaurantSeeder::class);
+        $this->call(PromocodeSeeder::class);
+        $this->call(PromocodeRuleSeeder::class);
     }
 }

@@ -30,7 +30,6 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-
 class Restaurant extends Model
 {
     use HasFactory;
@@ -59,7 +58,7 @@ class Restaurant extends Model
         $rating = RestaurantRating::where('target_id', $this->id)
             ->where('target_type', 'restaurant')
             ->avg('rating');
-        
+
         return $rating ? round($rating, 1) : null;
     }
 

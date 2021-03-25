@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-
 class ProductVariationValue extends Model
 {
     use HasFactory;

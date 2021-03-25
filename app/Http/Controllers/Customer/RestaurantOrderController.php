@@ -2,23 +2,23 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\NotificationHelper;
+use App\Helpers\ResponseHelper;
+use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Menu;
+use App\Models\MenuTopping;
+use App\Models\MenuVariationValue;
+use App\Models\RestaurantBranch;
+use App\Models\RestaurantOrder;
+use App\Models\RestaurantOrderContact;
+use App\Models\RestaurantOrderItem;
+use App\Models\RestaurantOrderStatus;
+use App\Models\Setting;
+use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use App\Helpers\StringHelper;
-use App\Helpers\ResponseHelper;
-use App\Helpers\NotificationHelper;
-use App\Models\RestaurantBranch;
-use App\Models\RestaurantOrder;
-use App\Models\RestaurantOrderStatus;
-use App\Models\RestaurantOrderContact;
-use App\Models\RestaurantOrderItem;
-use App\Models\Menu;
-use App\Models\MenuTopping;
-use App\Models\Township;
-use App\Models\MenuVariationValue;
-use App\Models\Setting;
 
 class RestaurantOrderController extends Controller
 {
@@ -61,7 +61,7 @@ class RestaurantOrderController extends Controller
 
         $validator = $this->validateOrder($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $validatedData = $validator->validated();
@@ -72,6 +72,10 @@ class RestaurantOrderController extends Controller
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
+
+        if (!empty($validatedData["promo_code_slug"])) {
+            $validatedData['promocode_id'] = Promocode::where("slug", $validatedData["promo_code_slug"])->firstOrFail()->id;
+        }
 
         $order = RestaurantOrder::create($validatedData);
         $orderId = $order->id;
@@ -94,11 +98,11 @@ class RestaurantOrderController extends Controller
         $order = RestaurantOrder::where('customer_id', $customerId)->where('slug', $slug)->firstOrFail();
 
         if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, TRUE);
+            return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
         }
 
         $this->createOrderStatus($order->id, 'cancelled');
-        return $this->generateResponse('The order has successfully been cancelled.', 200, TRUE);
+        return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
 
     private function validateOrder($request)
@@ -161,7 +165,7 @@ class RestaurantOrderController extends Controller
 
             $item['menu_name'] = $menu->name;
             $item['amount'] = $menu->price + $variations->sum('price') + $toppings->sum('price');
-            $item['discount'] = $item['amount'] * 5/ 100;
+            $item['discount'] = $item['amount'] * 5 / 100;
             $item['tax'] = ($item['amount'] - $item['discount']) * $tax / 100;
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
@@ -250,8 +254,8 @@ class RestaurantOrderController extends Controller
                 'img' => '',
                 'data' => [
                     'action' => '',
-                    'type' => 'notification'
-                ]
+                    'type' => 'notification',
+                ],
             ]
         );
     }

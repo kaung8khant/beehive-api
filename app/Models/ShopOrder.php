@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\ShopOrderContact;
+use App\Models\ShopOrderItem;
+use App\Models\ShopOrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ShopOrderContact;
-use App\Models\ShopOrderStatus;
-use App\Models\ShopOrderItem;
 
 class ShopOrder extends Model
 {
@@ -19,6 +19,7 @@ class ShopOrder extends Model
         'special_instruction',
         'payment_mode',
         'delivery_mode',
+        'promocode_id',
     ];
 
     protected $hidden = [
@@ -26,6 +27,10 @@ class ShopOrder extends Model
         'created_at',
         'updated_at',
         'pivot',
+    ];
+
+    protected $casts = [
+        'promocode' => 'object',
     ];
 
     public function contact()
@@ -40,4 +45,5 @@ class ShopOrder extends Model
     {
         return $this->hasMany(ShopOrderItem::class);
     }
+
 }
