@@ -421,15 +421,13 @@ class RestaurantController extends Controller
             'restaurants.*.restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
         ]);
 
-        $restaurants=array();
         foreach ($validatedData['restaurants'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
             $restaurant = Restaurant::create($data);
             $restaurantId = $restaurant->id;
             $this->createRestaurantBranch($restaurantId, $data['restaurant_branch']);
-            array_push($restaurants, $restaurant);
         }
 
-        return response()->json($restaurants, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

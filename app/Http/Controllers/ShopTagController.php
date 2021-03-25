@@ -283,12 +283,11 @@ class ShopTagController extends Controller
             'shop_tags.*.name' => 'required|unique:shop_tags',
         ]);
 
-        $shopTags=array();
         foreach ($validatedData['shop_tags'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($shopTags, ShopTag::create($data));
+            ShopTag::create($data);
         }
 
-        return response()->json($shopTags, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

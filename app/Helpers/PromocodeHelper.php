@@ -6,7 +6,6 @@ use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 trait PromocodeHelper
 {
@@ -20,7 +19,7 @@ trait PromocodeHelper
     protected function validatePromo($slug)
     {
 
-        $promo = Promocode::with("rules")->where('slug', $slug)->firstOrFail();
+        $promo = $this->getPromo($slug);
         return $this->validateRule($promo->rules, $promo->id);
     }
 
@@ -37,7 +36,20 @@ trait PromocodeHelper
         }
         return $returnvalue;
     }
+    protected function calculateDiscount($price, $id)
+    {
+        $promo = Promocode::with('rules')->where('id', $id)->first();
+        if ($promo->type === "fix") {
+            return $promo->amount;
+        } else {
+            return $price * $promo->amount / 100;
+        }
 
+    }
+    private function getPromo($slug)
+    {
+        return Promocode::with("rules")->where('slug', $slug)->firstOrFail();
+    }
     private function getValueFromModel($value)
     {
         $field = config('promo.' . $value);
@@ -52,7 +64,6 @@ trait PromocodeHelper
     private function compareValue($rule, $value, $compareValue = null)
     {
         if ($rule === "exact_date") {
-            Log::info($value);
             return $value->startOfDay() == $compareValue->startOfDay();
 
         } else if ($rule === "after_date") {

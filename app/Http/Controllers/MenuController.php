@@ -520,7 +520,6 @@ class MenuController extends Controller
             'menus.*.restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
         ]);
 
-        $menus=array();
         foreach ($validatedData['menus'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
             $restaurant = Restaurant::where('slug', $data['restaurant_slug'])->firstOrFail();
@@ -531,9 +530,8 @@ class MenuController extends Controller
                 $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
                 $branch->availableMenus()->attach($availableMenus);
             }
-            array_push($menus, $menu->load('restaurant'));
         }
 
-        return response()->json($menus, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

@@ -250,12 +250,11 @@ class BrandController extends Controller
             'brands.*.name' => 'required|unique:brands',
         ]);
 
-        $brands=array();
         foreach ($validatedData['brands'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($brands, Brand::create($data));
+            Brand::create($data);
         }
 
-        return response()->json($brands, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

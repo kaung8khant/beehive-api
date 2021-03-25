@@ -266,9 +266,9 @@ class RestaurantTagController extends Controller
         $restaurantTags=array();
         foreach ($validatedData['restaurant_tags'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($restaurantTags, RestaurantTag::create($data));
+            RestaurantTag::create($data);
         }
 
-        return response()->json($restaurantTags, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }
