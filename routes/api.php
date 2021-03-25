@@ -66,9 +66,11 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('shops/toggle-official/{slug}', 'ShopController@toggleOfficial');
             Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
             Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
+            Route::post('shops/import', 'ShopController@import');
             Route::get('shop-categories/{slug}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
             Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
             Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
+
 
             Route::resource('products', 'ProductController');
             Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
@@ -113,6 +115,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
             Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
             Route::patch('restaurant-branches/toggle-enable/{slug}', 'RestaurantBranchController@toggleEnable');
+            Route::post('restaurant-branches/import', 'RestaurantBranchController@import');
             Route::get('restaurants/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByRestaurant');
             Route::get('townships/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');
             /* Restaurant */
