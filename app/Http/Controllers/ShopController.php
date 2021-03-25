@@ -456,8 +456,6 @@ class ShopController extends Controller
             'shops.*.name' => 'required|unique:shops',
             'shops.*.is_enable' => 'required|boolean',
             'shops.*.is_official' => 'required|boolean',
-            'shops.*.shop_tags' => 'nullable|array',
-            'shops.*.shop_tags.*' => 'exists:App\Models\ShopTag,slug',
             'shops.*.address' => 'required',
             'shops.*.contact_number' => 'required',
             'shops.*.opening_time' => 'required|date_format:H:i',
@@ -469,8 +467,9 @@ class ShopController extends Controller
 
         $shops = array();
         foreach ($validatedData['shops'] as $data) {
+            $townshipId = $this->getTownshipIdBySlug($data['township_slug']);
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($shops, Shop::create($data));
+            array_push($shops, Shop::create($data, $townshipId));
         }
 
         return response()->json($shops, 201);
