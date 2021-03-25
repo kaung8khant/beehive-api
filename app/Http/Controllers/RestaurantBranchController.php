@@ -528,6 +528,9 @@ class RestaurantBranchController extends Controller
 
         $restaurantBranches = array();
         foreach ($validatedData['restaurant_branches'] as $data) {
+            $validatedData['restaurant_id'] = $this->getRestaurantId($data['restaurant_slug']);
+            $validatedData['township_id'] = $this->getTownshipId($data['township_slug']);
+
             $data['slug'] = $this->generateUniqueSlug();
             array_push($restaurantBranches, RestaurantBranch::create($data));
         }
