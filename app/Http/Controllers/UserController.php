@@ -310,17 +310,11 @@ class UserController extends Controller
         $user = User::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate([
-            // 'username' => [
-            //     'required',
-            //     Rule::unique('users')->ignore($user->id),
-            // ],
             'name' => 'required',
             'phone_number' => [
                 'required',
                 Rule::unique('users')->ignore($user->id),
             ],
-            // 'roles' => 'required|array',
-            // 'roles.*' => 'exists:App\Models\Role,slug',
         ]);
 
         $user->update($validatedData);
