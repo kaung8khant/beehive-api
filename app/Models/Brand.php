@@ -18,15 +18,14 @@ class Brand extends Model
 
     protected $fillable = [
         'slug',
-        'name'
+        'name',
     ];
 
     protected $hidden = [
         'id',
         'created_at',
-        'updatd_at'
+        'updatd_at',
     ];
-
 
     protected $appends = ['images'];
 

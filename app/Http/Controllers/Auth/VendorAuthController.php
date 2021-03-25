@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
+use App\Models\OneTimePassword;
+use App\Models\User;
+use App\Models\UserSession;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
-use App\Helpers\ResponseHelper;
-use App\Models\User;
-use App\Models\UserSession;
-use App\Models\OneTimePassword;
 
 class VendorAuthController extends Controller
 {
@@ -151,6 +152,11 @@ class VendorAuthController extends Controller
 
         if (!$otp || $otp->otp_code !== $validatedData['otp_code']) {
             return $this->generateResponse('The OTP code is incorrect.', 406, true);
+        }
+
+        $fifteenMinutes = Carbon::parse($otp->created_at)->addMinutes(15);
+        if ($fifteenMinutes->lt(Carbon::now())) {
+            return $this->generateResponse('The OTP code is expired. Please send another one.', 406, true);
         }
 
         if (Hash::check($request->password, $user->password)) {

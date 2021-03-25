@@ -34,7 +34,6 @@ class MenuTopping extends Model
         'updated_at',
     ];
 
-
     protected $casts = [
         'is_incremental' => 'boolean',
     ];

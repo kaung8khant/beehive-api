@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Propaganistas\LaravelPhone\PhoneNumber;
-use App\Helpers\StringHelper;
 use App\Helpers\ResponseHelper;
+use App\Helpers\StringHelper;
+use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\OneTimePassword;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Propaganistas\LaravelPhone\PhoneNumber;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CustomerAuthController extends Controller
 {
@@ -31,20 +32,20 @@ class CustomerAuthController extends Controller
         );
 
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $result = $this->attemptLogin($request);
 
         if ($result) {
             if ($result === 'disabled') {
-                return $this->generateResponse('Your accout is disabled. Contact support for more information.', 403, TRUE);
+                return $this->generateResponse('Your accout is disabled. Contact support for more information.', 403, true);
             }
 
             return $this->generateResponse(['token' => $result], 200);
         }
 
-        return $this->generateResponse('Your phone number or password is incorrect.', 401, TRUE);
+        return $this->generateResponse('Your phone number or password is incorrect.', 401, true);
     }
 
     private function attemptLogin(Request $request)
@@ -74,7 +75,7 @@ class CustomerAuthController extends Controller
         $validator = $this->validateRegister($request);
 
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $validatedData = $validator->validated();
@@ -83,7 +84,7 @@ class CustomerAuthController extends Controller
         $otp = $this->getOtp($validatedData['phone_number'], 'register');
 
         if (!$otp || $otp->otp_code !== $validatedData['otp_code']) {
-            return $this->generateResponse('The OTP code is incorrect.', 406, TRUE);
+            return $this->generateResponse('The OTP code is incorrect.', 406, true);
         }
 
         $customer = Customer::create($validatedData);
@@ -96,7 +97,7 @@ class CustomerAuthController extends Controller
     public function logout()
     {
         Auth::guard('customers')->logout();
-        return $this->generateResponse('Customer successfully logged out.', 200, TRUE);
+        return $this->generateResponse('Customer successfully logged out.', 200, true);
     }
 
     public function refreshToken()
@@ -128,7 +129,7 @@ class CustomerAuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $customer->update($validator->validated());
@@ -143,17 +144,17 @@ class CustomerAuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $customer = Auth::guard('customers')->user();
 
         if (Hash::check($request->old_password, $customer->password)) {
             $customer->update(['password' => Hash::make($request->new_password)]);
-            return $this->generateResponse('Your password has been successfully updated.', 200, TRUE);
+            return $this->generateResponse('Your password has been successfully updated.', 200, true);
         }
 
-        return $this->generateResponse('Your old password is incorrect.', 403, TRUE);
+        return $this->generateResponse('Your old password is incorrect.', 403, true);
     }
 
     private function validateRegister($request)
@@ -189,7 +190,7 @@ class CustomerAuthController extends Controller
         );
 
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $validatedData = $validator->validated();
@@ -199,17 +200,22 @@ class CustomerAuthController extends Controller
         $otp = $this->getOtp($validatedData['phone_number'], 'reset');
 
         if (!$otp || $otp->otp_code !== $validatedData['otp_code']) {
-            return $this->generateResponse('The OTP code is incorrect.', 406, TRUE);
+            return $this->generateResponse('The OTP code is incorrect.', 406, true);
+        }
+
+        $fifteenMinutes = Carbon::parse($otp->created_at)->addMinutes(15);
+        if ($fifteenMinutes->lt(Carbon::now())) {
+            return $this->generateResponse('The OTP code is expired. Please send another one.', 406, true);
         }
 
         if (Hash::check($request->password, $customer->password)) {
-            return $this->generateResponse('Your new password must not be same with old password.', 406, TRUE);
+            return $this->generateResponse('Your new password must not be same with old password.', 406, true);
         }
 
         $customer->update(['password' => Hash::make($request->password)]);
         $otp->update(['is_used' => 1]);
 
-        return $this->generateResponse('Your password has been successfully reset.', 200, TRUE);
+        return $this->generateResponse('Your password has been successfully reset.', 200, true);
     }
 
     public function getFavoritesCount()

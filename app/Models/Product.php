@@ -47,7 +47,7 @@ class Product extends Model
         'shop_category_id',
         'shop_sub_category_id',
         'brand_id',
-        'is_enable'
+        'is_enable',
     ];
 
     protected $hidden = [
@@ -65,7 +65,6 @@ class Product extends Model
     ];
 
     protected $appends = ['rating', 'images'];
-
 
     public function getRatingAttribute()
     {

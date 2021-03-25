@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\ShopOrder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ShopOrder;
 
 class ShopOrderItem extends Model
 {
@@ -33,7 +33,7 @@ class ShopOrderItem extends Model
 
     protected $casts = [
         'shop' => 'object',
-        'variations' => 'array'
+        'variations' => 'array',
     ];
 
     public function shopOrder()

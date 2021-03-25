@@ -23,7 +23,7 @@ class Township extends Model
         'city_id',
     ];
 
-    protected $hidden =  [
+    protected $hidden = [
         'id',
         'city_id',
         'created_at',

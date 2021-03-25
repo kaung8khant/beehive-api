@@ -74,14 +74,15 @@ class RestaurantOrderController extends Controller
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
+        $validatedData['promocode_id'] = null;
 
         if ($validatedData['promo_code_slug']) {
-            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
-
             $isPromoValid = $this->validatePromo($validatedData['promo_code_slug']);
             if (!$isPromoValid) {
                 return $this->generateResponse('Invalid promo code.', 406, true);
             }
+
+            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
         }
 
         $order = RestaurantOrder::create($validatedData);
@@ -169,7 +170,12 @@ class RestaurantOrderController extends Controller
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
             $toppings = collect($this->prepareToppings($item['topping_slugs']));
             $amount = $menu->price + $variations->sum('price') + $toppings->sum('price');
-            $discount = $this->calculateDiscount($amount, $promoCodeId);
+
+            $discount = 0;
+            if ($promoCodeId) {
+                $discount = $this->calculateDiscount($amount, $promoCodeId);
+            }
+
             $tax = $this->getTax();
 
             $item['menu_name'] = $menu->name;
