@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -32,6 +32,7 @@ class RestaurantOrder extends Model
         'customer_id',
         'restaurant_id',
         'restaurant_branch_id',
+        'promocode_id',
     ];
 
     protected $hidden = [
@@ -83,4 +84,5 @@ class RestaurantOrder extends Model
     {
         return $this->hasMany(RestaurantRating::class);
     }
+
 }

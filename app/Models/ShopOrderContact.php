@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\ShopOrder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ShopOrder;
 
 class ShopOrderContact extends Model
 {
     use HasFactory;
-
 
     protected $fillable = [
         'shop_order_id',
@@ -19,6 +18,7 @@ class ShopOrderContact extends Model
         'floor',
         'street_name',
         'latitude',
+        'township_id',
         'longitude',
     ];
 
@@ -32,5 +32,9 @@ class ShopOrderContact extends Model
     public function shopOrder()
     {
         return $this->belongsTo(ShopOrder::class);
+    }
+    public function township()
+    {
+        return $this->belongsTo(Township::class);
     }
 }

@@ -23,8 +23,10 @@ class CreateShopOrderContactsTable extends Migration
             $table->string('street_name');
             $table->double('latitude')->nullable();
             $table->double('longitude')->nullable();
+            $table->unsignedBigInteger('township_id');
             $table->timestamps();
             $table->foreign('shop_order_id')->references('id')->on('shop_orders')->onDelete('cascade');
+            $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
         });
     }
 
