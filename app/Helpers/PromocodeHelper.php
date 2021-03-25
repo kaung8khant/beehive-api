@@ -40,9 +40,9 @@ trait PromocodeHelper
     {
         $promo = Promocode::with('rules')->where('id', $id)->first();
         if ($promo->type === "fix") {
-            return $price - $promo->amount;
+            return $promo->amount;
         } else {
-            return $price - ($price * $promo->amount / 100);
+            return $price * $promo->amount / 100;
         }
 
     }
