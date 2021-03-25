@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopSubCategory;
-use App\Models\Brand;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ProductFactory extends Factory
 {

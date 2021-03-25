@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
 use App\Models\Restaurant;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RestaurantFactory extends Factory
 {

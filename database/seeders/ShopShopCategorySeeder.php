@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Shop;
 use App\Models\ShopCategory;
+use Illuminate\Database\Seeder;
 
 class ShopShopCategorySeeder extends Seeder
 {

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\File;
 
+use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
-use App\Helpers\StringHelper;
-use App\Models\File;
 
 class UploadController extends Controller
 {

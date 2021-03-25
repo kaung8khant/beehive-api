@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
-use App\Models\MenuVariation;
 use App\Models\Menu;
+use App\Models\MenuVariation;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MenuVariationFactory extends Factory
 {

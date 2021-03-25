@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\MenuTopping;
+use Illuminate\Database\Seeder;
 
 class MenuToppingSeeder extends Seeder
 {

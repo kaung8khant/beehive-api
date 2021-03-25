@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
 use App\Models\ShopSubCategory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ShopSubCategoryFactory extends Factory
 {

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\RestaurantBranch;
 use App\Models\Menu;
+use App\Models\RestaurantBranch;
+use Illuminate\Database\Seeder;
 
 class RestaurantBranchMenuSeeder extends Seeder
 {

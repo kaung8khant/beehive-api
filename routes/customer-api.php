@@ -99,6 +99,5 @@ Route::group(['prefix' => 'user'], function () {
 
         Route::get('promocode', 'Customer\PromocodeController@index');
         Route::get('promocode/validate/{slug}', 'Customer\PromocodeController@validatePromoCode');
-
     });
 });

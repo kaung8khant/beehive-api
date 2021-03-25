@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\City;
+use Illuminate\Database\Seeder;
 
 class CitySeeder extends Seeder
 {

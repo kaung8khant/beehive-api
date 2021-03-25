@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
+use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\Township;
-use App\Models\Restaurant;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RestaurantBranchFactory extends Factory
 {
@@ -40,7 +40,7 @@ class RestaurantBranchFactory extends Factory
             },
             'restaurant_id' => function () {
                 return Restaurant::pluck('id')->random(1)[0];
-            }
+            },
         ];
     }
 }

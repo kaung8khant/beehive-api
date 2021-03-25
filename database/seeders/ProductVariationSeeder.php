@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\ProductVariation;
+use Illuminate\Database\Seeder;
 
 class ProductVariationSeeder extends Seeder
 {
@@ -21,13 +21,13 @@ class ProductVariationSeeder extends Seeder
             [
                 'name' => 'ProductVariation1',
                 'slug' => $this->generateUniqueSlug(),
-                'product_id' => 1
+                'product_id' => 1,
 
             ],
             [
                 'name' => 'ProductVariation2',
                 'slug' => $this->generateUniqueSlug(),
-                'product_id' => 1
+                'product_id' => 1,
 
             ],
         ];

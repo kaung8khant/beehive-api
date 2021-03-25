@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Restaurant;
 use App\Models\Customer;
+use App\Models\Restaurant;
+use Illuminate\Database\Seeder;
 
 class FavoriteRestaurantSeeder extends Seeder
 {

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\MenuVariation;
 use App\Models\MenuVariationValue;
+use Illuminate\Database\Seeder;
 
 class MenuVariationSeeder extends Seeder
 {

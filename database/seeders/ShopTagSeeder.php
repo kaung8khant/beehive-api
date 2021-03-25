@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\ShopTag;
-
+use Illuminate\Database\Seeder;
 
 class ShopTagSeeder extends Seeder
 {

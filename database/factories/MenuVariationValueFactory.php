@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
 use App\Models\MenuVariationValue;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MenuVariationValueFactory extends Factory
 {

@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
-use App\Models\MenuTopping;
 use App\Models\Menu;
+use App\Models\MenuTopping;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MenuToppingFactory extends Factory
 {
