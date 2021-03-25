@@ -467,9 +467,9 @@ class ShopController extends Controller
 
         $shops = array();
         foreach ($validatedData['shops'] as $data) {
-            $townshipId = $this->getTownshipIdBySlug($data['township_slug']);
+            $data['township_id'] = $this->getTownshipIdBySlug($data['township_slug']);
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($shops, Shop::create($data, $townshipId));
+            array_push($shops, Shop::create($data));
         }
 
         return response()->json($shops, 201);
