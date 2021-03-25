@@ -456,7 +456,7 @@ class ShopController extends Controller
             'shops.*.name' => 'required|unique:shops',
             'shops.*.is_enable' => 'required|boolean',
             'shops.*.is_official' => 'required|boolean',
-            'shops.*.shop_tags' => 'required|array',
+            'shops.*.shop_tags' => 'nullable|array',
             'shops.*.shop_tags.*' => 'exists:App\Models\ShopTag,slug',
             'shops.*.address' => 'required',
             'shops.*.contact_number' => 'required',
