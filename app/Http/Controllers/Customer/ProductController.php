@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Customer;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
-use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
@@ -69,7 +68,7 @@ class ProductController extends Controller
     public function getByBrand(Request $request, $slug)
     {
         $brandId = $this->getBrandId($slug);
-        $product = Product::where("brand_id", $brandId)->paginate($request->size)->items();
+        $product = Product::where('brand_id', $brandId)->paginate($request->size)->items();
 
         return $this->generateProductResponse($product, 200);
     }

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 
 trait ResponseHelper
 {
-    protected function generateResponse($data, $status, $message = FALSE)
+    protected function generateResponse($data, $status, $message = false)
     {
         $response['status'] = $status;
 

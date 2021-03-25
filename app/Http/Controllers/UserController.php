@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Role;
-use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantBranch;
+use App\Models\Role;
 use App\Models\Shop;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 use App\Models\UserSession;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserController extends Controller
@@ -103,7 +103,6 @@ class UserController extends Controller
             ->paginate(10);
     }
 
-
     /**
      * Store a newly created resource in storage.
      *
@@ -147,7 +146,7 @@ class UserController extends Controller
                 'password' => 'required|min:6',
             ],
             [
-                'phone_number.phone' => 'Invalid phone number.'
+                'phone_number.phone' => 'Invalid phone number.',
             ]
         );
 
@@ -175,7 +174,7 @@ class UserController extends Controller
                 'shop_slug' => 'required|exists:App\Models\Shop,slug',
             ],
             [
-                'phone_number.phone' => 'Invalid phone number.'
+                'phone_number.phone' => 'Invalid phone number.',
             ]
         );
 
@@ -204,7 +203,7 @@ class UserController extends Controller
                 'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             ],
             [
-                'phone_number.phone' => 'Invalid phone number.'
+                'phone_number.phone' => 'Invalid phone number.',
             ]
         );
 
@@ -477,7 +476,6 @@ class UserController extends Controller
         } else {
             UserSession::create($data);
         }
-
 
         return response()->json(['message' => 'Success.'], 200);
     }

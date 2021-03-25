@@ -507,9 +507,8 @@ class ProductController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'products' => 'nullable|array',
-            'products.*.name' => 'required',
             'products.*.name' => 'required|string',
             'products.*.description' => 'required|string',
             'products.*.price' => 'required|max:99999999',

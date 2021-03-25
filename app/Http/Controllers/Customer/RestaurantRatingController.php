@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Auth;
 use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Controller;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantRating;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class RestaurantRatingController extends Controller
 {
@@ -18,7 +18,7 @@ class RestaurantRatingController extends Controller
     {
         $validator = $this->validateRating($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $validatedData = $validator->validated();
@@ -43,7 +43,7 @@ class RestaurantRatingController extends Controller
             }
         }
 
-        return $this->generateResponse('Success.', 200, TRUE);
+        return $this->generateResponse('Success.', 200, true);
     }
 
     private function validateRating($request)

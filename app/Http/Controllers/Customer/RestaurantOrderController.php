@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Helpers\NotificationHelper;
+use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\MenuTopping;
 use App\Models\MenuVariationValue;
+use App\Models\Promocode;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderContact;
@@ -22,7 +24,7 @@ use Illuminate\Support\Facades\Validator;
 
 class RestaurantOrderController extends Controller
 {
-    use StringHelper, ResponseHelper, NotificationHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
 
     public function index(Request $request)
     {
@@ -73,8 +75,13 @@ class RestaurantOrderController extends Controller
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
 
-        if (!empty($validatedData["promo_code_slug"])) {
-            $validatedData['promocode_id'] = Promocode::where("slug", $validatedData["promo_code_slug"])->firstOrFail()->id;
+        if ($validatedData['promo_code_slug']) {
+            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
+
+            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug']);
+            if (!$isPromoValid) {
+                return $this->generateResponse('Invalid promo code.', 406, true);
+            }
         }
 
         $order = RestaurantOrder::create($validatedData);
@@ -82,9 +89,9 @@ class RestaurantOrderController extends Controller
 
         $this->createOrderStatus($orderId);
         $this->createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        $this->createOrderItems($orderId, $validatedData['order_items']);
+        $this->createOrderItems($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
 
-        // $this->notify($validatedData['restaurant_branch_slug'], ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
+        $this->notify($validatedData['restaurant_branch_slug'], ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
 
         return $this->generateResponse(
             $order->refresh()->load('restaurantOrderContact', 'restaurantOrderContact.township', 'restaurantOrderItems'),
@@ -108,7 +115,7 @@ class RestaurantOrderController extends Controller
     private function validateOrder($request)
     {
         return Validator::make($request->all(), [
-            'slug' => 'required|unique:orders',
+            'slug' => 'required|unique:restaurant_orders',
             'order_date' => 'required|date_format:Y-m-d',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
@@ -154,19 +161,21 @@ class RestaurantOrderController extends Controller
         RestaurantOrderContact::create($customerInfo);
     }
 
-    private function createOrderItems($orderId, $orderItems)
+    private function createOrderItems($orderId, $orderItems, $promoCodeId)
     {
         foreach ($orderItems as $item) {
             $menu = $this->getMenu($item['slug']);
 
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
             $toppings = collect($this->prepareToppings($item['topping_slugs']));
+            $amount = $menu->price + $variations->sum('price') + $toppings->sum('price');
+            $discount = $this->calculateDiscount($amount, $promoCodeId);
             $tax = $this->getTax();
 
             $item['menu_name'] = $menu->name;
-            $item['amount'] = $menu->price + $variations->sum('price') + $toppings->sum('price');
-            $item['discount'] = $item['amount'] * 5 / 100;
-            $item['tax'] = ($item['amount'] - $item['discount']) * $tax / 100;
+            $item['amount'] = $amount;
+            $item['discount'] = $discount;
+            $item['tax'] = ($amount - $discount) * $tax / 100;
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
             $item['variations'] = $variations;

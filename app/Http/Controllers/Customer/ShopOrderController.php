@@ -195,7 +195,8 @@ class ShopOrderController extends Controller
 
     private function notify($slug, $data)
     {
-        $this->notifyShop($slug,
+        $this->notifyShop(
+            $slug,
             [
                 'title' => $data['title'],
                 'body' => $data['body'],
@@ -204,6 +205,7 @@ class ShopOrderController extends Controller
                     'action' => '',
                     'type' => 'notification',
                 ],
-            ]);
+            ]
+        );
     }
 }
