@@ -532,7 +532,8 @@ class RestaurantBranchController extends Controller
             $data['township_id'] = $this->getTownshipId($data['township_slug']);
 
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($restaurantBranches, RestaurantBranch::create($data));
+            $branch=RestaurantBranch::create($data);
+            array_push($restaurantBranches, $branch->load('restaurant', 'township'));
         }
 
         return response()->json($restaurantBranches, 201);

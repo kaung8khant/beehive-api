@@ -465,13 +465,12 @@ class ShopController extends Controller
             'shops.*.township_slug' => 'required|exists:App\Models\Township,slug',
         ]);
 
-        $shops = array();
         foreach ($validatedData['shops'] as $data) {
             $data['township_id'] = $this->getTownshipIdBySlug($data['township_slug']);
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($shops, Shop::create($data));
+            Shop::create($data);
         }
 
-        return response()->json($shops, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }
