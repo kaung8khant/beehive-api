@@ -15,9 +15,9 @@ class CreateShopOrderStatusesTable extends Migration
     {
         Schema::create('shop_order_statuses', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('shop_order_id');
             $table->enum('status', ['pending', 'preparing', 'pickUp', 'onRoute', 'delivered', 'cancelled'])->default('pending');
             $table->string('created_by')->nullable();
+            $table->unsignedBigInteger('shop_order_id');
             $table->timestamps();
             $table->foreign('shop_order_id')->references('id')->on('shop_orders')->onDelete('cascade');
         });

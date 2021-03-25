@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
-use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Propaganistas\LaravelPhone\PhoneNumber;
+use App\Helpers\ResponseHelper;
+use App\Models\User;
 use App\Models\OneTimePassword;
 
 class UserAuthController extends Controller
 {
     use ResponseHelper;
+
     /**
      * @OA\Post(
      *      path="/api/v2/admin/login",
@@ -218,6 +219,7 @@ class UserAuthController extends Controller
     {
         return OneTimePassword::where('phone_number', $phoneNumber)
             ->where('type', $type)
+            ->where('source', 'users')
             ->where('is_used', 0)
             ->latest()
             ->first();

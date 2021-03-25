@@ -23,8 +23,7 @@ class CreateCustomersTable extends Migration
             $table->enum('gender', ['Male', 'Female'])->nullable();
             $table->date('date_of_birth')->nullable();
             $table->boolean('is_enable')->default(1);
-            $table->date('verified_at')->nullable();
-            $table->string('device_token',255)->nullable();
+            $table->string('device_token', 255)->nullable();
             $table->timestamps();
         });
     }

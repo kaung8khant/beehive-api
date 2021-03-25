@@ -25,9 +25,9 @@ class CreateAddressesTable extends Migration
             $table->boolean('is_primary')->default(0);
             $table->unsignedBigInteger('township_id');
             $table->unsignedBigInteger('customer_id');
+            $table->timestamps();
             $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
             $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
-            $table->timestamps();
         });
     }
 

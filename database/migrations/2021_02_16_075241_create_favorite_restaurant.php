@@ -14,11 +14,9 @@ class CreateFavoriteRestaurant extends Migration
     public function up()
     {
         Schema::create('favorite_restaurant', function (Blueprint $table) {
-            $table->id();
             $table->unsignedBigInteger('restaurant_id');
             $table->unsignedBigInteger('customer_id');
-            $table->timestamps();
-            $table->unique(['restaurant_id', 'customer_id']);
+            $table->primary(['restaurant_id', 'customer_id']);
             $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
             $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
         });

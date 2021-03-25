@@ -20,6 +20,7 @@ class CreateOneTimePasswordsTable extends Migration
             $table->string('status')->nullable();
             $table->string('message_id')->nullable();
             $table->enum('type', ['register', 'reset']);
+            $table->enum('source', ['customers', 'users']);
             $table->boolean('is_used')->default(0);
             $table->timestamps();
         });

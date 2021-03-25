@@ -17,7 +17,7 @@ class CreateSettingsTable extends Migration
             $table->id();
             $table->string('key')->unique();
             $table->string('value');
-            $table->enum('data_type', array('string', 'integer', 'decimal'));
+            $table->enum('data_type', ['string', 'integer', 'decimal']);
             $table->timestamps();
         });
     }

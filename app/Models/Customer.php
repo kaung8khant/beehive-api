@@ -38,7 +38,6 @@ class Customer extends Authenticatable implements JWTSubject
         'id',
         'password',
         'remember_token',
-        'verified_at',
         'created_at',
         'updated_at',
         'pivot',

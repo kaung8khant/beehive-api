@@ -38,9 +38,8 @@ class RoleSeeder extends Seeder
                 'slug' => $this->generateUniqueSlug(),
                 'name' => 'Collector',
             ],
-
-
         ];
+
         foreach ($roles as $role) {
             Role::create($role);
         }

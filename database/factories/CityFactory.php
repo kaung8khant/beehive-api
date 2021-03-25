@@ -2,13 +2,14 @@
 
 namespace Database\Factories;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
 use App\Models\City;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CityFactory extends Factory
 {
     use StringHelper;
+
     /**
      * The name of the factory's corresponding model.
      *
