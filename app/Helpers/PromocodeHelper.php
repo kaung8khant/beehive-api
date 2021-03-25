@@ -36,7 +36,7 @@ trait PromocodeHelper
         }
         return $returnvalue;
     }
-    protected function getDiscountFromPromo($price, $id)
+    protected function calculateDiscount($price, $id)
     {
         $promo = Promocode::with('rules')->where('id', $id)->first();
         if ($promo->type === "fix") {
