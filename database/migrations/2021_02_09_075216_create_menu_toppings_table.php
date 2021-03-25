@@ -19,7 +19,7 @@ class CreateMenuToppingsTable extends Migration
             $table->string('name');
             $table->decimal('price', 12, 0);
             $table->boolean('is_incremental')->default(1);
-            $table->integer('max_quantity')->nullable()->max(10);
+            $table->integer('max_quantity')->nullable();
             $table->unsignedBigInteger('menu_id');
             $table->timestamps();
             $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
