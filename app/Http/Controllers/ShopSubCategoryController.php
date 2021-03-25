@@ -315,14 +315,12 @@ class ShopSubCategoryController extends Controller
             'shop_sub_categories.*.shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ]);
 
-        $shopSubCategories=array();
         foreach ($validatedData['shop_sub_categories'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
             $data['shop_category_id'] = $this->getShopCategoryId($data['shop_category_slug']);
-            $subCategory=ShopSubCategory::create($data);
-            array_push($shopSubCategories, $subCategory->load('shopCategory'));
+            ShopSubCategory::create($data);
         }
 
-        return response()->json($shopSubCategories, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }
