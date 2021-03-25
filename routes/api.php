@@ -82,6 +82,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('brands', 'BrandController');
             Route::get('brands/{slug}/products', 'ProductController@getProductsByBrand');
+            Route::post('brands/import', 'BrandController@import');
+
 
 
             /* Shop */
