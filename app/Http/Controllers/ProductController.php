@@ -538,7 +538,7 @@ class ProductController extends Controller
                 $data['brand_id'] =  $this->getBrandId($data['brand_slug']);
             }
 
-            $product = Product::create($validatedData);
+            $product = Product::create($data);
             array_push($products, $product->load(['shop','brand','shopCategory','shopSubCategory']));
         }
 
