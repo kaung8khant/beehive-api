@@ -16,7 +16,7 @@ class CreateUserSessionsTable extends Migration
         Schema::create('user_sessions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('device_token',255);
+            $table->string('device_token', 255);
             $table->longText('jwt');
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

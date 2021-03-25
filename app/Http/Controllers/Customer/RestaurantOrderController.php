@@ -14,6 +14,7 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderContact;
 use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
+use App\Models\Setting;
 use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -68,7 +69,7 @@ class RestaurantOrderController extends Controller
 
         $restaurantBranch = $this->getRestaurantBranch($validatedData['restaurant_branch_slug']);
 
-        $validatedData['restaurant_branch_info'] = $restaurantBranch->toArray();
+        $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
 
@@ -133,7 +134,7 @@ class RestaurantOrderController extends Controller
 
             'order_items.*.variation_value_slugs.*' => 'required|exists:App\Models\MenuVariationValue,slug',
             'order_items.*.topping_slugs.*.slug' => 'required|exists:App\Models\MenuTopping,slug',
-            'order_items.*.topping_slugs.*.value' => 'required',
+            'order_items.*.topping_slugs.*.value' => 'required|integer',
         ]);
     }
 
@@ -160,11 +161,12 @@ class RestaurantOrderController extends Controller
 
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
             $toppings = collect($this->prepareToppings($item['topping_slugs']));
+            $tax = $this->getTax();
 
             $item['menu_name'] = $menu->name;
             $item['amount'] = $menu->price + $variations->sum('price') + $toppings->sum('price');
             $item['discount'] = $item['amount'] * 5 / 100;
-            $item['tax'] = ($item['amount'] - $item['discount']) * 5 / 100;
+            $item['tax'] = ($item['amount'] - $item['discount']) * $tax / 100;
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
             $item['variations'] = $variations;
@@ -184,7 +186,7 @@ class RestaurantOrderController extends Controller
             $variation = [
                 'name' => $variationValue->menuVariation->name,
                 'value' => $variationValue->value,
-                'price' => $variationValue->price,
+                'price' => (int) $variationValue->price,
             ];
 
             array_push($variations, $variation);
@@ -203,12 +205,8 @@ class RestaurantOrderController extends Controller
             $topping = [
                 'name' => $menuTopping->name,
                 'value' => $toppingSlug['value'],
-                'price' => $menuTopping->price,
+                'price' => $menuTopping->price * $toppingSlug['value'],
             ];
-
-            if (!is_bool($toppingSlug['value']) && is_int($toppingSlug['value'])) {
-                $topping['price'] = $menuTopping->price * $toppingSlug['value'];
-            }
 
             array_push($toppings, $topping);
         }
@@ -239,6 +237,11 @@ class RestaurantOrderController extends Controller
     private function getMenuTopping($slug)
     {
         return MenuTopping::where('slug', $slug)->first();
+    }
+
+    private function getTax()
+    {
+        return Setting::where('key', 'tax')->first()->value;
     }
 
     private function notify($slug, $data)

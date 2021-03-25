@@ -49,7 +49,6 @@ class UserSeeder extends Seeder
                 'name' => 'Driver',
                 'phone_number' => '0912345689',
                 'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-                //'restaurant_branch_id' => $restaurantId,
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
@@ -59,6 +58,7 @@ class UserSeeder extends Seeder
                 'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             ],
         ];
+
         foreach ($users as $user) {
             User::create($user);
         }

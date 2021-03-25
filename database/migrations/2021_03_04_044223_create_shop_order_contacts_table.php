@@ -15,7 +15,6 @@ class CreateShopOrderContactsTable extends Migration
     {
         Schema::create('shop_order_contacts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('shop_order_id');
             $table->string('customer_name');
             $table->string('phone_number');
             $table->string('house_number');
@@ -24,6 +23,7 @@ class CreateShopOrderContactsTable extends Migration
             $table->double('latitude')->nullable();
             $table->double('longitude')->nullable();
             $table->unsignedBigInteger('township_id');
+            $table->unsignedBigInteger('shop_order_id');
             $table->timestamps();
             $table->foreign('shop_order_id')->references('id')->on('shop_orders')->onDelete('cascade');
             $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');

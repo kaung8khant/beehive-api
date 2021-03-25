@@ -37,7 +37,6 @@ class DatabaseSeeder extends Seeder
         $this->call(ShopSeeder::class);
         $this->call(ShopShopCategorySeeder::class);
         $this->call(ShopShopTagSeeder::class);
-        // $this->call(ShopBranchMenuSeeder::class);
 
         $this->call(BrandSeeder::class);
         $this->call(ProductSeeder::class);
@@ -45,7 +44,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ProductVariationValueSeeder::class);
 
         $this->call(SettingSeeder::class);
-        //$this->call(FavoriteShopSeeder::class);
+        $this->call(FavoriteProductSeeder::class);
         $this->call(FavoriteRestaurantSeeder::class);
         $this->call(PromocodeSeeder::class);
         $this->call(PromocodeRuleSeeder::class);

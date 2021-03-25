@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Setting;
 use Illuminate\Database\Seeder;
+use App\Models\Setting;
 
 class SettingSeeder extends Seeder
 {
@@ -16,14 +16,14 @@ class SettingSeeder extends Seeder
     {
         $settings = [
             [
-                "key" => "tax",
-                "value" => "5",
-                "data_type" => "integer"
+                'key' => 'tax',
+                'value' => '5',
+                'data_type' => 'integer'
             ],
             [
-                "key" => "commission",
-                "value" => "10",
-                "data_type" => "integer"
+                'key' => 'commission',
+                'value' => '10',
+                'data_type' => 'integer'
             ],
         ];
         foreach ($settings as $setting) {

@@ -16,9 +16,9 @@ class CreateShopRatingsTable extends Migration
         Schema::create('shop_ratings', function (Blueprint $table) {
             $table->id();
             $table->integer('target_id');
-            $table->enum('target_type', ['shop', 'customer', 'biker','product']);
+            $table->enum('target_type', ['shop', 'customer', 'biker', 'product']);
             $table->integer('source_id');
-            $table->enum('source_type', ['shop', 'customer', 'biker','product']);
+            $table->enum('source_type', ['shop', 'customer', 'biker', 'product']);
             $table->integer('rating');
             $table->text('review')->nullable();
             $table->unsignedBigInteger('shop_order_id');

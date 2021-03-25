@@ -119,22 +119,21 @@ class RestaurantController extends Controller
             ->with('availableMenus.menuVariations')
             ->with('availableMenus.menuToppings')
             ->where('slug', $slug)
-            ->firstOrFail()
-            ->toArray();
-
-        $availableMenus = $restaurantBranch['available_menus'];
+            ->firstOrFail();
 
         $availableCategories = collect([]);
-        foreach ($availableMenus as $menu) {
-            $availableCategories->push($menu['restaurant_category']);
+        foreach ($restaurantBranch->availableMenus as $menu) {
+            $menu->setAppends(['is_available', 'images']);
+            $availableCategories->push($menu->restaurantCategory);
         }
 
         $availableCategories = $availableCategories->unique()->values()->toArray();
+        $restaurantBranch = $restaurantBranch->toArray();
 
         for ($i = 0; $i < count($availableCategories); $i++) {
             $categoryMenus = [];
 
-            foreach ($availableMenus as $menu) {
+            foreach ($restaurantBranch['available_menus'] as $menu) {
                 if ($availableCategories[$i]['slug'] === $menu['restaurant_category']['slug']) {
                     unset($menu['restaurant_category']);
                     array_push($categoryMenus, $menu);
