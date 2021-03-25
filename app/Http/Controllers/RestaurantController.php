@@ -106,7 +106,7 @@ class RestaurantController extends Controller
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
 
-        $townshipId = $this->getTownshipIdBySlug($request->restaurant_branch['township_slug']);
+        // $townshipId = $this->getTownshipIdBySlug($request->restaurant_branch['township_slug']);
 
         $restaurant = Restaurant::create($validatedData);
 
@@ -114,7 +114,7 @@ class RestaurantController extends Controller
 
         $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
 
-        $this->createRestaurantBranch($restaurantId, $townshipId, $validatedData['restaurant_branch']);
+        $this->createRestaurantBranch($restaurantId, $validatedData['restaurant_branch']);
 
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
         $restaurant->availableTags()->attach($restaurantTags);
@@ -297,11 +297,11 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    private function createRestaurantBranch($restaurantId, $townshipId, $restaurantBranch)
+    private function createRestaurantBranch($restaurantId, $restaurantBranch)
     {
         $restaurantBranch['slug'] = $this->generateUniqueSlug();
         $restaurantBranch['restaurant_id'] = $restaurantId;
-        $restaurantBranch['township_id'] = $townshipId;
+        $restaurantBranch['township_id'] =$this->getTownshipIdBySlug($restaurantBranch['township_slug']);
         RestaurantBranch::create($restaurantBranch);
     }
 
@@ -404,33 +404,32 @@ class RestaurantController extends Controller
         return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
     }
 
-    // public function import(Request $request)
-    // {
-    //     $validatedData=$request->validate([
-    //         'restaurants' => 'nullable|array',
-    //         'restaurants.*.name' => 'required|unique:restaurants',
-    //         'restaurants.*.is_enable' => 'required|boolean',
-    //         'restaurants.*.restaurant_branch' => 'required',
-    //         'restaurants.*.restaurant_branch.name' => 'required|string',
-    //         'restaurants.*.restaurant_branch.address' => 'required',
-    //         'restaurants.*.restaurant_branch.contact_number' => 'required',
-    //         'restaurants.*.restaurant_branch.opening_time' => 'required|date_format:H:i',
-    //         'restaurants.*.restaurant_branch.closing_time' => 'required|date_format:H:i',
-    //         'restaurants.*.restaurant_branch.latitude' => 'nullable|numeric',
-    //         'restaurants.*.restaurant_branch.longitude' => 'nullable|numeric',
-    //         'restaurants.*.restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
-    //     ]);
+    public function import(Request $request)
+    {
+        $validatedData=$request->validate([
+            'restaurants' => 'nullable|array',
+            'restaurants.*.name' => 'required|unique:restaurants',
+            'restaurants.*.is_enable' => 'required|boolean',
+            'restaurants.*.restaurant_branch' => 'required',
+            'restaurants.*.restaurant_branch.name' => 'required|string',
+            'restaurants.*.restaurant_branch.address' => 'required',
+            'restaurants.*.restaurant_branch.contact_number' => 'required',
+            'restaurants.*.restaurant_branch.opening_time' => 'required|date_format:H:i',
+            'restaurants.*.restaurant_branch.closing_time' => 'required|date_format:H:i',
+            'restaurants.*.restaurant_branch.latitude' => 'nullable|numeric',
+            'restaurants.*.restaurant_branch.longitude' => 'nullable|numeric',
+            'restaurants.*.restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
+        ]);
 
-    //     $restaurants=array();
-    //     foreach ($validatedData['restaurants'] as $data) {
-    //         $data['slug'] = $this->generateUniqueSlug();
-    //         $townshipId = $this->getTownshipIdBySlug($data['restaurant_branch']['township_slug']);
-    //         $restaurant = Restaurant::create($data);
-    //         $restaurantId = $restaurant->id;
-    //         $this->createRestaurantBranch($restaurantId, $townshipId, $data['restaurant_branch']);
-    //         array_push($restaurants, $restaurant->load('restaurant'));
-    //     }
+        $restaurants=array();
+        foreach ($validatedData['restaurants'] as $data) {
+            $data['slug'] = $this->generateUniqueSlug();
+            $restaurant = Restaurant::create($data);
+            $restaurantId = $restaurant->id;
+            $this->createRestaurantBranch($restaurantId, $data['restaurant_branch']);
+            array_push($restaurants, $restaurant);
+        }
 
-    //     return response()->json($restaurants, 201);
-    // }
+        return response()->json($restaurants, 201);
+    }
 }

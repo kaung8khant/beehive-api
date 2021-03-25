@@ -92,6 +92,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('restaurant-tags', 'RestaurantTagController');
             Route::post('restaurant-tags/import', 'RestaurantTagController@import');
             Route::resource('restaurants', 'RestaurantController');
+            Route::post('restaurants/import', 'RestaurantController@import');
             Route::patch('restaurants/toggle-enable/{slug}', 'RestaurantController@toggleEnable');
             Route::patch('restaurants/toggle-official/{slug}', 'RestaurantController@toggleOfficial');
             Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
