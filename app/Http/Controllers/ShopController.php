@@ -447,4 +447,32 @@ class ShopController extends Controller
 
         return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
     }
+
+
+    public function import(Request $request)
+    {
+        $validatedData = $request->validate([
+            'shops' => 'nullable|array',
+            'shops.*.name' => 'required|unique:shops',
+            'shops.*.is_enable' => 'required|boolean',
+            'shops.*.is_official' => 'required|boolean',
+            'shops.*.shop_tags' => 'nullable|array',
+            'shops.*.shop_tags.*' => 'exists:App\Models\ShopTag,slug',
+            'shops.*.address' => 'required',
+            'shops.*.contact_number' => 'required',
+            'shops.*.opening_time' => 'required|date_format:H:i',
+            'shops.*.closing_time' => 'required|date_format:H:i',
+            'shops.*.latitude' => 'required|numeric',
+            'shops.*.longitude' => 'required|numeric',
+            'shops.*.township_slug' => 'required|exists:App\Models\Township,slug',
+        ]);
+
+        $shops = array();
+        foreach ($validatedData['shops'] as $data) {
+            $data['slug'] = $this->generateUniqueSlug();
+            array_push($shops, Shop::create($data));
+        }
+
+        return response()->json($shops, 201);
+    }
 }
