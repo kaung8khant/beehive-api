@@ -45,5 +45,4 @@ class PromocodeController extends Controller
         $promo = $this->validatePromo($slug);
         return $this->generateResponse($promo, 200);
     }
-
 }

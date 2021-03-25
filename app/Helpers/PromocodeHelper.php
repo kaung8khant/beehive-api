@@ -36,6 +36,7 @@ trait PromocodeHelper
         }
         return $returnvalue;
     }
+
     protected function calculateDiscount($price, $id)
     {
         $promo = Promocode::with('rules')->where('id', $id)->first();
@@ -44,12 +45,13 @@ trait PromocodeHelper
         } else {
             return $price * $promo->amount / 100;
         }
-
     }
+
     private function getPromo($slug)
     {
         return Promocode::with("rules")->where('slug', $slug)->firstOrFail();
     }
+
     private function getValueFromModel($value)
     {
         $field = config('promo.' . $value);
@@ -65,7 +67,6 @@ trait PromocodeHelper
     {
         if ($rule === "exact_date") {
             return $value->startOfDay() == $compareValue->startOfDay();
-
         } else if ($rule === "after_date") {
 
             return $compareValue >= $value; //current date greater than value (after value date)
@@ -79,13 +80,11 @@ trait PromocodeHelper
             $promo = Promocode::with('rules')->where('id', $this->promo_id)->firstOrFail();
             $shopOrder = ShopOrder::where("promocode", $promo->id)->get();
             return count($shopOrder) < $value;
-
         } else if ($rule === "per_user_usage") {
 
             $promo = Promocode::with('rules')->where('id', $this->promo_id)->firstOrFail();
             $shopOrder = ShopOrder::where("promocode", $promo->id)->where('customer_id', Auth::guard('customers')->user()->id)->get();
             return count($shopOrder) < $value;
-
         } else if ($rule === "matching") {
 
             if ($value === "dob") {
@@ -94,13 +93,11 @@ trait PromocodeHelper
                 $result = $result[0]->datae_of_birth;
 
                 return Carbon::parse($result)->startOfDay() == Carbon::now()->startOfDay();
-
             } else if ($value === "new_customer") {
 
                 $result = $this->getValueFromModel("new_customer_shop");
                 $result2 = $this->getValueFromModel("new_customer_restaurant");
                 return count($result) + count($result2) == 0;
-
             }
 
             return false;

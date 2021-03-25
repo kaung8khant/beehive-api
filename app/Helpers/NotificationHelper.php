@@ -26,7 +26,6 @@ trait NotificationHelper
                 $tokenList = UserSession::where('user_id', $userId)->pluck("device_token")->all();
                 $this->sendNotification($data, $tokenList);
             }
-
         }
     }
 
@@ -46,7 +45,6 @@ trait NotificationHelper
                 $tokenList = UserSession::where('user_id', $userId)->pluck("device_token")->all();
                 $this->sendNotification($data, $tokenList);
             }
-
         }
     }
 
@@ -73,6 +71,6 @@ trait NotificationHelper
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
 
-        $response = curl_exec($ch);
+        curl_exec($ch);
     }
 }

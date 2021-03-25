@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\ResponseHelper;
+use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Address;
+use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use App\Helpers\StringHelper;
-use App\Helpers\ResponseHelper;
-use App\Models\Address;
-use App\Models\Township;
 
 class AddressController extends Controller
 {
@@ -34,9 +34,9 @@ class AddressController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validator = Validator::make($request->all(), $this->getParamsToValidate(TRUE));
+        $validator = Validator::make($request->all(), $this->getParamsToValidate(true));
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $validatedData = $validator->validated();
@@ -62,7 +62,7 @@ class AddressController extends Controller
 
         $validator = Validator::make($request->all(), $this->getParamsToValidate());
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $validatedData = $validator->validated();
@@ -76,10 +76,10 @@ class AddressController extends Controller
     public function destroy($slug)
     {
         $this->getAddress($slug)->delete();
-        return $this->generateResponse('Successfully deleted.', 200, TRUE);
+        return $this->generateResponse('Successfully deleted.', 200, true);
     }
 
-    private function getParamsToValidate($slug = FALSE)
+    private function getParamsToValidate($slug = false)
     {
         $params = [
             'label' => 'required',
@@ -106,7 +106,7 @@ class AddressController extends Controller
         $address->is_primary = !$address->is_primary;
         $address->save();
 
-        return $this->generateResponse('Success.', 200, TRUE);
+        return $this->generateResponse('Success.', 200, true);
     }
 
     public function getPrimaryAddress()

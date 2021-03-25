@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
-use App\Models\Brand;
-use App\Helpers\ResponseHelper;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
@@ -24,7 +24,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $product =  Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
+        $product = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
             ->with('productVariations')
             ->with('productVariations.productVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
@@ -36,11 +36,10 @@ class ProductController extends Controller
 
     public function show($slug)
     {
-        $product =  Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
+        $product = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
             ->with('productVariations')
             ->with('productVariations.productVariationValues')
             ->where('slug', $slug)->first();
-
 
         return $this->generateProductResponse($product, 200, 'other');
     }
@@ -50,8 +49,6 @@ class ProductController extends Controller
         $category_id = $this->getShopCategoryId($slug);
         $product = Product::where('shop_category_id', $category_id)->paginate($request->size)->items();
 
-
-
         return $this->generateProductResponse($product, 200);
     }
 
@@ -59,7 +56,6 @@ class ProductController extends Controller
     {
         $shopId = $this->getShopId($slug);
         $product = Product::where('shop_id', $shopId)->paginate($request->size)->items();
-
 
         return $this->generateProductResponse($product, 200);
     }
@@ -72,8 +68,7 @@ class ProductController extends Controller
     public function getByBrand(Request $request, $slug)
     {
         $brandId = $this->getBrandId($slug);
-        $product =  Product::where("brand_id", $brandId)->paginate($request->size)->items();
-
+        $product = Product::where('brand_id', $brandId)->paginate($request->size)->items();
 
         return $this->generateProductResponse($product, 200);
     }

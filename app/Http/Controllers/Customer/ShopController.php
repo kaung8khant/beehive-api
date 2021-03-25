@@ -123,5 +123,4 @@ class ShopController extends Controller
 
         return $data;
     }
-
 }
