@@ -11,7 +11,6 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\SmsHelper;
 use App\Models\OneTimePassword;
 use App\Models\Customer;
-use App\Models\User;
 
 class OtpController extends Controller
 {

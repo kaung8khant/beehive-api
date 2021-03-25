@@ -35,10 +35,10 @@ class ProductFactory extends Factory
             'tax' => $this->faker->numberBetween(0, 100),
             'shop_id' => Shop::pluck('id')->random(1)[0],
             'shop_category_id' => function (array $attributes) {
-                return  Shop::find($attributes['shop_id'])->availableCategories()->pluck('shop_category_id')->random(1)[0];
+                return Shop::find($attributes['shop_id'])->availableCategories()->pluck('shop_category_id')->random(1)[0];
             },
             'shop_sub_category_id' => function (array $attributes) {
-                return  ShopSubCategory::where('shop_category_id', $attributes['shop_category_id'])->pluck('id')->random(1)[0];
+                return ShopSubCategory::where('shop_category_id', $attributes['shop_category_id'])->pluck('id')->random(1)[0];
             },
             'brand_id' => function () {
                 $condition = rand(0, 1);

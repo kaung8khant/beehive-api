@@ -24,7 +24,6 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
@@ -86,7 +85,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsTo(RestaurantBranch::class, 'restaurant_branch_id');
     }
-    
+
     public function sessions()
     {
         return $this->hasMany(UserSession::class);

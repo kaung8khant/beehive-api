@@ -10,7 +10,6 @@ class ShopOrderContact extends Model
 {
     use HasFactory;
 
-
     protected $fillable = [
         'shop_order_id',
         'customer_name',
