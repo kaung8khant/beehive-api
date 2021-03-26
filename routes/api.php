@@ -111,7 +111,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /* Order */
             Route::resource('restaurant-orders', 'RestaurantOrderController');
+            Route::post('restaurant-orders/{slug}/change-status', 'RestaurantOrderController@changeStatus');
             Route::resource('shop-orders', 'ShopOrderController');
+            Route::post('shop-orders/{slug}/change-status', 'ShopOrderController@changeStatus');
             Route::resource('orders', 'OrderController');
             Route::get('customers/{slug}/orders', 'OrderController@getOrdersByCustomer');
 
