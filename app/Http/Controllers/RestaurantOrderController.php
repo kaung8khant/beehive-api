@@ -120,9 +120,7 @@ class RestaurantOrderController extends Controller
     // }
     public function show($slug)
     {
-        $order = RestaurantOrder::with('restaurant')
-            ->with('restaurantBranch')
-            ->with('RestaurantOrderContact')
+        $order = RestaurantOrder::with('RestaurantOrderContact')
             ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
             ->where('slug', $slug)
