@@ -82,4 +82,12 @@ class ShopOrderController extends Controller
 
         return $this->generateResponse($shopOrders, 200);
     }
+
+    public function show($slug)
+    {
+        $shop = ShopOrder::where('slug', $slug)
+            ->with('contact', 'items')
+            ->firstOrFail();
+        return $this->generateResponse($shop, 200);
+    }
 }
