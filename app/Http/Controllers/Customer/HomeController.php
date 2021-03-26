@@ -167,10 +167,11 @@ class HomeController extends Controller
             ->get();
 
         if ($homeSearch) {
-            return $product;
+
+            return $this->generateProductResponse($product, 200, 'home');
         }
 
-        return $this->generateResponse($product, 200);
+        return $this->generateProductResponse($product, 200);
     }
 
     private function validateSearch($request)

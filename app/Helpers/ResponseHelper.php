@@ -56,11 +56,15 @@ trait ResponseHelper
             return $this->generateResponse($data, $status);
         }
 
-        if ($type === 'array') {
+        if ($type === 'array' || $type === 'home') {
             foreach ($data as $product) {
                 $product['is_favorite'] = $this->checkFavoriteProduct($product->id);
                 unset($product->customers);
             }
+            if ($type === "home") {
+                return $data;
+            }
+
         } elseif ($type === 'arrobj') {
             foreach ($data as $arrobj) {
                 foreach ($arrobj as $product) {
