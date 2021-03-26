@@ -21,10 +21,14 @@ trait ResponseHelper
 
     protected function generateBranchResponse($data, $status, $type = 'array')
     {
-        if ($type === 'array') {
+        if ($type === 'array' || $type === 'home') {
             foreach ($data as $branch) {
                 $branch->restaurant->is_favorite = $this->checkFavoriteRestaurant($branch->restaurant->id);
                 unset($branch->restaurant->customers);
+            }
+
+            if ($type === 'home') {
+                return $data;
             }
         } elseif ($type === 'arrobj') {
             foreach ($data as $arrobj) {
