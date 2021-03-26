@@ -106,6 +106,7 @@ class RestaurantController extends Controller
     public function getOneBranch($slug)
     {
         $restaurantBranch = RestaurantBranch::with('restaurant')
+            ->with('restaurant.availableTags')
             ->with('township')
             ->where('slug', $slug)
             ->firstOrFail();
@@ -245,6 +246,7 @@ class RestaurantController extends Controller
         $radius = config('system.restaurant_search_radius');
 
         return $query->with('restaurant')
+            ->with('restaurant.availableTags')
             ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
             ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
