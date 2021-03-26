@@ -102,7 +102,7 @@ class ShopOrderController extends Controller
             'order_date' => 'required|date_format:Y-m-d',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
-            'delivery_mode' => 'required|in:package,delivery',
+            'delivery_mode' => 'required|in:pickup,delivery',
             'promo_code_slug' => 'nullable|string|exists:App\Models\Promocode,slug',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
