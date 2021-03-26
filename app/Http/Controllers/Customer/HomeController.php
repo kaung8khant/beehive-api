@@ -22,8 +22,10 @@ class HomeController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
+        $restaurantBranches = $this->getRestaurantBranches($request)->inRandomOrder()->limit(10)->get();
+
         $result = [
-            'restaurant_branches' => $this->getRestaurantBranches($request)->inRandomOrder()->limit(10)->get(),
+            'restaurant_branches' => $this->generateBranchResponse($restaurantBranches, 200, 'home'),
             'products' => $this->getRandomProducts(),
         ];
 
@@ -37,8 +39,10 @@ class HomeController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
+        $restaurantBranches = $this->getRestaurantBranches($request)->latest()->limit(10)->get();
+
         $result = [
-            'restaurant_branches' => $this->getRestaurantBranches($request)->latest()->limit(10)->get(),
+            'restaurant_branches' => $this->generateBranchResponse($restaurantBranches, 200, 'home'),
             'products' => $this->getNewProducts(),
         ];
 
@@ -127,7 +131,7 @@ class HomeController extends Controller
             ->items();
 
         if ($homeSearch) {
-            return $restaurantBranches;
+            return $this->generateBranchResponse($restaurantBranches, 200, 'home');
         }
 
         return $this->generateBranchResponse($restaurantBranches, 200);
@@ -163,10 +167,11 @@ class HomeController extends Controller
             ->get();
 
         if ($homeSearch) {
-            return $product;
+
+            return $this->generateProductResponse($product, 200, 'home');
         }
 
-        return $this->generateResponse($product, 200);
+        return $this->generateProductResponse($product, 200);
     }
 
     private function validateSearch($request)
