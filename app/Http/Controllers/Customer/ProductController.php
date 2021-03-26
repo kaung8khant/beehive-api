@@ -76,7 +76,7 @@ class ProductController extends Controller
     public function getFavorite(Request $request)
     {
         $fav = $this->customer->favoriteProducts()->with('shopCategory', 'shopSubCategory', 'brand')->paginate($request->size)->items();
-        return $this->generateResponse($fav, 200);
+        return $this->generateProductResponse($fav, 200);
     }
 
     public function setFavorite($slug)

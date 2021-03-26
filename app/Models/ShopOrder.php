@@ -33,6 +33,26 @@ class ShopOrder extends Model
         'promocode' => 'object',
     ];
 
+    protected $appends = ['order_status', 'total_amount'];
+
+    public function getOrderStatusAttribute()
+    {
+        return $this->status()->latest()->first()->status;
+    }
+
+    public function getTotalAmountAttribute()
+    {
+        $orderItems = $this->items;
+        $totalAmount = 0;
+
+        foreach ($orderItems as $item) {
+            $amount = $item->amount + $item->tax + $item->discount;
+            $totalAmount += $amount;
+        }
+
+        return $totalAmount;
+    }
+
     public function contact()
     {
         return $this->hasOne(ShopOrderContact::class);
@@ -45,5 +65,4 @@ class ShopOrder extends Model
     {
         return $this->hasMany(ShopOrderItem::class);
     }
-
 }

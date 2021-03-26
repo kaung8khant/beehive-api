@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Helpers\NotificationHelper;
+use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ShopOrderController extends Controller
 {
-    use StringHelper, ResponseHelper, NotificationHelper;
+    use StringHelper, ResponseHelper, NotificationHelper, PromocodeHelper;
 
     protected $customer_id;
 
@@ -44,8 +45,13 @@ class ShopOrderController extends Controller
         $validatedData = $this->validateOrder($request);
         $validatedData['customer_id'] = $this->customer_id;
 
-        if (!empty($validatedData["promo_code_slug"])) {
-            $validatedData['promocode_id'] = Promocode::where("slug", $validatedData["promo_code_slug"])->firstOrFail()->id;
+        if ($validatedData['promo_code_slug']) {
+            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug']);
+            if (!$isPromoValid) {
+                return $this->generateResponse('Invalid promo code.', 406, true);
+            }
+
+            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
         }
 
         $order = ShopOrder::create($validatedData);
@@ -55,7 +61,7 @@ class ShopOrderController extends Controller
 
         $this->createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
 
-        $this->createOrderItems($orderId, $validatedData['order_items'], $request->order_type);
+        $this->createOrderItems($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
 
         foreach ($validatedData['order_items'] as $item) {
             $this->notify($this->getShop($item['slug'])->id, ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
@@ -97,7 +103,7 @@ class ShopOrderController extends Controller
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:package,delivery',
-            'promo_code_slug' => 'nullable',
+            'promo_code_slug' => 'nullable|string|exists:App\Models\Promocode,slug',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
@@ -108,10 +114,12 @@ class ShopOrderController extends Controller
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
             'address.township' => 'required',
-            'address.township.slug' => 'required',
+            'address.township.slug' => 'required|exists:App\Models\Township,slug',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string',
             'order_items.*.quantity' => 'required|integer',
+            'order_items.*.variation_value_slugs' => 'nullable|array',
+            'order_items.*.variation_value_slugs.*' => 'required|exists:App\Models\ProductVariationValue,slug',
         ];
 
         return $request->validate($rules);
@@ -137,20 +145,26 @@ class ShopOrderController extends Controller
         ShopOrderContact::create($customerInfo);
     }
 
-    private function createOrderItems($orderId, $orderItems, $orderType)
+    private function createOrderItems($orderId, $orderItems, $promoCodeId)
     {
 
         foreach ($orderItems as $item) {
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
             $product = $this->getProduct($item['slug']);
+            $amount = $product->price + $variations->sum('price');
+            $discount = 0;
+            if ($promoCodeId) {
+                $discount = $this->calculateDiscount($amount, $promoCodeId);
+            }
+
             $item['shop'] = $this->getShop($item['slug']);
             $item['shop_order_id'] = $orderId;
             $item['product_id'] = $product->id;
             $item['product_name'] = $product->name;
-            $item['amount'] = $product->price + $variations->sum('price');
+            $item['amount'] = $amount;
             $item['variations'] = $variations;
-            $item['discount'] = ($product->price + $variations->sum('price')) * 5 / 100;
-            $item['tax'] = ($item['amount'] - $item['discount']) * 5 / 100;
+            $item['discount'] = $discount;
+            $item['tax'] = ($amount) * $product->tax / 100;
 
             ShopOrderItem::create($item);
         }

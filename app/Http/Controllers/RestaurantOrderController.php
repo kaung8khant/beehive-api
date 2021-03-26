@@ -56,7 +56,6 @@ class RestaurantOrderController extends Controller
     {
         $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact')
             ->with('restaurantOrderContact.township')
-            ->with('RestaurantOrderItems')
             ->latest()
             ->paginate($request->size)
             ->items();
@@ -245,6 +244,18 @@ class RestaurantOrderController extends Controller
 
         $this->createOrderStatus($order->id, 'cancelled');
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
+    }
+
+    public function changeStatus(Request $request, $slug)
+    {
+        $order = RestaurantOrder::where('slug', $slug)->firstOrFail();
+
+        if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
+        }
+
+        $this->createOrderStatus($order->id, $request->status);
+        return $this->generateResponse('The order has successfully been ' . $request->status .'.', 200, true);
     }
 
     private function validateOrder($request)
