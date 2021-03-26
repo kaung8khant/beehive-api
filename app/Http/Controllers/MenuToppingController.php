@@ -104,7 +104,7 @@ class MenuToppingController extends Controller
     {
         $validatedData = $request->validate([
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
-            'menu_toppings.*.name' => 'required|unique:menu_toppings',
+            'menu_toppings.*.name' => 'required|string',
             'menu_toppings.*.price' => 'required|numeric',
             'menu_toppings.*.is_incremental' => 'required|boolean',
             'menu_toppings.*.max_quantity' => 'nullable|max:10',

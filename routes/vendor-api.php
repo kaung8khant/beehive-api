@@ -51,7 +51,10 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::delete('menu-toppings/{slug}', 'MenuToppingController@destroy');
 
         Route::get('restaurant-branches/{slug}/orders', 'RestaurantOrderController@getBranchOrders');
-        Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
+        Route::get('restaurant-orders/{slug}', 'RestaurantOrderController@show');
+        Route::delete('restaurant-orders/{slug}', 'RestaurantOrderController@destroy');
+
+        // Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
         /* restaurant */
 
         /* shop */
