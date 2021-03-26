@@ -56,7 +56,6 @@ class RestaurantOrderController extends Controller
     {
         $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact')
             ->with('restaurantOrderContact.township')
-            ->with('RestaurantOrderItems')
             ->latest()
             ->paginate($request->size)
             ->items();

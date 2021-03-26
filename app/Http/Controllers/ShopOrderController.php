@@ -55,10 +55,8 @@ class ShopOrderController extends Controller
      */
     public function index()
     {
-        // $customer_id = Auth::guard('customers')->user()->id;
         $shopOrders = ShopOrder::with('contact')
-            ->with('items')
-            // ->where('customer_id', $customer_id)
+            ->with('contact.township')
             ->latest()
             ->paginate(10)
             ->items();
@@ -85,9 +83,12 @@ class ShopOrderController extends Controller
 
     public function show($slug)
     {
-        $shop = ShopOrder::where('slug', $slug)
-            ->with('contact', 'items')
+        $shop = ShopOrder::with('contact')
+            ->with('contact.township')
+            ->with('items')
+            ->where('slug', $slug)
             ->firstOrFail();
+
         return $this->generateResponse($shop, 200);
     }
 }
