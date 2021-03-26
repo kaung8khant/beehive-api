@@ -12,7 +12,6 @@ use App\Models\RestaurantOrderContact;
 use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use Illuminate\Http\Request;
-// use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class RestaurantOrderController extends Controller
@@ -20,47 +19,45 @@ class RestaurantOrderController extends Controller
     use StringHelper, ResponseHelper;
 
     /**
-    * @OA\Get(
-    *      path="/api/v2/admin/restaurant-orders",
-    *      operationId="getRestaurantOrderLists",
-    *      tags={"Restaurant Orders"},
-    *      summary="Get list of restaurant orders",
-    *      description="Returns list of restaurant orders",
-    *      @OA\Parameter(
-    *          name="page",
-    *          description="Current Page",
-    *          required=false,
-    *          in="query",
-    *          @OA\Schema(
-    *              type="integer"
-    *          ),
-    *      ),
-    *      @OA\Parameter(
-    *          name="filter",
-    *          description="Filter",
-    *          required=false,
-    *          in="query",
-    *          @OA\Schema(
-    *              type="string"
-    *          ),
-    *      ),
-    *      @OA\Response(
-    *          response=200,
-    *          description="Successful operation"
-    *      ),
-    *      security={
-    *          {"bearerAuth": {}}
-    *      }
-    *)
-    */
-    public function index()
+     * @OA\Get(
+     *      path="/api/v2/admin/restaurant-orders",
+     *      operationId="getRestaurantOrderLists",
+     *      tags={"Restaurant Orders"},
+     *      summary="Get list of restaurant orders",
+     *      description="Returns list of restaurant orders",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          description="Filter",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
+    public function index(Request $request)
     {
-        // $customer_id = Auth::guard('customers')->user()->id;
         $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact')
-            ->with('RestaurantOrderItems')
-            // ->where('customer_id', $customer_id)
+            ->with('restaurantOrderContact.township')
             ->latest()
-            ->paginate(10)
+            ->paginate($request->size)
             ->items();
 
         return $this->generateResponse($restaurantOrders, 200);
@@ -85,37 +82,47 @@ class RestaurantOrderController extends Controller
         return $this->generateResponse($restaurantOrders, 200);
     }
     /**
-    * @OA\Get(
-    *      path="/api/v2/admin/restaurant-orders/{slug}",
-    *      operationId="getOneRestaurantOrder",
-    *      tags={"Restaurant Orders"},
-    *      summary="Get One Restaurant Order",
-    *      description="Returns a requested restaurant order",
-    *      @OA\Parameter(
-    *          name="slug",
-    *          description="Slug of a requested restaurant Order",
-    *          required=true,
-    *          in="path",
-    *          @OA\Schema(
-    *              type="string"
-    *          )
-    *      ),
-    *      @OA\Response(
-    *          response=200,
-    *          description="Successful operation"
-    *      ),
-    *      security={
-    *          {"bearerAuth": {}}
-    *      }
-    *)
-    */
+     * @OA\Get(
+     *      path="/api/v2/admin/restaurant-orders/{slug}",
+     *      operationId="getOneRestaurantOrder",
+     *      tags={"Restaurant Orders"},
+     *      summary="Get One Restaurant Order",
+     *      description="Returns a requested restaurant order",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested restaurant Order",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
+    // public function show($slug)
+    // {
+    //     // $customer_id = Auth::guard('customers')->user()->id;
+    //     $order = RestaurantOrder::with('RestaurantOrderContact')
+    //         ->with('RestaurantOrderItems')
+    //         ->where('slug', $slug)
+    //         // ->where('customer_id', $customer_id)
+    //         ->firstOrFail();
+
+    //     return $this->generateResponse($order, 200);
+    // }
     public function show($slug)
     {
-        // $customer_id = Auth::guard('customers')->user()->id;
         $order = RestaurantOrder::with('RestaurantOrderContact')
+            ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
             ->where('slug', $slug)
-            // ->where('customer_id', $customer_id)
             ->firstOrFail();
 
         return $this->generateResponse($order, 200);
