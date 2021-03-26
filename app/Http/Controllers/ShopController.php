@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
 use App\Helpers\FileHelper;
+use App\Helpers\StringHelper;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopTag;
 use App\Models\Township;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ShopController extends Controller
 {
@@ -56,7 +56,6 @@ class ShopController extends Controller
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
-
 
     /**
      * @OA\Post(
@@ -259,7 +258,7 @@ class ShopController extends Controller
      */
     public function destroy($slug)
     {
-        $shop =  Shop::where('slug', $slug)->firstOrFail();
+        $shop = Shop::where('slug', $slug)->firstOrFail();
 
         foreach ($shop->images as $image) {
             $this->deleteFile($image->slug);
@@ -335,7 +334,6 @@ class ShopController extends Controller
         $shop->save();
         return response()->json(['message' => 'Success.'], 200);
     }
-
 
     private function getTownshipIdBySlug($slug)
     {
@@ -447,7 +445,6 @@ class ShopController extends Controller
 
         return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
     }
-
 
     public function import(Request $request)
     {

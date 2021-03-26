@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\ShopOrder;
-use App\Helpers\ResponseHelper;
 use App\Models\ShopOrderStatus;
 use Illuminate\Http\Request;
 
@@ -68,8 +68,8 @@ class ShopOrderController extends Controller
     public function getShopOrders(Request $request, $slug)
     {
         $shopOrders = ShopOrder::with('contact')->with('items')
-            // ->whereDate('order_date', '>=', $request->from)
-            // ->whereDate('order_date', '<=', $request->to)
+        // ->whereDate('order_date', '>=', $request->from)
+        // ->whereDate('order_date', '<=', $request->to)
             ->where('slug', $slug)
             ->whereHas('contact', function ($q) use ($request) {
                 $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
@@ -102,7 +102,7 @@ class ShopOrderController extends Controller
         }
 
         $this->createOrderStatus($order->id, $request->status);
-        return $this->generateResponse('The order has successfully been ' . $request->status .'.', 200, true);
+        return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
     }
 
     private function createOrderStatus($orderId, $status = 'pending')

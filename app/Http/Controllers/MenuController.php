@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Helpers\StringHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
+use App\Helpers\StringHelper;
 use App\Models\Menu;
-use App\Models\Restaurant;
-use App\Models\RestaurantCategory;
+use App\Models\MenuTopping;
 use App\Models\MenuVariation;
 use App\Models\MenuVariationValue;
-use App\Models\MenuTopping;
+use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
+use App\Models\RestaurantCategory;
+use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
@@ -429,7 +429,6 @@ class MenuController extends Controller
             $params['slug'] = 'required|unique:menus';
         }
 
-
         return $params;
     }
 
@@ -438,7 +437,7 @@ class MenuController extends Controller
         foreach ($variations as $variation) {
             $variation['slug'] = $this->generateUniqueSlug();
             $variation['menu_id'] = $menuId;
-            $menuVariation =  MenuVariation::create($variation);
+            $menuVariation = MenuVariation::create($variation);
             $variationId = $menuVariation->id;
             $this->createVariationValues($variationId, $variation['menu_variation_values']);
         }
@@ -461,8 +460,6 @@ class MenuController extends Controller
             MenuTopping::create($topping);
         }
     }
-
-
 
     private function getRestaurantId($slug)
     {
@@ -509,7 +506,7 @@ class MenuController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'menus' => 'nullable|array',
             'menus.*.name' => 'required',
             'menus.*.description' => 'required',
@@ -525,7 +522,7 @@ class MenuController extends Controller
             $restaurant = Restaurant::where('slug', $data['restaurant_slug'])->firstOrFail();
             $data['restaurant_id'] = $restaurant->id;
             $data['restaurant_category_id'] = $this->getRestaurantCategoryId($data['restaurant_category_slug']);
-            $menu=Menu::create($data);
+            $menu = Menu::create($data);
             foreach ($restaurant->restaurantBranches as $branch) {
                 $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
                 $branch->availableMenus()->attach($availableMenus);

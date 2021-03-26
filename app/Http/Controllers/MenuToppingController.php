@@ -3,11 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
-use App\Models\MenuTopping;
-use App\Models\MenuToppingValue;
 use App\Models\Menu;
+use App\Models\MenuTopping;
+use Illuminate\Http\Request;
 
 class MenuToppingController extends Controller
 {
@@ -122,7 +121,6 @@ class MenuToppingController extends Controller
                 $this->updateFile($menuTopping['image_slug'], 'menu_toppings', $menuTopping['slug']);
             }
         }
-
 
         return response()->json(['message' => 'Successfully Created.'], 201);
     }
@@ -270,7 +268,6 @@ class MenuToppingController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-
     /**
      * @OA\Get(
      *      path="/api/v2/admin/menus/{slug}/menu-toppings",
@@ -314,7 +311,6 @@ class MenuToppingController extends Controller
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
-
 
     private function getParamsToValidate($slug = false)
     {

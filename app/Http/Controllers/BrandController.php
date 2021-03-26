@@ -11,45 +11,46 @@ use Illuminate\Validation\Rule;
 class BrandController extends Controller
 {
     use StringHelper, FileHelper;
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     /**
-    * @OA\Get(
-    *      path="/api/v2/admin/brands",
-    *      operationId="getBrandLists",
-    *      tags={"Brands"},
-    *      summary="Get list of brands",
-    *      description="Returns list of brand",
-    *      @OA\Parameter(
-    *          name="page",
-    *          description="Current Page",
-    *          required=false,
-    *          in="query",
-    *          @OA\Schema(
-    *              type="integer"
-    *          )
-    *      ),
-    *      @OA\Parameter(
-    *          name="filter",
-    *          description="Filter",
-    *          required=false,
-    *          in="query",
-    *          @OA\Schema(
-    *              type="string"
-    *          ),
-    *      ),
-    *      @OA\Response(
-    *          response=200,
-    *          description="Successful operation"
-    *      ),
-    *      security={
-    *          {"bearerAuth": {}}
-    *      }
-    *)
-    */
+     * @OA\Get(
+     *      path="/api/v2/admin/brands",
+     *      operationId="getBrandLists",
+     *      tags={"Brands"},
+     *      summary="Get list of brands",
+     *      description="Returns list of brand",
+     *      @OA\Parameter(
+     *          name="page",
+     *          description="Current Page",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          description="Filter",
+     *          required=false,
+     *          in="query",
+     *          @OA\Schema(
+     *              type="string"
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function index(Request $request)
     {
         return Brand::where('name', 'LIKE', '%' . $request->filter . '%')
@@ -207,33 +208,33 @@ class BrandController extends Controller
      * @return \Illuminate\Http\Response
      */
     /**
-    * @OA\Delete(
-    *      path="/api/v2/admin/brands/{slug}",
-    *      operationId="deleteBrand",
-    *      tags={"Brands"},
-    *      summary="Delete One Brand",
-    *      description="Delete one specific brand",
-    *      @OA\Parameter(
-    *          name="slug",
-    *          description="Slug of a requested brand",
-    *          required=true,
-    *          in="path",
-    *          @OA\Schema(
-    *              type="string"
-    *          )
-    *      ),
-    *      @OA\Response(
-    *          response=200,
-    *          description="Successful operation"
-    *      ),
-    *      security={
-    *          {"bearerAuth": {}}
-    *      }
-    *)
-    */
+     * @OA\Delete(
+     *      path="/api/v2/admin/brands/{slug}",
+     *      operationId="deleteBrand",
+     *      tags={"Brands"},
+     *      summary="Delete One Brand",
+     *      description="Delete one specific brand",
+     *      @OA\Parameter(
+     *          name="slug",
+     *          description="Slug of a requested brand",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation"
+     *      ),
+     *      security={
+     *          {"bearerAuth": {}}
+     *      }
+     *)
+     */
     public function destroy($slug)
     {
-        $brand =    Brand::where('slug', $slug)->firstOrFail();
+        $brand = Brand::where('slug', $slug)->firstOrFail();
 
         foreach ($brand->images as $image) {
             $this->deleteFile($image->slug);
@@ -245,7 +246,7 @@ class BrandController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'brands' => 'nullable|array',
             'brands.*.name' => 'required|unique:brands',
         ]);

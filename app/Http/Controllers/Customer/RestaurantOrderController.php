@@ -176,12 +176,10 @@ class RestaurantOrderController extends Controller
                 $discount = $this->calculateDiscount($amount, $promoCodeId);
             }
 
-            $tax = $this->getTax();
-
             $item['menu_name'] = $menu->name;
             $item['amount'] = $amount;
             $item['discount'] = $discount;
-            $item['tax'] = ($amount - $discount) * $tax / 100;
+            $item['tax'] = ($amount - $discount) * $menu->tax / 100;
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
             $item['variations'] = $variations;

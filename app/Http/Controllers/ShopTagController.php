@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ShopTag;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ShopTagController extends Controller
 {
@@ -278,7 +278,7 @@ class ShopTagController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'shop_tags' => 'nullable|array',
             'shop_tags.*.name' => 'required|unique:shop_tags',
         ]);

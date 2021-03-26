@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
+use App\Helpers\StringHelper;
+use App\Models\RestaurantCategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Helpers\FileHelper;
-use App\Models\RestaurantCategory;
 
 class RestaurantCategoryController extends Controller
 {
@@ -274,7 +274,7 @@ class RestaurantCategoryController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'restaurant_categories' => 'nullable|array',
             'restaurant_categories.*.name' => 'required|unique:restaurant_categories',
         ]);

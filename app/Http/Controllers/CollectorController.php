@@ -101,7 +101,7 @@ class CollectorController extends Controller
                 'password' => 'required|min:6',
             ],
             [
-                'phone_number.phone' => 'Invalid phone number.'
+                'phone_number.phone' => 'Invalid phone number.',
             ]
         );
 

@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
 use App\Models\Product;
-use App\Models\Shop;
-use App\Models\ShopSubCategory;
 use App\Models\ProductVariation;
 use App\Models\ProductVariationValue;
+use App\Models\Shop;
 use App\Models\ShopCategory;
+use App\Models\ShopSubCategory;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -105,11 +105,11 @@ class ProductController extends Controller
             $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
             $validatedData['shop_sub_category_id'] = $subCategory->id;
         } else {
-            $validatedData['shop_category_id'] =  $this->getShopCategoryId($request->shop_category_slug);
+            $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
         }
 
         if ($request->brand_slug) {
-            $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
+            $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
         }
 
         $product = Product::create($validatedData);
@@ -226,7 +226,7 @@ class ProductController extends Controller
             $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
             $validatedData['shop_sub_category_id'] = $subCategory->id;
         } else {
-            $validatedData['shop_category_id'] =  $this->getShopCategoryId($request->shop_category_slug);
+            $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
         }
 
         if ($request->brand_slug) {
@@ -529,11 +529,11 @@ class ProductController extends Controller
                 $data['shop_category_id'] = $subCategory->shopCategory->id;
                 $data['shop_sub_category_id'] = $subCategory->id;
             } else {
-                $data['shop_category_id'] =  $this->getShopCategoryId($data['shop_category_slug']);
+                $data['shop_category_id'] = $this->getShopCategoryId($data['shop_category_slug']);
             }
 
             if ($data['brand_slug']) {
-                $data['brand_id'] =  $this->getBrandId($data['brand_slug']);
+                $data['brand_id'] = $this->getBrandId($data['brand_slug']);
             }
 
             Product::create($data);

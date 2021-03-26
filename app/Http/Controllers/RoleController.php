@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StringHelper;
 use App\Models\Role;
 use Illuminate\Http\Request;
-use App\Helpers\StringHelper;
 use Illuminate\Validation\Rule;
 
 class RoleController extends Controller
@@ -16,7 +16,7 @@ class RoleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @OA\Get(
      *      path="/api/v2/admin/roles",
      *      operationId="getRoleLists",
@@ -132,7 +132,7 @@ class RoleController extends Controller
      * @param  int  $slug
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @OA\Put(
      *      path="/api/v2/admin/roles/{slug}",
      *      operationId="updateRole",

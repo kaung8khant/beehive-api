@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Helpers\StringHelper;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class DriverController extends Controller
@@ -101,7 +101,7 @@ class DriverController extends Controller
                 'password' => 'required|min:6',
             ],
             [
-                'phone_number.phone' => 'Invalid phone number.'
+                'phone_number.phone' => 'Invalid phone number.',
             ]
         );
 

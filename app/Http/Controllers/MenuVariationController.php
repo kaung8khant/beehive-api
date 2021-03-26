@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
-use App\Models\MenuVariation;
 use App\Models\Menu;
+use App\Models\MenuVariation;
 use App\Models\MenuVariationValue;
+use Illuminate\Http\Request;
 
 class MenuVariationController extends Controller
 {
@@ -228,7 +228,6 @@ class MenuVariationController extends Controller
         return response()->json($menuVariation->load('menuVariationValues'), 200);
         // return response()->json(['message' => 'Successfully Updated.'], 201);
     }
-
 
     /**
      * @OA\Get(

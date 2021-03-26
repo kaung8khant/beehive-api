@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ShopSubCategoryController extends Controller
 {
@@ -205,7 +205,7 @@ class ShopSubCategoryController extends Controller
         // Update the category ids of related products
         foreach ($subCategory->products as $product) {
             $product->update([
-                'shop_category_id' => $validatedData['shop_category_id']
+                'shop_category_id' => $validatedData['shop_category_id'],
             ]);
         }
 
@@ -309,7 +309,7 @@ class ShopSubCategoryController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'shop_sub_categories' => 'nullable|array',
             'shop_sub_categories.*.name' => 'required|unique:shop_sub_categories',
             'shop_sub_categories.*.shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',

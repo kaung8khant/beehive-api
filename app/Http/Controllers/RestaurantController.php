@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
 use App\Models\Township;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RestaurantController extends Controller
 {
@@ -196,7 +196,7 @@ class RestaurantController extends Controller
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate([
-            'name' =>  [
+            'name' => [
                 'required',
                 Rule::unique('restaurants')->ignore($restaurant->id),
             ],
@@ -301,7 +301,7 @@ class RestaurantController extends Controller
     {
         $restaurantBranch['slug'] = $this->generateUniqueSlug();
         $restaurantBranch['restaurant_id'] = $restaurantId;
-        $restaurantBranch['township_id'] =$this->getTownshipIdBySlug($restaurantBranch['township_slug']);
+        $restaurantBranch['township_id'] = $this->getTownshipIdBySlug($restaurantBranch['township_slug']);
         RestaurantBranch::create($restaurantBranch);
     }
 
@@ -406,7 +406,7 @@ class RestaurantController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'restaurants' => 'nullable|array',
             'restaurants.*.name' => 'required|unique:restaurants',
             'restaurants.*.is_enable' => 'required|boolean',

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
-use App\Models\ProductVariation;
 use App\Models\Product;
+use App\Models\ProductVariation;
 use App\Models\ProductVariationValue;
+use Illuminate\Http\Request;
 
 class ProductVariationController extends Controller
 {
@@ -104,7 +104,7 @@ class ProductVariationController extends Controller
             'product_variations.*.product_variation_values' => 'required|array',
             'product_variations.*.product_variation_values.*.value' => 'required|string',
             'product_variations.*.product_variation_values.*.price' => 'required|numeric',
-            'product_variations.*.product_variation_values.*.image_slug' =>  'nullable|exists:App\Models\File,slug',
+            'product_variations.*.product_variation_values.*.image_slug' => 'nullable|exists:App\Models\File,slug',
 
         ]);
 

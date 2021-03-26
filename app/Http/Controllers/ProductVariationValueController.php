@@ -3,11 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
-use App\Models\ProductVariationValue;
 use App\Models\ProductVariation;
+use App\Models\ProductVariationValue;
+use Illuminate\Http\Request;
 
 class ProductVariationValueController extends Controller
 {
@@ -93,7 +92,6 @@ class ProductVariationValueController extends Controller
         if (!empty($request->image_slug)) {
             $this->updateFile($request->image_slug, 'product_variation_values', $productVariationValue->slug);
         }
-
 
         return response()->json($productVariationValue->load('productVariation'), 201);
     }

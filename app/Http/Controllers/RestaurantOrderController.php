@@ -66,8 +66,8 @@ class RestaurantOrderController extends Controller
     public function getBranchOrders(Request $request, $slug)
     {
         $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
-            // ->whereDate('order_date', '>=', $request->from)
-            // ->whereDate('order_date', '<=', $request->to)
+        // ->whereDate('order_date', '>=', $request->from)
+        // ->whereDate('order_date', '<=', $request->to)
             ->whereHas('restaurantBranch', function ($q) use ($slug) {
                 $q->where('slug', $slug);
             })
@@ -255,7 +255,7 @@ class RestaurantOrderController extends Controller
         }
 
         $this->createOrderStatus($order->id, $request->status);
-        return $this->generateResponse('The order has successfully been ' . $request->status .'.', 200, true);
+        return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
     }
 
     private function validateOrder($request)
@@ -316,7 +316,6 @@ class RestaurantOrderController extends Controller
             RestaurantOrderItem::create($item);
         }
     }
-
 
     private function getRestaurantBranch($slug)
     {

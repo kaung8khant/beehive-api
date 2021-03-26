@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\Customer;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class CustomerController extends Controller
@@ -107,7 +107,7 @@ class CustomerController extends Controller
                 'gender' => 'required|in:Male,Female',
             ],
             [
-                'phone_number.phone' => 'Invalid phone number.'
+                'phone_number.phone' => 'Invalid phone number.',
             ]
         );
 

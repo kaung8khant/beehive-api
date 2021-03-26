@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\Menu;
-use App\Models\RestaurantBranch;
 use App\Models\Restaurant;
+use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
 use App\Models\Township;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RestaurantBranchController extends Controller
 {

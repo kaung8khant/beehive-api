@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
+use App\Helpers\StringHelper;
+use App\Models\ShopCategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Helpers\FileHelper;
-use App\Models\ShopCategory;
 
 class ShopCategoryController extends Controller
 {
@@ -256,7 +256,6 @@ class ShopCategoryController extends Controller
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
-
     /**
      * Display a listing of the shop categories by one shop.
      */
@@ -307,7 +306,7 @@ class ShopCategoryController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'shop_categories' => 'nullable|array',
             'shop_categories.*.name' => 'required|unique:shop_categories',
         ]);

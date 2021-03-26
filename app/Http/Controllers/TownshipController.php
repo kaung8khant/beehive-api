@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StringHelper;
+use App\Models\City;
+use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Models\Township;
-use App\Models\City;
 
 class TownshipController extends Controller
 {
@@ -97,7 +97,7 @@ class TownshipController extends Controller
         $validatedData = $request->validate([
             'slug' => 'required|unique:townships',
             'name' => 'required|unique:townships',
-            'city_slug' => 'required|exists:App\Models\City,slug'
+            'city_slug' => 'required|exists:App\Models\City,slug',
         ]);
 
         $validatedData['city_id'] = $this->getCityIdBySlug($request->city_slug);

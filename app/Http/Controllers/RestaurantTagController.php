@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantTag;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RestaurantTagController extends Controller
 {
@@ -175,7 +175,7 @@ class RestaurantTagController extends Controller
             'name' => [
                 'required',
                 Rule::unique('restaurant_tags')->ignore($tag->id),
-            ]
+            ],
         ]));
 
         return response()->json($tag, 200);
@@ -258,12 +258,12 @@ class RestaurantTagController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'restaurant_tags' => 'nullable|array',
             'restaurant_tags.*.name' => 'required|unique:restaurant_tags',
         ]);
 
-        $restaurantTags=array();
+        $restaurantTags = array();
         foreach ($validatedData['restaurant_tags'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
             RestaurantTag::create($data);

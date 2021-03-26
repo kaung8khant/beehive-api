@@ -144,7 +144,7 @@ class PromocodeController extends Controller
      * @param  \App\Models\Promocode  $promocode
      * @return \Illuminate\Http\Response
      */
-     /**
+    /**
      * @OA\Put(
      *      path="/api/v2/admin/promocodes/{slug}",
      *      operationId="updatePromocode",
@@ -224,7 +224,7 @@ class PromocodeController extends Controller
         }
     }
 
-     /**
+    /**
      * @OA\Post(
      *      path="/api/v2/admin/promocodes/add-rules/{slug}",
      *      operationId="addRules",
