@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Validator;
 
 class RestaurantOrderController extends Controller
 {
-    use StringHelper, ResponseHelper;
+    use ResponseHelper, StringHelper;
 
     /**
      * @OA\Get(

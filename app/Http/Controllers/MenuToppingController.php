@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class MenuToppingController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, StringHelper;
 
     /**
      * @OA\Get(

@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class ProductVariationController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, StringHelper;
 
     /**
      * @OA\Get(

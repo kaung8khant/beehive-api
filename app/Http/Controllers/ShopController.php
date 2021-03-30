@@ -13,7 +13,7 @@ use Illuminate\Validation\Rule;
 
 class ShopController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, StringHelper;
 
     /**
      * @OA\Get(

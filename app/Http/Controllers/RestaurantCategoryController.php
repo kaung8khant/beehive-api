@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 
 class RestaurantCategoryController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, StringHelper;
 
     /**
      * @OA\Get(

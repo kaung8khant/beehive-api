@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class ShopOrderController extends Controller
 {
-    use StringHelper, ResponseHelper;
+    use ResponseHelper, StringHelper;
 
     /**
      * @OA\Get(

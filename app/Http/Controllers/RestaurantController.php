@@ -14,7 +14,7 @@ use Illuminate\Validation\Rule;
 
 class RestaurantController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, StringHelper;
 
     /**
      * @OA\Get(
