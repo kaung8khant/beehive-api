@@ -13,12 +13,6 @@ class ShopSubCategoryController extends Controller
     use StringHelper;
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/sub-categories",
      *      operationId="getSubcategoryLists",
@@ -61,13 +55,6 @@ class ShopSubCategoryController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Post(
      *      path="/api/v2/admin/sub-categories",
      *      operationId="storeSubcategory",
@@ -91,7 +78,6 @@ class ShopSubCategoryController extends Controller
      *      }
      *)
      */
-
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -107,13 +93,6 @@ class ShopSubCategoryController extends Controller
         $subCategory = ShopSubCategory::create($validatedData);
         return response()->json($subCategory->load('shopCategory'), 201);
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Get(
@@ -140,20 +119,12 @@ class ShopSubCategoryController extends Controller
      *      }
      *)
      */
-
     public function show($slug)
     {
         $subCategory = ShopSubCategory::with('shopCategory')->where('slug', $slug)->firstOrFail();
         return response()->json($subCategory, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/sub-categories/{slug}",
@@ -213,13 +184,6 @@ class ShopSubCategoryController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Delete(
      *      path="/api/v2/admin/sub-categories/{slug}",
      *      operationId="deleteSubcategory",
@@ -244,7 +208,6 @@ class ShopSubCategoryController extends Controller
      *      }
      *)
      */
-
     public function destroy($slug)
     {
         ShopSubCategory::where('slug', $slug)->firstOrFail()->delete();
@@ -256,13 +219,6 @@ class ShopSubCategoryController extends Controller
         return ShopCategory::where('slug', $slug)->first()->id;
     }
 
-    /**
-     * Display a listing of the sub categories by one shop category.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/shop-categories/{slug}/sub-categories",

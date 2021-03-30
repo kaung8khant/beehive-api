@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     use StringHelper, FileHelper;
+
     /**
      * @OA\Get(
      *      path="/api/v2/admin/products",
@@ -458,9 +459,7 @@ class ProductController extends Controller
         $product->save();
         return response()->json(['message' => 'Success.'], 200);
     }
-    /**
-     * Display a listing of products by each brand.
-     */
+
     /**
      * @OA\Get(
      *      path="/api/v2/admin/brands/{slug}/products",

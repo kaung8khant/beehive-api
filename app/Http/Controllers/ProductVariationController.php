@@ -14,11 +14,6 @@ class ProductVariationController extends Controller
     use StringHelper, FileHelper;
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/product-variations",
      *      operationId="getProductVariationLists",
@@ -59,13 +54,6 @@ class ProductVariationController extends Controller
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Post(
@@ -123,12 +111,6 @@ class ProductVariationController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\ProductVariation  $productVariation
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/product-variations/{slug}",
      *      operationId="showProductVariation",
@@ -159,13 +141,6 @@ class ProductVariationController extends Controller
         return response()->json($productVariation, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\ProductVariation  $productVariation
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/product-variations/{slug}",
@@ -214,12 +189,6 @@ class ProductVariationController extends Controller
         return response()->json($productVariation->load('product'), 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\ProductVariation  $productVariation
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/product-variations/{slug}",

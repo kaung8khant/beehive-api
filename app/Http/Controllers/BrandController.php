@@ -13,11 +13,6 @@ class BrandController extends Controller
     use StringHelper, FileHelper;
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/brands",
      *      operationId="getBrandLists",
@@ -57,12 +52,6 @@ class BrandController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Post(
      *      path="/api/v2/admin/brands",
@@ -105,13 +94,6 @@ class BrandController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Brand  $brand
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/brands/{slug}",
      *      operationId="showBrands",
@@ -142,13 +124,6 @@ class BrandController extends Controller
         return response()->json($brand, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Brand  $brand
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/brands/{slug}",
@@ -201,12 +176,6 @@ class BrandController extends Controller
         return response()->json($brand, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Brand  $brand
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/brands/{slug}",

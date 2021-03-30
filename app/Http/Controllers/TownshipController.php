@@ -13,11 +13,6 @@ class TownshipController extends Controller
     use StringHelper;
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/townships",
      *      operationId="getTownshipLists",
@@ -60,13 +55,6 @@ class TownshipController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Post(
      *      path="/api/v2/admin/townships",
      *      operationId="storeTownship",
@@ -107,12 +95,6 @@ class TownshipController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/townships/{slug}",
      *      operationId="showTownship",
@@ -143,13 +125,6 @@ class TownshipController extends Controller
         return response()->json($township, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/townships/{slug}",
@@ -202,12 +177,6 @@ class TownshipController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Delete(
      *      path="/api/v2/admin/townships/{slug}",
      *      operationId="deleteTownship",
@@ -243,13 +212,6 @@ class TownshipController extends Controller
         return City::where('slug', $slug)->first()->id;
     }
 
-    /**
-     * Display a listing of the townships by one city.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/cities/{slug}/townships",

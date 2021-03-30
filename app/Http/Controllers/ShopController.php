@@ -185,7 +185,6 @@ class ShopController extends Controller
      *      }
      *)
      */
-
     public function update(Request $request, $slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
@@ -293,7 +292,6 @@ class ShopController extends Controller
      *      }
      *)
      */
-
     public function toggleEnable($slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();

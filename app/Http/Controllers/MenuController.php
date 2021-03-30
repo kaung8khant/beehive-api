@@ -16,15 +16,8 @@ use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, ResponseHelper, StringHelper;
 
-    use ResponseHelper;
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/menus",
@@ -68,12 +61,6 @@ class MenuController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Post(
      *      path="/api/v2/admin/menus",
@@ -126,12 +113,6 @@ class MenuController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Menu  $menu
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/menus/{slug}",
      *      operationId="showMenu",
@@ -165,13 +146,6 @@ class MenuController extends Controller
         return response()->json($menu, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Menu  $menu
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/menus/{slug}",
@@ -235,12 +209,6 @@ class MenuController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Menu  $menu
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Delete(
      *      path="/api/v2/admin/menus/{slug}",
      *      operationId="deleteMenu",
@@ -276,12 +244,6 @@ class MenuController extends Controller
         $menu->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
-
-    /**
-     *  Display a listing of the menus by one restaurant.
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Get(
@@ -327,11 +289,6 @@ class MenuController extends Controller
         })->paginate(10);
     }
 
-    /**
-     *  Display a available menus by one restaurant branch.
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurant-branches/{slug}/menus",

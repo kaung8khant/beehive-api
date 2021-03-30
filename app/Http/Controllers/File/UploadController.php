@@ -92,15 +92,10 @@ class UploadController extends Controller
 
     private function storeData(Request $request, $fileName, $extension)
     {
-        // $model = '\App\Models\\' . str_replace(' ', '', ucwords(rtrim(str_replace('_', ' ', $request->source), 's')));
-        // $sourceId = $model::where('slug', $request->sourceSlug)->first()->value('id');
-
         return File::create([
             'slug' => $request->slug,
             'file_name' => $fileName,
             'extension' => $extension,
-            // 'source' => $request->source,
-            // 'source_id' => $sourceId,
         ]);
     }
 }

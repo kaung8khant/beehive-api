@@ -13,12 +13,6 @@ class ShopCategoryController extends Controller
     use StringHelper, FileHelper;
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/shop-categories",
      *      operationId="getShopCategoryLists",
@@ -52,7 +46,6 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-
     public function index(Request $request)
     {
         return ShopCategory::with('shopSubCategories')
@@ -60,13 +53,6 @@ class ShopCategoryController extends Controller
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Post(
@@ -92,7 +78,6 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -109,13 +94,6 @@ class ShopCategoryController extends Controller
 
         return response()->json($shopCategory, 201);
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\ShopCategory  $shopCategory
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Get(
@@ -142,20 +120,11 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-
     public function show($slug)
     {
         $shopCategory = ShopCategory::with('shopSubCategories')->where('slug', $slug)->firstOrFail();
         return response()->json($shopCategory, 200);
     }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\ShopCategory  $shopCategory
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Put(
@@ -190,7 +159,6 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-
     public function update(Request $request, $slug)
     {
         $shopCategory = ShopCategory::where('slug', $slug)->firstOrFail();
@@ -209,13 +177,6 @@ class ShopCategoryController extends Controller
 
         return response()->json($shopCategory, 200);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\ShopCategory  $shopCategory
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Delete(
@@ -242,7 +203,6 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-
     public function destroy($slug)
     {
         $shopCategory = ShopCategory::where('slug', $slug)->firstOrFail();
@@ -255,10 +215,6 @@ class ShopCategoryController extends Controller
 
         return response()->json(['message' => 'successfully deleted'], 200);
     }
-
-    /**
-     * Display a listing of the shop categories by one shop.
-     */
 
     /**
      * @OA\Get(

@@ -14,11 +14,6 @@ class MenuVariationController extends Controller
     use StringHelper, FileHelper;
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/menu-variations",
      *      operationId="getMenuVariationLists",
@@ -60,13 +55,6 @@ class MenuVariationController extends Controller
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Post(
@@ -140,12 +128,6 @@ class MenuVariationController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\MenuVariation  $menuVariation
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/menu-variations/{slug}",
      *      operationId="showMenuVariation",
@@ -176,13 +158,6 @@ class MenuVariationController extends Controller
         return response()->json($menu, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\MenuVariation  $menuVariation
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/menu-variations/{slug}",
@@ -273,12 +248,6 @@ class MenuVariationController extends Controller
         })->paginate(10);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\MenuVariation  $menuVariation
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/menu-variations/{slug}",

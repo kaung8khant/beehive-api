@@ -15,6 +15,7 @@ use Illuminate\Validation\Rule;
 class RestaurantBranchController extends Controller
 {
     use StringHelper;
+
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurant-branches",

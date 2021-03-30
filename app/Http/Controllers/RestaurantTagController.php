@@ -12,11 +12,6 @@ class RestaurantTagController extends Controller
     use StringHelper;
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurant-tags",
      *      operationId="getRestaurantTags",
@@ -48,12 +43,6 @@ class RestaurantTagController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Post(
      *      path="/api/v2/admin/restaurant-tags",
@@ -92,12 +81,6 @@ class RestaurantTagController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\RestaurantTag  $tag
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurant-tags/{slug}",
      *      operationId="showRestaurantTag",
@@ -127,13 +110,6 @@ class RestaurantTagController extends Controller
         return response()->json(RestaurantTag::where('slug', $slug)->firstOrFail(), 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\RestaurantTag  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/restaurant-tags/{slug}",
@@ -182,12 +158,6 @@ class RestaurantTagController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\RestaurantTag  $slug
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Delete(
      *      path="/api/v2/admin/restaurant-tags/{slug}",
      *      operationId="deleteRestaurantTags",
@@ -218,9 +188,6 @@ class RestaurantTagController extends Controller
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
-    /**
-     * Display a listing of the restaurant tags by one restaurant.
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurants/{slug}/restaurant-tags",

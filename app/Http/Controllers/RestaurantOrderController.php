@@ -81,6 +81,7 @@ class RestaurantOrderController extends Controller
 
         return $this->generateResponse($restaurantOrders, 200);
     }
+
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurant-orders/{slug}",
@@ -117,6 +118,7 @@ class RestaurantOrderController extends Controller
 
     //     return $this->generateResponse($order, 200);
     // }
+
     public function show($slug)
     {
         $order = RestaurantOrder::with('RestaurantOrderContact')

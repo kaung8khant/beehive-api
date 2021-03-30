@@ -12,11 +12,6 @@ class PromocodeController extends Controller
     use StringHelper;
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/promocodes",
      *      operationId="getPromocodeLists",
@@ -58,12 +53,6 @@ class PromocodeController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Post(
      *      path="/api/v2/admin/promocodes",
      *      operationId="storePromocode",
@@ -102,12 +91,6 @@ class PromocodeController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Promocode  $promocode
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/promocodes/{slug}",
      *      operationId="showPromocode",
@@ -137,13 +120,6 @@ class PromocodeController extends Controller
         return response()->json(Promocode::with('rules')->where('slug', $slug)->firstOrFail(), 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Promocode  $promocode
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/promocodes/{slug}",
@@ -264,7 +240,6 @@ class PromocodeController extends Controller
      *      }
      *)
      */
-
     public function addRules(Request $request, $slug)
     {
         $validatedData = $request->validate([
@@ -314,12 +289,6 @@ class PromocodeController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Promocode  $promocode
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/promocodes/{slug}",

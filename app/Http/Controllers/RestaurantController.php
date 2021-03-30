@@ -15,6 +15,7 @@ use Illuminate\Validation\Rule;
 class RestaurantController extends Controller
 {
     use StringHelper, FileHelper;
+
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurants",
@@ -49,7 +50,6 @@ class RestaurantController extends Controller
      *      }
      *)
      */
-
     public function index(Request $request)
     {
         return Restaurant::with('availableCategories', 'availableTags')

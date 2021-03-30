@@ -13,11 +13,6 @@ class MenuToppingController extends Controller
     use StringHelper, FileHelper;
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/menu-toppings",
      *      operationId="getMenuToppingLists",
@@ -60,13 +55,6 @@ class MenuToppingController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Post(
      *      path="/api/v2/admin/menu-toppings",
      *      operationId="storeMenuTopping",
@@ -98,7 +86,6 @@ class MenuToppingController extends Controller
      *      }
      *)
      */
-
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -126,13 +113,6 @@ class MenuToppingController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\MenuTopping  $menuTopping
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/menu-toppings/{slug}",
      *      operationId="showMenuTopping",
@@ -157,20 +137,11 @@ class MenuToppingController extends Controller
      *      }
      *)
      */
-
     public function show($slug)
     {
         $menuTopping = MenuTopping::with('menu')->where('slug', $slug)->firstOrFail();
         return response()->json($menuTopping, 200);
     }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\MenuTopping  $menuTopping
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Put(
@@ -205,7 +176,6 @@ class MenuToppingController extends Controller
      *      }
      *)
      */
-
     public function update(Request $request, $slug)
     {
         $menuTopping = MenuTopping::where('slug', $slug)->firstOrFail();
@@ -222,13 +192,6 @@ class MenuToppingController extends Controller
 
         return response()->json($menuTopping->load('menu'), 200);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\MenuTopping  $menuTopping
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Delete(
