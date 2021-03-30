@@ -52,6 +52,7 @@ Route::group(['prefix' => 'vendor'], function () {
 
         Route::get('restaurant-branches/{slug}/orders', 'RestaurantOrderController@getBranchOrders');
         Route::get('restaurant-orders/{slug}', 'RestaurantOrderController@show');
+        Route::post('restaurant-orders/{slug}/change-status', 'RestaurantOrderController@changeStatus');
         Route::delete('restaurant-orders/{slug}', 'RestaurantOrderController@destroy');
 
         // Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
