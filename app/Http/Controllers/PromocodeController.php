@@ -197,7 +197,7 @@ class PromocodeController extends Controller
             'description' => 'nullable|string',
             'rules' => 'required|array',
             'rules.*.value' => 'required|string',
-            'rules.*.data_type' => 'required|in:before date,after date,exact date,total usage,per user usage,matching',
+            'rules.*.data_type' => 'required|in:before_date,after_date,exact_date,total_usage,per_user_usage,matching',
         ];
 
         if ($slug) {
@@ -270,7 +270,7 @@ class PromocodeController extends Controller
         $validatedData = $request->validate([
             'rules' => 'required|array',
             'rules.*.value' => 'required|string',
-            'rules.*.data_type' => 'required|in:before date,after date,exact date,total usage,per user usage,matching',
+            'rules.*.data_type' => 'required|in:before_date,after_date,exact_date,total_usage,per_user_usage,matching',
         ]);
 
         $promocode = Promocode::where('slug', $slug)->firstOrFail();
