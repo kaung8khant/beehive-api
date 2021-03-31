@@ -376,9 +376,11 @@ class MenuController extends Controller
             'menu_toppings.*.price' => 'required|numeric',
             'menu_toppings.*.is_incremental' => 'required|boolean',
             'menu_toppings.*.max_quantity' => 'nullable|max:10',
+            'menu_toppings.*.image_slug' => 'nullable|exists:App\Models\File,slug',
             'menu_variations.*.menu_variation_values' => 'required|array',
             'menu_variations.*.menu_variation_values.*.value' => 'required|string',
             'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
+            'menu_variations.*.menu_variation_values.*.image_slug' => 'nullable|exists:App\Models\File,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ];
 
@@ -406,6 +408,9 @@ class MenuController extends Controller
             $variationValue['slug'] = $this->generateUniqueSlug();
             $variationValue['menu_variation_id'] = $variationId;
             MenuVariationValue::create($variationValue);
+            if (!empty($variationValue['image_slug'])) {
+                $this->updateFile($variationValue['image_slug'], 'menu_variation_values', $variationValue['slug']);
+            }
         }
     }
 
@@ -415,6 +420,9 @@ class MenuController extends Controller
             $topping['slug'] = $this->generateUniqueSlug();
             $topping['menu_id'] = $menuId;
             MenuTopping::create($topping);
+            if (!empty($topping['image_slug'])) {
+                $this->updateFile($topping['image_slug'], 'menu_toppings', $topping['slug']);
+            }
         }
     }
 
