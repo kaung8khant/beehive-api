@@ -56,6 +56,10 @@ class RestaurantOrderController extends Controller
     {
         $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact')
             ->with('restaurantOrderContact.township')
+            ->whereHas('restaurantOrderContact', function ($q) use ($request) {
+                $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', $request->filter);
+            })->orWhere('slug', $request->filter)
             ->latest()
             ->paginate($request->size)
             ->items();
@@ -66,8 +70,8 @@ class RestaurantOrderController extends Controller
     public function getBranchOrders(Request $request, $slug)
     {
         $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
-        // ->whereDate('order_date', '>=', $request->from)
-        // ->whereDate('order_date', '<=', $request->to)
+            // ->whereDate('order_date', '>=', $request->from)
+            // ->whereDate('order_date', '<=', $request->to)
             ->whereHas('restaurantBranch', function ($q) use ($slug) {
                 $q->where('slug', $slug);
             })
