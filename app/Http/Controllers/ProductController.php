@@ -317,6 +317,7 @@ class ProductController extends Controller
             'product_variations.*.product_variation_values' => 'required|array',
             'product_variations.*.product_variation_values.*.value' => 'required|string',
             'product_variations.*.product_variation_values.*.price' => 'required|numeric',
+            'product_variations.*.product_variation_values.*.image_slug' => 'nullable|exists:App\Models\File,slug',
 
         ];
 
@@ -424,6 +425,9 @@ class ProductController extends Controller
             $variationValue['slug'] = $this->generateUniqueSlug();
             $variationValue['product_variation_id'] = $variationId;
             ProductVariationValue::create($variationValue);
+            if (!empty($variationValue['image_slug'])) {
+                $this->updateFile($variationValue['image_slug'], 'product_variation_values', $variationValue['slug']);
+            }
         }
     }
 
