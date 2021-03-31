@@ -61,7 +61,7 @@ class RestaurantOrder extends Model
         $totalAmount = 0;
 
         foreach ($orderItems as $item) {
-            $amount = $item->amount + $item->tax + $item->discount;
+            $amount = $item->amount + $item->tax - $item->discount;
             $totalAmount += $amount;
         }
 

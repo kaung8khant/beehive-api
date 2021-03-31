@@ -11,8 +11,6 @@ class ShopOrderItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'shop_order_id',
-        'product_id',
         'product_name',
         'quantity',
         'amount',
@@ -20,15 +18,20 @@ class ShopOrderItem extends Model
         'discount',
         'variations',
         'shop',
-
+        'is_deleted',
+        'shop_order_id',
+        'product_id',
+        'shop_id',
     ];
 
     protected $hidden = [
         'id',
+        'is_deleted',
+        'product_id',
+        'shop_id',
         'created_at',
         'updated_at',
         'pivot',
-        'is_deleted',
     ];
 
     protected $casts = [
@@ -39,5 +42,10 @@ class ShopOrderItem extends Model
     public function shopOrder()
     {
         return $this->belongsTo(ShopOrder::class);
+    }
+
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class);
     }
 }

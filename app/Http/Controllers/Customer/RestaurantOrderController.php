@@ -182,6 +182,7 @@ class RestaurantOrderController extends Controller
             $item['tax'] = ($amount - $discount) * $menu->tax / 100;
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
+            $item['restaurant_id'] = $menu->restaurant_id;
             $item['variations'] = $variations;
             $item['toppings'] = $toppings;
 

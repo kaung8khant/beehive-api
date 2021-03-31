@@ -18,7 +18,6 @@ trait PromocodeHelper
 
     protected function validatePromo($slug)
     {
-
         $promo = $this->getPromo($slug);
         return $this->validateRule($promo->rules, $promo->id);
     }

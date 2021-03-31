@@ -44,6 +44,7 @@ class ShopOrderController extends Controller
 
         $validatedData = $this->validateOrder($request);
         $validatedData['customer_id'] = $this->customer_id;
+        $validatedData['promocode_id'] = null;
 
         if ($validatedData['promo_code_slug']) {
             $isPromoValid = $this->validatePromo($validatedData['promo_code_slug']);
@@ -147,7 +148,6 @@ class ShopOrderController extends Controller
 
     private function createOrderItems($orderId, $orderItems, $promoCodeId)
     {
-
         foreach ($orderItems as $item) {
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
             $product = $this->getProduct($item['slug']);
@@ -157,9 +157,12 @@ class ShopOrderController extends Controller
                 $discount = $this->calculateDiscount($amount, $promoCodeId);
             }
 
-            $item['shop'] = $this->getShop($item['slug']);
+            $shop = $this->getShop($item['slug']);
+
+            $item['shop'] = $shop;
             $item['shop_order_id'] = $orderId;
             $item['product_id'] = $product->id;
+            $item['shop_id'] = $shop->id;
             $item['product_name'] = $product->name;
             $item['amount'] = $amount;
             $item['variations'] = $variations;
@@ -203,7 +206,7 @@ class ShopOrderController extends Controller
 
     private function getShop($slug)
     {
-        $product = Product::with("shop")->where('slug', $slug)->firstOrFail();
+        $product = Product::with('shop')->where('slug', $slug)->firstOrFail();
         return $product->shop;
     }
 

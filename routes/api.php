@@ -19,6 +19,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('settings/{key}', 'SettingController@show');
             Route::put('settings/update', 'SettingController@updateSetting');
 
+            /* Dashboard */
+            Route::get('dashboard/counts', 'Dashboard\AdminDashboardController@getCountData');
+            Route::get('dashboard/restaurant-orders', 'Dashboard\AdminDashboardController@getRestaurantOrders');
+            Route::get('dashboard/shop-orders', 'Dashboard\AdminDashboardController@getShopOrders');
+            /* Dashboard */
+
             Route::resource('roles', 'RoleController');
             Route::resource('users', 'UserController');
             Route::patch('users/toggle-enable/{slug}', 'UserController@toggleEnable');
