@@ -3,10 +3,6 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
-use App\Models\Promocode;
-use App\Models\Restaurant;
-use App\Models\Shop;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,11 +12,11 @@ class AdminDashboardController extends Controller
     public function getCountData()
     {
         $result = [
-            'restaurants' => Restaurant::count(),
-            'shops' => Shop::count(),
-            'customers' => Customer::count(),
+            'restaurants' => DB::table('restaurants')->count(),
+            'shops' => DB::table('shops')->count(),
+            'customers' => DB::table('customers')->count(),
             'drivers' => $this->getDriversCount(),
-            'promo_codes' => Promocode::count(),
+            'promo_codes' => DB::table('promocodes')->count(),
         ];
 
         return response()->json($result);
