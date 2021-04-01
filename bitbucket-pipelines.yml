@@ -24,7 +24,7 @@ pipelines:
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: "ap-southeast-1"
+                AWS_DEFAULT_REGION: "us-east-1"
                 APPLICATION_NAME: "beehive-api-production"
                 ENVIRONMENT_NAME: "beehive-api-production-env"
                 ZIP_FILE: "application.zip"
