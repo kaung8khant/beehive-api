@@ -28,5 +28,5 @@ pipelines:
                 APPLICATION_NAME: "beehive-api-production"
                 ENVIRONMENT_NAME: "beehive-api-production-env"
                 ZIP_FILE: "application.zip"
-                S3_BUCKET: "beehive-api-production-elasticbeanstalk-deployment"
+                S3_BUCKET: "elasticbeanstalk-us-east-1-565186916354"
                 VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_COMMIT-$BITBUCKET_BUILD_NUMBER"
