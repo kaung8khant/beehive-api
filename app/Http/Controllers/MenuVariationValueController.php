@@ -86,9 +86,11 @@ class MenuVariationValueController extends Controller
         $validatedData['menu_variation_id'] = $this->getMenuVariationId($request->menu_variation_slug);
 
         $menuVariationValue = MenuVariationValue::create($validatedData);
-        if (!empty($request->image_slug)) {
+
+        if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'menu_variation_values', $menuVariationValue->slug);
         }
+
         return $request;
 
         // return response()->json($menuVariationValue->load('menuVariation'), 201);
