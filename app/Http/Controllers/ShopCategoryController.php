@@ -90,7 +90,9 @@ class ShopCategoryController extends Controller
             ]
         ));
 
-        $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
+        }
 
         return response()->json($shopCategory, 201);
     }

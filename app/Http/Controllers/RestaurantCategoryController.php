@@ -78,7 +78,9 @@ class RestaurantCategoryController extends Controller
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
 
-        $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
+        }
         return response()->json($restaurantCategory, 201);
     }
 

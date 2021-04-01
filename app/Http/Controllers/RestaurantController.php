@@ -112,7 +112,9 @@ class RestaurantController extends Controller
 
         $restaurantId = $restaurant->id;
 
-        $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
+        }
 
         $this->createRestaurantBranch($restaurantId, $validatedData['restaurant_branch']);
 

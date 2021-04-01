@@ -108,7 +108,9 @@ class ShopController extends Controller
         $shop = Shop::create($validatedData, $townshipId);
         $shopId = $shop->id;
 
-        $this->updateFile($request->image_slug, 'shops', $shop->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'shops', $shop->slug);
+        }
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->availableTags()->attach($shopTags);

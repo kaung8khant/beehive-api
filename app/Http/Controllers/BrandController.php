@@ -88,7 +88,9 @@ class BrandController extends Controller
             ]
         ));
 
-        $this->updateFile($request->image_slug, 'brands', $brand->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'brands', $brand->slug);
+        }
 
         return response()->json($brand, 201);
     }
