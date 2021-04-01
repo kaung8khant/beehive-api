@@ -89,7 +89,7 @@ class RestaurantBranchController extends Controller
 
         $validatedData = $request->validate([
             'slug' => 'required|unique:restaurant_branches',
-            'name' => 'required|unique:restaurant_branches',
+            'name' => 'required',
             'address' => 'required',
             'contact_number' => 'required',
             'opening_time' => 'required|date_format:H:i',
