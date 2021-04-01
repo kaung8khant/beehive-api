@@ -25,7 +25,7 @@ pipelines:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
                 AWS_DEFAULT_REGION: "us-east-1"
-                APPLICATION_NAME: "beehive-api-production"
+                APPLICATION_NAME: "Beehive API Production"
                 ENVIRONMENT_NAME: "beehive-api-production-env"
                 ZIP_FILE: "application.zip"
                 S3_BUCKET: "elasticbeanstalk-us-east-1-565186916354"
