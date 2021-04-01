@@ -8,6 +8,7 @@ use App\Models\Promocode;
 use App\Models\Restaurant;
 use App\Models\Shop;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
@@ -108,9 +109,28 @@ class AdminDashboardController extends Controller
         return response()->json($result);
     }
 
-    public function getOrderChartData()
+    public function getOrderChartData(Request $request)
     {
+        $restaurantOrders = DB::table('restaurant_orders')
+            ->whereYear('created_at', $request->year)
+            ->select(DB::raw('MONTH(created_at) month_number'), DB::raw('DATE_FORMAT(created_at, "%b") AS month'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('month_number', 'month')
+            ->orderBy('month_number')
+            ->get();
 
+        $shopOrders = DB::table('shop_orders')
+            ->whereYear('created_at', $request->year)
+            ->select(DB::raw('MONTH(created_at) month_number'), DB::raw('DATE_FORMAT(created_at, "%b") AS month'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('month_number', 'month')
+            ->orderBy('month_number')
+            ->get();
+
+        $result = [
+            'restaurant_orders' => $restaurantOrders,
+            'shop_orders' => $shopOrders,
+        ];
+
+        return response()->json($result);
     }
 
     private function getDriversCount()
