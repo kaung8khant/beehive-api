@@ -11,7 +11,7 @@ pipelines:
       - step:
           name: "Package Project"
           script:
-            - zip -r application.zip app bootstrap config database public resources routes storage tests .env .styleci.yml artisan composer.json composer.lock package.json phpunit.xml README.md server.php webpack.mix.js
+            - zip -r application.zip . -x "vendor/*"
           # Define an artifact to pass the zip file to the next step
           artifacts:
             - application.zip
@@ -28,3 +28,5 @@ pipelines:
                 APPLICATION_NAME: "beehive-api-production"
                 ENVIRONMENT_NAME: "beehive-api-production-env"
                 ZIP_FILE: "application.zip"
+                S3_BUCKET: "beehive-api-production-elasticbeanstalk-deployment"
+                VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_COMMIT-$BITBUCKET_BUILD_NUMBER"
