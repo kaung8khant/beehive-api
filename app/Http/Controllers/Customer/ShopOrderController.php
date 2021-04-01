@@ -148,14 +148,26 @@ class ShopOrderController extends Controller
 
     private function createOrderItems($orderId, $orderItems, $promoCodeId)
     {
+
+        $total = 0;
+
+        foreach ($orderItems as $item) {
+            $variations = collect($this->prepareVariations($item['variation_value_slugs']));
+            $product = $this->getProduct($item['slug']);
+            $total += $product->price + $variations->sum('price');
+        }
+
+        $promoPercentage = 0;
+
+        if ($promoCodeId) {
+            $promoPercentage = $this->getPercentage($total, $promoCodeId);
+        }
+
         foreach ($orderItems as $item) {
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
             $product = $this->getProduct($item['slug']);
             $amount = $product->price + $variations->sum('price');
-            $discount = 0;
-            if ($promoCodeId) {
-                $discount = $this->calculateDiscount($amount, $promoCodeId);
-            }
+            $discount = $amount * $promoPercentage / 100;
 
             $shop = $this->getShop($item['slug']);
 

@@ -16,13 +16,13 @@ trait PromocodeHelper
         }
     }
 
-    protected function validatePromo($slug)
+    public function validatePromo($slug)
     {
         $promo = $this->getPromo($slug);
         return $this->validateRule($promo->rules, $promo->id);
     }
 
-    protected function validateRule($rules, $id)
+    public function validateRule($rules, $id)
     {
         $this->promo_id = $id;
         $returnvalue = false;
@@ -36,13 +36,23 @@ trait PromocodeHelper
         return $returnvalue;
     }
 
-    protected function calculateDiscount($price, $id)
+    public function calculateDiscount($price, $id)
     {
         $promo = Promocode::with('rules')->where('id', $id)->first();
         if ($promo->type === "fix") {
             return $promo->amount;
         } else {
             return $price * $promo->amount / 100;
+        }
+    }
+
+    public function getPercentage($price, $id)
+    {
+        $promo = Promocode::with('rules')->where('id', $id)->first();
+        if ($promo->type === "fix") {
+            return ($promo->amount / $price) * 100;
+        } else {
+            return $promo->amount;
         }
     }
 

@@ -145,6 +145,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('promocodes/add-rules/{slug}', 'PromocodeController@addRules');
             Route::delete('rules/{id}', 'PromocodeController@removeRule');
             /* Promocode */
+
+            /* Device Token */
+            Route::post('/register-device', 'UserController@registerToken');
+            /* Device Token */
         });
     });
 
