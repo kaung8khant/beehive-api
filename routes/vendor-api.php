@@ -16,6 +16,13 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('refresh-token', 'Auth\VendorAuthController@refreshToken');
         Route::post('logout', 'Auth\VendorAuthController@logout');
 
+        /* Dashboard */
+        Route::get('dashboard/order-data', 'Dashboard\VendorDashboardController@getOrderData');
+        Route::get('dashboard/restaurant-orders', 'Dashboard\AdminDashboardController@getRestaurantOrders');
+        Route::get('dashboard/shop-orders', 'Dashboard\AdminDashboardController@getShopOrders');
+        Route::get('dashboard/orders', 'Dashboard\AdminDashboardController@getOrderChartData');
+        /* Dashboard */
+
         /* restaurant */
         /* restaurant categories */
         Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');

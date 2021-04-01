@@ -29,6 +29,7 @@ class RestaurantOrder extends Model
         'payment_mode',
         'delivery_mode',
         'restaurant_branch_info',
+        'order_status',
         'customer_id',
         'restaurant_id',
         'restaurant_branch_id',
@@ -48,12 +49,7 @@ class RestaurantOrder extends Model
         'restaurant_branch_info' => AsArrayObject::class,
     ];
 
-    protected $appends = ['order_status', 'total_amount'];
-
-    public function getOrderStatusAttribute()
-    {
-        return $this->restaurantOrderStatuses()->latest()->first()->status;
-    }
+    protected $appends = ['total_amount'];
 
     public function getTotalAmountAttribute()
     {

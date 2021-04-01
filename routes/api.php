@@ -23,7 +23,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('dashboard/counts', 'Dashboard\AdminDashboardController@getCountData');
             Route::get('dashboard/restaurant-orders', 'Dashboard\AdminDashboardController@getRestaurantOrders');
             Route::get('dashboard/shop-orders', 'Dashboard\AdminDashboardController@getShopOrders');
-            Route::get('dashboard/orders', 'Dashboard\AdminDashboardController@getOrderChartData');
+            Route::get('dashboard/order-data', 'Dashboard\AdminDashboardController@getOrderChartData');
             /* Dashboard */
 
             Route::resource('roles', 'RoleController');
