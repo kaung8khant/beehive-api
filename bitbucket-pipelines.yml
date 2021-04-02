@@ -11,8 +11,21 @@ pipelines:
       - step:
           name: "Package Project"
           script:
+            # copy env file
             - cp .env.example .env
+            - if [ -e "/tmp/dotenv" ]; then echo 'Already exists' >&2 else curl -o /tmp/dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv fi
+            - /tmp/dotenv -f .env set APP_NAME=blablatest APP_KEY=${APP_KEY} JWT_SECRET=${JWT_SECRET}
+            # install dependencies
+            - composer install
+            - php artisan l5-swagger:generate
+            - mkdir -p public/docs
+            - cp storage/api-docs/api-docs.json public/docs/api-docs.json
+            - php artisan config:cache
+            - php artisan route:cache
             - zip -r application.zip . -x "vendor/*"
+          caches:
+            - composer
+            - /tmp/dotenv
           # Define an artifact to pass the zip file to the next step
           artifacts:
             - application.zip
