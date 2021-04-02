@@ -10,7 +10,7 @@ pipelines:
     master:
       - parallel:
           - step:
-              name: Security Scan for Staging
+              name: Security Scan for Production
               script:
                 # Run a security scan for sensitive data.
                 # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
@@ -47,7 +47,7 @@ pipelines:
                 - zip -r application.zip . -x "vendor/*" "dotenv" ".profile_env"
 
               caches:
-                - composer
+                - composer-cache
               # Define an artifact to pass the zip file to the next step
               artifacts:
                 - application.zip
@@ -66,4 +66,4 @@ pipelines:
                 VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_BUILD_NUMBER"
 definitions:
   caches:
-    composer: /composer/cache
+    composer-cache: /composer/cache
