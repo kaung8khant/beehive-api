@@ -30,7 +30,7 @@ pipelines:
               AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
               AWS_BUCKET=${AWS_BUCKET} \
               BOOMSMS_API_KEY=${BOOMSMS_API_KEY} \
-              FIREBASE_SERVER_KEY=${FIREBASE_SERVER_KEY}
+              FIREBASE_SERVER_KEY=${FIREBASE_SERVER_KEY} \
             # install dependencies
             - composer install
             - php artisan l5-swagger:generate
