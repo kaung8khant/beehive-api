@@ -26,7 +26,7 @@ pipelines:
             - php artisan l5-swagger:generate
             - mkdir -p public/docs
             - cp storage/api-docs/api-docs.json public/docs/api-docs.json
-            - zip -r application.zip . -x vendor/* dotenv .profile_env
+            - zip -r application.zip . -x "vendor/*" "dotenv" ".profile_env"
           caches:
             - composer
           # Define an artifact to pass the zip file to the next step
