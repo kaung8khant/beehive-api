@@ -16,6 +16,13 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('refresh-token', 'Auth\VendorAuthController@refreshToken');
         Route::post('logout', 'Auth\VendorAuthController@logout');
 
+        /* Dashboard */
+        Route::get('dashboard/order-data', 'Dashboard\VendorDashboardController@getOrderData');
+        Route::get('dashboard/restaurant-orders', 'Dashboard\AdminDashboardController@getRestaurantOrders');
+        Route::get('dashboard/shop-orders', 'Dashboard\AdminDashboardController@getShopOrders');
+        Route::get('dashboard/orders', 'Dashboard\AdminDashboardController@getOrderChartData');
+        /* Dashboard */
+
         /* restaurant */
         /* restaurant categories */
         Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
@@ -30,6 +37,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('restaurant-branches/{slug}/available-menus', 'MenuController@getAvailableMenusByBranch');
         Route::get('menus/{slug}', 'MenuController@show');
         Route::post('menus', 'MenuController@store');
+        Route::post('menus/import', 'MenuController@import');
         Route::put('menus/{slug}', 'MenuController@update');
         Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
         Route::post('restaurant-branches/{restaurantBranchSlug}/menus/{slug}', 'RestaurantBranchController@toggleAvailable');
@@ -50,7 +58,11 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::delete('menu-toppings/{slug}', 'MenuToppingController@destroy');
 
         Route::get('restaurant-branches/{slug}/orders', 'RestaurantOrderController@getBranchOrders');
-        Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
+        Route::get('restaurant-orders/{slug}', 'RestaurantOrderController@show');
+        Route::post('restaurant-orders/{slug}/change-status', 'RestaurantOrderController@changeStatus');
+        Route::delete('restaurant-orders/{slug}', 'RestaurantOrderController@destroy');
+
+        // Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
         /* restaurant */
 
         /* shop */
@@ -71,6 +83,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::put('products/{slug}', 'ProductController@update');
         Route::delete('products/{slug}', 'ProductController@destroy');
         Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
+        Route::post('products/import', 'ProductController@import');
 
         Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
         Route::get('product-variations/{slug}', 'ProductVariationController@show');
@@ -90,7 +103,6 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('cities', 'CityController@index');
         Route::get('townships', 'TownshipController@index');
         Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
-
 
         Route::get('customers', 'CustomerController@index');
         Route::post('customers', 'CustomerController@store');

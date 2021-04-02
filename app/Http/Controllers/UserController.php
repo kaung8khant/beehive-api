@@ -2,28 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Role;
-use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantBranch;
+use App\Models\Role;
 use App\Models\Shop;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 use App\Models\UserSession;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserController extends Controller
 {
     use StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/users",
@@ -103,13 +97,6 @@ class UserController extends Controller
             ->paginate(10);
     }
 
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Post(
      *      path="/api/v2/admin/users",
@@ -147,7 +134,7 @@ class UserController extends Controller
                 'password' => 'required|min:6',
             ],
             [
-                'phone_number.phone' => 'Invalid phone number.'
+                'phone_number.phone' => 'Invalid phone number.',
             ]
         );
 
@@ -175,7 +162,7 @@ class UserController extends Controller
                 'shop_slug' => 'required|exists:App\Models\Shop,slug',
             ],
             [
-                'phone_number.phone' => 'Invalid phone number.'
+                'phone_number.phone' => 'Invalid phone number.',
             ]
         );
 
@@ -204,7 +191,7 @@ class UserController extends Controller
                 'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             ],
             [
-                'phone_number.phone' => 'Invalid phone number.'
+                'phone_number.phone' => 'Invalid phone number.',
             ]
         );
 
@@ -229,12 +216,6 @@ class UserController extends Controller
         return RestaurantBranch::where('slug', $slug)->first()->id;
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/users/{slug}",
@@ -265,13 +246,6 @@ class UserController extends Controller
         return User::with('roles')->where('slug', $slug)->firstOrFail();
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/users/{slug}",
@@ -310,17 +284,11 @@ class UserController extends Controller
         $user = User::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate([
-            // 'username' => [
-            //     'required',
-            //     Rule::unique('users')->ignore($user->id),
-            // ],
             'name' => 'required',
             'phone_number' => [
                 'required',
                 Rule::unique('users')->ignore($user->id),
             ],
-            // 'roles' => 'required|array',
-            // 'roles.*' => 'exists:App\Models\Role,slug',
         ]);
 
         $user->update($validatedData);
@@ -379,12 +347,6 @@ class UserController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Delete(
      *      path="/api/v2/admin/users/{slug}",
      *      operationId="deleteUser",
@@ -421,12 +383,6 @@ class UserController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-     * Toggle the is_enable column for users table.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Patch(
      *      path="/api/v2/admin/users/toggle-enable/{slug}",
@@ -483,7 +439,6 @@ class UserController extends Controller
         } else {
             UserSession::create($data);
         }
-
 
         return response()->json(['message' => 'Success.'], 200);
     }

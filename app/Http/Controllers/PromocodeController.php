@@ -12,11 +12,6 @@ class PromocodeController extends Controller
     use StringHelper;
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/promocodes",
      *      operationId="getPromocodeLists",
@@ -58,12 +53,6 @@ class PromocodeController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Post(
      *      path="/api/v2/admin/promocodes",
      *      operationId="storePromocode",
@@ -102,12 +91,6 @@ class PromocodeController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Promocode  $promocode
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/promocodes/{slug}",
      *      operationId="showPromocode",
@@ -138,13 +121,6 @@ class PromocodeController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Promocode  $promocode
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @OA\Put(
      *      path="/api/v2/admin/promocodes/{slug}",
      *      operationId="updatePromocode",
@@ -197,7 +173,7 @@ class PromocodeController extends Controller
             'description' => 'nullable|string',
             'rules' => 'required|array',
             'rules.*.value' => 'required|string',
-            'rules.*.data_type' => 'required|in:before date,after date,exact date,total usage,per user usage,matching',
+            'rules.*.data_type' => 'required|in:before_date,after_date,exact_date,total_usage,per_user_usage,matching',
         ];
 
         if ($slug) {
@@ -224,7 +200,7 @@ class PromocodeController extends Controller
         }
     }
 
-     /**
+    /**
      * @OA\Post(
      *      path="/api/v2/admin/promocodes/add-rules/{slug}",
      *      operationId="addRules",
@@ -264,13 +240,12 @@ class PromocodeController extends Controller
      *      }
      *)
      */
-
     public function addRules(Request $request, $slug)
     {
         $validatedData = $request->validate([
             'rules' => 'required|array',
             'rules.*.value' => 'required|string',
-            'rules.*.data_type' => 'required|in:before date,after date,exact date,total usage,per user usage,matching',
+            'rules.*.data_type' => 'required|in:before_date,after_date,exact_date,total_usage,per_user_usage,matching',
         ]);
 
         $promocode = Promocode::where('slug', $slug)->firstOrFail();
@@ -314,12 +289,6 @@ class PromocodeController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Promocode  $promocode
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/promocodes/{slug}",

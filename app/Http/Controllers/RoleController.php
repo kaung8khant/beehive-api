@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StringHelper;
 use App\Models\Role;
 use Illuminate\Http\Request;
-use App\Helpers\StringHelper;
 use Illuminate\Validation\Rule;
 
 class RoleController extends Controller
@@ -12,11 +12,6 @@ class RoleController extends Controller
     use StringHelper;
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @OA\Get(
      *      path="/api/v2/admin/roles",
      *      operationId="getRoleLists",
@@ -45,13 +40,6 @@ class RoleController extends Controller
     {
         return Role::paginate(10);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Post(
@@ -90,12 +78,6 @@ class RoleController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/roles/{slug}",
      *      operationId="showRole",
@@ -126,13 +108,6 @@ class RoleController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
-     /**
      * @OA\Put(
      *      path="/api/v2/admin/roles/{slug}",
      *      operationId="updateRole",
@@ -179,12 +154,6 @@ class RoleController extends Controller
         return response()->json($role, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/roles/{slug}",

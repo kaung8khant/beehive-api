@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Shop;
+use Illuminate\Database\Seeder;
+
 // use App\Models\ShopTag;
 
 class ShopShopTagSeeder extends Seeder

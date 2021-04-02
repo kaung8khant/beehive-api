@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\City;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CityController extends Controller
 {
@@ -160,7 +160,7 @@ class CityController extends Controller
             'name' => [
                 'required',
                 Rule::unique('cities')->ignore($city->id),
-            ]
+            ],
         ]));
 
         return response()->json($city, 200);

@@ -2,21 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
+use App\Helpers\StringHelper;
+use App\Models\RestaurantCategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Helpers\FileHelper;
-use App\Models\RestaurantCategory;
 
 class RestaurantCategoryController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurant-categories",
@@ -49,12 +44,6 @@ class RestaurantCategoryController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Post(
      *      path="/api/v2/admin/restaurant-categories",
@@ -89,16 +78,12 @@ class RestaurantCategoryController extends Controller
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
 
-        $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
+        }
         return response()->json($restaurantCategory, 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurant-categories/{slug}",
@@ -130,13 +115,6 @@ class RestaurantCategoryController extends Controller
         return response()->json($restaurantCategory, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/restaurant-categories/{slug}",
@@ -189,12 +167,6 @@ class RestaurantCategoryController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Delete(
      *      path="/api/v2/admin/restaurant-categories/{slug}",
      *      operationId="deleteRestaurantCategory",
@@ -232,12 +204,6 @@ class RestaurantCategoryController extends Controller
     }
 
     /**
-     * Display a listing of the restaurant categories by one restaurant.
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurants/{slug}/restaurant-categories",
      *      operationId="getCategoriesByRestaurant",
@@ -274,17 +240,16 @@ class RestaurantCategoryController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'restaurant_categories' => 'nullable|array',
             'restaurant_categories.*.name' => 'required|unique:restaurant_categories',
         ]);
 
-        $restaurantCategories=array();
         foreach ($validatedData['restaurant_categories'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($restaurantCategories, RestaurantCategory::create($data));
+            RestaurantCategory::create($data);
         }
 
-        return response()->json($restaurantCategories, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

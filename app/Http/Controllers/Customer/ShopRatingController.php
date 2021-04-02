@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Auth;
 use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Controller;
+use App\Models\Product;
+use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopRating;
-use App\Models\Shop;
-use App\Models\Product;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class ShopRatingController extends Controller
 {
@@ -21,7 +21,7 @@ class ShopRatingController extends Controller
         $validator = $this->validateRating($request);
 
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $validatedData = $validator->validated();
@@ -30,16 +30,16 @@ class ShopRatingController extends Controller
 
         $customerId = Auth::guard('customers')->user()->id;
 
-        if($customerId!==$shopOrder->customer_id){
-            return $this->generateResponse(['Unauthorize process.'],401);
+        if ($customerId !== $shopOrder->customer_id) {
+            return $this->generateResponse(['Unauthorize process.'], 401);
         }
 
         for ($i = 0; $i < count($validatedData['ratings']); $i++) {
             if ($validatedData['ratings'][$i]['target_type'] === 'shop') {
-                $shop_id = Shop::where('slug',$validatedData['ratings'][$i]['target_slug'])->first()->id;
+                $shop_id = Shop::where('slug', $validatedData['ratings'][$i]['target_slug'])->first()->id;
                 $validatedData['ratings'][$i]['target_id'] = $shop_id;
-            }elseif ($validatedData['ratings'][$i]['target_type'] === 'product') {
-                $product_id = Product::where('slug',$validatedData['ratings'][$i]['target_slug'])->first()->id;
+            } elseif ($validatedData['ratings'][$i]['target_type'] === 'product') {
+                $product_id = Product::where('slug', $validatedData['ratings'][$i]['target_slug'])->first()->id;
                 $validatedData['ratings'][$i]['target_id'] = $product_id;
             }
 
@@ -56,7 +56,7 @@ class ShopRatingController extends Controller
             }
         }
 
-        return $this->generateResponse('Success.', 200, TRUE);
+        return $this->generateResponse('Success.', 200, true);
     }
 
     private function validateRating($request)

@@ -25,10 +25,12 @@ class CreateShopOrderItemsTable extends Migration
             $table->boolean('is_deleted')->default(0);
             $table->unsignedBigInteger('shop_order_id');
             $table->unsignedBigInteger('product_id')->nullable();
+            $table->unsignedBigInteger('shop_id')->nullable();
             $table->timestamps();
             $table->unique(['shop_order_id', 'product_id']);
             $table->foreign('shop_order_id')->references('id')->on('shop_orders')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('set null');
+            $table->foreign('shop_id')->references('id')->on('shops')->onDelete('set null');
         });
     }
 

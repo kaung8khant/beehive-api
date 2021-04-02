@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
+use Illuminate\Database\Seeder;
 
 class ShopCategorySeeder extends Seeder
 {

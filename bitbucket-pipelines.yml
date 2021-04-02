@@ -1,0 +1,52 @@
+# Template PHP Build
+
+# This template allows you to validate your PHP application.
+# The workflow allows running tests and code linting on the default branch.
+
+image: composer:2.0
+
+pipelines:
+  branches:
+    master:
+      - step:
+          name: "Package Project"
+          # Track production environments builds using deployments.
+          deployment: Production
+          script:
+            # copy env file
+            - cp .env.example .env
+            - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
+            - chmod +x dotenv
+            - ./dotenv -f .env set APP_KEY=${APP_KEY} \
+              JWT_SECRET=${JWT_SECRET} \
+              DB_DATABASE=${DB_DATABASE} \
+              DB_USERNAME=${DB_USERNAME} \
+              DB_HOST=${DB_HOST} \
+              APP_ENV=${APP_ENV} \
+              BOOMSMS_API_KEY=${BOOMSMS_API_KEY} \
+              FIREBASE_SERVER_KEY=${FIREBASE_SERVER_KEY} \
+              AWS_BUCKET=${AWS_BUCKET}
+            # install dependencies
+            - composer install
+            - php artisan l5-swagger:generate
+            - mkdir -p public/docs
+            - cp storage/api-docs/api-docs.json public/docs/api-docs.json
+            - zip -r application.zip . -x "vendor/*" "dotenv" ".profile_env"
+          caches:
+            - composer
+          # Define an artifact to pass the zip file to the next step
+          artifacts:
+            - application.zip
+      - step:
+          name: "Deploy to Production"
+          script:
+            - pipe: atlassian/aws-elasticbeanstalk-deploy:0.7.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                APPLICATION_NAME: "Beehive API Production"
+                ENVIRONMENT_NAME: "beehive-api-production-env"
+                ZIP_FILE: "application.zip"
+                S3_BUCKET: "elasticbeanstalk-ap-southeast-1-565186916354"
+                VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_COMMIT-$BITBUCKET_BUILD_NUMBER"

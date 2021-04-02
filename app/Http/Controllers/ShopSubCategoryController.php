@@ -2,21 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ShopSubCategoryController extends Controller
 {
     use StringHelper;
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Get(
@@ -61,13 +55,6 @@ class ShopSubCategoryController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Post(
      *      path="/api/v2/admin/sub-categories",
      *      operationId="storeSubcategory",
@@ -91,7 +78,6 @@ class ShopSubCategoryController extends Controller
      *      }
      *)
      */
-
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -107,13 +93,6 @@ class ShopSubCategoryController extends Controller
         $subCategory = ShopSubCategory::create($validatedData);
         return response()->json($subCategory->load('shopCategory'), 201);
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Get(
@@ -140,20 +119,12 @@ class ShopSubCategoryController extends Controller
      *      }
      *)
      */
-
     public function show($slug)
     {
         $subCategory = ShopSubCategory::with('shopCategory')->where('slug', $slug)->firstOrFail();
         return response()->json($subCategory, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/sub-categories/{slug}",
@@ -205,19 +176,12 @@ class ShopSubCategoryController extends Controller
         // Update the category ids of related products
         foreach ($subCategory->products as $product) {
             $product->update([
-                'shop_category_id' => $validatedData['shop_category_id']
+                'shop_category_id' => $validatedData['shop_category_id'],
             ]);
         }
 
         return response()->json($subCategory->load('shopCategory')->unsetRelation('products'), 200);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Delete(
@@ -244,7 +208,6 @@ class ShopSubCategoryController extends Controller
      *      }
      *)
      */
-
     public function destroy($slug)
     {
         ShopSubCategory::where('slug', $slug)->firstOrFail()->delete();
@@ -256,13 +219,6 @@ class ShopSubCategoryController extends Controller
         return ShopCategory::where('slug', $slug)->first()->id;
     }
 
-    /**
-     * Display a listing of the sub categories by one shop category.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/shop-categories/{slug}/sub-categories",
@@ -309,20 +265,18 @@ class ShopSubCategoryController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'shop_sub_categories' => 'nullable|array',
             'shop_sub_categories.*.name' => 'required|unique:shop_sub_categories',
             'shop_sub_categories.*.shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ]);
 
-        $shopSubCategories=array();
         foreach ($validatedData['shop_sub_categories'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
             $data['shop_category_id'] = $this->getShopCategoryId($data['shop_category_slug']);
-            $subCategory=ShopSubCategory::create($data);
-            array_push($shopSubCategories, $subCategory->load('shopCategory'));
+            ShopSubCategory::create($data);
         }
 
-        return response()->json($shopSubCategories, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

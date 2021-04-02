@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-
 class ShopTag extends Model
 {
     use HasFactory;

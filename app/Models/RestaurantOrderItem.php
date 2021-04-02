@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RestaurantOrderItem extends Model
@@ -21,12 +21,14 @@ class RestaurantOrderItem extends Model
         'toppings',
         'restaurant_order_id',
         'menu_id',
+        'restaurant_id',
     ];
 
     protected $hidden = [
         'id',
         'restaurant_order_id',
         'menu_id',
+        'restaurant_id',
         'created_at',
         'updated_at',
     ];

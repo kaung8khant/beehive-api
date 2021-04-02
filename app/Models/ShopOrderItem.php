@@ -2,17 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\ShopOrder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ShopOrder;
 
 class ShopOrderItem extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'shop_order_id',
-        'product_id',
         'product_name',
         'quantity',
         'amount',
@@ -20,24 +18,34 @@ class ShopOrderItem extends Model
         'discount',
         'variations',
         'shop',
-        
+        'is_deleted',
+        'shop_order_id',
+        'product_id',
+        'shop_id',
     ];
 
     protected $hidden = [
         'id',
+        'is_deleted',
+        'product_id',
+        'shop_id',
         'created_at',
         'updated_at',
         'pivot',
-        'is_deleted',
     ];
 
     protected $casts = [
         'shop' => 'object',
-        'variations'=> 'array'
+        'variations' => 'array',
     ];
 
     public function shopOrder()
     {
         return $this->belongsTo(ShopOrder::class);
+    }
+
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class);
     }
 }

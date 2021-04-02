@@ -2,27 +2,29 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\NotificationHelper;
+use App\Helpers\PromocodeHelper;
+use App\Helpers\ResponseHelper;
+use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Menu;
+use App\Models\MenuTopping;
+use App\Models\MenuVariationValue;
+use App\Models\Promocode;
+use App\Models\RestaurantBranch;
+use App\Models\RestaurantOrder;
+use App\Models\RestaurantOrderContact;
+use App\Models\RestaurantOrderItem;
+use App\Models\RestaurantOrderStatus;
+use App\Models\Setting;
+use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use App\Helpers\StringHelper;
-use App\Helpers\ResponseHelper;
-use App\Helpers\NotificationHelper;
-use App\Models\RestaurantBranch;
-use App\Models\RestaurantOrder;
-use App\Models\RestaurantOrderStatus;
-use App\Models\RestaurantOrderContact;
-use App\Models\RestaurantOrderItem;
-use App\Models\Menu;
-use App\Models\MenuTopping;
-use App\Models\Township;
-use App\Models\MenuVariationValue;
-use App\Models\Setting;
 
 class RestaurantOrderController extends Controller
 {
-    use StringHelper, ResponseHelper, NotificationHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
 
     public function index(Request $request)
     {
@@ -61,7 +63,7 @@ class RestaurantOrderController extends Controller
 
         $validator = $this->validateOrder($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $validatedData = $validator->validated();
@@ -72,15 +74,25 @@ class RestaurantOrderController extends Controller
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
+        $validatedData['promocode_id'] = null;
+
+        if ($validatedData['promo_code_slug']) {
+            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug']);
+            if (!$isPromoValid) {
+                return $this->generateResponse('Invalid promo code.', 406, true);
+            }
+
+            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
+        }
 
         $order = RestaurantOrder::create($validatedData);
         $orderId = $order->id;
 
         $this->createOrderStatus($orderId);
         $this->createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        $this->createOrderItems($orderId, $validatedData['order_items']);
+        $this->createOrderItems($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
 
-        // $this->notify($validatedData['restaurant_branch_slug'], ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
+        $this->notify($validatedData['restaurant_branch_slug'], ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
 
         return $this->generateResponse(
             $order->refresh()->load('restaurantOrderContact', 'restaurantOrderContact.township', 'restaurantOrderItems'),
@@ -94,21 +106,21 @@ class RestaurantOrderController extends Controller
         $order = RestaurantOrder::where('customer_id', $customerId)->where('slug', $slug)->firstOrFail();
 
         if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, TRUE);
+            return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
         }
 
         $this->createOrderStatus($order->id, 'cancelled');
-        return $this->generateResponse('The order has successfully been cancelled.', 200, TRUE);
+        return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
 
     private function validateOrder($request)
     {
         return Validator::make($request->all(), [
-            'slug' => 'required|unique:orders',
+            'slug' => 'required|unique:restaurant_orders',
             'order_date' => 'required|date_format:Y-m-d',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
-            'delivery_mode' => 'required|in:package,delivery',
+            'delivery_mode' => 'required|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'promo_code_slug' => 'nullable|string|exists:App\Models\Promocode,slug',
             'customer_info' => 'required',
@@ -136,6 +148,8 @@ class RestaurantOrderController extends Controller
 
     private function createOrderStatus($orderId, $status = 'pending')
     {
+        RestaurantOrder::where('id', $orderId)->update(['order_status' => $status]);
+
         RestaurantOrderStatus::create([
             'status' => $status,
             'restaurant_order_id' => $orderId,
@@ -150,21 +164,27 @@ class RestaurantOrderController extends Controller
         RestaurantOrderContact::create($customerInfo);
     }
 
-    private function createOrderItems($orderId, $orderItems)
+    private function createOrderItems($orderId, $orderItems, $promoCodeId)
     {
         foreach ($orderItems as $item) {
             $menu = $this->getMenu($item['slug']);
 
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
             $toppings = collect($this->prepareToppings($item['topping_slugs']));
-            $tax = $this->getTax();
+            $amount = ( $menu->price + $variations->sum('price') + $toppings->sum('price') ) * $item['quantity'];
+
+            $discount = 0;
+            if ($promoCodeId) {
+                $discount = $this->calculateDiscount($amount, $promoCodeId);
+            }
 
             $item['menu_name'] = $menu->name;
-            $item['amount'] = $menu->price + $variations->sum('price') + $toppings->sum('price');
-            $item['discount'] = $item['amount'] * 5/ 100;
-            $item['tax'] = ($item['amount'] - $item['discount']) * $tax / 100;
+            $item['amount'] = $amount;
+            $item['discount'] = $discount;
+            $item['tax'] = ($amount - $discount) * $menu->tax / 100;
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
+            $item['restaurant_id'] = $menu->restaurant_id;
             $item['variations'] = $variations;
             $item['toppings'] = $toppings;
 
@@ -250,8 +270,8 @@ class RestaurantOrderController extends Controller
                 'img' => '',
                 'data' => [
                     'action' => '',
-                    'type' => 'notification'
-                ]
+                    'type' => 'notification',
+                ],
             ]
         );
     }

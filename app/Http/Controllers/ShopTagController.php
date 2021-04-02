@@ -2,20 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ShopTag;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ShopTagController extends Controller
 {
     use StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/shop-tags",
@@ -58,12 +53,6 @@ class ShopTagController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Post(
      *      path="/api/v2/admin/shop-tags",
      *      operationId="storeShopTag",
@@ -101,12 +90,6 @@ class ShopTagController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\ShopTag  $tag
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/shop-tags/{slug}",
      *      operationId="showShopTag",
@@ -136,13 +119,6 @@ class ShopTagController extends Controller
         return response()->json(ShopTag::where('slug', $slug)->firstOrFail(), 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\ShopTag  $tag
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/shop-tags/{slug}",
@@ -192,13 +168,6 @@ class ShopTagController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\ShopTag  $tag
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Delete(
      *      path="/api/v2/admin/shop-tags/{slug}",
      *      operationId="deleteShopTag",
@@ -229,9 +198,6 @@ class ShopTagController extends Controller
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
-    /**
-     * Display a listing of the shop tags by one shop.
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/shops/{slug}/shop-tags",
@@ -278,17 +244,16 @@ class ShopTagController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'shop_tags' => 'nullable|array',
             'shop_tags.*.name' => 'required|unique:shop_tags',
         ]);
 
-        $shopTags=array();
         foreach ($validatedData['shop_tags'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($shopTags, ShopTag::create($data));
+            ShopTag::create($data);
         }
 
-        return response()->json($shopTags, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

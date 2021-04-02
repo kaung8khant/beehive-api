@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -29,9 +29,11 @@ class RestaurantOrder extends Model
         'payment_mode',
         'delivery_mode',
         'restaurant_branch_info',
+        'order_status',
         'customer_id',
         'restaurant_id',
         'restaurant_branch_id',
+        'promocode_id',
     ];
 
     protected $hidden = [
@@ -47,11 +49,19 @@ class RestaurantOrder extends Model
         'restaurant_branch_info' => AsArrayObject::class,
     ];
 
-    protected $appends = array('order_status');
+    protected $appends = ['total_amount'];
 
-    public function getOrderStatusAttribute()
+    public function getTotalAmountAttribute()
     {
-        return $this->restaurantOrderStatuses()->latest()->first()->status;
+        $orderItems = $this->restaurantOrderItems;
+        $totalAmount = 0;
+
+        foreach ($orderItems as $item) {
+            $amount = $item->amount + $item->tax - $item->discount;
+            $totalAmount += $amount;
+        }
+
+        return $totalAmount;
     }
 
     public function restaurant()

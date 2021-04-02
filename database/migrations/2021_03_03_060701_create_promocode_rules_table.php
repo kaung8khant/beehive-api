@@ -16,7 +16,7 @@ class CreatePromocodeRulesTable extends Migration
         Schema::create('promocode_rules', function (Blueprint $table) {
             $table->id();
             $table->string('value');
-            $table->enum('data_type', ['before date', 'after date','exact date','total usage','per user usage','matching']);
+            $table->enum('data_type', ['before_date', 'after_date', 'exact_date', 'total_usage', 'per_user_usage', 'matching']);
             $table->unsignedBigInteger('promocode_id');
             $table->timestamps();
             $table->foreign('promocode_id')->references('id')->on('promocodes')->onDelete('cascade');

@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\ResponseHelper;
+use App\Helpers\SmsHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
+use App\Models\OneTimePassword;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Propaganistas\LaravelPhone\PhoneNumber;
-use Carbon\Carbon;
-use App\Helpers\ResponseHelper;
-use App\Helpers\SmsHelper;
-use App\Models\OneTimePassword;
-use App\Models\Customer;
-use App\Models\User;
 
 class OtpController extends Controller
 {

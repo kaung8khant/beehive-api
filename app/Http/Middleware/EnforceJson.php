@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -12,7 +13,8 @@ class EnforceJson
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next) {
+    public function handle($request, Closure $next)
+    {
         $request->headers->set('Accept', 'application/json; charset=utf-8');
         return $next($request);
     }

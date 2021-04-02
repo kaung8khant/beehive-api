@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Model;
  *   ),
  * )
  */
-
 class Setting extends Model
 {
     use HasFactory;
@@ -23,6 +22,6 @@ class Setting extends Model
     protected $fillable = [
         'key',
         'value',
-        'data_type'
+        'data_type',
     ];
 }

@@ -2,22 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\ShopOrder;
-use App\Helpers\ResponseHelper;
+use App\Models\ShopOrderStatus;
 use Illuminate\Http\Request;
 
 class ShopOrderController extends Controller
 {
-    use StringHelper;
-
-    use ResponseHelper;
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    use ResponseHelper, StringHelper;
 
     /**
      * @OA\Get(
@@ -55,10 +48,8 @@ class ShopOrderController extends Controller
      */
     public function index()
     {
-        // $customer_id = Auth::guard('customers')->user()->id;
         $shopOrders = ShopOrder::with('contact')
-            ->with('items')
-            // ->where('customer_id', $customer_id)
+            ->with('contact.township')
             ->latest()
             ->paginate(10)
             ->items();
@@ -69,8 +60,8 @@ class ShopOrderController extends Controller
     public function getShopOrders(Request $request, $slug)
     {
         $shopOrders = ShopOrder::with('contact')->with('items')
-            // ->whereDate('order_date', '>=', $request->from)
-            // ->whereDate('order_date', '<=', $request->to)
+        // ->whereDate('order_date', '>=', $request->from)
+        // ->whereDate('order_date', '<=', $request->to)
             ->where('slug', $slug)
             ->whereHas('contact', function ($q) use ($request) {
                 $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
@@ -81,5 +72,36 @@ class ShopOrderController extends Controller
             ->items();
 
         return $this->generateResponse($shopOrders, 200);
+    }
+
+    public function show($slug)
+    {
+        $shop = ShopOrder::with('contact')
+            ->with('contact.township')
+            ->with('items')
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        return $this->generateResponse($shop, 200);
+    }
+
+    public function changeStatus(Request $request, $slug)
+    {
+        $order = ShopOrder::where('slug', $slug)->firstOrFail();
+
+        if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
+        }
+
+        $this->createOrderStatus($order->id, $request->status);
+        return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
+    }
+
+    private function createOrderStatus($orderId, $status = 'pending')
+    {
+        ShopOrderStatus::create([
+            'status' => $status,
+            'shop_order_id' => $orderId,
+        ]);
     }
 }

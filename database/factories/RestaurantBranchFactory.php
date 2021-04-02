@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Helpers\StringHelper;
+use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\Township;
-use App\Models\Restaurant;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class RestaurantBranchFactory extends Factory
 {
@@ -36,11 +36,11 @@ class RestaurantBranchFactory extends Factory
             'latitude' => $this->faker->latitude(16.76, 16.93),
             'longitude' => $this->faker->longitude(96.17, 96.2),
             'township_id' => function () {
-                return  Township::pluck('id')->random(1)[0];
+                return Township::pluck('id')->random(1)[0];
             },
             'restaurant_id' => function () {
                 return Restaurant::pluck('id')->random(1)[0];
-            }
+            },
         ];
     }
 }

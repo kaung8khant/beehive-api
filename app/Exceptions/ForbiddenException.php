@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Exceptions;
+
 use Exception;
-use Throwable;
 
 class ForbiddenException extends Exception
 {
@@ -11,7 +11,8 @@ class ForbiddenException extends Exception
      *
      * @return void
      */
-    public function report() {
+    public function report()
+    {
         //
     }
 
@@ -21,7 +22,8 @@ class ForbiddenException extends Exception
      * @param  \Illuminate\Http\Request
      * @return \Illuminate\Http\Response
      */
-    public function render($request) {
+    public function render($request)
+    {
         return response()->json(['message' => $this->getMessage(), 'status' => 403], 403);
     }
 }

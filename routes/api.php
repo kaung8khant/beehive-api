@@ -1,18 +1,6 @@
 <?php
 
-use App\Models\Rating;
 use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
 
 Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], function () {
     Route::group(['prefix' => 'admin'], function () {
@@ -30,6 +18,13 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('settings', 'SettingController@index');
             Route::get('settings/{key}', 'SettingController@show');
             Route::put('settings/update', 'SettingController@updateSetting');
+
+            /* Dashboard */
+            Route::get('dashboard/counts', 'Dashboard\AdminDashboardController@getCountData');
+            Route::get('dashboard/restaurant-orders', 'Dashboard\AdminDashboardController@getRestaurantOrders');
+            Route::get('dashboard/shop-orders', 'Dashboard\AdminDashboardController@getShopOrders');
+            Route::get('dashboard/order-data', 'Dashboard\AdminDashboardController@getOrderChartData');
+            /* Dashboard */
 
             Route::resource('roles', 'RoleController');
             Route::resource('users', 'UserController');
@@ -66,11 +61,13 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('shops/toggle-official/{slug}', 'ShopController@toggleOfficial');
             Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
             Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
+            Route::post('shops/import', 'ShopController@import');
             Route::get('shop-categories/{slug}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
             Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
             Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
 
             Route::resource('products', 'ProductController');
+            Route::post('products/import', 'ProductController@import');
             Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
             Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
 
@@ -82,8 +79,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('brands', 'BrandController');
             Route::get('brands/{slug}/products', 'ProductController@getProductsByBrand');
-
-
+            Route::post('brands/import', 'BrandController@import');
             /* Shop */
 
             /* Restaurant */
@@ -92,6 +88,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('restaurant-tags', 'RestaurantTagController');
             Route::post('restaurant-tags/import', 'RestaurantTagController@import');
             Route::resource('restaurants', 'RestaurantController');
+            Route::post('restaurants/import', 'RestaurantController@import');
             Route::patch('restaurants/toggle-enable/{slug}', 'RestaurantController@toggleEnable');
             Route::patch('restaurants/toggle-official/{slug}', 'RestaurantController@toggleOfficial');
             Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
@@ -99,6 +96,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
             Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
             Route::resource('menus', 'MenuController');
+            Route::post('menus/import', 'MenuController@import');
             Route::resource('menu-variations', 'MenuVariationController');
             Route::resource('menu-variation-values', 'MenuVariationValueController');
             Route::resource('menu-toppings', 'MenuToppingController');
@@ -113,13 +111,16 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
             Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
             Route::patch('restaurant-branches/toggle-enable/{slug}', 'RestaurantBranchController@toggleEnable');
+            Route::post('restaurant-branches/import', 'RestaurantBranchController@import');
             Route::get('restaurants/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByRestaurant');
             Route::get('townships/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');
             /* Restaurant */
 
             /* Order */
             Route::resource('restaurant-orders', 'RestaurantOrderController');
+            Route::post('restaurant-orders/{slug}/change-status', 'RestaurantOrderController@changeStatus');
             Route::resource('shop-orders', 'ShopOrderController');
+            Route::post('shop-orders/{slug}/change-status', 'ShopOrderController@changeStatus');
             Route::resource('orders', 'OrderController');
             Route::get('customers/{slug}/orders', 'OrderController@getOrdersByCustomer');
 

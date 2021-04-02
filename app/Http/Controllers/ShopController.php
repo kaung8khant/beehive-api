@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
 use App\Helpers\FileHelper;
+use App\Helpers\StringHelper;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopTag;
 use App\Models\Township;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ShopController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, StringHelper;
 
     /**
      * @OA\Get(
@@ -56,7 +56,6 @@ class ShopController extends Controller
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
-
 
     /**
      * @OA\Post(
@@ -109,7 +108,9 @@ class ShopController extends Controller
         $shop = Shop::create($validatedData, $townshipId);
         $shopId = $shop->id;
 
-        $this->updateFile($request->image_slug, 'shops', $shop->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'shops', $shop->slug);
+        }
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->availableTags()->attach($shopTags);
@@ -186,7 +187,6 @@ class ShopController extends Controller
      *      }
      *)
      */
-
     public function update(Request $request, $slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
@@ -259,7 +259,7 @@ class ShopController extends Controller
      */
     public function destroy($slug)
     {
-        $shop =  Shop::where('slug', $slug)->firstOrFail();
+        $shop = Shop::where('slug', $slug)->firstOrFail();
 
         foreach ($shop->images as $image) {
             $this->deleteFile($image->slug);
@@ -294,7 +294,6 @@ class ShopController extends Controller
      *      }
      *)
      */
-
     public function toggleEnable($slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
@@ -335,7 +334,6 @@ class ShopController extends Controller
         $shop->save();
         return response()->json(['message' => 'Success.'], 200);
     }
-
 
     private function getTownshipIdBySlug($slug)
     {
@@ -446,5 +444,30 @@ class ShopController extends Controller
         $shop->availableCategories()->detach($shopCategories);
 
         return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
+    }
+
+    public function import(Request $request)
+    {
+        $validatedData = $request->validate([
+            'shops' => 'nullable|array',
+            'shops.*.name' => 'required|unique:shops',
+            'shops.*.is_enable' => 'required|boolean',
+            'shops.*.is_official' => 'required|boolean',
+            'shops.*.address' => 'required',
+            'shops.*.contact_number' => 'required',
+            'shops.*.opening_time' => 'required|date_format:H:i',
+            'shops.*.closing_time' => 'required|date_format:H:i',
+            'shops.*.latitude' => 'required|numeric',
+            'shops.*.longitude' => 'required|numeric',
+            'shops.*.township_slug' => 'required|exists:App\Models\Township,slug',
+        ]);
+
+        foreach ($validatedData['shops'] as $data) {
+            $data['township_id'] = $this->getTownshipIdBySlug($data['township_slug']);
+            $data['slug'] = $this->generateUniqueSlug();
+            Shop::create($data);
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

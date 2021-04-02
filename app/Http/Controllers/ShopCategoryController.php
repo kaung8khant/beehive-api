@@ -2,21 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
+use App\Helpers\StringHelper;
+use App\Models\ShopCategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Helpers\FileHelper;
-use App\Models\ShopCategory;
 
 class ShopCategoryController extends Controller
 {
-    use StringHelper, FileHelper;
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    use FileHelper, StringHelper;
 
     /**
      * @OA\Get(
@@ -52,7 +46,6 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-
     public function index(Request $request)
     {
         return ShopCategory::with('shopSubCategories')
@@ -60,13 +53,6 @@ class ShopCategoryController extends Controller
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Post(
@@ -92,7 +78,6 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -105,17 +90,12 @@ class ShopCategoryController extends Controller
             ]
         ));
 
-        $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
+        }
 
         return response()->json($shopCategory, 201);
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\ShopCategory  $shopCategory
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Get(
@@ -142,20 +122,11 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-
     public function show($slug)
     {
         $shopCategory = ShopCategory::with('shopSubCategories')->where('slug', $slug)->firstOrFail();
         return response()->json($shopCategory, 200);
     }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\ShopCategory  $shopCategory
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Put(
@@ -190,7 +161,6 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-
     public function update(Request $request, $slug)
     {
         $shopCategory = ShopCategory::where('slug', $slug)->firstOrFail();
@@ -209,13 +179,6 @@ class ShopCategoryController extends Controller
 
         return response()->json($shopCategory, 200);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\ShopCategory  $shopCategory
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Delete(
@@ -242,7 +205,6 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-
     public function destroy($slug)
     {
         $shopCategory = ShopCategory::where('slug', $slug)->firstOrFail();
@@ -255,11 +217,6 @@ class ShopCategoryController extends Controller
 
         return response()->json(['message' => 'successfully deleted'], 200);
     }
-
-
-    /**
-     * Display a listing of the shop categories by one shop.
-     */
 
     /**
      * @OA\Get(
@@ -307,17 +264,16 @@ class ShopCategoryController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'shop_categories' => 'nullable|array',
             'shop_categories.*.name' => 'required|unique:shop_categories',
         ]);
 
-        $shopCategories=array();
         foreach ($validatedData['shop_categories'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($shopCategories, ShopCategory::create($data));
+            ShopCategory::create($data);
         }
 
-        return response()->json($shopCategories, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

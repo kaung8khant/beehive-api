@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\MenuVariation;
+use App\Models\MenuVariationValue;
+use Illuminate\Database\Seeder;
 
 class MenuVariationSeeder extends Seeder
 {
@@ -17,21 +18,10 @@ class MenuVariationSeeder extends Seeder
      */
     public function run()
     {
-        $menuVariations = [
-            [
-                'name' => 'Spicy Level',
-                'slug' => $this->generateUniqueSlug(),
-                'menu_id' => 1,
-            ],
-            [
-                'name' => 'Bowl Size',
-                'slug' => $this->generateUniqueSlug(),
-                'menu_id' => 2,
-            ],
-        ];
-
-        foreach ($menuVariations as $menuVariation) {
-            MenuVariation::create($menuVariation);
-        }
+        MenuVariation::factory()->count(100)->has(MenuVariationValue::factory()->count(1))->create();
+        MenuVariation::factory()->count(100)->has(MenuVariationValue::factory()->count(2))->create();
+        MenuVariation::factory()->count(100)->has(MenuVariationValue::factory()->count(3))->create();
+        MenuVariation::factory()->count(100)->has(MenuVariationValue::factory()->count(4))->create();
+        MenuVariation::factory()->count(100)->has(MenuVariationValue::factory()->count(5))->create();
     }
 }

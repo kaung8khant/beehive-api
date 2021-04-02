@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Product;
 use App\Models\Customer;
+use App\Models\Product;
+use Illuminate\Database\Seeder;
 
 class FavoriteProductSeeder extends Seeder
 {

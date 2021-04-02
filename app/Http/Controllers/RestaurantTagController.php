@@ -2,20 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantTag;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RestaurantTagController extends Controller
 {
     use StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurant-tags",
@@ -48,12 +43,6 @@ class RestaurantTagController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Post(
      *      path="/api/v2/admin/restaurant-tags",
@@ -92,12 +81,6 @@ class RestaurantTagController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\RestaurantTag  $tag
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurant-tags/{slug}",
      *      operationId="showRestaurantTag",
@@ -127,13 +110,6 @@ class RestaurantTagController extends Controller
         return response()->json(RestaurantTag::where('slug', $slug)->firstOrFail(), 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\RestaurantTag  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/restaurant-tags/{slug}",
@@ -175,18 +151,12 @@ class RestaurantTagController extends Controller
             'name' => [
                 'required',
                 Rule::unique('restaurant_tags')->ignore($tag->id),
-            ]
+            ],
         ]));
 
         return response()->json($tag, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\RestaurantTag  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/restaurant-tags/{slug}",
@@ -218,9 +188,6 @@ class RestaurantTagController extends Controller
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
-    /**
-     * Display a listing of the restaurant tags by one restaurant.
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurants/{slug}/restaurant-tags",
@@ -258,17 +225,17 @@ class RestaurantTagController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData=$request->validate([
+        $validatedData = $request->validate([
             'restaurant_tags' => 'nullable|array',
             'restaurant_tags.*.name' => 'required|unique:restaurant_tags',
         ]);
 
-        $restaurantTags=array();
+        $restaurantTags = array();
         foreach ($validatedData['restaurant_tags'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
-            array_push($restaurantTags, RestaurantTag::create($data));
+            RestaurantTag::create($data);
         }
 
-        return response()->json($restaurantTags, 201);
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

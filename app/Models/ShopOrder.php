@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\ShopOrderContact;
+use App\Models\ShopOrderItem;
+use App\Models\ShopOrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ShopOrderContact;
-use App\Models\ShopOrderStatus;
-use App\Models\ShopOrderItem;
 
 class ShopOrder extends Model
 {
@@ -19,6 +19,7 @@ class ShopOrder extends Model
         'special_instruction',
         'payment_mode',
         'delivery_mode',
+        'promocode_id',
     ];
 
     protected $hidden = [
@@ -27,6 +28,30 @@ class ShopOrder extends Model
         'updated_at',
         'pivot',
     ];
+
+    protected $casts = [
+        'promocode' => 'object',
+    ];
+
+    protected $appends = ['order_status', 'total_amount'];
+
+    public function getOrderStatusAttribute()
+    {
+        return $this->status()->latest()->first()->status;
+    }
+
+    public function getTotalAmountAttribute()
+    {
+        $orderItems = $this->items;
+        $totalAmount = 0;
+
+        foreach ($orderItems as $item) {
+            $amount = $item->amount + $item->tax - $item->discount;
+            $totalAmount += $amount;
+        }
+
+        return $totalAmount;
+    }
 
     public function contact()
     {

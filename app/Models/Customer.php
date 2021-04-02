@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
@@ -61,7 +60,7 @@ class Customer extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(Restaurant::class, 'favorite_restaurant');
     }
-    
+
     public function favoriteProducts()
     {
         return $this->belongsToMany(Product::class, 'favorite_product');

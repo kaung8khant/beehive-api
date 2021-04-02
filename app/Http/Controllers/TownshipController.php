@@ -2,21 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StringHelper;
+use App\Models\City;
+use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Models\Township;
-use App\Models\City;
 
 class TownshipController extends Controller
 {
     use StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/townships",
@@ -60,13 +55,6 @@ class TownshipController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Post(
      *      path="/api/v2/admin/townships",
      *      operationId="storeTownship",
@@ -97,7 +85,7 @@ class TownshipController extends Controller
         $validatedData = $request->validate([
             'slug' => 'required|unique:townships',
             'name' => 'required|unique:townships',
-            'city_slug' => 'required|exists:App\Models\City,slug'
+            'city_slug' => 'required|exists:App\Models\City,slug',
         ]);
 
         $validatedData['city_id'] = $this->getCityIdBySlug($request->city_slug);
@@ -106,12 +94,6 @@ class TownshipController extends Controller
         return response()->json($township, 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/townships/{slug}",
@@ -143,13 +125,6 @@ class TownshipController extends Controller
         return response()->json($township, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/townships/{slug}",
@@ -202,12 +177,6 @@ class TownshipController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Delete(
      *      path="/api/v2/admin/townships/{slug}",
      *      operationId="deleteTownship",
@@ -243,13 +212,6 @@ class TownshipController extends Controller
         return City::where('slug', $slug)->first()->id;
     }
 
-    /**
-     * Display a listing of the townships by one city.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/cities/{slug}/townships",

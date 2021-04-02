@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use App\Helpers\ResponseHelper;
-use App\Models\RestaurantBranch;
-use App\Models\Product;
+use App\Http\Controllers\Controller;
 use App\Models\Customer;
-use App\Services\FirebaseService;
+use App\Models\Product;
+use App\Models\RestaurantBranch;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class HomeController extends Controller
 {
@@ -20,11 +19,13 @@ class HomeController extends Controller
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
+        $restaurantBranches = $this->getRestaurantBranches($request)->inRandomOrder()->limit(10)->get();
+
         $result = [
-            'restaurant_branches' => $this->getRestaurantBranches($request)->inRandomOrder()->limit(10)->get(),
+            'restaurant_branches' => $this->generateBranchResponse($restaurantBranches, 200, 'home'),
             'products' => $this->getRandomProducts(),
         ];
 
@@ -35,11 +36,13 @@ class HomeController extends Controller
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
+        $restaurantBranches = $this->getRestaurantBranches($request)->latest()->limit(10)->get();
+
         $result = [
-            'restaurant_branches' => $this->getRestaurantBranches($request)->latest()->limit(10)->get(),
+            'restaurant_branches' => $this->generateBranchResponse($restaurantBranches, 200, 'home'),
             'products' => $this->getNewProducts(),
         ];
 
@@ -54,11 +57,12 @@ class HomeController extends Controller
         ]);
     }
 
-    private function getRestaurantBranches($request, $suggestion = FALSE)
+    private function getRestaurantBranches($request, $suggestion = false)
     {
         $radius = config('system.restaurant_search_radius');
 
         return RestaurantBranch::with('restaurant')
+            ->with('restaurant.availableTags')
             ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
             ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
@@ -90,22 +94,22 @@ class HomeController extends Controller
     {
         $validator = $this->validateSearch($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $result = [
-            'restaurant_branches' => $this->searchRestaurantBranches($request, TRUE),
-            'products' => $this->searchProduct($request, TRUE),
+            'restaurant_branches' => $this->searchRestaurantBranches($request, true),
+            'products' => $this->searchProduct($request, true),
         ];
 
         return $this->generateResponse($result, 200);
     }
 
-    public function searchRestaurantBranches(Request $request, $homeSearch = FALSE)
+    public function searchRestaurantBranches(Request $request, $homeSearch = false)
     {
         $validator = $this->validateSearch($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $restaurantBranches = $this->getRestaurantBranches($request)
@@ -128,19 +132,20 @@ class HomeController extends Controller
             ->items();
 
         if ($homeSearch) {
-            return $restaurantBranches;
+            return $this->generateBranchResponse($restaurantBranches, 200, 'home');
         }
 
         return $this->generateBranchResponse($restaurantBranches, 200);
     }
-    public function searchProduct(Request $request, $homeSearch = FALSE)
+
+    public function searchProduct(Request $request, $homeSearch = false)
     {
-        $validator  = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'keyword' => 'required|string',
         ]);
 
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $product = Product::with('shop')
@@ -163,10 +168,11 @@ class HomeController extends Controller
             ->get();
 
         if ($homeSearch) {
-            return $product;
+
+            return $this->generateProductResponse($product, 200, 'home');
         }
 
-        return $this->generateResponse($product, 200);
+        return $this->generateProductResponse($product, 200);
     }
 
     private function validateSearch($request)

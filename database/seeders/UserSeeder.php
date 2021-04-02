@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
-use App\Models\User;
-use App\Models\Shop;
 use App\Models\RestaurantBranch;
+use App\Models\Shop;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
@@ -33,7 +33,7 @@ class UserSeeder extends Seeder
                 'name' => 'Admin',
                 'phone_number' => '09123456788',
                 'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-                'shop_id' =>  Shop::factory()->create()->id,
+                'shop_id' => Shop::factory()->create()->id,
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
                 'name' => 'Admin2',
                 'phone_number' => '0912312333',
                 'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-                'restaurant_branch_id' =>  RestaurantBranch::factory()->create()->id,
+                'restaurant_branch_id' => RestaurantBranch::factory()->create()->id,
             ],
             [
                 'slug' => $this->generateUniqueSlug(),

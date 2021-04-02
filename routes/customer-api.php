@@ -89,12 +89,15 @@ Route::group(['prefix' => 'user'], function () {
         //Route::resource('orders', 'Customer\OrderController');
 
         /* Product */
-        Route::get('products/favorites', 'Customer\ProductController@getFavorite');
+        Route::get('product-favorites', 'Customer\ProductController@getFavorite');
         Route::post('products/{slug}/set-favorite', 'Customer\ProductController@setFavorite');
         Route::post('products/{slug}/remove-favorite', 'Customer\ProductController@removeFavorite');
         /* Product */
 
         Route::resource('shop-orders', 'Customer\ShopOrderController', ['as' => 'customer']);
         Route::put('shop-orders/cancel/{slug}', 'Customer\ShopOrderController@cancelOrder');
+
+        Route::get('promocode', 'Customer\PromocodeController@index');
+        Route::get('promocode/validate/{slug}', 'Customer\PromocodeController@validatePromoCode');
     });
 });

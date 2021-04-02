@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Shop;
 use App\Models\ShopCategory;
-use Illuminate\Support\Facades\Log;
-use App\Models\ShopTag;
-use App\Helpers\ResponseHelper;
 use App\Models\ShopSubCategory;
-use App\Helpers\NotificationHelper;
+use App\Models\ShopTag;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ShopController extends Controller
 {
@@ -37,10 +35,9 @@ class ShopController extends Controller
 
     public function show($slug)
     {
-        $shop =  Shop::with('availableCategories', 'availableTags')->where('slug', $slug)->first();
+        $shop = Shop::with('availableCategories', 'availableTags')->where('slug', $slug)->first();
         return $this->generateResponse($shop, 200);
     }
-
 
     public function getCategories(Request $request)
     {
@@ -61,19 +58,19 @@ class ShopController extends Controller
 
         $shopCategories = $this->getProductFromShop($shopCategories);
 
-        return $this->generateProductResponse($shopCategories, 200,'cattag');
+        return $this->generateProductResponse($shopCategories, 200, 'cattag');
     }
 
     public function getTags(Request $request)
     {
-        $shopTags =  ShopTag::with('shops.products')
+        $shopTags = ShopTag::with('shops.products')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->get();
 
-        $shopTags =  $this->getProductFromShop($shopTags);
+        $shopTags = $this->getProductFromShop($shopTags);
 
-        return $this->generateProductResponse($shopTags, 200,'cattag');
+        return $this->generateProductResponse($shopTags, 200, 'cattag');
     }
     public function getByTag(Request $request, $slug)
     {
@@ -88,16 +85,15 @@ class ShopController extends Controller
     {
         $shopCategory = ShopCategory::with('shops', 'shops.products', 'shops.products.shop')->where('slug', $slug)->firstOrFail();
         $shopCategory = $this->replaceShopWithProduct($shopCategory);
-        return  $this->generateResponse($shopCategory, 200);
+        return $this->generateResponse($shopCategory, 200);
     }
 
     public function getBySubCategory(Request $request, $slug)
     {
         $shop = ShopSubCategory::with('shopCategory')->with('shopCategory.shops')->where('slug', $slug)->paginate($request->size)->items();
 
-        return  $this->generateResponse($shop, 200);
+        return $this->generateResponse($shop, 200);
     }
-
 
     private function getShopId($slug)
     {
@@ -127,20 +123,4 @@ class ShopController extends Controller
 
         return $data;
     }
-
-    //redundant from ProductController 
-    // private function checkProductFav($data, $type = "array")
-    // {
-    //     Log::info(json_encode($this->customer));
-    //     if ($type === "array") {
-    //         foreach ($data as $product) {
-    //             $product['is_favorite'] = empty(json_decode($product['customers'])) ? false : true;
-    //             unset($product['customers']);
-    //         }
-    //     } else {
-    //         $data['is_favorite'] = empty(json_decode($data['customers'])) ? false : true;
-    //         unset($data['customers']);
-    //     }
-    //     return $data;
-    // }
 }

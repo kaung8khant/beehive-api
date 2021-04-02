@@ -2,11 +2,10 @@
 
 namespace App\Helpers;
 
+use App\Models\RestaurantBranch;
 use App\Models\Shop;
 use App\Models\User;
 use App\Models\UserSession;
-use App\Models\RestaurantBranch;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Carbon;
 
 trait NotificationHelper
@@ -14,32 +13,38 @@ trait NotificationHelper
     protected function notifyRestaurant($slug, $data)
     {
         $branch = RestaurantBranch::where("slug", $slug)->first();
-        $user = User::where("restaurant_branch_id", $branchId)->first();
-        if($branch && $user){
+
+        if ($branch) {
             $branchId = $branch->id;
-            $userId = $user->id;
 
-            //Delete over 3 days token
-            UserSession::where("updated_at", '<=', Carbon::now()->subDays(3))->forceDelete();
+            $user = User::where("restaurant_branch_id", $branchId)->first();
+            if ($user) {
+                $userId = $user->id;
+                //Delete over 3 days token
+                UserSession::where("updated_at", '<=', Carbon::now()->subDays(3))->forceDelete();
 
-            $tokenList = UserSession::where('user_id', $userId)->pluck("device_token")->all();
-            $this->sendNotification($data, $tokenList);
+                $tokenList = UserSession::where('user_id', $userId)->pluck("device_token")->all();
+                $this->sendNotification($data, $tokenList);
+            }
         }
     }
 
     protected function notifyShop($slug, $data)
     {
         $shop = Shop::where("slug", $slug)->first();
-        $user = User::where("shop_id", $shopId)->first();
-        if($shop && $user){
+
+        if ($shop) {
             $shopId = $shop->id;
-            $userId = $user->id;
+            $user = User::where("shop_id", $shopId)->first();
+            if ($user) {
+                $userId = $user->id;
 
-            //Delete over 3 days token
-            UserSession::where("updated_at", '<=', Carbon::now()->subDays(3))->forceDelete();
+                //Delete over 3 days token
+                UserSession::where("updated_at", '<=', Carbon::now()->subDays(3))->forceDelete();
 
-            $tokenList = UserSession::where('user_id', $userId)->pluck("device_token")->all();
-            $this->sendNotification($data, $tokenList);
+                $tokenList = UserSession::where('user_id', $userId)->pluck("device_token")->all();
+                $this->sendNotification($data, $tokenList);
+            }
         }
     }
 
@@ -47,7 +52,7 @@ trait NotificationHelper
     {
         $data = [
             "registration_ids" => $to, //array
-            "notification" => $data //array
+            "notification" => $data, //array
         ];
 
         $dataString = json_encode($data);
@@ -66,6 +71,6 @@ trait NotificationHelper
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
 
-        $response = curl_exec($ch);
+        curl_exec($ch);
     }
 }

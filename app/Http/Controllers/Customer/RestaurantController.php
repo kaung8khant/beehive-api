@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Controller;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class RestaurantController extends Controller
 {
@@ -24,10 +24,10 @@ class RestaurantController extends Controller
         try {
             $customer->favoriteRestaurants()->attach($restaurantId);
         } catch (\Exception $e) {
-            return $this->generateResponse('You already set favorite this restaurant.', 409, TRUE);
+            return $this->generateResponse('You already set favorite this restaurant.', 409, true);
         }
 
-        return $this->generateResponse('Success.', 200, TRUE);
+        return $this->generateResponse('Success.', 200, true);
     }
 
     public function removeFavoriteRestaurant($slug)
@@ -35,14 +35,14 @@ class RestaurantController extends Controller
         $restaurantId = $this->getRestaurantId($slug);
         $customer = Auth::guard('customers')->user();
         $customer->favoriteRestaurants()->detach($restaurantId);
-        return $this->generateResponse('Success.', 200, TRUE);
+        return $this->generateResponse('Success.', 200, true);
     }
 
     public function getFavoriteRestaurants(Request $request)
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $customer = Auth::guard('customers')->user();
@@ -62,7 +62,7 @@ class RestaurantController extends Controller
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $recommendedBranches = $this->getBranches($request)
@@ -77,7 +77,7 @@ class RestaurantController extends Controller
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $newArrivals = $this->getBranches($request)
@@ -92,7 +92,7 @@ class RestaurantController extends Controller
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $restaurantBranches = $this->getBranches($request)
@@ -106,6 +106,7 @@ class RestaurantController extends Controller
     public function getOneBranch($slug)
     {
         $restaurantBranch = RestaurantBranch::with('restaurant')
+            ->with('restaurant.availableTags')
             ->with('township')
             ->where('slug', $slug)
             ->firstOrFail();
@@ -117,6 +118,7 @@ class RestaurantController extends Controller
         $restaurantBranch = RestaurantBranch::with('availableMenus')
             ->with('availableMenus.restaurantCategory')
             ->with('availableMenus.menuVariations')
+            ->with('availableMenus.menuVariations.menuVariationValues')
             ->with('availableMenus.menuToppings')
             ->where('slug', $slug)
             ->firstOrFail();
@@ -153,7 +155,7 @@ class RestaurantController extends Controller
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $restaurantCategories = RestaurantCategory::with('restaurants')
@@ -173,7 +175,7 @@ class RestaurantController extends Controller
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $restaurantTags = RestaurantTag::with('restaurants')
@@ -193,7 +195,7 @@ class RestaurantController extends Controller
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $restaurantCategory = RestaurantCategory::with('restaurants')
@@ -211,7 +213,7 @@ class RestaurantController extends Controller
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, TRUE);
+            return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $restaurantTag = RestaurantTag::with('restaurants')
@@ -244,6 +246,7 @@ class RestaurantController extends Controller
         $radius = config('system.restaurant_search_radius');
 
         return $query->with('restaurant')
+            ->with('restaurant.availableTags')
             ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
             ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))

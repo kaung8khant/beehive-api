@@ -33,7 +33,6 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-
 class Product extends Model
 {
     use HasFactory;
@@ -48,7 +47,7 @@ class Product extends Model
         'shop_category_id',
         'shop_sub_category_id',
         'brand_id',
-        'is_enable'
+        'is_enable',
     ];
 
     protected $hidden = [
@@ -66,7 +65,6 @@ class Product extends Model
     ];
 
     protected $appends = ['rating', 'images'];
-
 
     public function getRatingAttribute()
     {
@@ -109,6 +107,7 @@ class Product extends Model
     {
         return $this->belongsTo(Brand::class);
     }
+
     public function customers()
     {
         return $this->belongsToMany(Customer::class, 'favorite_product', 'customer_id');

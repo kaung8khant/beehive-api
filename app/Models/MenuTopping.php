@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-
 class MenuTopping extends Model
 {
     use HasFactory;
@@ -34,7 +33,6 @@ class MenuTopping extends Model
         'created_at',
         'updated_at',
     ];
-
 
     protected $casts = [
         'is_incremental' => 'boolean',

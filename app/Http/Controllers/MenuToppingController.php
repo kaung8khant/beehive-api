@@ -3,21 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
-use App\Models\MenuTopping;
-use App\Models\MenuToppingValue;
 use App\Models\Menu;
+use App\Models\MenuTopping;
+use Illuminate\Http\Request;
 
 class MenuToppingController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/menu-toppings",
@@ -61,13 +55,6 @@ class MenuToppingController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Post(
      *      path="/api/v2/admin/menu-toppings",
      *      operationId="storeMenuTopping",
@@ -99,12 +86,11 @@ class MenuToppingController extends Controller
      *      }
      *)
      */
-
     public function store(Request $request)
     {
         $validatedData = $request->validate([
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
-            'menu_toppings.*.name' => 'required|unique:menu_toppings',
+            'menu_toppings.*.name' => 'required|string',
             'menu_toppings.*.price' => 'required|numeric',
             'menu_toppings.*.is_incremental' => 'required|boolean',
             'menu_toppings.*.max_quantity' => 'nullable|max:10',
@@ -123,16 +109,8 @@ class MenuToppingController extends Controller
             }
         }
 
-
         return response()->json(['message' => 'Successfully Created.'], 201);
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\MenuTopping  $menuTopping
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Get(
@@ -159,20 +137,11 @@ class MenuToppingController extends Controller
      *      }
      *)
      */
-
     public function show($slug)
     {
         $menuTopping = MenuTopping::with('menu')->where('slug', $slug)->firstOrFail();
         return response()->json($menuTopping, 200);
     }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\MenuTopping  $menuTopping
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Put(
@@ -207,7 +176,6 @@ class MenuToppingController extends Controller
      *      }
      *)
      */
-
     public function update(Request $request, $slug)
     {
         $menuTopping = MenuTopping::where('slug', $slug)->firstOrFail();
@@ -224,13 +192,6 @@ class MenuToppingController extends Controller
 
         return response()->json($menuTopping->load('menu'), 200);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\MenuTopping  $menuTopping
-     * @return \Illuminate\Http\Response
-     */
 
     /**
      * @OA\Delete(
@@ -269,7 +230,6 @@ class MenuToppingController extends Controller
 
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
-
 
     /**
      * @OA\Get(
@@ -314,7 +274,6 @@ class MenuToppingController extends Controller
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
-
 
     private function getParamsToValidate($slug = false)
     {

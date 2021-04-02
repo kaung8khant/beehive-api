@@ -3,18 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
 use App\Models\Township;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RestaurantController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, StringHelper;
+
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurants",
@@ -49,7 +50,6 @@ class RestaurantController extends Controller
      *      }
      *)
      */
-
     public function index(Request $request)
     {
         return Restaurant::with('availableCategories', 'availableTags')
@@ -106,15 +106,17 @@ class RestaurantController extends Controller
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
 
-        $townshipId = $this->getTownshipIdBySlug($request->restaurant_branch['township_slug']);
+        // $townshipId = $this->getTownshipIdBySlug($request->restaurant_branch['township_slug']);
 
         $restaurant = Restaurant::create($validatedData);
 
         $restaurantId = $restaurant->id;
 
-        $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
+        }
 
-        $this->createRestaurantBranch($restaurantId, $townshipId, $validatedData['restaurant_branch']);
+        $this->createRestaurantBranch($restaurantId, $validatedData['restaurant_branch']);
 
         $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
         $restaurant->availableTags()->attach($restaurantTags);
@@ -196,7 +198,7 @@ class RestaurantController extends Controller
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate([
-            'name' =>  [
+            'name' => [
                 'required',
                 Rule::unique('restaurants')->ignore($restaurant->id),
             ],
@@ -297,11 +299,11 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    private function createRestaurantBranch($restaurantId, $townshipId, $restaurantBranch)
+    private function createRestaurantBranch($restaurantId, $restaurantBranch)
     {
         $restaurantBranch['slug'] = $this->generateUniqueSlug();
         $restaurantBranch['restaurant_id'] = $restaurantId;
-        $restaurantBranch['township_id'] = $townshipId;
+        $restaurantBranch['township_id'] = $this->getTownshipIdBySlug($restaurantBranch['township_slug']);
         RestaurantBranch::create($restaurantBranch);
     }
 
@@ -402,5 +404,32 @@ class RestaurantController extends Controller
         $restaurant->availableCategories()->detach($restaurantCategories);
 
         return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
+    }
+
+    public function import(Request $request)
+    {
+        $validatedData = $request->validate([
+            'restaurants' => 'nullable|array',
+            'restaurants.*.name' => 'required|unique:restaurants',
+            'restaurants.*.is_enable' => 'required|boolean',
+            'restaurants.*.restaurant_branch' => 'required',
+            'restaurants.*.restaurant_branch.name' => 'required|string',
+            'restaurants.*.restaurant_branch.address' => 'required',
+            'restaurants.*.restaurant_branch.contact_number' => 'required',
+            'restaurants.*.restaurant_branch.opening_time' => 'required|date_format:H:i',
+            'restaurants.*.restaurant_branch.closing_time' => 'required|date_format:H:i',
+            'restaurants.*.restaurant_branch.latitude' => 'nullable|numeric',
+            'restaurants.*.restaurant_branch.longitude' => 'nullable|numeric',
+            'restaurants.*.restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
+        ]);
+
+        foreach ($validatedData['restaurants'] as $data) {
+            $data['slug'] = $this->generateUniqueSlug();
+            $restaurant = Restaurant::create($data);
+            $restaurantId = $restaurant->id;
+            $this->createRestaurantBranch($restaurantId, $data['restaurant_branch']);
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

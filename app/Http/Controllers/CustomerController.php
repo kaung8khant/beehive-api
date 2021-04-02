@@ -2,23 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\Customer;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class CustomerController extends Controller
 {
     use StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/customers",
@@ -63,13 +57,6 @@ class CustomerController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-    /**
      * @OA\Post(
      *      path="/api/v2/admin/customers",
      *      operationId="storeCustomer",
@@ -107,7 +94,7 @@ class CustomerController extends Controller
                 'gender' => 'required|in:Male,Female',
             ],
             [
-                'phone_number.phone' => 'Invalid phone number.'
+                'phone_number.phone' => 'Invalid phone number.',
             ]
         );
 
@@ -118,12 +105,6 @@ class CustomerController extends Controller
         return response()->json($customer->refresh(), 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/customers/{slug}",
@@ -154,13 +135,6 @@ class CustomerController extends Controller
         return Customer::where('slug', $slug)->firstOrFail();
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/customers/{slug}",
@@ -212,12 +186,6 @@ class CustomerController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
-    /**
      * @OA\Delete(
      *      path="/api/v2/admin/customers/{slug}",
      *      operationId="showCustomer",
@@ -248,12 +216,6 @@ class CustomerController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-     * Toggle the is_enable column for customers table.
-     *
-     * @param  int  $slug
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Patch(
      *      path="/api/v2/admin/customers/toggle-enable/{slug}",

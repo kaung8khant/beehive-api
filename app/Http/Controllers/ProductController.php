@@ -3,19 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use Illuminate\Http\Request;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
 use App\Models\Product;
-use App\Models\Shop;
-use App\Models\ShopSubCategory;
 use App\Models\ProductVariation;
 use App\Models\ProductVariationValue;
+use App\Models\Shop;
 use App\Models\ShopCategory;
+use App\Models\ShopSubCategory;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, StringHelper;
+
     /**
      * @OA\Get(
      *      path="/api/v2/admin/products",
@@ -105,11 +106,11 @@ class ProductController extends Controller
             $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
             $validatedData['shop_sub_category_id'] = $subCategory->id;
         } else {
-            $validatedData['shop_category_id'] =  $this->getShopCategoryId($request->shop_category_slug);
+            $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
         }
 
         if ($request->brand_slug) {
-            $validatedData['brand_id'] =  $this->getBrandId($request->brand_slug);
+            $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
         }
 
         $product = Product::create($validatedData);
@@ -226,7 +227,7 @@ class ProductController extends Controller
             $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
             $validatedData['shop_sub_category_id'] = $subCategory->id;
         } else {
-            $validatedData['shop_category_id'] =  $this->getShopCategoryId($request->shop_category_slug);
+            $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
         }
 
         if ($request->brand_slug) {
@@ -316,6 +317,7 @@ class ProductController extends Controller
             'product_variations.*.product_variation_values' => 'required|array',
             'product_variations.*.product_variation_values.*.value' => 'required|string',
             'product_variations.*.product_variation_values.*.price' => 'required|numeric',
+            'product_variations.*.product_variation_values.*.image_slug' => 'nullable|exists:App\Models\File,slug',
 
         ];
 
@@ -423,6 +425,9 @@ class ProductController extends Controller
             $variationValue['slug'] = $this->generateUniqueSlug();
             $variationValue['product_variation_id'] = $variationId;
             ProductVariationValue::create($variationValue);
+            if (!empty($variationValue['image_slug'])) {
+                $this->updateFile($variationValue['image_slug'], 'product_variation_values', $variationValue['slug']);
+            }
         }
     }
 
@@ -458,9 +463,7 @@ class ProductController extends Controller
         $product->save();
         return response()->json(['message' => 'Success.'], 200);
     }
-    /**
-     * Display a listing of products by each brand.
-     */
+
     /**
      * @OA\Get(
      *      path="/api/v2/admin/brands/{slug}/products",
@@ -503,5 +506,42 @@ class ProductController extends Controller
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
+    }
+
+    public function import(Request $request)
+    {
+        $validatedData = $request->validate([
+            'products' => 'nullable|array',
+            'products.*.name' => 'required|string',
+            'products.*.description' => 'required|string',
+            'products.*.price' => 'required|max:99999999',
+            'products.*.tax' => 'required|numeric',
+            'products.*.is_enable' => 'required|boolean',
+            'products.*.shop_slug' => 'required|exists:App\Models\Shop,slug',
+            'products.*.shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
+            'products.*.shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
+            'products.*.brand_slug' => 'nullable|exists:App\Models\Brand,slug',
+        ]);
+
+        foreach ($validatedData['products'] as $data) {
+            $data['slug'] = $this->generateUniqueSlug();
+            $data['shop_id'] = $this->getShopId($data['shop_slug']);
+
+            if ($data['shop_sub_category_slug']) {
+                $subCategory = $this->getSubCategory($data['shop_sub_category_slug']);
+                $data['shop_category_id'] = $subCategory->shopCategory->id;
+                $data['shop_sub_category_id'] = $subCategory->id;
+            } else {
+                $data['shop_category_id'] = $this->getShopCategoryId($data['shop_category_slug']);
+            }
+
+            if ($data['brand_slug']) {
+                $data['brand_id'] = $this->getBrandId($data['brand_slug']);
+            }
+
+            Product::create($data);
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

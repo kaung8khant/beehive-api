@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\Menu;
-use App\Models\RestaurantBranch;
 use App\Models\Restaurant;
+use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
 use App\Models\Township;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RestaurantBranchController extends Controller
 {
     use StringHelper;
+
     /**
      * @OA\Get(
      *      path="/api/v2/admin/restaurant-branches",
@@ -88,7 +89,7 @@ class RestaurantBranchController extends Controller
 
         $validatedData = $request->validate([
             'slug' => 'required|unique:restaurant_branches',
-            'name' => 'required|unique:restaurant_branches',
+            'name' => 'required',
             'address' => 'required',
             'contact_number' => 'required',
             'opening_time' => 'required|date_format:H:i',
@@ -507,6 +508,33 @@ class RestaurantBranchController extends Controller
         $availableMenus = Menu::where('slug', $slug)->firstOrFail();
         $restaurantBranch->availableMenus()->sync([$availableMenus->id => ['is_available' => $validatedData['is_available']]], false);
         // $restaurantBranch->availableMenus()->save($availableMenus, ['is_available' => $validatedData['is_available']]);
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function import(Request $request)
+    {
+        $validatedData = $request->validate([
+            'restaurant_branches' => 'nullable|array',
+            'restaurant_branches.*.name' => 'required|unique:restaurant_branches',
+            'restaurant_branches.*.is_enable' => 'required|boolean',
+            'restaurant_branches.*.address' => 'required',
+            'restaurant_branches.*.contact_number' => 'required',
+            'restaurant_branches.*.opening_time' => 'required|date_format:H:i',
+            'restaurant_branches.*.closing_time' => 'required|date_format:H:i',
+            'restaurant_branches.*.latitude' => 'required|numeric',
+            'restaurant_branches.*.longitude' => 'required|numeric',
+            'restaurant_branches.*.restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
+            'restaurant_branches.*.township_slug' => 'required|exists:App\Models\Township,slug',
+        ]);
+
+        foreach ($validatedData['restaurant_branches'] as $data) {
+            $data['restaurant_id'] = $this->getRestaurantId($data['restaurant_slug']);
+            $data['township_id'] = $this->getTownshipId($data['township_slug']);
+
+            $data['slug'] = $this->generateUniqueSlug();
+            RestaurantBranch::create($data);
+        }
+
         return response()->json(['message' => 'Success.'], 200);
     }
 }

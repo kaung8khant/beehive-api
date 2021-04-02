@@ -3,21 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
-use App\Models\ProductVariationValue;
 use App\Models\ProductVariation;
+use App\Models\ProductVariationValue;
+use Illuminate\Http\Request;
 
 class ProductVariationValueController extends Controller
 {
-    use StringHelper, FileHelper;
+    use FileHelper, StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/product-variation-values",
@@ -51,12 +45,6 @@ class ProductVariationValueController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Post(
      *      path="/api/v2/admin/product-variation-values",
@@ -94,16 +82,9 @@ class ProductVariationValueController extends Controller
             $this->updateFile($request->image_slug, 'product_variation_values', $productVariationValue->slug);
         }
 
-
         return response()->json($productVariationValue->load('productVariation'), 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\ProductVariationValue  $productVariationValue
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Get(
      *      path="/api/v2/admin/product-variation-values/{slug}",
@@ -135,13 +116,6 @@ class ProductVariationValueController extends Controller
         return response()->json($productVariationValue, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\ProductVariationValue  $productVariationValue
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Put(
      *      path="/api/v2/admin/product-variation-values/{slug}",
@@ -191,12 +165,6 @@ class ProductVariationValueController extends Controller
         return response()->json($productVariationValue->load('productVariation'), 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\ProductVariationValue  $productVariationValue
-     * @return \Illuminate\Http\Response
-     */
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/product-variation-values/{slug}",

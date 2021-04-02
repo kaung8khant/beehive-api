@@ -25,10 +25,12 @@ class CreateRestaurantOrderItemsTable extends Migration
             $table->boolean('is_deleted')->default(0);
             $table->unsignedBigInteger('restaurant_order_id');
             $table->unsignedBigInteger('menu_id')->nullable();
+            $table->unsignedBigInteger('restaurant_id')->nullable();
             $table->timestamps();
             $table->unique(['restaurant_order_id', 'menu_id']);
             $table->foreign('restaurant_order_id')->references('id')->on('restaurant_orders')->onDelete('cascade');
             $table->foreign('menu_id')->references('id')->on('menus')->onDelete('set null');
+            $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('set null');
         });
     }
 

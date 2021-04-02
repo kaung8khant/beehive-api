@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-
 class RestaurantCategory extends Model
 {
     use HasFactory;
