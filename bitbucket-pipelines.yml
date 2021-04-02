@@ -13,9 +13,9 @@ pipelines:
           script:
             # copy env file
             - cp .env.example .env
-            - if [ -e "/tmp/dotenv.sh" ]; then echo "Dotenv already exists"; else curl -o /tmp/dotenv.sh https://raw.githubusercontent.com/bashup/dotenv/master/dotenv ; fi
-            - chmod +x /tmp/dotenv.sh
-            - /tmp/dotenv.sh -f .env set APP_NAME=blablatest APP_KEY=${APP_KEY} JWT_SECRET=${JWT_SECRET}
+            - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
+            - chmod +x dotenv
+            - dotenv -f .env set APP_NAME=blablatest APP_KEY=${APP_KEY} JWT_SECRET=${JWT_SECRET}
             # install dependencies
             - composer install
             - php artisan l5-swagger:generate
@@ -26,7 +26,6 @@ pipelines:
             - zip -r application.zip . -x "vendor/*"
           caches:
             - composer
-            - dotenv
           # Define an artifact to pass the zip file to the next step
           artifacts:
             - application.zip
@@ -46,6 +45,3 @@ pipelines:
                 ZIP_FILE: "application.zip"
                 S3_BUCKET: "elasticbeanstalk-ap-southeast-1-565186916354"
                 VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_COMMIT-$BITBUCKET_BUILD_NUMBER"
-definitions:
-  caches:
-    dotenv: /tmp/dotenv.sh
