@@ -34,7 +34,7 @@ pipelines:
           # Define an artifact to pass the zip file to the next step
           artifacts:
             - application.zip
-            - env
+            - .profile_env
       - step:
           name: "Deploy to Staging"
           script:
@@ -50,6 +50,3 @@ pipelines:
                 ZIP_FILE: "application.zip"
                 S3_BUCKET: "elasticbeanstalk-ap-southeast-1-565186916354"
                 VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_COMMIT-$BITBUCKET_BUILD_NUMBER"
-definitions:
-  caches:
-    env: .profile_env
