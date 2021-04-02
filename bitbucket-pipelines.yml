@@ -13,7 +13,7 @@ pipelines:
           script:
             # copy env file
             - cp .env.example .env
-            - if [ -e "/tmp/dotenv" ]; then echo 'Already exists' >&2 else curl -o /tmp/dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv fi
+            - if [ -e "/tmp/dotenv" ]; then echo "Dotenv already exists"; else curl -o /tmp/dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv ; fi
             - /tmp/dotenv -f .env set APP_NAME=blablatest APP_KEY=${APP_KEY} JWT_SECRET=${JWT_SECRET}
             # install dependencies
             - composer install
