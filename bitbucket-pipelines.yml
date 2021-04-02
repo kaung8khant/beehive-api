@@ -15,7 +15,7 @@ pipelines:
             - cp .env.example .env
             - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
             - chmod +x dotenv
-            - dotenv -f .env set APP_NAME=blablatest APP_KEY=${APP_KEY} JWT_SECRET=${JWT_SECRET}
+            - ./dotenv -f .env set APP_NAME=blablatest APP_KEY=${APP_KEY} JWT_SECRET=${JWT_SECRET}
             # install dependencies
             - composer install
             - php artisan l5-swagger:generate
