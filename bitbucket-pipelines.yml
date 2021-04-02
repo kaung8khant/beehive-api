@@ -25,7 +25,7 @@ pipelines:
             - zip -r application.zip . -x "vendor/*"
           caches:
             - composer
-            - /tmp/dotenv
+            - dotenv
           # Define an artifact to pass the zip file to the next step
           artifacts:
             - application.zip
@@ -45,3 +45,6 @@ pipelines:
                 ZIP_FILE: "application.zip"
                 S3_BUCKET: "elasticbeanstalk-ap-southeast-1-565186916354"
                 VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_COMMIT-$BITBUCKET_BUILD_NUMBER"
+definitions:
+  caches:
+    dotenv: /tmp/dotenv
