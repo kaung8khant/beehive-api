@@ -10,8 +10,12 @@ pipelines:
     staging:
       - step:
           name: "Package Project"
+          # Track staging environments builds using deployments.
+          deployment: Staging
           script:
             # copy env file
+            - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             - cp .env.example .env
             - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
             - chmod +x dotenv
@@ -31,8 +35,6 @@ pipelines:
             - application.zip
       - step:
           name: "Deploy to Staging"
-          # Track staging environments builds using deployments.
-          deployment: Staging
           script:
             - pipe: atlassian/aws-elasticbeanstalk-deploy:0.7.0
               variables:
