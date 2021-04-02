@@ -14,9 +14,9 @@ pipelines:
           deployment: Staging
           script:
             # copy env file
-            - echo "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> ~/.profile_env
-            - echo "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> ~/.profile_env
-            - source ~/.profile_env
+            - echo "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> .profile_env
+            - echo "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> .profile_env
+            - source .profile_env
             - cp .env.example .env
             - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
             - chmod +x dotenv
@@ -38,7 +38,7 @@ pipelines:
       - step:
           name: "Deploy to Staging"
           script:
-            - source ~/.profile_env
+            - source .profile_env
             - pipe: atlassian/aws-elasticbeanstalk-deploy:0.7.0
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
@@ -52,4 +52,4 @@ pipelines:
                 VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_COMMIT-$BITBUCKET_BUILD_NUMBER"
 definitions:
   caches:
-    env: ~/.profile_env
+    env: .profile_env
