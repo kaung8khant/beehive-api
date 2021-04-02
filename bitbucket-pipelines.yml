@@ -17,15 +17,20 @@ pipelines:
             - cp .env.example .env
             - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
             - chmod +x dotenv
-            - ./dotenv -f .env set APP_KEY=${APP_KEY} \
+            - ./dotenv -f .env set AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+              AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+              APP_KEY=${APP_KEY} \
               JWT_SECRET=${JWT_SECRET} \
               DB_DATABASE=${DB_DATABASE} \
               DB_USERNAME=${DB_USERNAME} \
+              DB_PASSWORD=${DB_PASSWORD} \
               DB_HOST=${DB_HOST} \
               APP_ENV=${APP_ENV} \
+              APP_URL=${APP_URL} \
+              AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+              AWS_BUCKET=${AWS_BUCKET} \
               BOOMSMS_API_KEY=${BOOMSMS_API_KEY} \
-              FIREBASE_SERVER_KEY=${FIREBASE_SERVER_KEY} \
-              AWS_BUCKET=${AWS_BUCKET}
+              FIREBASE_SERVER_KEY=${FIREBASE_SERVER_KEY}
             # install dependencies
             - composer install
             - php artisan l5-swagger:generate
