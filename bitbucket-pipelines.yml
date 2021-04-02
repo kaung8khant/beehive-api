@@ -13,8 +13,8 @@ pipelines:
           script:
             # copy env file
             - cp .env.example .env
-            - if [ -e "/tmp/dotenv" ]; then echo "Dotenv already exists"; else curl -o /tmp/dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv ; fi
-            - /tmp/dotenv -f .env set APP_NAME=blablatest APP_KEY=${APP_KEY} JWT_SECRET=${JWT_SECRET}
+            - if [ -e "/tmp/dotenv.sh" ]; then echo "Dotenv already exists"; else curl -o /tmp/dotenv.sh https://raw.githubusercontent.com/bashup/dotenv/master/dotenv ; fi
+            - /tmp/dotenv.sh -f .env set APP_NAME=blablatest APP_KEY=${APP_KEY} JWT_SECRET=${JWT_SECRET}
             # install dependencies
             - composer install
             - php artisan l5-swagger:generate
@@ -47,4 +47,4 @@ pipelines:
                 VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_COMMIT-$BITBUCKET_BUILD_NUMBER"
 definitions:
   caches:
-    dotenv: /tmp/dotenv
+    dotenv: /tmp/dotenv.sh
