@@ -39,31 +39,32 @@ class FileController extends Controller
         $file = File::where('slug', $slug)->firstOrFail();
 
         if ($file->extension === 'png' || $file->extension === 'jpg') {
-            $path = storage_path('/app/images/large/');
+            $path = 'images/large/';
         } elseif ($file->extension === 'gif') {
-            $path = storage_path('/app/gifs/');
+            $path = 'gifs/';
         } elseif ($file->extension === 'pdf') {
-            $path = storage_path('/app/documents/');
+            $path = 'documents/';
         }
 
-        return response()->download($path . $file->file_name);
+        return Storage::download($path . $file->file_name);
     }
 
     public function getImage(Request $request, $slug)
     {
         $fileName = File::where('slug', $slug)->firstOrFail()->file_name;
 
-        if ($request->size) {
-            $imageData = config('images');
-            $imageSizes = array_keys($imageData);
+        $imageData = config('images');
+        $imageSizes = array_keys($imageData);
 
-            if (in_array($request->size, $imageSizes)) {
-                $image = storage_path($imageData[$request->size]['path']) . $fileName;
-                return response()->download($image);
-            }
+        if (!$request->size) {
+            $request->size = 'large';
         }
 
-        return response()->download(storage_path('/app/images/large/') . $fileName);
+        if (in_array($request->size, $imageSizes)) {
+            return Storage::download($imageData[$request->size]['path'] . $fileName);
+        }
+
+        return null;
     }
 
     public function deleteFile($slug)
@@ -71,12 +72,11 @@ class FileController extends Controller
         $file = File::where('slug', $slug)->firstOrFail();
 
         if ($file->extension === 'png' || $file->extension === 'jpg') {
-            Storage::disk('local')->delete('images/' . $file->file_name);
             $this->deleteImagesFromStorage($file->file_name);
         } elseif ($file->extension === 'gif') {
-            Storage::disk('local')->delete('gifs/' . $file->file_name);
+            Storage::delete('gifs/' . $file->file_name);
         } elseif ($file->extension === 'pdf') {
-            Storage::disk('local')->delete('documents/' . $file->file_name);
+            Storage::delete('documents/' . $file->file_name);
         }
 
         $file->delete();
@@ -88,7 +88,7 @@ class FileController extends Controller
         $imageSizes = array_keys(config('images'));
 
         foreach ($imageSizes as $size) {
-            Storage::disk('local')->delete('images/' . $size . '/' . $fileName);
+            Storage::delete('images/' . $size . '/' . $fileName);
         }
     }
 }
