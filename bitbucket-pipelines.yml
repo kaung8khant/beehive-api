@@ -17,6 +17,8 @@ pipelines:
       - step:
           name: "Deploy to Staging"
           deployment: Staging
+          clone:
+            enabled: false
           script:
             - ssh -qT root@139.162.51.4 exit; echo $?
     master:
@@ -68,6 +70,8 @@ pipelines:
                 - application.zip
       - step:
           name: "Deploy to Production"
+          clone:
+            enabled: false
           script:
             - pipe: atlassian/aws-elasticbeanstalk-deploy:0.7.0
               variables:
