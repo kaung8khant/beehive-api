@@ -8,12 +8,12 @@ image: composer:2.0
 pipelines:
   branches:
     staging:
-      # - step:
-      #     name: Security Scan for Production
-      #     script:
-      #       # Run a security scan for sensitive data.
-      #       # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
-      #       - pipe: atlassian/git-secrets-scan:0.4.3
+      - step:
+          name: Security Scan for Staging
+          script:
+            # Run a security scan for sensitive data.
+            # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
+            - pipe: atlassian/git-secrets-scan:0.4.3
       - step:
           name: "Deploy to Staging"
           deployment: Staging
