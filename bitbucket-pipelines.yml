@@ -20,7 +20,7 @@ pipelines:
           clone:
             enabled: false
           script:
-            - pipe: atlassian/ssh-run:0.2.2
+            - pipe: atlassian/ssh-run:0.3.0
               variables:
                 SSH_USER: "root"
                 SERVER: "139.162.51.4"
