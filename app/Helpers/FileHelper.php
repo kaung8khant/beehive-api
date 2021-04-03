@@ -50,12 +50,11 @@ trait FileHelper
         $file = File::where('slug', $slug)->firstOrFail();
 
         if ($file->extension === 'png' || $file->extension === 'jpg') {
-            Storage::disk('local')->delete('images/' . $file->file_name);
             $this->deleteImagesFromStorage($file->file_name);
         } elseif ($file->extension === 'gif') {
-            Storage::disk('local')->delete('gifs/' . $file->file_name);
+            Storage::delete('gifs/' . $file->file_name);
         } elseif ($file->extension === 'pdf') {
-            Storage::disk('local')->delete('documents/' . $file->file_name);
+            Storage::delete('documents/' . $file->file_name);
         }
 
         $file->delete();
@@ -67,7 +66,7 @@ trait FileHelper
         $imageSizes = array_keys(config('images'));
 
         foreach ($imageSizes as $size) {
-            Storage::disk('local')->delete('images/' . $size . '/' . $fileName);
+            Storage::delete('images/' . $size . '/' . $fileName);
         }
     }
 }

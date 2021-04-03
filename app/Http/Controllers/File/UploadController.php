@@ -63,9 +63,9 @@ class UploadController extends Controller
         if ($extension === 'png' || $extension === 'jpg') {
             $this->storeImage($file, $fileName);
         } elseif ($extension === 'gif') {
-            Storage::disk('local')->put('gifs/' . $fileName, fopen($file, 'r+'));
+            Storage::put('gifs/' . $fileName, fopen($file, 'r+'));
         } elseif ($extension === 'pdf') {
-            Storage::disk('local')->put('documents/' . $fileName, fopen($file, 'r+'));
+            Storage::put('documents/' . $fileName, fopen($file, 'r+'));
         }
     }
 
@@ -73,20 +73,19 @@ class UploadController extends Controller
     {
         $img = Image::make($file);
         $img->encode('png');
-        $img->save(storage_path('app/images') . '/' . $fileName);
-
         $this->resizeImage($img, $fileName);
     }
 
     private function resizeImage($img, $fileName)
     {
-        $images = config('images');
+        $imgOptions = config('images');
 
-        foreach ($images as $image) {
-            $img->heighten($image['height'], function ($constraint) {
+        foreach ($imgOptions as $option) {
+            $image = $img->heighten($option['height'], function ($constraint) {
                 $constraint->upsize();
-            });
-            $img->save(storage_path($image['path'] . $fileName));
+            })->stream();
+
+            Storage::put($option['path'] . $fileName, $image->__toString());
         }
     }
 
