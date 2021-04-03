@@ -22,7 +22,7 @@ pipelines:
               variables:
                 SSH_USER: "root"
                 SERVER: "139.162.51.4"
-                COMMAND: "echo $HOSTNAME > ~/hello.txt"
+                COMMAND: "echo $HOSTNAME"
     master:
       - parallel:
           - step:
