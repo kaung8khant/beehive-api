@@ -24,7 +24,7 @@ pipelines:
               variables:
                 SSH_USER: "root"
                 SERVER: "139.162.51.4"
-                COMMAND: "pwd > test.txt"
+                COMMAND: "deploy.sh"
     master:
       - parallel:
           - step:
