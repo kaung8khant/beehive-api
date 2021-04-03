@@ -18,11 +18,7 @@ pipelines:
           name: "Deploy to Staging"
           deployment: Staging
           script:
-            - pipe: atlassian/ssh-run:0.3.0
-              variables:
-                SSH_USER: "root"
-                SERVER: "139.162.51.4"
-                COMMAND: "echo $HOSTNAME"
+            - ssh -qT root@139.162.51.4 exit; echo $?
     master:
       - parallel:
           - step:
