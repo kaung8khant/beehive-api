@@ -20,7 +20,11 @@ pipelines:
           clone:
             enabled: false
           script:
-            - ssh -qT root@139.162.51.4 exit; echo $?
+            - pipe: atlassian/ssh-run:0.2.2
+              variables:
+                SSH_USER: "root"
+                SERVER: "139.162.51.4"
+                COMMAND: "echo $HOSTNAME"
     master:
       - parallel:
           - step:
