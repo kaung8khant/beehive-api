@@ -62,9 +62,7 @@ pipelines:
 
                 # install dependencies
                 - composer install
-                - php artisan l5-swagger:generate
-                - mkdir -p public/docs
-                - cp storage/api-docs/api-docs.json public/docs/api-docs.json
+                - composer remove darkaonline/l5-swagger
                 - zip -r application.zip . -x "vendor/*" "dotenv" ".profile_env"
 
               caches:
@@ -89,4 +87,4 @@ pipelines:
                 VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_BUILD_NUMBER"
 definitions:
   caches:
-    composer-cache: /composer/cache
+    composer-cache: ./vendor
