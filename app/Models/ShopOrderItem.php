@@ -39,13 +39,25 @@ class ShopOrderItem extends Model
         'variations' => 'array',
     ];
 
+    protected $appends = ['status'];
+
+    public function getStatusAttribute()
+    {
+        return $this->status()->latest()->first()->status;
+    }
+
     public function shopOrder()
     {
         return $this->belongsTo(ShopOrder::class);
+    }
+    public function status()
+    {
+        return $this->hasOne(ShopOrderStatus::class);
     }
 
     public function shop()
     {
         return $this->belongsTo(Shop::class);
     }
+
 }

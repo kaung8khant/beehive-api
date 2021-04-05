@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Models\ShopOrderContact;
 use App\Models\ShopOrderItem;
-use App\Models\ShopOrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -37,7 +36,31 @@ class ShopOrder extends Model
 
     public function getOrderStatusAttribute()
     {
-        return $this->status()->latest()->first()->status;
+        $result = "pickUp";
+
+        $items = collect($this->items->filter(function ($value) {
+            return $value->status !== "onRoute" && $value->status !== "delivered" && $value->status !== "cancelled";
+        })->mode('status'));
+
+        if (count($items) > 0) {
+
+            //get vendor status for each item and compare
+            if ($items->contains('preparing')) {
+                $result = 'preparing';
+            }
+            if ($items->contains('pending')) {
+                $result = 'pending';
+            }
+
+        } else {
+
+            //admin control the status after pickUp
+            $items = $this->items->mode('status');
+            $result = $items[0];
+
+        }
+
+        return $result;
     }
 
     public function getTotalAmountAttribute()
@@ -57,10 +80,7 @@ class ShopOrder extends Model
     {
         return $this->hasOne(ShopOrderContact::class);
     }
-    public function status()
-    {
-        return $this->hasOne(ShopOrderStatus::class);
-    }
+
     public function items()
     {
         return $this->hasMany(ShopOrderItem::class);

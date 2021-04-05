@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\ShopOrder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,7 +10,7 @@ class ShopOrderStatus extends Model
     use HasFactory;
 
     protected $fillable = [
-        'shop_order_id',
+        'shop_order_item_id',
         'status',
         'created_by',
     ];
@@ -23,8 +22,8 @@ class ShopOrderStatus extends Model
         'pivot',
     ];
 
-    public function shopOrder()
+    public function item()
     {
-        return $this->belongsTo(ShopOrder::class);
+        return $this->belongsTo(ShopOrderItem::class);
     }
 }

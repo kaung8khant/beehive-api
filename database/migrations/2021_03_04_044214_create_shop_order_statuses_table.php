@@ -17,9 +17,9 @@ class CreateShopOrderStatusesTable extends Migration
             $table->id();
             $table->enum('status', ['pending', 'preparing', 'pickUp', 'onRoute', 'delivered', 'cancelled'])->default('pending');
             $table->string('created_by')->nullable();
-            $table->unsignedBigInteger('shop_order_id');
+            $table->unsignedBigInteger('shop_order_item_id');
             $table->timestamps();
-            $table->foreign('shop_order_id')->references('id')->on('shop_orders')->onDelete('cascade');
+            $table->foreign('shop_order_item_id')->references('id')->on('shop_order_items')->onDelete('cascade');
         });
     }
 

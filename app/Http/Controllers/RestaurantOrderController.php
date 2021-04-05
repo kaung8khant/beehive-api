@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\NotificationHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\Customer;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Validator;
 
 class RestaurantOrderController extends Controller
 {
-    use ResponseHelper, StringHelper;
+    use ResponseHelper, StringHelper, NotificationHelper;
 
     /**
      * @OA\Get(
@@ -70,8 +71,8 @@ class RestaurantOrderController extends Controller
     public function getBranchOrders(Request $request, $slug)
     {
         $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
-            // ->whereDate('order_date', '>=', $request->from)
-            // ->whereDate('order_date', '<=', $request->to)
+        // ->whereDate('order_date', '>=', $request->from)
+        // ->whereDate('order_date', '<=', $request->to)
             ->whereHas('restaurantBranch', function ($q) use ($slug) {
                 $q->where('slug', $slug);
             })
@@ -261,6 +262,14 @@ class RestaurantOrderController extends Controller
         }
 
         $this->createOrderStatus($order->id, $request->status);
+
+        $this->notify([
+            'title' => 'Shop order updated',
+            'body' => 'Shop order just has been updated',
+            'status' => $request->status,
+            'slug' => $slug,
+        ]);
+
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
     }
 
@@ -299,6 +308,7 @@ class RestaurantOrderController extends Controller
 
     private function createOrderStatus($orderId, $status = 'pending')
     {
+
         RestaurantOrderStatus::create([
             'status' => $status,
             'restaurant_order_id' => $orderId,
@@ -336,5 +346,23 @@ class RestaurantOrderController extends Controller
     private function getMenuId($slug)
     {
         return Menu::where('slug', $slug)->first()->id;
+    }
+
+    private function notify($data)
+    {
+        $this->notifyAdmin(
+            [
+                'title' => $data['title'],
+                'body' => $data['body'],
+                'img' => '',
+                'data' => [
+                    'action' => 'update',
+                    'type' => 'shopOrder',
+                    'status' => $data['status'],
+                    'slug' => $data['slug'],
+
+                ],
+            ]
+        );
     }
 }

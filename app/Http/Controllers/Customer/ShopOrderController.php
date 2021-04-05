@@ -58,7 +58,7 @@ class ShopOrderController extends Controller
         $order = ShopOrder::create($validatedData);
         $orderId = $order->id;
 
-        $this->createOrderStatus($orderId);
+        //$this->createOrderStatus($orderId);
 
         $this->createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
 
@@ -134,7 +134,7 @@ class ShopOrderController extends Controller
     private function createOrderStatus($orderId, $status = 'pending')
     {
         $shop = ShopOrderStatus::create([
-            'shop_order_id' => $orderId,
+            'shop_order_item_id' => $orderId,
             'status' => $status,
         ]);
     }
@@ -181,7 +181,8 @@ class ShopOrderController extends Controller
             $item['discount'] = $discount;
             $item['tax'] = ($amount) * $product->tax / 100;
 
-            ShopOrderItem::create($item);
+            $shopOrderItem = ShopOrderItem::create($item);
+            $this->createOrderStatus($shopOrderItem->id);
         }
     }
     private function prepareVariations($variationValueSlugs)

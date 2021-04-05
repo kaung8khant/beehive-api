@@ -168,8 +168,9 @@ class RestaurantOrderController extends Controller
 
         foreach ($orderItems as $item) {
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
-            $product = $this->getProduct($item['slug']);
-            $total += $product->price + $variations->sum('price');
+            $toppings = collect($this->prepareToppings($item['topping_slugs']));
+            $menu = $this->getMenu($item['slug']);
+            $total += $menu->price + $variations->sum('price') + $toppings->sum('price');
         }
 
         $promoPercentage = 0;
