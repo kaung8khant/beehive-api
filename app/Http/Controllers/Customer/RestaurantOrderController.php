@@ -172,7 +172,7 @@ class RestaurantOrderController extends Controller
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
             $toppings = collect($this->prepareToppings($item['topping_slugs']));
             $menu = $this->getMenu($item['slug']);
-            $total += $menu->price + $variations->sum('price') + $toppings->sum('price');
+            $total += ($menu->price + $variations->sum('price') + $toppings->sum('price')) * $item['quantity'];
         }
 
         $promoPercentage = 0;
@@ -186,7 +186,7 @@ class RestaurantOrderController extends Controller
 
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
             $toppings = collect($this->prepareToppings($item['topping_slugs']));
-            $amount = ( $menu->price + $variations->sum('price') + $toppings->sum('price') ) * $item['quantity'];
+            $amount = ($menu->price + $variations->sum('price') + $toppings->sum('price')) * $item['quantity'];
 
             $discount = $amount * $promoPercentage / 100;
 
