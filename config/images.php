@@ -3,22 +3,22 @@
 return [
     'large' => [
         'height' => 1000,
-        'path' => 'app/images/large/',
+        'path' => 'images/large/',
     ],
     'medium' => [
         'height' => 750,
-        'path' => 'app/images/medium/',
+        'path' => 'images/medium/',
     ],
     'small' => [
         'height' => 500,
-        'path' => 'app/images/small/',
+        'path' => 'images/small/',
     ],
     'xsmall' => [
         'height' => 250,
-        'path' => 'app/images/xsmall/',
+        'path' => 'images/xsmall/',
     ],
     'thumbnail' => [
         'height' => 100,
-        'path' => 'app/images/thumbnail/',
+        'path' => 'images/thumbnail/',
     ],
 ];

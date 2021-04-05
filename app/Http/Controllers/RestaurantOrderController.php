@@ -308,6 +308,7 @@ class RestaurantOrderController extends Controller
 
     private function createOrderStatus($orderId, $status = 'pending')
     {
+        RestaurantOrder::where('id', $orderId)->update(['order_status' => $status]);
 
         RestaurantOrderStatus::create([
             'status' => $status,

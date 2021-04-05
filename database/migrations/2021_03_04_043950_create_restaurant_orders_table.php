@@ -21,6 +21,7 @@ class CreateRestaurantOrdersTable extends Migration
             $table->enum('payment_mode', ['COD', 'CBPay', 'KPay', 'MABPay']);
             $table->enum('delivery_mode', ['pickup', 'delivery']);
             $table->json('restaurant_branch_info');
+            $table->string('order_status')->default('pending');
             $table->unsignedBigInteger('customer_id')->nullable();
             $table->unsignedBigInteger('restaurant_id')->nullable();
             $table->unsignedBigInteger('restaurant_branch_id')->nullable();

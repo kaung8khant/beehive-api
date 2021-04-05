@@ -1,0 +1,34 @@
+# Template PHP Build
+
+# This template allows you to validate your PHP application.
+# The workflow allows running tests and code linting on the default branch.
+
+image: composer:2.0
+
+pipelines:
+  branches:
+    staging:
+      - step:
+          name: "Package Project"
+          script:
+            - cp .env.example .env
+            - zip -r application.zip . -x "vendor/*"
+          # Define an artifact to pass the zip file to the next step
+          artifacts:
+            - application.zip
+      - step:
+          name: "Deploy to Staging"
+          # Track staging environments builds using deployments.
+          deployment: Staging
+          script:
+            - pipe: atlassian/aws-elasticbeanstalk-deploy:0.7.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: "ap-southeast-1"
+                APPLICATION_NAME: "Beehive API Production"
+                # APPLICATION_NAME: "beehive-api-production"
+                ENVIRONMENT_NAME: "beehive-api-production-env"
+                ZIP_FILE: "application.zip"
+                S3_BUCKET: "elasticbeanstalk-ap-southeast-1-565186916354"
+                VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_COMMIT-$BITBUCKET_BUILD_NUMBER"

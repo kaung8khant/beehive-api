@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
-use App\Models\Promocode;
-use App\Models\Restaurant;
-use App\Models\Shop;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
@@ -15,11 +13,11 @@ class AdminDashboardController extends Controller
     public function getCountData()
     {
         $result = [
-            'restaurants' => Restaurant::count(),
-            'shops' => Shop::count(),
-            'customers' => Customer::count(),
+            'restaurants' => DB::table('restaurants')->count(),
+            'shops' => DB::table('shops')->count(),
+            'customers' => DB::table('customers')->count(),
             'drivers' => $this->getDriversCount(),
-            'promo_codes' => Promocode::count(),
+            'promo_codes' => DB::table('promocodes')->count(),
         ];
 
         return response()->json($result);
@@ -28,7 +26,7 @@ class AdminDashboardController extends Controller
     public function getRestaurantOrders()
     {
         $paginator = DB::table('restaurant_orders')
-            ->select('restaurant_branch_id', DB::raw('count(*) as total_orders'))
+            ->select('restaurant_branch_id', DB::raw('count(*) AS total_orders'))
             ->groupBy('restaurant_branch_id')
             ->orderby('total_orders', 'DESC')
             ->paginate(10);
@@ -72,7 +70,7 @@ class AdminDashboardController extends Controller
     public function getShopOrders()
     {
         $paginator = DB::table('shop_order_items')
-            ->select('shop_id', DB::raw('count(*) as total_orders'))
+            ->select('shop_id', DB::raw('count(*) AS total_orders'))
             ->groupBy('shop_id')
             ->orderBy('total_orders', 'DESC')
             ->paginate(10);
@@ -108,9 +106,102 @@ class AdminDashboardController extends Controller
         return response()->json($result);
     }
 
-    public function getOrderChartData()
+    public function getOrderChartData(Request $request)
     {
+        if ($request->type === 'weekly') {
+            $result = $this->getWeeklyOrders();
+        } else if ($request->type === 'monthly') {
+            $result = $this->getMonthlyOrders();
+        } else {
+            $result = $this->getYearlyOrders();
+        }
 
+        return response()->json($result);
+    }
+
+    private function getYearlyOrders()
+    {
+        $startDate = Carbon::now()->subMonths(11)->startOfMonth();
+        $endDate = Carbon::now();
+
+        $restaurantOrders = DB::table('restaurant_orders')
+            ->where('created_at', '>', $startDate->format('Y-m-d H:i:s'))
+            ->where('created_at', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->select(DB::raw('MONTH(created_at) AS month_number'), DB::raw('DATE_FORMAT(created_at, "%b") AS month'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('month_number', 'month')
+            ->orderBy('month_number')
+            ->get();
+
+        $shopOrders = DB::table('shop_orders')
+            ->where('created_at', '>', $startDate->format('Y-m-d H:i:s'))
+            ->where('created_at', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->select(DB::raw('MONTH(created_at) AS month_number'), DB::raw('DATE_FORMAT(created_at, "%b") AS month'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('month_number', 'month')
+            ->orderBy('month_number')
+            ->get();
+        
+        foreach ($restaurantOrders as $order) {
+            unset($order->month_number);
+        }
+
+        foreach ($shopOrders as $order) {
+            unset($order->month_number);
+        }
+
+        return [
+            'restaurant_orders' => $restaurantOrders,
+            'shop_orders' => $shopOrders,
+        ];
+    }
+
+    private function getMonthlyOrders()
+    {
+        $startDate = Carbon::now()->subDays(29);
+        $endDate = Carbon::now();
+
+        $restaurantOrders = DB::table('restaurant_orders')
+            ->where('created_at', '>', $startDate->format('Y-m-d H:i:s'))
+            ->where('created_at', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->select(DB::raw('DATE(created_at) AS date'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('date')
+            ->get();
+
+        $shopOrders = DB::table('shop_orders')
+            ->where('created_at', '>', $startDate->format('Y-m-d H:i:s'))
+            ->where('created_at', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->select(DB::raw('DATE(created_at) AS date'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('date')
+            ->get();
+
+        return [
+            'restaurant_orders' => $restaurantOrders,
+            'shop_orders' => $shopOrders,
+        ];
+    }
+
+    private function getWeeklyOrders()
+    {
+        $startDate = Carbon::now()->subDays(6);
+        $endDate = Carbon::now();
+
+        $restaurantOrders = DB::table('restaurant_orders')
+            ->where('created_at', '>', $startDate->format('Y-m-d H:i:s'))
+            ->where('created_at', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->select(DB::raw('DATE(created_at) AS date'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('date')
+            ->get();
+
+        $shopOrders = DB::table('shop_orders')
+            ->where('created_at', '>', $startDate->format('Y-m-d H:i:s'))
+            ->where('created_at', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->select(DB::raw('DATE(created_at) AS date'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('date')
+            ->get();
+
+        return [
+            'restaurant_orders' => $restaurantOrders,
+            'shop_orders' => $shopOrders,
+        ];
     }
 
     private function getDriversCount()

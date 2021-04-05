@@ -148,6 +148,8 @@ class RestaurantOrderController extends Controller
 
     private function createOrderStatus($orderId, $status = 'pending')
     {
+        RestaurantOrder::where('id', $orderId)->update(['order_status' => $status]);
+
         RestaurantOrderStatus::create([
             'status' => $status,
             'restaurant_order_id' => $orderId,
@@ -184,7 +186,7 @@ class RestaurantOrderController extends Controller
 
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
             $toppings = collect($this->prepareToppings($item['topping_slugs']));
-            $amount = $menu->price + $variations->sum('price') + $toppings->sum('price');
+            $amount = ( $menu->price + $variations->sum('price') + $toppings->sum('price') ) * $item['quantity'];
 
             $discount = $amount * $promoPercentage / 100;
 
