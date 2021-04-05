@@ -515,7 +515,7 @@ class RestaurantBranchController extends Controller
     {
         $validatedData = $request->validate([
             'restaurant_branches' => 'nullable|array',
-            'restaurant_branches.*.name' => 'required|unique:restaurant_branches',
+            'restaurant_branches.*.name' => 'required',
             'restaurant_branches.*.is_enable' => 'required|boolean',
             'restaurant_branches.*.address' => 'required',
             'restaurant_branches.*.contact_number' => 'required',
