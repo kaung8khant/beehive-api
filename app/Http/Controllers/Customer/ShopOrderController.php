@@ -15,6 +15,7 @@ use App\Models\ShopOrder;
 use App\Models\ShopOrderContact;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderStatus;
+use App\Models\ShopOrderVendor;
 use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +35,7 @@ class ShopOrderController extends Controller
 
     public function index(Request $request)
     {
-        $shopOrder = ShopOrder::with('contact', 'items', 'status')->where("customer_id", $this->customer_id)->paginate()->items();
+        $shopOrder = ShopOrder::get();
         return $this->generateResponse($shopOrder, 201);
     }
 
@@ -58,11 +59,11 @@ class ShopOrderController extends Controller
         $order = ShopOrder::create($validatedData);
         $orderId = $order->id;
 
-        $this->createOrderStatus($orderId);
+        //$this->createOrderStatus($orderId);
 
         $this->createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
 
-        $this->createOrderItems($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
+        $this->createShopOrderItem($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
 
         foreach ($validatedData['order_items'] as $item) {
             $this->notify($this->getShop($item['slug'])->id, ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
@@ -73,27 +74,30 @@ class ShopOrderController extends Controller
 
     public function show($slug)
     {
-        $shop = ShopOrder::where('slug', $slug)
-            ->with('contact', 'items')
+        $shopOrder = ShopOrder::where('slug', $slug)
+            ->with('contact', 'vendors', 'vendors.items')
             ->firstOrFail();
-        return $this->generateResponse($shop, 200);
+
+        return $this->generateResponse($shopOrder, 200);
     }
 
     public function destroy($slug)
     {
 
-        $shopOrder = ShopOrder::where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
+        $shopOrder = ShopOrder::with('items')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
+        foreach ($shopOrder->items as $item) {
+            $shopOrderStatus = ShopOrderStatus::where('shop_order_item_id', $item->id)->firstOrFail();
 
-        $shopOrderStatus = ShopOrderStatus::where('shop_order_id', $shopOrder->id)->firstOrFail();
+            if ($shopOrderStatus->status === 'delivered' || $shopOrderStatus->status === 'cancelled') {
+                return $this->generateResponse('The order has already been ' . $shopOrderStatus->status . '.', 406, true);
+            }
 
-        if ($shopOrderStatus->status === 'delivered' || $shopOrderStatus->status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $shopOrderStatus->status . '.', 406, true);
+            $shopOrderStatus->status = "cancelled";
+            $shopOrderStatus->update();
         }
+        $shopOrder = ShopOrder::with('items')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
 
-        $shopOrderStatus->status = "cancelled";
-        $shopOrderStatus->update();
-
-        return $this->generateResponse($shopOrderStatus, 200);
+        return $this->generateResponse($shopOrder->order_status, 200);
     }
 
     private function validateOrder(Request $request)
@@ -131,10 +135,10 @@ class ShopOrderController extends Controller
         return ShopOrder::where('slug', $slug)->firstOrFail()->id;
     }
 
-    private function createOrderStatus($orderId, $status = 'pending')
+    private function createOrderStatus($vendorId, $status = 'pending')
     {
         $shop = ShopOrderStatus::create([
-            'shop_order_id' => $orderId,
+            'shop_order_vendor_id' => $vendorId,
             'status' => $status,
         ]);
     }
@@ -146,21 +150,34 @@ class ShopOrderController extends Controller
         ShopOrderContact::create($customerInfo);
     }
 
-    private function createOrderItems($orderId, $orderItems, $promoCodeId)
+    private function createShopOrderItem($orderId, $orderItems, $promoCodeId)
     {
+        $total = 0;
+
         foreach ($orderItems as $item) {
             $variations = collect($this->prepareVariations($item['variation_value_slugs']));
             $product = $this->getProduct($item['slug']);
-            $amount = $product->price + $variations->sum('price');
-            $discount = 0;
-            if ($promoCodeId) {
-                $discount = $this->calculateDiscount($amount, $promoCodeId);
-            }
+            $total += ($product->price + $variations->sum('price')) * $item['quantity'];
+        }
+
+        $promoPercentage = 0;
+
+        if ($promoCodeId) {
+            $promoPercentage = $this->getPercentage($total, $promoCodeId);
+        }
+
+        foreach ($orderItems as $item) {
+            $variations = collect($this->prepareVariations($item['variation_value_slugs']));
+            $product = $this->getProduct($item['slug']);
+            $amount = ($product->price + $variations->sum('price')) * $item['quantity'];
+            $discount = $amount * $promoPercentage / 100;
 
             $shop = $this->getShop($item['slug']);
 
+            $shopOrderVendor = $this->createShopOrderVendor($orderId, $shop->id);
+
             $item['shop'] = $shop;
-            $item['shop_order_id'] = $orderId;
+            $item['shop_order_vendor_id'] = $shopOrderVendor->id;
             $item['product_id'] = $product->id;
             $item['shop_id'] = $shop->id;
             $item['product_name'] = $product->name;
@@ -168,10 +185,17 @@ class ShopOrderController extends Controller
             $item['variations'] = $variations;
             $item['discount'] = $discount;
             $item['tax'] = ($amount) * $product->tax / 100;
-
-            ShopOrderItem::create($item);
+            $shopOrderItem = ShopOrderItem::create($item);
+            $this->createOrderStatus($shopOrderVendor->id);
         }
     }
+    private function createShopOrderVendor($orderId, $shopId)
+    {
+        return ShopOrderVendor::updateOrCreate(
+            ['shop_order_id' => $orderId, 'shop_id' => $shopId],
+            ['slug' => $this->generateUniqueSlug()]);
+    }
+
     private function prepareVariations($variationValueSlugs)
     {
         $variations = [];

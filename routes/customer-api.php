@@ -47,10 +47,12 @@ Route::group(['prefix' => 'user'], function () {
     Route::get('products', 'Customer\ProductController@index');
     Route::get('products/brands', 'Customer\ProductController@getAllBrand');
     Route::get('products/search', 'Customer\HomeController@searchProduct');
+    Route::get('products/recommendations', 'Customer\ProductController@getRecommendations');
     Route::get('products/{slug}', 'Customer\ProductController@show');
     Route::get('product-categories/{slug}', 'Customer\ProductController@getByCategory');
     Route::get('product-shops/{slug}', 'Customer\ProductController@getByShop');
     Route::get('product-brands/{slug}', 'Customer\ProductController@getByBrand');
+
     /* Product */
 
     Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
@@ -99,5 +101,6 @@ Route::group(['prefix' => 'user'], function () {
 
         Route::get('promocode', 'Customer\PromocodeController@index');
         Route::get('promocode/validate/{slug}', 'Customer\PromocodeController@validatePromoCode');
+
     });
 });

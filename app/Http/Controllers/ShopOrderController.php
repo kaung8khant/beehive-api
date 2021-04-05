@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\NotificationHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\ShopOrder;
@@ -10,7 +11,7 @@ use Illuminate\Http\Request;
 
 class ShopOrderController extends Controller
 {
-    use ResponseHelper, StringHelper;
+    use ResponseHelper, StringHelper, NotificationHelper;
 
     /**
      * @OA\Get(
@@ -94,6 +95,14 @@ class ShopOrderController extends Controller
         }
 
         $this->createOrderStatus($order->id, $request->status);
+
+        $this->notify([
+            'title' => 'Shop order updated',
+            'body' => 'Shop order just has been updated',
+            'status' => $request->status,
+            'slug' => $slug,
+        ]);
+
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
     }
 
@@ -103,5 +112,22 @@ class ShopOrderController extends Controller
             'status' => $status,
             'shop_order_id' => $orderId,
         ]);
+    }
+    private function notify($data)
+    {
+        $this->notifyAdmin(
+            [
+                'title' => $data['title'],
+                'body' => $data['body'],
+                'img' => '',
+                'data' => [
+                    'action' => 'update',
+                    'type' => 'shopOrder',
+                    'status' => $data['status'],
+                    'slug' => $data['slug'],
+
+                ],
+            ]
+        );
     }
 }
