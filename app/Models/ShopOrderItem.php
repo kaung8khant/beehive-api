@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\ShopOrder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,7 +18,7 @@ class ShopOrderItem extends Model
         'variations',
         'shop',
         'is_deleted',
-        'shop_order_id',
+        'shop_order_vendor_id',
         'product_id',
         'shop_id',
     ];
@@ -29,6 +28,7 @@ class ShopOrderItem extends Model
         'is_deleted',
         'product_id',
         'shop_id',
+        'shop_order_vendor_id',
         'created_at',
         'updated_at',
         'pivot',
@@ -39,21 +39,21 @@ class ShopOrderItem extends Model
         'variations' => 'array',
     ];
 
-    protected $appends = ['status'];
+    // protected $appends = ['status'];
 
-    public function getStatusAttribute()
-    {
-        return $this->status()->latest()->first()->status;
-    }
+    // public function getStatusAttribute()
+    // {
+    //     return $this->status()->latest()->first()->status;
+    // }
 
-    public function shopOrder()
+    public function vendor()
     {
-        return $this->belongsTo(ShopOrder::class);
+        return $this->belongsTo(ShopOrderVendor::class);
     }
-    public function status()
-    {
-        return $this->hasOne(ShopOrderStatus::class);
-    }
+    // public function status()
+    // {
+    //     return $this->hasOne(ShopOrderStatus::class);
+    // }
 
     public function shop()
     {

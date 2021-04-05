@@ -10,7 +10,7 @@ class ShopOrderStatus extends Model
     use HasFactory;
 
     protected $fillable = [
-        'shop_order_item_id',
+        'shop_order_vendor_id',
         'status',
         'created_by',
     ];
@@ -22,8 +22,8 @@ class ShopOrderStatus extends Model
         'pivot',
     ];
 
-    public function item()
+    public function vendor()
     {
-        return $this->belongsTo(ShopOrderItem::class);
+        return $this->belongsTo(ShopOrderVendor::class);
     }
 }
