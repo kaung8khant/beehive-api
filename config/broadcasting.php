@@ -13,7 +13,7 @@ return [
     |
     | Supported: "pusher", "redis", "log", "null"
     |
-    */
+     */
 
     'default' => env('BROADCAST_DRIVER', 'null'),
 
@@ -26,7 +26,9 @@ return [
     | to broadcast events to other systems or over websockets. Samples of
     | each available type of connection are provided inside this array.
     |
-    */
+     */
+    'firebase' =>
+    env('FIREBASE_SERVER_KEY'),
 
     'connections' => [
 
@@ -39,9 +41,6 @@ return [
                 'cluster' => env('PUSHER_APP_CLUSTER'),
                 'useTLS' => true,
             ],
-        ],
-        'firebase' => [
-            'server_key' => env('FIREBASE_SERVER_KEY'),
         ],
 
         'ably' => [

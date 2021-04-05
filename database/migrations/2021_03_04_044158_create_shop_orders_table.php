@@ -22,6 +22,7 @@ class CreateShopOrdersTable extends Migration
             $table->enum('delivery_mode', ['pickup', 'delivery']);
             $table->unsignedBigInteger('promocode_id')->nullable();
             $table->unsignedBigInteger('customer_id')->nullable();
+            $table->string('order_status')->default('pending');
             $table->timestamps();
             $table->foreign('customer_id')->references('id')->on('customers')->onDelete('set null');
             $table->foreign('promocode_id')->references('id')->on('promocodes')->onDelete('set null');

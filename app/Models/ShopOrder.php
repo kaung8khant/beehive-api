@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use App\Models\ShopOrderContact;
-use App\Models\ShopOrderItem;
-use App\Models\ShopOrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,6 +18,7 @@ class ShopOrder extends Model
         'payment_mode',
         'delivery_mode',
         'promocode_id',
+        'order_status',
     ];
 
     protected $hidden = [
@@ -33,21 +32,18 @@ class ShopOrder extends Model
         'promocode' => 'object',
     ];
 
-    protected $appends = ['order_status', 'total_amount'];
-
-    public function getOrderStatusAttribute()
-    {
-        return $this->status()->latest()->first()->status;
-    }
+    protected $appends = ['total_amount'];
 
     public function getTotalAmountAttribute()
     {
-        $orderItems = $this->items;
+        $vendors = $this->vendors;
         $totalAmount = 0;
 
-        foreach ($orderItems as $item) {
-            $amount = $item->amount + $item->tax - $item->discount;
-            $totalAmount += $amount;
+        foreach ($vendors as $vendor) {
+            foreach ($vendor->items as $item) {
+                $amount = $item->amount + $item->tax - $item->discount;
+                $totalAmount += $amount;
+            }
         }
 
         return $totalAmount;
@@ -57,12 +53,10 @@ class ShopOrder extends Model
     {
         return $this->hasOne(ShopOrderContact::class);
     }
-    public function status()
+
+    public function vendors()
     {
-        return $this->hasOne(ShopOrderStatus::class);
+        return $this->hasMany(ShopOrderVendor::class);
     }
-    public function items()
-    {
-        return $this->hasMany(ShopOrderItem::class);
-    }
+
 }

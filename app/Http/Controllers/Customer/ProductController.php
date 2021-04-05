@@ -99,6 +99,16 @@ class ProductController extends Controller
         $this->customer->favoriteProducts()->detach($productId);
         return response()->json(['message' => 'Success.'], 200);
     }
+    public function getRecommendations(Request $request)
+    {
+        $product = Product::with('shop')
+            ->where('is_enable', 1)
+            ->inRandomOrder()
+            ->paginate($request->size)
+            ->items();
+
+        return $this->generateProductResponse($product, 200);
+    }
 
     private function getProductId($slug)
     {

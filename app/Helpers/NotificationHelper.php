@@ -29,6 +29,27 @@ trait NotificationHelper
         }
     }
 
+    protected function notifyAdmin($data)
+    {
+        $users = User::with('roles')->whereHas('roles', function ($query) {
+            return $query->where('name', "Admin");
+        })->get();
+        if ($users) {
+            $tokenList = [];
+            foreach ($users as $user) {
+                $userId = $user->id;
+
+                //Delete over 3 days token
+                UserSession::where("updated_at", '<=', Carbon::now()->subDays(3))->forceDelete();
+
+                $token = UserSession::where('user_id', $userId)->pluck("device_token")->all();
+                $tokenList = array_merge($tokenList, $token);
+
+            }
+            $this->sendNotification($data, $tokenList);
+        }
+    }
+
     protected function notifyShop($slug, $data)
     {
         $shop = Shop::where("slug", $slug)->first();
@@ -58,7 +79,7 @@ trait NotificationHelper
         $dataString = json_encode($data);
 
         $headers = [
-            'Authorization: key=' . config('broadcasting.server_key'),
+            'Authorization: key=' . config('broadcasting.firebase'),
             'Content-Type: application/json',
         ];
 
@@ -71,6 +92,7 @@ trait NotificationHelper
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
 
-        curl_exec($ch);
+        $result = curl_exec($ch);
+
     }
 }
