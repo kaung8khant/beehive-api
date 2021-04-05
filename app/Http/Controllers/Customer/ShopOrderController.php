@@ -82,18 +82,20 @@ class ShopOrderController extends Controller
     public function destroy($slug)
     {
 
-        $shopOrder = ShopOrder::where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
+        $shopOrder = ShopOrder::with('items')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
+        foreach ($shopOrder->items as $item) {
+            $shopOrderStatus = ShopOrderStatus::where('shop_order_item_id', $item->id)->firstOrFail();
 
-        $shopOrderStatus = ShopOrderStatus::where('shop_order_id', $shopOrder->id)->firstOrFail();
+            if ($shopOrderStatus->status === 'delivered' || $shopOrderStatus->status === 'cancelled') {
+                return $this->generateResponse('The order has already been ' . $shopOrderStatus->status . '.', 406, true);
+            }
 
-        if ($shopOrderStatus->status === 'delivered' || $shopOrderStatus->status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $shopOrderStatus->status . '.', 406, true);
+            $shopOrderStatus->status = "cancelled";
+            $shopOrderStatus->update();
         }
+        $shopOrder = ShopOrder::with('items')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
 
-        $shopOrderStatus->status = "cancelled";
-        $shopOrderStatus->update();
-
-        return $this->generateResponse($shopOrderStatus, 200);
+        return $this->generateResponse($shopOrder->order_status, 200);
     }
 
     private function validateOrder(Request $request)
