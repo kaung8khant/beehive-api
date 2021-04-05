@@ -17,7 +17,7 @@ class UpdateShopOrderStatusesTable extends Migration
         Schema::table('shop_order_statuses', function (Blueprint $table) {
             $table->dropForeign(['shop_order_id']);
             $table->dropColumn('shop_order_id');
-            $table->unsignedBigInteger('shop_order_item_id');
+            $table->unsignedBigInteger('shop_order_item_id')->after('created_by');;
             $table->foreign('shop_order_item_id')->references('id')->on('shop_order_items')->onDelete('cascade');
         });
     }
