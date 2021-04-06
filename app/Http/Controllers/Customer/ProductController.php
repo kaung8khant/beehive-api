@@ -86,10 +86,10 @@ class ProductController extends Controller
         try {
             $this->customer->favoriteProducts()->attach($productId);
         } catch (\Illuminate\Database\QueryException $e) {
-            return response()->json(['message' => 'You already set favorite this shop.'], 409);
+            return $this->generateProductResponse(['message' => 'You already set favorite this shop.'], 409);
         }
 
-        return response()->json(['message' => 'Success.'], 200);
+        return $this->generateProductResponse(['message' => 'Success.'], 200);
     }
 
     public function removeFavorite($slug)
@@ -97,7 +97,7 @@ class ProductController extends Controller
         $productId = $this->getProductId($slug);
 
         $this->customer->favoriteProducts()->detach($productId);
-        return response()->json(['message' => 'Success.'], 200);
+        return $this->generateProductResponse(['message' => 'Success.'], 200);
     }
     public function getRecommendations(Request $request)
     {
