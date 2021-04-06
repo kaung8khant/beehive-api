@@ -351,13 +351,27 @@ class RestaurantController extends Controller
             'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]);
 
+
+        // $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+
+        // $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
+        // $restaurant->availableCategories()->detach();
+        // $restaurant->availableCategories()->attach($restaurantCategories);
+
+        $restaurant = $this->addCategories($request, $slug);
+
+        return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
+    }
+
+    public function addCategories($data, $slug)
+    {
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
+        $restaurantCategories = RestaurantCategory::whereIn('slug', $data->available_categories)->pluck('id');
         $restaurant->availableCategories()->detach();
         $restaurant->availableCategories()->attach($restaurantCategories);
 
-        return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
+        return $restaurant;
     }
 
     /**
@@ -431,5 +445,26 @@ class RestaurantController extends Controller
         }
 
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function createAvailableRestaurantCategories(Request $request, $slug)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $restaurantCategory = RestaurantCategory::create($request->validate([
+            'name' => 'required|unique:restaurant_categories',
+            'slug' => 'required|unique:restaurant_categories',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
+        ]));
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
+        }
+
+        $request['available_categories'] = $restaurantCategory->slug;
+        $restaurant = $this->addCategories($request->all(), $slug);
+
+        // $restaurant = $this->addRestaurantCategories($request, $slug);
+        return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
     }
 }
