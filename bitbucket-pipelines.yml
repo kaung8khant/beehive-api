@@ -9,26 +9,82 @@ pipelines:
   branches:
     staging:
       - step:
-          name: "Package Project"
+          name: Security Scan for Staging
           script:
-            - cp .env.example .env
-            - zip -r application.zip . -x "vendor/*"
-          # Define an artifact to pass the zip file to the next step
-          artifacts:
-            - application.zip
+            # Run a security scan for sensitive data.
+            # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
+            - pipe: atlassian/git-secrets-scan:0.4.3
       - step:
           name: "Deploy to Staging"
-          # Track staging environments builds using deployments.
           deployment: Staging
+          clone:
+            enabled: false
+          script:
+            - pipe: atlassian/ssh-run:0.3.0
+              variables:
+                SSH_USER: "root"
+                SERVER: "139.162.51.4"
+                COMMAND: "./deploy.sh"
+    master:
+      - parallel:
+          - step:
+              name: Security Scan for Production
+              script:
+                # Run a security scan for sensitive data.
+                # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
+                - pipe: atlassian/git-secrets-scan:0.4.3
+          - step:
+              name: "Package Project"
+              # Track production environments builds using deployments.
+              deployment: Production
+              script:
+                # copy env file
+                - cp .env.example .env
+                - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
+                - chmod +x dotenv
+                - >
+                  ./dotenv -f .env set AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                  AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                  APP_KEY=${APP_KEY}
+                  JWT_SECRET=${JWT_SECRET}
+                  DB_DATABASE=${DB_DATABASE}
+                  DB_USERNAME=${DB_USERNAME}
+                  DB_PASSWORD=${DB_PASSWORD}
+                  DB_HOST=${DB_HOST}
+                  APP_ENV=${APP_ENV}
+                  APP_URL=${APP_URL}
+                  AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+                  AWS_BUCKET=${AWS_BUCKET}
+                  BOOMSMS_API_KEY=${BOOMSMS_API_KEY}
+                  FIREBASE_SERVER_KEY=${FIREBASE_SERVER_KEY}
+                  APP_DEBUG=false
+                  FILESYSTEM_DRIVER=s3
+
+                # install dependencies
+                - composer install
+                - composer remove darkaonline/l5-swagger
+                - zip -r application.zip . -x "vendor/*" "dotenv" ".profile_env"
+
+              caches:
+                - composer-cache
+              # Define an artifact to pass the zip file to the next step
+              artifacts:
+                - application.zip
+      - step:
+          name: "Deploy to Production"
+          clone:
+            enabled: false
           script:
             - pipe: atlassian/aws-elasticbeanstalk-deploy:0.7.0
               variables:
                 AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
                 AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                AWS_DEFAULT_REGION: "ap-southeast-1"
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
                 APPLICATION_NAME: "Beehive API Production"
-                # APPLICATION_NAME: "beehive-api-production"
                 ENVIRONMENT_NAME: "beehive-api-production-env"
                 ZIP_FILE: "application.zip"
                 S3_BUCKET: "elasticbeanstalk-ap-southeast-1-565186916354"
-                VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_COMMIT-$BITBUCKET_BUILD_NUMBER"
+                VERSION_LABEL: "beehive-$BITBUCKET_BRANCH-$BITBUCKET_BUILD_NUMBER"
+definitions:
+  caches:
+    composer-cache: ./vendor

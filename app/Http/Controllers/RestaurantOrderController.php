@@ -154,7 +154,7 @@ class RestaurantOrderController extends Controller
      *               @OA\Property(property="special_instruction", type="string", example=""),
      *               @OA\Property(property="payment_mode", type="string", example="COD"),
      *               @OA\Property(property="delivery_mode", type="string", example="delivery"),
-     *               @OA\Property(property="customer_info", ref="#/components/schemas/OrderContact"),
+     *               @OA\Property(property="customer_info", ref="#/components/schemas/RestaurantOrderContact"),
      *               @OA\Property(property="order_items", type="array",
      *               @OA\Items(type="object",
      *                  @OA\Property(property="menu_slug", type="string", example=""),
