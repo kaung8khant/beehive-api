@@ -127,19 +127,19 @@ class AdminDashboardController extends Controller
         $restaurantOrders = DB::table('restaurant_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
-            ->select(DB::raw('MONTH(order_date) AS month_number'), DB::raw('DATE_FORMAT(order_date, "%b") AS month'), DB::raw('count(*) AS total_orders'))
-            ->groupBy('month_number', 'month')
+            ->select(DB::raw('MONTH(order_date) AS month_number'), DB::raw('DATE_FORMAT(order_date, "%b") AS label'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('month_number', 'label')
             ->orderBy('month_number')
             ->get();
 
         $shopOrders = DB::table('shop_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
-            ->select(DB::raw('MONTH(order_date) AS month_number'), DB::raw('DATE_FORMAT(order_date, "%b") AS month'), DB::raw('count(*) AS total_orders'))
-            ->groupBy('month_number', 'month')
+            ->select(DB::raw('MONTH(order_date) AS month_number'), DB::raw('DATE_FORMAT(order_date, "%b") AS label'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('month_number', 'label')
             ->orderBy('month_number')
             ->get();
-        
+
         foreach ($restaurantOrders as $order) {
             unset($order->month_number);
         }
@@ -162,15 +162,15 @@ class AdminDashboardController extends Controller
         $restaurantOrders = DB::table('restaurant_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
-            ->select(DB::raw('DATE(order_date) AS date'), DB::raw('count(*) AS total_orders'))
-            ->groupBy('date')
+            ->select(DB::raw('DATE(order_date) AS label'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('label')
             ->get();
 
         $shopOrders = DB::table('shop_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
-            ->select(DB::raw('DATE(order_date) AS date'), DB::raw('count(*) AS total_orders'))
-            ->groupBy('date')
+            ->select(DB::raw('DATE(order_date) AS label'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('label')
             ->get();
 
         return [
@@ -187,15 +187,15 @@ class AdminDashboardController extends Controller
         $restaurantOrders = DB::table('restaurant_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
-            ->select(DB::raw('DATE(order_date) AS date'), DB::raw('count(*) AS total_orders'))
-            ->groupBy('date')
+            ->select(DB::raw('DATE(order_date) AS label'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('label')
             ->get();
 
         $shopOrders = DB::table('shop_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
-            ->select(DB::raw('DATE(order_date) AS date'), DB::raw('count(*) AS total_orders'))
-            ->groupBy('date')
+            ->select(DB::raw('DATE(order_date) AS label'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('label')
             ->get();
 
         return [

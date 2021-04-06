@@ -10,6 +10,8 @@ use App\Models\ShopTag;
 use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Propaganistas\LaravelPhone\PhoneNumber;
+
 
 class ShopController extends Controller
 {
@@ -94,15 +96,21 @@ class ShopController extends Controller
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
             'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
+            'address' => 'required',
+            'contact_number' => 'required|phone:MM',
             'address' => 'nullable',
-            'contact_number' => 'required',
             'opening_time' => 'required|date_format:H:i',
             'closing_time' => 'required|date_format:H:i',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'township_slug' => 'nullable|exists:App\Models\Township,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
+            [
+                'contact_number.phone' => 'Invalid phone number.',
+            ],
         ]);
+
+        $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
         $townshipId = $this->getTownshipIdBySlug($request->township_slug);
         $validatedData['township_id'] = $townshipId;
         $shop = Shop::create($validatedData, $townshipId);
