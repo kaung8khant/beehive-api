@@ -65,6 +65,7 @@ class ProductController extends Controller
         $brand = Brand::all();
         return $this->generateResponse($brand, 200);
     }
+
     public function getByBrand(Request $request, $slug)
     {
         $brandId = $this->getBrandId($slug);
@@ -72,7 +73,8 @@ class ProductController extends Controller
 
         return $this->generateProductResponse($product, 200);
     }
-    //fav
+
+    // fav
     public function getFavorite(Request $request)
     {
         $fav = $this->customer->favoriteProducts()->with('shopCategory', 'shopSubCategory', 'brand')->paginate($request->size)->items();
@@ -86,19 +88,19 @@ class ProductController extends Controller
         try {
             $this->customer->favoriteProducts()->attach($productId);
         } catch (\Illuminate\Database\QueryException $e) {
-            return $this->generateProductResponse(['message' => 'You already set favorite this shop.'], 409);
+            return $this->generateResponse('You already set favorite this product.', 409, true);
         }
 
-        return $this->generateProductResponse(['message' => 'Success.'], 200);
+        return $this->generateResponse('Success.', 200, true);
     }
 
     public function removeFavorite($slug)
     {
         $productId = $this->getProductId($slug);
-
         $this->customer->favoriteProducts()->detach($productId);
-        return $this->generateProductResponse(['message' => 'Success.'], 200);
+        return $this->generateResponse('Success.', 200, true);
     }
+
     public function getRecommendations(Request $request)
     {
         $product = Product::with('shop')

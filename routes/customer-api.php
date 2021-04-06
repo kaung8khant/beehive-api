@@ -43,18 +43,6 @@ Route::group(['prefix' => 'user'], function () {
     Route::get('shops/{slug}', 'Customer\ShopController@show');
     /* Shop */
 
-    /* Product */
-    Route::get('products', 'Customer\ProductController@index');
-    Route::get('products/brands', 'Customer\ProductController@getAllBrand');
-    Route::get('products/search', 'Customer\HomeController@searchProduct');
-    Route::get('products/recommendations', 'Customer\ProductController@getRecommendations');
-    Route::get('products/{slug}', 'Customer\ProductController@show');
-    Route::get('product-categories/{slug}', 'Customer\ProductController@getByCategory');
-    Route::get('product-shops/{slug}', 'Customer\ProductController@getByShop');
-    Route::get('product-brands/{slug}', 'Customer\ProductController@getByBrand');
-
-    /* Product */
-
     Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
         Route::get('profile', 'Auth\CustomerAuthController@getProfile');
         Route::put('profile', 'Auth\CustomerAuthController@updateProfile');
@@ -73,7 +61,6 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('favorites-count', 'Auth\CustomerAuthController@getFavoritesCount');
 
         /* Restaurant */
-        // Route::get('restaurants', 'Customer\RestaurantController@index');
         Route::get('restaurants/favorites', 'Customer\RestaurantController@getFavoriteRestaurants');
         Route::post('restaurants/{slug}/favorites', 'Customer\RestaurantController@setFavoriteRestaurant');
         Route::delete('restaurants/{slug}/favorites', 'Customer\RestaurantController@removeFavoriteRestaurant');
@@ -83,17 +70,13 @@ Route::group(['prefix' => 'user'], function () {
         /* Restaurant */
 
         /* Shop */
-        Route::post('shops/{slug}/set-favorite', 'Customer\ShopController@setFavoriteShop');
-        Route::post('shops/{slug}/remove-favorite', 'Customer\ShopController@removeFavoriteShop');
         Route::post('shop/ratings', 'Customer\ShopRatingController@store');
         /* Shop */
 
-        //Route::resource('orders', 'Customer\OrderController');
-
         /* Product */
-        Route::get('product-favorites', 'Customer\ProductController@getFavorite');
-        Route::post('products/{slug}/set-favorite', 'Customer\ProductController@setFavorite');
-        Route::post('products/{slug}/remove-favorite', 'Customer\ProductController@removeFavorite');
+        Route::get('products/favorites', 'Customer\ProductController@getFavorite');
+        Route::post('products/{slug}/favorites', 'Customer\ProductController@setFavorite');
+        Route::delete('products/{slug}/favorites', 'Customer\ProductController@removeFavorite');
         /* Product */
 
         Route::resource('shop-orders', 'Customer\ShopOrderController', ['as' => 'customer']);
@@ -103,4 +86,15 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('promocode/validate/{slug}', 'Customer\PromocodeController@validatePromoCode');
 
     });
+
+    /* Product */
+    Route::get('products', 'Customer\ProductController@index');
+    Route::get('products/brands', 'Customer\ProductController@getAllBrand');
+    Route::get('products/search', 'Customer\HomeController@searchProduct');
+    Route::get('products/recommendations', 'Customer\ProductController@getRecommendations');
+    Route::get('products/{slug}', 'Customer\ProductController@show');
+    Route::get('product-categories/{slug}', 'Customer\ProductController@getByCategory');
+    Route::get('product-shops/{slug}', 'Customer\ProductController@getByShop');
+    Route::get('product-brands/{slug}', 'Customer\ProductController@getByBrand');
+    /* Product */
 });
