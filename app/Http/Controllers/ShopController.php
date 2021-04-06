@@ -446,6 +446,30 @@ class ShopController extends Controller
         return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
     }
 
+    public function createAvailableCategory(Request $request, $slug)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $shopCategory = ShopCategory::create($request->validate(
+            [
+                'name' => 'required|unique:shop_categories',
+                'slug' => 'required|unique:shop_categories',
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
+            ]
+        ));
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
+        }
+
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+
+        $availableCategory = ShopCategory::where('slug', $shopCategory->slug)->pluck('id');
+        $shop->availableCategories()->attach($availableCategory);
+
+        return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
+    }
+
     public function import(Request $request)
     {
         $validatedData = $request->validate([
