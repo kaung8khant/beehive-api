@@ -59,11 +59,11 @@ class ShopOrderController extends Controller
         $order = ShopOrder::create($validatedData);
         $orderId = $order->id;
 
-        //$this->createOrderStatus($orderId);
-
         $this->createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
 
         $this->createShopOrderItem($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
+
+        $this->createOrderStatus($orderId);
 
         foreach ($validatedData['order_items'] as $item) {
             $this->notify($this->getShop($item['slug'])->id, ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
@@ -84,18 +84,15 @@ class ShopOrderController extends Controller
     public function destroy($slug)
     {
 
-        $shopOrder = ShopOrder::with('items')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
-        foreach ($shopOrder->items as $item) {
-            $shopOrderStatus = ShopOrderStatus::where('shop_order_item_id', $item->id)->firstOrFail();
+        $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
 
-            if ($shopOrderStatus->status === 'delivered' || $shopOrderStatus->status === 'cancelled') {
-                return $this->generateResponse('The order has already been ' . $shopOrderStatus->status . '.', 406, true);
-            }
-
-            $shopOrderStatus->status = "cancelled";
-            $shopOrderStatus->update();
+        if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
         }
-        $shopOrder = ShopOrder::with('items')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
+
+        $this->createOrderStatus($shopOrder->id, 'cancelled');
+
+        $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
 
         return $this->generateResponse($shopOrder->order_status, 200);
     }
@@ -135,12 +132,21 @@ class ShopOrderController extends Controller
         return ShopOrder::where('slug', $slug)->firstOrFail()->id;
     }
 
-    private function createOrderStatus($vendorId, $status = 'pending')
+    private function createOrderStatus($orderId, $status = 'pending')
     {
-        $shop = ShopOrderStatus::create([
-            'shop_order_vendor_id' => $vendorId,
-            'status' => $status,
-        ]);
+        ShopOrder::where('id', $orderId)->update(['order_status' => $status]);
+
+        $shopOrderVendor = ShopOrderVendor::where('shop_order_id', $orderId);
+        $shopOrderVendor->update(['order_status' => $status]);
+        $shopOrderVendor = $shopOrderVendor->get();
+
+        foreach ($shopOrderVendor as $vendor) {
+            ShopOrderStatus::create([
+                'shop_order_vendor_id' => $vendor->id,
+                'status' => $status,
+            ]);
+        }
+
     }
     private function createOrderContact($orderId, $customerInfo, $address)
     {
@@ -186,7 +192,6 @@ class ShopOrderController extends Controller
             $item['discount'] = $discount;
             $item['tax'] = ($amount) * $product->tax / 100;
             $shopOrderItem = ShopOrderItem::create($item);
-            $this->createOrderStatus($shopOrderVendor->id);
         }
     }
     private function createShopOrderVendor($orderId, $shopId)
