@@ -14,7 +14,7 @@ class AddOrderStatusToShopOrderVendorTable extends Migration
     public function up()
     {
         Schema::table('shop_order_vendors', function (Blueprint $table) {
-            $table->string('order_status')->after('slug');
+            $table->string('order_status')->default('pending')->after('slug');
         });
     }
 
