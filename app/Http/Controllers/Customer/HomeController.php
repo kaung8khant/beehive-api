@@ -43,7 +43,7 @@ class HomeController extends Controller
 
         $result = [
             'restaurant_branches' => $this->generateBranchResponse($restaurantBranches, 200, 'home'),
-            'products' => $this->getNewProducts(),
+            'products' => $this->generateProductResponse($this->getNewProducts(), 200, 'home'),
         ];
 
         return $this->generateResponse($result, 200);
