@@ -11,19 +11,21 @@ class ShopOrderContact extends Model
     use HasFactory;
 
     protected $fillable = [
-        'shop_order_id',
         'customer_name',
         'phone_number',
         'house_number',
         'floor',
         'street_name',
         'latitude',
-        'township_id',
         'longitude',
+        'township_id',
+        'shop_order_id',
     ];
 
     protected $hidden = [
         'id',
+        'township_id',
+        'shop_order_id',
         'created_at',
         'updated_at',
         'pivot',
@@ -33,6 +35,7 @@ class ShopOrderContact extends Model
     {
         return $this->belongsTo(ShopOrder::class);
     }
+
     public function township()
     {
         return $this->belongsTo(Township::class);

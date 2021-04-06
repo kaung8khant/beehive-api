@@ -12,17 +12,19 @@ class ShopOrder extends Model
 
     protected $fillable = [
         'slug',
-        'customer_id',
         'order_date',
         'special_instruction',
         'payment_mode',
         'delivery_mode',
-        'promocode_id',
         'order_status',
+        'promocode_id',
+        'customer_id',
     ];
 
     protected $hidden = [
         'id',
+        'promocode_id',
+        'customer_id',
         'created_at',
         'updated_at',
         'pivot',
@@ -58,5 +60,4 @@ class ShopOrder extends Model
     {
         return $this->hasMany(ShopOrderVendor::class);
     }
-
 }
