@@ -361,7 +361,6 @@ class RestaurantController extends Controller
     public function addCategories($data, $slug)
     {
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-
         $restaurant->availableCategories()->detach();
         $restaurant->availableCategories()->attach($data);
         return $restaurant;
