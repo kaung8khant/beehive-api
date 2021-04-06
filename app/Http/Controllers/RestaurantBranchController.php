@@ -11,6 +11,7 @@ use App\Models\RestaurantTag;
 use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 class RestaurantBranchController extends Controller
 {
@@ -91,7 +92,7 @@ class RestaurantBranchController extends Controller
             'slug' => 'required|unique:restaurant_branches',
             'name' => 'required',
             'address' => 'required',
-            'contact_number' => 'required',
+            'contact_number' => 'required|phone:MM',
             'opening_time' => 'required|date_format:H:i',
             'closing_time' => 'required|date_format:H:i',
             'latitude' => 'required',
@@ -99,7 +100,12 @@ class RestaurantBranchController extends Controller
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'township_slug' => 'required|exists:App\Models\Township,slug',
             'is_enable' => 'required|boolean',
+            [
+                'contact_number.phone' => 'Invalid phone number.',
+            ]
         ]);
+
+        $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
 
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
         $validatedData['township_id'] = $this->getTownshipId($request->township_slug);
