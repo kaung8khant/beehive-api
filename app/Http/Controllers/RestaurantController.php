@@ -351,14 +351,9 @@ class RestaurantController extends Controller
             'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]);
 
+        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
 
-        // $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-
-        // $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
-        // $restaurant->availableCategories()->detach();
-        // $restaurant->availableCategories()->attach($restaurantCategories);
-
-        $restaurant = $this->addCategories($request, $slug);
+        $restaurant = $this->addCategories($restaurantCategories, $slug);
 
         return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
     }
@@ -367,10 +362,8 @@ class RestaurantController extends Controller
     {
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $data->available_categories)->pluck('id');
         $restaurant->availableCategories()->detach();
-        $restaurant->availableCategories()->attach($restaurantCategories);
-
+        $restaurant->availableCategories()->attach($data);
         return $restaurant;
     }
 
@@ -460,11 +453,16 @@ class RestaurantController extends Controller
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
         }
+        $categoryList = RestaurantCategory::whereHas('restaurants', function ($query) use ($slug) {
+            return $query->where('slug', $slug);
+        })->pluck("id")->toArray();
+
+        array_push($categoryList, $restaurantCategory->id);
 
         $request['available_categories'] = $restaurantCategory->slug;
-        $restaurant = $this->addCategories($request->all(), $slug);
 
-        // $restaurant = $this->addRestaurantCategories($request, $slug);
+        $restaurant = $this->addCategories($categoryList, $slug);
+
         return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
     }
 }
