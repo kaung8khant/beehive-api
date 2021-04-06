@@ -14,6 +14,7 @@ class ShopOrderVendor extends Model
         'slug',
         'shop_order_id',
         'shop_id',
+        'order_status',
     ];
 
     protected $hidden = [
@@ -29,12 +30,6 @@ class ShopOrderVendor extends Model
         'promocode' => 'object',
     ];
 
-    protected $appends = ['status'];
-
-    public function getStatusAttribute()
-    {
-        return $this->vendorstatus->last()->status;
-    }
     public function shop()
     {
         return $this->hasOne(Shop::class);
@@ -44,12 +39,9 @@ class ShopOrderVendor extends Model
     {
         return $this->hasMany(ShopOrderItem::class);
     }
+
     public function order()
     {
         return $this->belongsTo(ShopOrder::class);
-    }
-    public function vendorstatus()
-    {
-        return $this->hasMany(ShopOrderStatus::class);
     }
 }

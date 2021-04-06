@@ -94,13 +94,13 @@ class ShopController extends Controller
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
             'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
-            'address' => 'required',
+            'address' => 'nullable',
             'contact_number' => 'required',
             'opening_time' => 'required|date_format:H:i',
             'closing_time' => 'required|date_format:H:i',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'township_slug' => 'required|exists:App\Models\Township,slug',
+            'township_slug' => 'nullable|exists:App\Models\Township,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
         $townshipId = $this->getTownshipIdBySlug($request->township_slug);
@@ -202,13 +202,13 @@ class ShopController extends Controller
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
             'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
-            'address' => 'required',
+            'address' => 'nullable',
             'contact_number' => 'required',
             'opening_time' => 'required|date_format:H:i',
             'closing_time' => 'required|date_format:H:i',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'township_slug' => 'required|exists:App\Models\Township,slug',
+            'township_slug' => 'nullable|exists:App\Models\Township,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
 
@@ -446,6 +446,30 @@ class ShopController extends Controller
         return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
     }
 
+    public function createAvailableCategory(Request $request, $slug)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $shopCategory = ShopCategory::create($request->validate(
+            [
+                'name' => 'required|unique:shop_categories',
+                'slug' => 'required|unique:shop_categories',
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
+            ]
+        ));
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
+        }
+
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+
+        $availableCategory = ShopCategory::where('slug', $shopCategory->slug)->pluck('id');
+        $shop->availableCategories()->attach($availableCategory);
+
+        return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
+    }
+
     public function import(Request $request)
     {
         $validatedData = $request->validate([
@@ -453,13 +477,13 @@ class ShopController extends Controller
             'shops.*.name' => 'required|unique:shops',
             'shops.*.is_enable' => 'required|boolean',
             'shops.*.is_official' => 'required|boolean',
-            'shops.*.address' => 'required',
+            'shops.*.address' => 'nullable',
             'shops.*.contact_number' => 'required',
             'shops.*.opening_time' => 'required|date_format:H:i',
             'shops.*.closing_time' => 'required|date_format:H:i',
             'shops.*.latitude' => 'required|numeric',
             'shops.*.longitude' => 'required|numeric',
-            'shops.*.township_slug' => 'required|exists:App\Models\Township,slug',
+            'shops.*.township_slug' => 'nullable|exists:App\Models\Township,slug',
         ]);
 
         foreach ($validatedData['shops'] as $data) {

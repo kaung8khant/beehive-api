@@ -26,9 +26,9 @@ class ShopOrderItem extends Model
     protected $hidden = [
         'id',
         'is_deleted',
+        'shop_order_vendor_id',
         'product_id',
         'shop_id',
-        'shop_order_vendor_id',
         'created_at',
         'updated_at',
         'pivot',
@@ -39,25 +39,13 @@ class ShopOrderItem extends Model
         'variations' => 'array',
     ];
 
-    // protected $appends = ['status'];
-
-    // public function getStatusAttribute()
-    // {
-    //     return $this->status()->latest()->first()->status;
-    // }
-
     public function vendor()
     {
         return $this->belongsTo(ShopOrderVendor::class);
     }
-    // public function status()
-    // {
-    //     return $this->hasOne(ShopOrderStatus::class);
-    // }
 
     public function shop()
     {
         return $this->belongsTo(Shop::class);
     }
-
 }
