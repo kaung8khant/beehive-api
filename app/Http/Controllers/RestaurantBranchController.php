@@ -88,22 +88,24 @@ class RestaurantBranchController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate([
-            'slug' => 'required|unique:restaurant_branches',
-            'name' => 'required',
-            'address' => 'nullable',
-            'contact_number' => 'required|phone:MM',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i',
-            'latitude' => 'required',
-            'longitude' => 'required',
-            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-            'township_slug' => 'nullable|exists:App\Models\Township,slug',
-            'is_enable' => 'required|boolean',
+        $validatedData = $request->validate(
+            [
+                'slug' => 'required|unique:restaurant_branches',
+                'name' => 'required',
+                'address' => 'nullable',
+                'contact_number' => 'required|phone:MM',
+                'opening_time' => 'required|date_format:H:i',
+                'closing_time' => 'required|date_format:H:i',
+                'latitude' => 'required',
+                'longitude' => 'required',
+                'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
+                'township_slug' => 'nullable|exists:App\Models\Township,slug',
+                'is_enable' => 'required|boolean',
+            ],
             [
                 'contact_number.phone' => 'Invalid phone number.',
             ]
-        ]);
+        );
 
         $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
 
