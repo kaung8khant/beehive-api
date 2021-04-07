@@ -87,28 +87,31 @@ class ShopController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate([
-            'slug' => 'required|unique:shops',
-            'name' => 'required|unique:shops',
-            'is_enable' => 'required|boolean',
-            'is_official' => 'required|boolean',
-            'shop_tags' => 'required|array',
-            'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-            'available_categories' => 'nullable|array',
-            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
-            'address' => 'required',
-            'contact_number' => 'required|phone:MM',
-            'address' => 'nullable',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'township_slug' => 'nullable|exists:App\Models\Township,slug',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
+        $validatedData = $request->validate(
+            [
+                'slug' => 'required|unique:shops',
+                'name' => 'required|unique:shops',
+                'is_enable' => 'required|boolean',
+                'is_official' => 'required|boolean',
+                'shop_tags' => 'required|array',
+                'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
+                'available_categories' => 'nullable|array',
+                'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
+                'address' => 'required',
+                'contact_number' => 'required|phone:MM',
+                'address' => 'nullable',
+                'opening_time' => 'required|date_format:H:i',
+                'closing_time' => 'required|date_format:H:i',
+                'latitude' => 'required|numeric',
+                'longitude' => 'required|numeric',
+                'township_slug' => 'nullable|exists:App\Models\Township,slug',
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
+
+            ],
             [
                 'contact_number.phone' => 'Invalid phone number.',
-            ],
-        ]);
+            ]
+        );
 
         $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
         $townshipId = $this->getTownshipIdBySlug($request->township_slug);
@@ -199,27 +202,33 @@ class ShopController extends Controller
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $validatedData = $request->validate([
-            'name' => [
-                'required',
-                Rule::unique('shops')->ignore($shop->id),
+        $validatedData = $request->validate(
+            [
+                'name' => [
+                    'required',
+                    Rule::unique('shops')->ignore($shop->id),
+                ],
+                'is_enable' => 'nullable|boolean',
+                'is_official' => 'required|boolean',
+                'shop_tags' => 'required|array',
+                'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
+                'available_categories' => 'nullable|array',
+                'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
+                'address' => 'nullable',
+                'contact_number' => 'required|phone:MM',
+                'opening_time' => 'required|date_format:H:i',
+                'closing_time' => 'required|date_format:H:i',
+                'latitude' => 'required|numeric',
+                'longitude' => 'required|numeric',
+                'township_slug' => 'nullable|exists:App\Models\Township,slug',
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
             ],
-            'is_enable' => 'nullable|boolean',
-            'is_official' => 'required|boolean',
-            'shop_tags' => 'required|array',
-            'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-            'available_categories' => 'nullable|array',
-            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
-            'address' => 'nullable',
-            'contact_number' => 'required',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'township_slug' => 'nullable|exists:App\Models\Township,slug',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]);
+            [
+                'contact_number.phone' => 'Invalid phone number.',
+            ]
+        );
 
+        $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
         $validatedData['township_id'] = $this->getTownshipIdBySlug($request->township_slug);
         $shop->update($validatedData);
 
@@ -480,21 +489,27 @@ class ShopController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData = $request->validate([
-            'shops' => 'nullable|array',
-            'shops.*.name' => 'required|unique:shops',
-            'shops.*.is_enable' => 'required|boolean',
-            'shops.*.is_official' => 'required|boolean',
-            'shops.*.address' => 'nullable',
-            'shops.*.contact_number' => 'required',
-            'shops.*.opening_time' => 'required|date_format:H:i',
-            'shops.*.closing_time' => 'required|date_format:H:i',
-            'shops.*.latitude' => 'required|numeric',
-            'shops.*.longitude' => 'required|numeric',
-            'shops.*.township_slug' => 'nullable|exists:App\Models\Township,slug',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'shops' => 'nullable|array',
+                'shops.*.name' => 'required|unique:shops',
+                'shops.*.is_enable' => 'required|boolean',
+                'shops.*.is_official' => 'required|boolean',
+                'shops.*.address' => 'nullable',
+                'shops.*.contact_number' => 'required|phone:MM',
+                'shops.*.opening_time' => 'required|date_format:H:i',
+                'shops.*.closing_time' => 'required|date_format:H:i',
+                'shops.*.latitude' => 'required|numeric',
+                'shops.*.longitude' => 'required|numeric',
+                'shops.*.township_slug' => 'nullable|exists:App\Models\Township,slug',
+            ],
+            [
+                'shops*.contact_number.phone' => 'Invalid phone number.',
+            ]
+        );
 
         foreach ($validatedData['shops'] as $data) {
+            $data['contact_number'] = PhoneNumber::make($data['contact_number'], 'MM');
             $data['township_id'] = $this->getTownshipIdBySlug($data['township_slug']);
             $data['slug'] = $this->generateUniqueSlug();
             Shop::create($data);
