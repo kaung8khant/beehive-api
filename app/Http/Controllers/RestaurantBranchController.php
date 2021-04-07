@@ -11,6 +11,7 @@ use App\Models\RestaurantTag;
 use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 class RestaurantBranchController extends Controller
 {
@@ -87,19 +88,26 @@ class RestaurantBranchController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate([
-            'slug' => 'required|unique:restaurant_branches',
-            'name' => 'required',
-            'address' => 'required',
-            'contact_number' => 'required',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i',
-            'latitude' => 'required',
-            'longitude' => 'required',
-            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-            'township_slug' => 'required|exists:App\Models\Township,slug',
-            'is_enable' => 'required|boolean',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'slug' => 'required|unique:restaurant_branches',
+                'name' => 'required',
+                'address' => 'nullable',
+                'contact_number' => 'required|phone:MM',
+                'opening_time' => 'required|date_format:H:i',
+                'closing_time' => 'required|date_format:H:i',
+                'latitude' => 'required',
+                'longitude' => 'required',
+                'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
+                'township_slug' => 'nullable|exists:App\Models\Township,slug',
+                'is_enable' => 'required|boolean',
+            ],
+            [
+                'contact_number.phone' => 'Invalid phone number.',
+            ]
+        );
+
+        $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
 
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
         $validatedData['township_id'] = $this->getTownshipId($request->township_slug);
@@ -176,22 +184,28 @@ class RestaurantBranchController extends Controller
     {
         $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
 
-        $validatedData = $request->validate([
-            'name' => [
-                'required',
-                Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
+        $validatedData = $request->validate(
+            [
+                'name' => [
+                    'required',
+                    Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
+                ],
+                'address' => 'nullable',
+                'contact_number' => 'required|phone:MM',
+                'opening_time' => 'required|date_format:H:i',
+                'closing_time' => 'required|date_format:H:i',
+                'latitude' => 'required',
+                'longitude' => 'required',
+                'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
+                'township_slug' => 'nullable|exists:App\Models\Township,slug',
+                'is_enable' => 'required|boolean',
             ],
-            'address' => 'required',
-            'contact_number' => 'required',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i',
-            'latitude' => 'required',
-            'longitude' => 'required',
-            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-            'township_slug' => 'required|exists:App\Models\Township,slug',
-            'is_enable' => 'required|boolean',
-        ]);
+            [
+            'contact_number.phone' => 'Invalid phone number.',
+            ]
+        );
 
+        $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
         $validatedData['township_id'] = $this->getTownshipId($request->township_slug);
 
@@ -462,14 +476,14 @@ class RestaurantBranchController extends Controller
                 'required',
                 Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
             ],
-            'address' => 'required',
+            'address' => 'nullable',
             'contact_number' => 'required',
             'opening_time' => 'required|date_format:H:i',
             'closing_time' => 'required|date_format:H:i',
             'latitude' => 'required',
             'longitude' => 'required',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-            'township_slug' => 'required|exists:App\Models\Township,slug',
+            'township_slug' => 'nullable|exists:App\Models\Township,slug',
             'is_enable' => 'nullable|boolean',
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
@@ -513,21 +527,28 @@ class RestaurantBranchController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData = $request->validate([
-            'restaurant_branches' => 'nullable|array',
-            'restaurant_branches.*.name' => 'required',
-            'restaurant_branches.*.is_enable' => 'required|boolean',
-            'restaurant_branches.*.address' => 'required',
-            'restaurant_branches.*.contact_number' => 'required',
-            'restaurant_branches.*.opening_time' => 'required|date_format:H:i',
-            'restaurant_branches.*.closing_time' => 'required|date_format:H:i',
-            'restaurant_branches.*.latitude' => 'required|numeric',
-            'restaurant_branches.*.longitude' => 'required|numeric',
-            'restaurant_branches.*.restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-            'restaurant_branches.*.township_slug' => 'required|exists:App\Models\Township,slug',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'restaurant_branches' => 'nullable|array',
+                'restaurant_branches.*.name' => 'required',
+                'restaurant_branches.*.is_enable' => 'required|boolean',
+                'restaurant_branches.*.address' => 'nullable',
+                'restaurant_branches.*.contact_number' => 'required|phone:MM',
+                'restaurant_branches.*.opening_time' => 'required|date_format:H:i',
+                'restaurant_branches.*.closing_time' => 'required|date_format:H:i',
+                'restaurant_branches.*.latitude' => 'required|numeric',
+                'restaurant_branches.*.longitude' => 'required|numeric',
+                'restaurant_branches.*.restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
+                'restaurant_branches.*.township_slug' => 'nullable|exists:App\Models\Township,slug',
+            ],
+            [
+                'restaurant_branches.*.contact_number.phone' => 'Invalid phone number.',
+            ]
+        );
+
 
         foreach ($validatedData['restaurant_branches'] as $data) {
+            $data['contact_number'] = PhoneNumber::make($data['contact_number'], 'MM');
             $data['restaurant_id'] = $this->getRestaurantId($data['restaurant_slug']);
             $data['township_id'] = $this->getTownshipId($data['township_slug']);
 

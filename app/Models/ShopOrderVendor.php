@@ -39,12 +39,9 @@ class ShopOrderVendor extends Model
     {
         return $this->hasMany(ShopOrderItem::class);
     }
+
     public function order()
     {
         return $this->belongsTo(ShopOrder::class);
-    }
-    public function vendorstatus()
-    {
-        return $this->hasMany(ShopOrderStatus::class);
     }
 }
