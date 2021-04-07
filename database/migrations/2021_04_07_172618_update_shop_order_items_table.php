@@ -16,6 +16,7 @@ class UpdateShopOrderItemsTable extends Migration
         Schema::disableForeignKeyConstraints();
 
         Schema::table('shop_order_items', function (Blueprint $table) {
+            $table->index('shop_order_vendor_id');
             $table->dropUnique(['shop_order_vendor_id', 'product_id']);
         });
 
