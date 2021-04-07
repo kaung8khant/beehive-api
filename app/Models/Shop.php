@@ -73,6 +73,7 @@ class Shop extends Model
     {
         return File::where('source', 'shops')
             ->where('source_id', $this->id)
+            ->where('type', 'image')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }

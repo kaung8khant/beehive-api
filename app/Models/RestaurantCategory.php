@@ -34,6 +34,7 @@ class RestaurantCategory extends Model
     {
         return File::where('source', 'restaurant_categories')
             ->where('source_id', $this->id)
+            ->where('type', 'image')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }

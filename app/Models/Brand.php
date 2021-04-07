@@ -33,6 +33,7 @@ class Brand extends Model
     {
         return File::where('source', 'brands')
             ->where('source_id', $this->id)
+            ->where('type', 'image')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }
