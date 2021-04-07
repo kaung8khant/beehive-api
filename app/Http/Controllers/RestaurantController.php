@@ -11,6 +11,7 @@ use App\Models\RestaurantTag;
 use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 class RestaurantController extends Controller
 {
@@ -86,26 +87,32 @@ class RestaurantController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate([
-            'slug' => 'required|unique:restaurants',
-            'name' => 'required|unique:restaurants',
-            'is_enable' => 'required|boolean',
-            'restaurant_tags' => 'required|array',
-            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
-            'available_categories' => 'nullable|array',
-            'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
-            'restaurant_branch' => 'required',
-            'restaurant_branch.name' => 'required|string',
-            'restaurant_branch.address' => 'required',
-            'restaurant_branch.contact_number' => 'required',
-            'restaurant_branch.opening_time' => 'required|date_format:H:i',
-            'restaurant_branch.closing_time' => 'required|date_format:H:i',
-            'restaurant_branch.latitude' => 'nullable|numeric',
-            'restaurant_branch.longitude' => 'nullable|numeric',
-            'restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'slug' => 'required|unique:restaurants',
+                'name' => 'required|unique:restaurants',
+                'is_enable' => 'required|boolean',
+                'restaurant_tags' => 'required|array',
+                'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
+                'available_categories' => 'nullable|array',
+                'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
+                'restaurant_branch' => 'required',
+                'restaurant_branch.name' => 'required|string',
+                'restaurant_branch.address' => 'required',
+                'restaurant_branch.contact_number' => 'required|phone:MM',
+                'restaurant_branch.opening_time' => 'required|date_format:H:i',
+                'restaurant_branch.closing_time' => 'required|date_format:H:i',
+                'restaurant_branch.latitude' => 'nullable|numeric',
+                'restaurant_branch.longitude' => 'nullable|numeric',
+                'restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
+            ],
+            [
+                'restaurant_branch.contact_number.phone' => 'Invalid phone number.',
+            ]
+        );
 
+        $validatedData['restaurant_branch']['contact_number'] = PhoneNumber::make($validatedData['restaurant_branch']['contact_number'], 'MM');
         // $townshipId = $this->getTownshipIdBySlug($request->restaurant_branch['township_slug']);
 
         $restaurant = Restaurant::create($validatedData);
@@ -351,13 +358,19 @@ class RestaurantController extends Controller
             'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
         ]);
 
-        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-
         $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
-        $restaurant->availableCategories()->detach();
-        $restaurant->availableCategories()->attach($restaurantCategories);
+
+        $restaurant = $this->addCategories($restaurantCategories, $slug);
 
         return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
+    }
+
+    public function addCategories($data, $slug)
+    {
+        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+        $restaurant->availableCategories()->detach();
+        $restaurant->availableCategories()->attach($data);
+        return $restaurant;
     }
 
     /**
@@ -431,5 +444,31 @@ class RestaurantController extends Controller
         }
 
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function createAvailableRestaurantCategories(Request $request, $slug)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $restaurantCategory = RestaurantCategory::create($request->validate([
+            'name' => 'required|unique:restaurant_categories',
+            'slug' => 'required|unique:restaurant_categories',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
+        ]));
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
+        }
+        $categoryList = RestaurantCategory::whereHas('restaurants', function ($query) use ($slug) {
+            return $query->where('slug', $slug);
+        })->pluck("id")->toArray();
+
+        array_push($categoryList, $restaurantCategory->id);
+
+        $request['available_categories'] = $restaurantCategory->slug;
+
+        $restaurant = $this->addCategories($categoryList, $slug);
+
+        return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
     }
 }
