@@ -33,6 +33,7 @@ class ShopCategory extends Model
     {
         return File::where('source', 'shop_categories')
             ->where('source_id', $this->id)
+            ->where('type', 'image')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }
