@@ -51,7 +51,7 @@ class Restaurant extends Model
         'is_enable' => 'boolean',
     ];
 
-    protected $appends = ['rating', 'images'];
+    protected $appends = ['rating', 'images', 'covers'];
 
     public function getRatingAttribute()
     {
@@ -66,6 +66,16 @@ class Restaurant extends Model
     {
         return File::where('source', 'restaurants')
             ->where('source_id', $this->id)
+            ->where('type', 'image')
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
+    public function getCoversAttribute()
+    {
+        return File::where('source', 'products')
+            ->where('source_id', $this->id)
+            ->where('type', 'cover')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }

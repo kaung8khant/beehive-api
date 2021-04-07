@@ -46,6 +46,7 @@ class UploadController extends Controller
             'file' => 'required|file|mimes:jpg,png,gif,pdf|max:4096',
             'source' => 'nullable|string',
             'sourceSlug' => 'nullable|string|exists:' . $request->source . ',slug',
+            'type' => 'nullable|string|in:image,cover',
         ]);
 
         $file = $request->file('file');
@@ -95,6 +96,7 @@ class UploadController extends Controller
             'slug' => $request->slug,
             'file_name' => $fileName,
             'extension' => $extension,
+            'type' => $request->type ? $request->type : 'image',
         ]);
     }
 }
