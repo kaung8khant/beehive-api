@@ -16,6 +16,7 @@ class UpdateRestaurantOrderItemsTable extends Migration
         Schema::disableForeignKeyConstraints();
 
         Schema::table('restaurant_order_items', function (Blueprint $table) {
+            $table->index('restaurant_order_id');
             $table->dropUnique(['restaurant_order_id', 'menu_id']);
         });
 
