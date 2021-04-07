@@ -15,6 +15,7 @@ class File extends Model
         'extension',
         'source',
         'source_id',
+        'type',
     ];
 
     protected $hidden = [

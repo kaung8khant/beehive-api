@@ -421,22 +421,28 @@ class RestaurantController extends Controller
 
     public function import(Request $request)
     {
-        $validatedData = $request->validate([
-            'restaurants' => 'nullable|array',
-            'restaurants.*.name' => 'required|unique:restaurants',
-            'restaurants.*.is_enable' => 'required|boolean',
-            'restaurants.*.restaurant_branch' => 'required',
-            'restaurants.*.restaurant_branch.name' => 'required|string',
-            'restaurants.*.restaurant_branch.address' => 'required',
-            'restaurants.*.restaurant_branch.contact_number' => 'required',
-            'restaurants.*.restaurant_branch.opening_time' => 'required|date_format:H:i',
-            'restaurants.*.restaurant_branch.closing_time' => 'required|date_format:H:i',
-            'restaurants.*.restaurant_branch.latitude' => 'nullable|numeric',
-            'restaurants.*.restaurant_branch.longitude' => 'nullable|numeric',
-            'restaurants.*.restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'restaurants' => 'nullable|array',
+                'restaurants.*.name' => 'required|unique:restaurants',
+                'restaurants.*.is_enable' => 'required|boolean',
+                'restaurants.*.restaurant_branch' => 'required',
+                'restaurants.*.restaurant_branch.name' => 'required|string',
+                'restaurants.*.restaurant_branch.address' => 'required',
+                'restaurants.*.restaurant_branch.contact_number' => 'required|phone:MM',
+                'restaurants.*.restaurant_branch.opening_time' => 'required|date_format:H:i',
+                'restaurants.*.restaurant_branch.closing_time' => 'required|date_format:H:i',
+                'restaurants.*.restaurant_branch.latitude' => 'nullable|numeric',
+                'restaurants.*.restaurant_branch.longitude' => 'nullable|numeric',
+                'restaurants.*.restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
+            ],
+            [
+                'restaurants.*.restaurant_branch.contact_number.phone' => 'Invalid phone number.',
+            ]
+        );
 
         foreach ($validatedData['restaurants'] as $data) {
+            $data['restaurant_branch']['contact_number'] = PhoneNumber::make($data['restaurant_branch']['contact_number'], 'MM');
             $data['slug'] = $this->generateUniqueSlug();
             $restaurant = Restaurant::create($data);
             $restaurantId = $restaurant->id;
