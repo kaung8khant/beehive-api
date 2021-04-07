@@ -402,11 +402,9 @@ class ShopController extends Controller
             'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
         ]);
 
-        $shop = Shop::where('slug', $slug)->firstOrFail();
-
         $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
-        $shop->availableCategories()->detach();
-        $shop->availableCategories()->attach($shopCategories);
+
+        $shop = $this->addCategories($shopCategories, $slug);
 
         return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
     }
@@ -479,10 +477,15 @@ class ShopController extends Controller
             $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
         }
 
-        $shop = Shop::where('slug', $slug)->firstOrFail();
+        $categoryList = ShopCategory::whereHas('shops', function ($query) use ($slug) {
+            return $query->where('slug', $slug);
+        })->pluck("id")->toArray();
 
-        $availableCategory = ShopCategory::where('slug', $shopCategory->slug)->pluck('id');
-        $shop->availableCategories()->attach($availableCategory);
+        array_push($categoryList, $shopCategory->id);
+
+        $request['available_categories'] = $shopCategory->slug;
+
+        $shop = $this->addCategories($categoryList, $slug);
 
         return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
     }
@@ -516,5 +519,13 @@ class ShopController extends Controller
         }
 
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function addCategories($data, $slug)
+    {
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+        $shop->availableCategories()->detach();
+        $shop->availableCategories()->attach($data);
+        return $shop;
     }
 }
