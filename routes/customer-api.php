@@ -14,6 +14,7 @@ Route::group(['prefix' => 'user'], function () {
     Route::get('suggestions', 'Customer\HomeController@getSuggestions');
     Route::get('new-arrivals', 'Customer\HomeController@getNewArrivals');
     Route::get('search', 'Customer\HomeController@search');
+    Route::get('favorite', 'Customer\HomeController@getFavorite');
     /* Home */
 
     /* Restaurant */
