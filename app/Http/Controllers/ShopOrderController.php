@@ -7,6 +7,7 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderStatus;
+use App\Models\ShopOrderVendor;
 use Illuminate\Http\Request;
 
 class ShopOrderController extends Controller
@@ -60,7 +61,7 @@ class ShopOrderController extends Controller
 
     public function getShopOrders(Request $request, $slug)
     {
-        $shopOrders = ShopOrder::with('contact')->with('items')
+        $shopOrders = ShopOrder::with('contact')->with('vendors')
         // ->whereDate('order_date', '>=', $request->from)
         // ->whereDate('order_date', '<=', $request->to)
             ->where('slug', $slug)
@@ -79,7 +80,7 @@ class ShopOrderController extends Controller
     {
         $shop = ShopOrder::with('contact')
             ->with('contact.township')
-            ->with('items')
+            ->with('vendors')
             ->where('slug', $slug)
             ->firstOrFail();
 
@@ -108,10 +109,18 @@ class ShopOrderController extends Controller
 
     private function createOrderStatus($orderId, $status = 'pending')
     {
-        ShopOrderStatus::create([
-            'status' => $status,
-            'shop_order_id' => $orderId,
-        ]);
+        ShopOrder::where('id', $orderId)->update(['order_status' => $status]);
+
+        $shopOrderVendor = ShopOrderVendor::where('shop_order_id', $orderId);
+        $shopOrderVendor->update(['order_status' => $status]);
+        $shopOrderVendor = $shopOrderVendor->get();
+
+        foreach ($shopOrderVendor as $vendor) {
+            ShopOrderStatus::create([
+                'shop_order_vendor_id' => $vendor->id,
+                'status' => $status,
+            ]);
+        }
     }
     private function notify($data)
     {

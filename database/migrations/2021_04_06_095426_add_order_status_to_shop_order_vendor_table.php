@@ -26,7 +26,7 @@ class AddOrderStatusToShopOrderVendorTable extends Migration
     public function down()
     {
         Schema::table('shop_order_vendors', function (Blueprint $table) {
-            //
+            $table->dropColumn('order_status');
         });
     }
 }
