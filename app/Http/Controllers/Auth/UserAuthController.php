@@ -136,17 +136,26 @@ class UserAuthController extends Controller
     {
         $user = Auth::guard('users')->user();
 
-        $user->update($request->validate([
-            'username' => [
-                'required',
-                Rule::unique('users')->ignore($user->id),
+        $user->update($request->validate(
+            [
+                'username' => [
+                    'required',
+                    Rule::unique('users')->ignore($user->id),
+                ],
+                'name' => 'required',
+                'phone_number' => [
+                    'required',
+                    'phone:MM',
+                    Rule::unique('users')->ignore($user->id),
+                ],
+
             ],
-            'name' => 'required',
-            'phone_number' => [
-                'required',
-                Rule::unique('users')->ignore($user->id),
+            [
+                'phone_number.phone' => 'Invalid phone number.',
             ],
-        ]));
+        ));
+
+        $validatedData['phone_number'] = PhoneNumber::make(['phone_number'], 'MM');
 
         return response()->json($user, 200);
     }

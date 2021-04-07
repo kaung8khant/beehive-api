@@ -53,10 +53,14 @@ trait ResponseHelper
     public function generateProductResponse($data, $status, $type = 'array')
     {
         if (empty($data)) {
+            if ($type === "home") {
+                return $data;
+            }
             return $this->generateResponse($data, $status);
         }
 
         if ($type === 'array' || $type === 'home') {
+
             foreach ($data as $product) {
                 $product['is_favorite'] = $this->checkFavoriteProduct($product->id);
                 unset($product->customers);
