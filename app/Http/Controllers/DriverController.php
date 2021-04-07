@@ -183,21 +183,24 @@ class DriverController extends Controller
     {
         $driver = User::where('slug', $slug)->firstOrFail();
 
-        $validatedData = $request->validate([
-            'username' => [
-                'required',
-                Rule::unique('users')->ignore($driver->id),
-            ],
-            'name' => 'required',
-            'phone_number' => [
-                'required',
-                'phone:MM',
-                Rule::unique('users')->ignore($driver->id),
+        $validatedData = $request->validate(
+            [
+                'username' => [
+                    'required',
+                    Rule::unique('users')->ignore($driver->id),
+                ],
+                'name' => 'required',
+                'phone_number' => [
+                    'required',
+                    'phone:MM',
+                    Rule::unique('users')->ignore($driver->id),
+                ],
+
             ],
             [
                 'phone_number.phone' => 'Invalid phone number.',
             ]
-        ]);
+        );
 
         $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
 
