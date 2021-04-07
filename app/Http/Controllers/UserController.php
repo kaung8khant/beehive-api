@@ -287,9 +287,14 @@ class UserController extends Controller
             'name' => 'required',
             'phone_number' => [
                 'required',
+                'phone:MM',
                 Rule::unique('users')->ignore($user->id),
             ],
+            [
+                'phone_number.phone' => 'Invalid phone number.',
+            ]
         ]);
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
 
         $user->update($validatedData);
 
@@ -312,10 +317,16 @@ class UserController extends Controller
             'name' => 'required',
             'phone_number' => [
                 'required',
+                'phone:MM',
                 Rule::unique('users')->ignore($user->id),
+            ],
+            [
+                'phone_number.phone' => 'Invalid phone number.',
             ],
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
         ]);
+
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
 
         $user->update($validatedData);
@@ -335,10 +346,17 @@ class UserController extends Controller
             'name' => 'required',
             'phone_number' => [
                 'required',
+                'phone:MM',
                 Rule::unique('users')->ignore($user->id),
+            ],
+            [
+                'phone_number.phone' => 'Invalid phone number.',
             ],
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
         ]);
+
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
+
         $validatedData['restaurant_branch_id'] = $this->getRestaruantBranchId($request->restaurant_branch_slug);
 
         $user->update($validatedData);

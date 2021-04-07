@@ -144,9 +144,15 @@ class UserAuthController extends Controller
             'name' => 'required',
             'phone_number' => [
                 'required',
+                'phone:MM',
                 Rule::unique('users')->ignore($user->id),
             ],
+            [
+                'phone_number.phone' => 'Invalid phone number.',
+            ],
         ]));
+
+        $validatedData['phone_number'] = PhoneNumber::make(['phone_number'], 'MM');
 
         return response()->json($user, 200);
     }
