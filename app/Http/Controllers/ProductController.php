@@ -54,6 +54,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         return Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
+            ->with('productVariations')->with('productVariations.productVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
