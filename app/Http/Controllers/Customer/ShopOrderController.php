@@ -36,7 +36,7 @@ class ShopOrderController extends Controller
     public function index(Request $request)
     {
         $shopOrder = ShopOrder::get();
-        return $this->generateResponse($shopOrder, 201);
+        return $this->generateShopOrderResponse($shopOrder, 201, 'array');
     }
 
     public function store(Request $request)
@@ -69,16 +69,16 @@ class ShopOrderController extends Controller
             $this->notify($this->getShop($item['slug'])->id, ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
         }
 
-        return $this->generateResponse($order->refresh(), 201);
+        return $this->generateShopOrderResponse($order->refresh(), 201);
     }
 
     public function show($slug)
     {
         $shopOrder = ShopOrder::where('slug', $slug)
-            ->with('contact', 'vendors', 'vendors.items')
+            ->with('contact')
             ->firstOrFail();
 
-        return $this->generateResponse($shopOrder, 200);
+        return $this->generateShopOrderResponse($shopOrder, 200);
     }
 
     public function destroy($slug)

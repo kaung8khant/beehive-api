@@ -90,6 +90,31 @@ trait ResponseHelper
 
         return $this->generateResponse($data, $status);
     }
+    public function generateShopOrderResponse($data, $status, $type = 'obj')
+    {
+        $shops = [];
+        if ($type === "obj") {
+            foreach ($data->vendors as $vendor) {
+                $list = $vendor['shop'];
+                $list['order_status'] = $vendor['order_status'];
+                $list['items'] = $vendor->items;
+                array_push($shops, $list);
+            }
+            $data['shops'] = $shops;
+        } else if ($type === "array") {
+            foreach ($data as $shopOrder) {
+                foreach ($shopOrder->vendors as $vendor) {
+                    $list = $vendor['shop'];
+                    $list['order_status'] = $vendor['order_status'];
+                    $list['items'] = $vendor->items;
+                    array_push($shops, $list);
+                }
+                $shopOrder['shops'] = $shops;
+            }
+        }
+
+        return $this->generateResponse($data, $status);
+    }
 
     private function checkFavoriteRestaurant($restaurantId)
     {
