@@ -15,6 +15,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('refresh-token', 'Auth\UserAuthController@refreshToken');
             Route::post('logout', 'Auth\UserAuthController@logout');
 
+            /* Address */
+            Route::get('customers/{slug}/addresses', 'AddressController@index');
+
             Route::get('settings', 'SettingController@index');
             Route::get('settings/{key}', 'SettingController@show');
             Route::put('settings/update', 'SettingController@updateSetting');

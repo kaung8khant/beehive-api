@@ -107,4 +107,8 @@ class Shop extends Model
     {
         return $this->belongsToMany(Customer::class, 'favorite_product');
     }
+    public function vendor()
+    {
+        return $this->hasOne(ShopOrderVendor::class);
+    }
 }

@@ -32,6 +32,7 @@ class ShopOrderItem extends Model
         'created_at',
         'updated_at',
         'pivot',
+        'shop',
     ];
 
     protected $casts = [
