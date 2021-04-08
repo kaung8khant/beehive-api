@@ -35,7 +35,9 @@ class ShopController extends Controller
 
     public function show($slug)
     {
-        $shop = Shop::with('availableCategories', 'availableTags')->where('slug', $slug)->first();
+        $shop = Shop::with('availableCategories', 'availableTags', 'township')
+            ->where('slug', $slug)
+            ->first();
         return $this->generateResponse($shop, 200);
     }
 
@@ -49,6 +51,7 @@ class ShopController extends Controller
 
         return $this->generateResponse($shopCategories, 200);
     }
+
     public function getCatgorizedProduct(Request $request)
     {
         $shopCategories = ShopCategory::with('shopSubCategories', 'shops.products')
@@ -72,6 +75,7 @@ class ShopController extends Controller
 
         return $this->generateProductResponse($shopTags, 200, 'cattag');
     }
+
     public function getByTag(Request $request, $slug)
     {
 
@@ -81,6 +85,7 @@ class ShopController extends Controller
 
         return $this->generateResponse($shopTag, 200);
     }
+
     public function getByCategory(Request $request, $slug)
     {
         $shopCategory = ShopCategory::with('shops', 'shops.products', 'shops.products.shop')->where('slug', $slug)->firstOrFail();
