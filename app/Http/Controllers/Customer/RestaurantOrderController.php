@@ -29,9 +29,7 @@ class RestaurantOrderController extends Controller
     public function index(Request $request)
     {
         $customerId = Auth::guard('customers')->user()->id;
-        $restaurantOrders = RestaurantOrder::with('restaurant')
-            ->with('restaurantBranch')
-            ->with('RestaurantOrderContact')
+        $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact')
             ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
             ->where('customer_id', $customerId)
@@ -45,9 +43,7 @@ class RestaurantOrderController extends Controller
     public function show($slug)
     {
         $customerId = Auth::guard('customers')->user()->id;
-        $order = RestaurantOrder::with('restaurant')
-            ->with('restaurantBranch')
-            ->with('RestaurantOrderContact')
+        $order = RestaurantOrder::with('RestaurantOrderContact')
             ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
             ->where('slug', $slug)

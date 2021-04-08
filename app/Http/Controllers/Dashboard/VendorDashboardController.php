@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Menu;
+use App\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -181,5 +183,182 @@ class VendorDashboardController extends Controller
             ->whereDate('o.order_date', $date->format('Y-m-d'))
             ->where('oi.shop_id', $this->vendorId)
             ->sum(DB::raw('(oi.amount + oi.tax - oi.discount) * oi.quantity'));
+    }
+
+    public function getTopSellings()
+    {
+        if ($this->userRole === 'Restaurant') {
+            $result = $this->getRestaurantTopSellings();
+        } else if ($this->userRole === 'Shop') {
+            $result = $this->getShopTopSellings();
+        }
+
+        return response()->json($result);
+    }
+
+    private function getRestaurantTopSellings()
+    {
+        $menusCount = DB::table('restaurant_order_items as oi')
+            ->join('restaurant_orders as o', 'o.id', '=', 'oi.restaurant_order_id')
+            ->where('o.restaurant_branch_id', $this->vendorId)
+            ->select('oi.menu_id', DB::raw('count(*) as total_orders'))
+            ->groupBy('menu_id')
+            ->orderBy('total_orders', 'DESC')
+            ->limit(10)
+            ->get();
+
+        $result = [];
+        foreach ($menusCount as $key) {
+            if ($key->menu_id) {
+                $menu = Menu::find($key->menu_id);
+
+                $topSellingMenu = [
+                    'slug' => $menu->slug,
+                    'item_name' => $menu->name,
+                    'total_orders' => $key->total_orders,
+                    'total_earning' => $this->getTotalEarningByMenu($menu->id),
+                    'images' => $menu->images,
+                ];
+
+                array_push($result, $topSellingMenu);
+            }
+        }
+
+        return $result;
+    }
+
+    private function getTotalEarningByMenu($menuId)
+    {
+        return DB::table('restaurant_order_items')
+            ->where('menu_id', $menuId)
+            ->sum(DB::raw('(amount + tax - discount) * quantity'));
+    }
+
+    private function getShopTopSellings()
+    {
+        $productsCount = DB::table('shop_order_items')
+            ->where('shop_id', $this->vendorId)
+            ->select('product_id', DB::raw('count(*) as total_orders'))
+            ->groupBy('product_id')
+            ->orderBy('total_orders', 'DESC')
+            ->limit(10)
+            ->get();
+
+        $result = [];
+        foreach ($productsCount as $key) {
+            if ($key->product_id) {
+                $product = Product::find($key->product_id);
+
+                $topSellingProduct = [
+                    'slug' => $product->slug,
+                    'item_name' => $product->name,
+                    'total_orders' => $key->total_orders,
+                    'total_earning' => $this->getTotalEarningByProduct($product->id),
+                    'images' => $product->images,
+                ];
+
+                array_push($result, $topSellingProduct);
+            }
+        }
+
+        return $result;
+    }
+
+    private function getTotalEarningByProduct($productId)
+    {
+        return DB::table('shop_order_items')
+            ->where('product_id', $productId)
+            ->sum(DB::raw('(amount + tax - discount) * quantity'));
+    }
+
+    public function getRecentOrders()
+    {
+        if ($this->userRole === 'Restaurant') {
+            $result = $this->getRestaurantRecentOrders();
+        } else if ($this->userRole === 'Shop') {
+            $result = $this->getShopRecentOrders();
+        }
+
+        return response()->json($result);
+    }
+
+    private function getRestaurantRecentOrders()
+    {
+        $orders = DB::table('restaurant_orders')
+            ->where('restaurant_branch_id', $this->vendorId)
+            ->select('id', 'order_status')
+            ->orderBy('id', 'DESC')
+            ->limit(10)
+            ->get();
+
+        $result = [];
+        foreach ($orders as $key) {
+            $order = [
+                'order_id' => $key->id,
+                'location' => $this->getRestaurantContactLocation($key->id),
+                'status' => $key->order_status,
+                'delivered_time' => $this->getRestaurantDeliveredTime($key->id),
+            ];
+
+            array_push($result, $order);
+        }
+
+        return $result;
+    }
+
+    private function getRestaurantContactLocation($orderId)
+    {
+        return DB::table('townships as t')
+            ->join('restaurant_order_contacts as oc', 'oc.township_id', '=', 't.id')
+            ->where('oc.restaurant_order_id', $orderId)
+            ->value('t.name');
+    }
+
+    private function getRestaurantDeliveredTime($orderId)
+    {
+        return DB::table('restaurant_order_statuses')
+            ->where('restaurant_order_id', $orderId)
+            ->where('status', 'delivered')
+            ->value('created_at');
+    }
+
+    private function getShopRecentOrders()
+    {
+        $orders = DB::table('shop_order_vendors')
+            ->where('shop_id', $this->vendorId)
+            ->select('id', 'shop_order_id', 'order_status')
+            ->orderBy('id', 'DESC')
+            ->limit(10)
+            ->get();
+
+        $result = [];
+        foreach ($orders as $key) {
+            $order = [
+                'order_id' => $key->id,
+                'location' => $this->getShopContactLocation($key->shop_order_id),
+                'status' => $key->order_status,
+                'delivered_time' => $this->getShopDeliveredTime($key->id),
+            ];
+
+            array_push($result, $order);
+        }
+
+        return $result;
+    }
+
+    private function getShopContactLocation($orderId)
+    {
+        return DB::table('townships as t')
+            ->join('shop_order_contacts as oc', 'oc.township_id', '=', 't.id')
+            ->where('oc.shop_order_id', $orderId)
+            ->value('t.name');
+    }
+
+    private function getShopDeliveredTime($orderVendorId)
+    {
+        return DB::table('shop_order_statuses')
+            ->where('shop_order_vendor_id', $orderVendorId)
+            ->where('status', 'delivered')
+            ->value('created_at');
     }
 }
