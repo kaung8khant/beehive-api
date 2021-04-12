@@ -122,4 +122,8 @@ class Product extends Model
     {
         return $this->belongsToMany(Customer::class, 'favorite_product', 'customer_id');
     }
+    public function shopOrder()
+    {
+        return $this->hasMany(ShopOrderItem::class);
+    }
 }
