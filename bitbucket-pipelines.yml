@@ -63,7 +63,7 @@ pipelines:
                 # install dependencies
                 - composer install
                 - composer remove darkaonline/l5-swagger
-                - zip -r application.zip . -x "vendor/*" "dotenv" ".profile_env"
+                - zip -r application.zip . -x "vendor/*" "dotenv" ".profile_env" "composer.lock"
 
               caches:
                 - composer-cache
