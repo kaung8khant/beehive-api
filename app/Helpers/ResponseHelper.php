@@ -92,24 +92,32 @@ trait ResponseHelper
     }
     public function generateShopOrderResponse($data, $status, $type = 'obj')
     {
-        $shops = [];
+        $items = collect([]);
         if ($type === "obj") {
             foreach ($data->vendors as $vendor) {
-                $list = $vendor['shop'];
-                $list['order_status'] = $vendor['order_status'];
-                $list['items'] = $vendor->items;
-                array_push($shops, $list);
+                $list = $vendor->items;
+                foreach ($vendor->items as $item) {
+                    $item['images'] = $item->product->images;
+                    $item['order_status'] = $vendor->order_status;
+                }
+                $items = $items->concat($list);
             }
-            $data['shops'] = $shops;
+
+            $data['items'] = $items;
+            $data->makeHidden("vendors");
+
         } else if ($type === "array") {
             foreach ($data as $shopOrder) {
                 foreach ($shopOrder->vendors as $vendor) {
-                    $list = $vendor['shop'];
-                    $list['order_status'] = $vendor['order_status'];
-                    $list['items'] = $vendor->items;
-                    array_push($shops, $list);
+                    $list = $vendor->items;
+                    foreach ($vendor->items as $item) {
+                        $item['images'] = $item->product->images;
+                        $item['order_status'] = $vendor->order_status;
+                    }
+                    $items = $items->concat($list);
                 }
-                $shopOrder['shops'] = $shops;
+                $shopOrder['items'] = $items;
+                $shopOrder->makeHidden("vendors");
             }
         }
 

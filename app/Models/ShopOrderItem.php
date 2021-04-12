@@ -32,7 +32,6 @@ class ShopOrderItem extends Model
         'created_at',
         'updated_at',
         'pivot',
-        'shop',
     ];
 
     protected $casts = [
@@ -48,5 +47,9 @@ class ShopOrderItem extends Model
     public function shop()
     {
         return $this->belongsTo(Shop::class);
+    }
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
     }
 }
