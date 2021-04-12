@@ -535,7 +535,7 @@ class ProductController extends Controller
                 $data['shop_category_id'] = $this->getShopCategoryId($data['shop_category_slug']);
             }
 
-            if ($data['brand_slug']) {
+            if (isset($data['brand_slug'])) {
                 $data['brand_id'] = $this->getBrandId($data['brand_slug']);
             }
 
