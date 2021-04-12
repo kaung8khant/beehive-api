@@ -96,6 +96,10 @@ trait ResponseHelper
         if ($type === "obj") {
             foreach ($data->vendors as $vendor) {
                 $list = $vendor->items;
+                foreach ($vendor->items as $item) {
+                    $item['images'] = $item->product->images;
+                    $item['order_status'] = $vendor->order_status;
+                }
                 $items = $items->concat($list);
             }
 
@@ -106,6 +110,10 @@ trait ResponseHelper
             foreach ($data as $shopOrder) {
                 foreach ($shopOrder->vendors as $vendor) {
                     $list = $vendor->items;
+                    foreach ($vendor->items as $item) {
+                        $item['images'] = $item->product->images;
+                        $item['order_status'] = $vendor->order_status;
+                    }
                     $items = $items->concat($list);
                 }
                 $shopOrder['items'] = $items;
