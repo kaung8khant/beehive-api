@@ -301,7 +301,7 @@ class ProductController extends Controller
     {
         $params = [
             'name' => 'required|string',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'price' => 'required|max:99999999',
             'tax' => 'required|numeric',
             'is_enable' => 'required|boolean',
@@ -319,7 +319,6 @@ class ProductController extends Controller
             'product_variations.*.product_variation_values.*.value' => 'required|string',
             'product_variations.*.product_variation_values.*.price' => 'required|numeric',
             'product_variations.*.product_variation_values.*.image_slug' => 'nullable|exists:App\Models\File,slug',
-
         ];
 
         if ($slug) {
@@ -514,7 +513,7 @@ class ProductController extends Controller
         $validatedData = $request->validate([
             'products' => 'nullable|array',
             'products.*.name' => 'required|string',
-            'products.*.description' => 'required|string',
+            'products.*.description' => 'nullable|string',
             'products.*.price' => 'required|max:99999999',
             'products.*.tax' => 'required|numeric',
             'products.*.is_enable' => 'required|boolean',
