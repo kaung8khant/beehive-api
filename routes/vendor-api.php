@@ -20,6 +20,8 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('dashboard/order-data', 'Dashboard\VendorDashboardController@getOrderData');
         Route::get('dashboard/daywise-orders', 'Dashboard\VendorDashboardController@getDaywiseOrders');
         Route::get('dashboard/total-earnings', 'Dashboard\VendorDashboardController@getTotalEarnings');
+        Route::get('dashboard/top-sellings', 'Dashboard\VendorDashboardController@getTopSellings');
+        Route::get('dashboard/recent-orders', 'Dashboard\VendorDashboardController@getRecentOrders');
         /* Dashboard */
 
         /* restaurant */

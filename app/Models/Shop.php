@@ -73,6 +73,7 @@ class Shop extends Model
     {
         return File::where('source', 'shops')
             ->where('source_id', $this->id)
+            ->where('type', 'image')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }
@@ -105,5 +106,9 @@ class Shop extends Model
     public function customers()
     {
         return $this->belongsToMany(Customer::class, 'favorite_product');
+    }
+    public function vendor()
+    {
+        return $this->hasOne(ShopOrderVendor::class);
     }
 }

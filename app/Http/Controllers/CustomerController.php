@@ -132,8 +132,9 @@ class CustomerController extends Controller
      */
     public function show($slug)
     {
-        return Customer::where('slug', $slug)->firstOrFail();
+        return Customer::with('addresses')->where('slug', $slug)->firstOrFail();
     }
+
 
     /**
      * @OA\Put(

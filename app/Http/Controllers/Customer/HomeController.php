@@ -15,6 +15,15 @@ class HomeController extends Controller
 {
     use ResponseHelper;
 
+    private $customer;
+
+    public function __construct()
+    {
+        if (Auth::guard('customers')->check()) {
+            $this->customer = Auth::guard('customers')->user();
+        }
+    }
+
     public function getSuggestions(Request $request)
     {
         $validator = $this->validateLocation($request);
@@ -47,6 +56,47 @@ class HomeController extends Controller
         ];
 
         return $this->generateResponse($result, 200);
+    }
+
+    public function getFavorite(Request $request)
+    {
+        $product = [];
+        $restaurant = [];
+
+        if ($this->customer) {
+
+            $product = $this->customer->favoriteProducts()->with('shopCategory', 'shopSubCategory', 'brand')->paginate($request->size)->items();
+
+            $restaurant = $this->customer->favoriteRestaurants()
+                ->with(['restaurantBranches' => function ($query) use ($request) {
+                    $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
+                }])
+                ->paginate($request->size)
+                ->pluck('restaurantBranches')
+                ->collapse();
+        }
+        $result = [
+            'restaurant_branches' => $this->generateBranchResponse($restaurant, 200, 'home'),
+            'products' => $this->generateProductResponse($product, 200, 'home'),
+        ];
+
+        return $this->generateResponse($result, 200);
+    }
+
+    // duplicate from restaurant controller
+    private function getBranchQuery($query, $request)
+    {
+        $radius = config('system.restaurant_search_radius');
+
+        return $query->with('restaurant')
+            ->with('restaurant.availableTags')
+            ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
+            ( 6371 * acos( cos(radians(?)) *
+                cos(radians(latitude)) * cos(radians(longitude) - radians(?))
+                + sin(radians(?)) * sin(radians(latitude)) )
+            ) AS distance', [$request->lat, $request->lng, $request->lat])
+            ->where('is_enable', 1)
+            ->having('distance', '<', $radius);
     }
 
     private function validateLocation($request)

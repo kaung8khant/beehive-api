@@ -44,6 +44,7 @@ class MenuTopping extends Model
     {
         return File::where('source', 'menu_toppings')
             ->where('source_id', $this->id)
+            ->where('type', 'image')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }

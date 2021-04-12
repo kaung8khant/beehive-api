@@ -38,6 +38,7 @@ class MenuVariationValue extends Model
     {
         return File::where('source', 'menu_variation_values')
             ->where('source_id', $this->id)
+            ->where('type', 'image')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }

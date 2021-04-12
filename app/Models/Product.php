@@ -64,7 +64,7 @@ class Product extends Model
         'is_enable' => 'boolean',
     ];
 
-    protected $appends = ['rating', 'images'];
+    protected $appends = ['rating', 'images', 'covers'];
 
     public function getRatingAttribute()
     {
@@ -79,6 +79,16 @@ class Product extends Model
     {
         return File::where('source', 'products')
             ->where('source_id', $this->id)
+            ->where('type', 'image')
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
+    public function getCoversAttribute()
+    {
+        return File::where('source', 'products')
+            ->where('source_id', $this->id)
+            ->where('type', 'cover')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }
@@ -111,5 +121,9 @@ class Product extends Model
     public function customers()
     {
         return $this->belongsToMany(Customer::class, 'favorite_product', 'customer_id');
+    }
+    public function shopOrder()
+    {
+        return $this->hasMany(ShopOrderItem::class);
     }
 }
