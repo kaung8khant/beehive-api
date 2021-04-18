@@ -527,7 +527,7 @@ class ProductController extends Controller
             $data['slug'] = $this->generateUniqueSlug();
             $data['shop_id'] = $this->getShopId($data['shop_slug']);
 
-            if ($data['shop_sub_category_slug']) {
+            if (isset($data['shop_sub_category_slug'])) {
                 $subCategory = $this->getSubCategory($data['shop_sub_category_slug']);
                 $data['shop_category_id'] = $subCategory->shopCategory->id;
                 $data['shop_sub_category_id'] = $subCategory->id;
@@ -535,7 +535,7 @@ class ProductController extends Controller
                 $data['shop_category_id'] = $this->getShopCategoryId($data['shop_category_slug']);
             }
 
-            if ($data['brand_slug']) {
+            if (isset($data['brand_slug'])) {
                 $data['brand_id'] = $this->getBrandId($data['brand_slug']);
             }
 

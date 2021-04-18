@@ -329,7 +329,8 @@ class MenuController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        $menus = $branch->availableMenus()->with('restaurantCategory')
+        $menus = $branch->availableMenus()
+            ->with('restaurantCategory')
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
@@ -342,15 +343,18 @@ class MenuController extends Controller
         return $menus;
     }
 
-    public function getAvailableMenusByBranch(Request $request, $slug)
+    public function getMenusByBranchWithAdditionals(Request $request, $slug)
     {
         $branch = RestaurantBranch::with('availableMenus')
             ->where('slug', $slug)
             ->firstOrFail();
 
-        $availableMenus = $branch->availableMenus()->with('restaurantCategory')
-            ->with('menuVariations')->with('menuVariations.menuVariationValues')
-            ->with('menuToppings')->where('is_available', true)
+        $availableMenus = $branch->availableMenus()
+            ->with('restaurantCategory')
+            ->with('menuVariations')
+            ->with('menuVariations.menuVariationValues')
+            ->with('menuToppings')
+            ->where('is_available', true)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
