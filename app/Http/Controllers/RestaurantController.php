@@ -92,7 +92,7 @@ class RestaurantController extends Controller
                 'slug' => 'required|unique:restaurants',
                 'name' => 'required|unique:restaurants',
                 'is_enable' => 'required|boolean',
-                'restaurant_tags' => 'required|array',
+                'restaurant_tags' => 'nullable|array',
                 'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
                 'available_categories' => 'nullable|array',
                 'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
@@ -125,8 +125,10 @@ class RestaurantController extends Controller
 
         $this->createRestaurantBranch($restaurantId, $validatedData['restaurant_branch']);
 
-        $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
-        $restaurant->availableTags()->attach($restaurantTags);
+        if ($request->restaurant_tags) {
+            $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
+            $restaurant->availableTags()->attach($restaurantTags);
+        }
 
         if ($request->available_categories) {
             $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
@@ -210,7 +212,7 @@ class RestaurantController extends Controller
                 Rule::unique('restaurants')->ignore($restaurant->id),
             ],
             'is_enable' => 'required|boolean',
-            'restaurant_tags' => 'required|array',
+            'restaurant_tags' => 'nullable|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
             'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
