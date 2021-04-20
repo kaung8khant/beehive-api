@@ -93,7 +93,7 @@ class ShopController extends Controller
                 'name' => 'required|unique:shops',
                 'is_enable' => 'required|boolean',
                 'is_official' => 'required|boolean',
-                'shop_tags' => 'required|array',
+                'shop_tags' => 'nullable|array',
                 'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
                 'available_categories' => 'nullable|array',
                 'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
@@ -123,8 +123,10 @@ class ShopController extends Controller
             $this->updateFile($request->image_slug, 'shops', $shop->slug);
         }
 
-        $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
-        $shop->availableTags()->attach($shopTags);
+        if ($request->shop_tags) {
+            $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
+            $shop->availableTags()->attach($shopTags);
+        }
 
         if ($request->available_categories) {
             $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
@@ -161,7 +163,7 @@ class ShopController extends Controller
      */
     public function show($slug)
     {
-        $shop = Shop::with('availableCategories', 'availableTags', 'township')->where('slug', $slug)->firstOrFail();
+        $shop = Shop::with('availableCategories', 'availableTags', 'township', 'township.city')->where('slug', $slug)->firstOrFail();
         return response()->json($shop, 200);
     }
 
@@ -210,7 +212,7 @@ class ShopController extends Controller
                 ],
                 'is_enable' => 'nullable|boolean',
                 'is_official' => 'required|boolean',
-                'shop_tags' => 'required|array',
+                'shop_tags' => 'nullable|array',
                 'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
                 'available_categories' => 'nullable|array',
                 'available_categories.*' => 'exists:App\Models\ShopCategory,slug',

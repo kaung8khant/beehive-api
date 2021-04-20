@@ -143,7 +143,7 @@ class RestaurantBranchController extends Controller
      */
     public function show($slug)
     {
-        $restaurantBranch = RestaurantBranch::with('restaurant', 'township')->where('slug', $slug)->firstOrFail();
+        $restaurantBranch = RestaurantBranch::with('restaurant', 'township', 'township.city')->where('slug', $slug)->firstOrFail();
         return response()->json($restaurantBranch, 200);
     }
 
@@ -201,7 +201,7 @@ class RestaurantBranchController extends Controller
                 'is_enable' => 'required|boolean',
             ],
             [
-            'contact_number.phone' => 'Invalid phone number.',
+                'contact_number.phone' => 'Invalid phone number.',
             ]
         );
 
