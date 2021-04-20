@@ -126,24 +126,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('restaurant-orders/{slug}/change-status', 'RestaurantOrderController@changeStatus');
             Route::resource('shop-orders', 'ShopOrderController');
             Route::post('shop-orders/{slug}/change-status', 'ShopOrderController@changeStatus');
-            Route::resource('orders', 'OrderController');
-            Route::get('customers/{slug}/orders', 'OrderController@getOrdersByCustomer');
-
-            Route::get('orders/{slug}/items', 'OrderItemController@index');
-            Route::post('orders/{slug}/items', 'OrderItemController@store');
-            Route::get('orders/{slug}/items/{id}', 'OrderItemController@show');
-            Route::put('orders/{slug}/items/{id}', 'OrderItemController@update');
-            Route::delete('orders/{slug}/items/{id}', 'OrderItemController@destroy');
-
-            Route::post('orders/{slug}/status', 'OrderStatusController@store');
-            Route::get('orders/{slug}/status/all', 'OrderStatusController@index');
-            Route::get('orders/{slug}/status/latest', 'OrderStatusController@getLatestOrderStatus');
-
-            Route::get('orders/{slug}/contact', 'OrderContactController@index');
-            Route::put('orders/{slug}/contact', 'OrderContactController@update');
-
-            Route::resource('ratings', 'RatingController');
-            Route::get('orders/{receiverType}/ratings', 'RatingController@getReceiverTypeByOrder');
             /* Order */
 
             /* Promocode */

@@ -112,18 +112,6 @@ class RestaurantOrderController extends Controller
      *      }
      *)
      */
-    // public function show($slug)
-    // {
-    //     // $customer_id = Auth::guard('customers')->user()->id;
-    //     $order = RestaurantOrder::with('RestaurantOrderContact')
-    //         ->with('RestaurantOrderItems')
-    //         ->where('slug', $slug)
-    //         // ->where('customer_id', $customer_id)
-    //         ->firstOrFail();
-
-    //     return $this->generateResponse($order, 200);
-    // }
-
     public function show($slug)
     {
         $order = RestaurantOrder::with('RestaurantOrderContact')
