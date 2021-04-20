@@ -40,9 +40,12 @@ class AddressController extends Controller
         }
 
         $validatedData = $validator->validated();
-        $validatedData['township_id'] = Township::where('slug', $request->township_slug)->first()->id;
         $validatedData['customer_id'] = $this->customer_id;
         $validatedData['is_primary'] = true;
+
+        if ($validatedData['township_slug']) {
+            $validatedData['township_id'] = Township::where('slug', $validatedData['township_slug'])->first()->id;
+        }
 
         $this->setNonPrimary();
 
@@ -66,11 +69,15 @@ class AddressController extends Controller
         }
 
         $validatedData = $validator->validated();
-        $validatedData['township_id'] = Township::where('slug', $request->township_slug)->first()->id;
         $validatedData['customer_id'] = $this->customer_id;
+        $validatedData['township_id'] = null;
+
+        if ($validatedData['township_slug']) {
+            $validatedData['township_id'] = Township::where('slug', $validatedData['township_slug'])->first()->id;
+        }
 
         $address->update($validatedData);
-        return $this->generateResponse($address, 200);
+        return $this->generateResponse($address->refresh(), 200);
     }
 
     public function destroy($slug)
@@ -88,7 +95,7 @@ class AddressController extends Controller
             'street_name' => 'required',
             'latitude' => 'nullable',
             'longitude' => 'nullable',
-            'township_slug' => 'required|exists:App\Models\Township,slug',
+            'township_slug' => 'nullable|exists:App\Models\Township,slug',
         ];
 
         if ($slug) {

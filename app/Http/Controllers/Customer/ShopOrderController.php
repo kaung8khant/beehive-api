@@ -29,13 +29,17 @@ class ShopOrderController extends Controller
     public function __construct()
     {
         if (Auth::guard('customers')->check()) {
-            $this->customer_id = Auth::guard('customers')->user()->id;
+            $this->customerId = Auth::guard('customers')->user()->id;
         }
     }
 
     public function index(Request $request)
     {
-        $shopOrder = ShopOrder::get();
+        $shopOrder = ShopOrder::where('customer_id', $this->customerId)
+            ->latest()
+            ->paginate($request->size)
+            ->items();
+
         return $this->generateShopOrderResponse($shopOrder, 201, 'array');
     }
 
@@ -44,7 +48,7 @@ class ShopOrderController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $validatedData = $this->validateOrder($request);
-        $validatedData['customer_id'] = $this->customer_id;
+        $validatedData['customer_id'] = $this->customerId;
         $validatedData['promocode_id'] = null;
 
         if ($validatedData['promo_code_slug']) {
@@ -74,8 +78,9 @@ class ShopOrderController extends Controller
 
     public function show($slug)
     {
-        $shopOrder = ShopOrder::where('slug', $slug)
-            ->with('contact')
+        $shopOrder = ShopOrder::with('contact')
+            ->where('slug', $slug)
+            ->where('customer_id', $this->customerId)
             ->firstOrFail();
 
         return $this->generateShopOrderResponse($shopOrder, 200);
@@ -84,7 +89,7 @@ class ShopOrderController extends Controller
     public function destroy($slug)
     {
 
-        $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
+        $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customerId)->firstOrFail();
 
         if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
             return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
@@ -92,7 +97,7 @@ class ShopOrderController extends Controller
 
         $this->createOrderStatus($shopOrder->id, 'cancelled');
 
-        $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
+        $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customerId)->firstOrFail();
 
         return $this->generateResponse($shopOrder->order_status, 200);
     }
@@ -191,9 +196,11 @@ class ShopOrderController extends Controller
             $item['variations'] = $variations;
             $item['discount'] = $discount;
             $item['tax'] = ($amount) * $product->tax / 100;
-            $shopOrderItem = ShopOrderItem::create($item);
+
+            ShopOrderItem::create($item);
         }
     }
+
     private function createShopOrderVendor($orderId, $shopId)
     {
         return ShopOrderVendor::updateOrCreate(
@@ -219,10 +226,12 @@ class ShopOrderController extends Controller
 
         return $variations;
     }
+
     private function getMenuVariationValue($slug)
     {
         return ProductVariationValue::with('productVariation')->where('slug', $slug)->first();
     }
+
     private function getTownshipId($slug)
     {
         return Township::where('slug', $slug)->first()->id;

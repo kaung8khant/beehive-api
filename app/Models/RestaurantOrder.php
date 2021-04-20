@@ -49,7 +49,12 @@ class RestaurantOrder extends Model
         'restaurant_branch_info' => AsArrayObject::class,
     ];
 
-    protected $appends = ['total_amount'];
+    protected $appends = ['invoice_id', 'total_amount'];
+
+    public function getInvoiceIdAttribute()
+    {
+        return sprintf('%08d', $this->id);
+    }
 
     public function getTotalAmountAttribute()
     {
