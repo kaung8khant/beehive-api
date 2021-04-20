@@ -122,6 +122,7 @@ class ShopOrderController extends Controller
             ]);
         }
     }
+
     private function notify($data)
     {
         $this->notifyAdmin(
