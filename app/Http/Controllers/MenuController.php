@@ -367,7 +367,7 @@ class MenuController extends Controller
     {
         $params = [
             'name' => 'required',
-            'description' => 'required',
+            'description' => 'nullable',
             'price' => 'required|numeric',
             'tax' => 'required|numeric',
             'is_enable' => 'required|boolean',
@@ -478,7 +478,7 @@ class MenuController extends Controller
         $validatedData = $request->validate([
             'menus' => 'nullable|array',
             'menus.*.name' => 'required',
-            'menus.*.description' => 'required',
+            'menus.*.description' => 'nullable',
             'menus.*.price' => 'required|numeric',
             'menus.*.tax' => 'required|numeric',
             'menus.*.is_enable' => 'required|boolean',
