@@ -234,11 +234,9 @@ class ShopController extends Controller
         $validatedData['township_id'] = $this->getTownshipIdBySlug($request->township_slug);
         $shop->update($validatedData);
 
-
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->availableTags()->detach();
         $shop->availableTags()->attach($shopTags);
-
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'shops', $shop->slug);
