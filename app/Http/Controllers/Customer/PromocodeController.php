@@ -13,15 +13,6 @@ class PromocodeController extends Controller
 {
     use ResponseHelper, PromocodeHelper;
 
-    protected $customer_id;
-
-    public function __construct()
-    {
-        if (Auth::guard('customers')->check()) {
-            $this->customer_id = Auth::guard('customers')->user()->id;
-        }
-    }
-
     public function index(Request $request)
     {
         $promo_list = Promocode::with('rules');
@@ -42,7 +33,7 @@ class PromocodeController extends Controller
 
     public function validatePromoCode($slug)
     {
-        $promo = $this->validatePromo($slug);
+        $promo = $this->validatePromo($slug, Auth::guard('customers')->user()->id);
         return $this->generateResponse($promo, 200);
     }
 }
