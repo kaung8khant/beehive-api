@@ -55,15 +55,18 @@ trait NotificationHelper
         $shop = Shop::where("slug", $slug)->first();
 
         if ($shop) {
+
             $shopId = $shop->id;
             $user = User::where("shop_id", $shopId)->first();
             if ($user) {
+
                 $userId = $user->id;
 
                 //Delete over 3 days token
                 UserSession::where("updated_at", '<=', Carbon::now()->subDays(3))->forceDelete();
 
                 $tokenList = UserSession::where('user_id', $userId)->pluck("device_token")->all();
+
                 $this->sendNotification($data, $tokenList);
             }
         }
@@ -76,23 +79,26 @@ trait NotificationHelper
             "notification" => $data, //array
         ];
 
-        $dataString = json_encode($data);
+        if (!empty($to)) {
+            $dataString = json_encode($data);
 
-        $headers = [
-            'Authorization: key=' . config('broadcasting.firebase'),
-            'Content-Type: application/json',
-        ];
+            $headers = [
+                'Authorization: key=' . config('broadcasting.firebase'),
+                'Content-Type: application/json',
+            ];
 
-        $ch = curl_init();
+            $ch = curl_init();
 
-        curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+            curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
 
-        $result = curl_exec($ch);
+            $result = curl_exec($ch);
+
+        }
 
     }
 }
