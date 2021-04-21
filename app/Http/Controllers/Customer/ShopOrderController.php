@@ -77,8 +77,10 @@ class ShopOrderController extends Controller
                 'title' => "New Order",
                 'body' => "New Order has been received. Check now!",
                 'data' => [
-                    'action' => '',
-                    'type' => 'notification',
+                    'action' => 'update',
+                    'type' => 'shopOrder',
+                    'status' => 'pending',
+                    'slug' => $order->slug,
                 ],
             ]
         );
