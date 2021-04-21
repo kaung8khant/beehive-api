@@ -77,10 +77,14 @@ class ShopOrderController extends Controller
                 'title' => "New Order",
                 'body' => "New Order has been received. Check now!",
                 'data' => [
-                    'action' => 'update',
+                    'action' => 'create',
                     'type' => 'shopOrder',
                     'status' => 'pending',
-                    'slug' => $order->slug,
+                    'shopOrder' => ShopOrder::with('contact')
+                        ->with('contact.township')
+                        ->with('vendors')
+                        ->where('slug', $order->slug)
+                        ->firstOrFail(),
                 ],
             ]
         );
