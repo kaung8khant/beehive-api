@@ -10,9 +10,7 @@ use App\Helpers\StringHelper;
 use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
-use App\Models\RestaurantOrderContact;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class RestaurantOrderController extends Controller
 {
@@ -184,7 +182,7 @@ class RestaurantOrderController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validator = OrderHelper::validateOrder($request, TRUE);
+        $validator = OrderHelper::validateOrder($request, true);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
@@ -266,8 +264,8 @@ class RestaurantOrderController extends Controller
         $this->createOrderStatus($order->id, $request->status);
 
         $this->notify([
-            'title' => 'Shop order updated',
-            'body' => 'Shop order just has been updated',
+            'title' => 'Restaurant order updated',
+            'body' => 'Restaurant order just has been updated',
             'status' => $request->status,
             'slug' => $slug,
         ]);
@@ -275,7 +273,7 @@ class RestaurantOrderController extends Controller
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
     }
 
-    public function getCustomerId($slug)
+    private function getCustomerId($slug)
     {
         return Customer::where('slug', $slug)->first()->id;
     }
@@ -289,7 +287,7 @@ class RestaurantOrderController extends Controller
                 'img' => '',
                 'data' => [
                     'action' => 'update',
-                    'type' => 'shopOrder',
+                    'type' => 'restaurantOrder',
                     'status' => $data['status'],
                     'slug' => $data['slug'],
 
