@@ -106,6 +106,7 @@ class RestaurantController extends Controller
                 'restaurant_branch.longitude' => 'nullable|numeric',
                 'restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
                 'image_slug' => 'nullable|exists:App\Models\File,slug',
+                'cover_slug' => 'nullable|exists:App\Models\File,slug',
             ],
             [
                 'restaurant_branch.contact_number.phone' => 'Invalid phone number.',
@@ -121,6 +122,10 @@ class RestaurantController extends Controller
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
+        }
+
+        if ($request->cover_slug) {
+            $this->updateFile($request->cover_slug, 'restaurants', $restaurant->slug);
         }
 
         $this->createRestaurantBranch($restaurantId, $validatedData['restaurant_branch']);
