@@ -97,6 +97,20 @@ class UserController extends Controller
             ->paginate(10);
     }
 
+    public function getLogisticsUsers(Request $request)
+    {
+        return User::with('roles')
+            ->whereHas('roles', function ($q) {
+                $q->where('name', 'Logistics');
+            })
+            ->where(function ($q) use ($request) {
+                $q->where('username', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->paginate(10);
+    }
     /**
      * @OA\Post(
      *      path="/api/v2/admin/users",
@@ -204,6 +218,33 @@ class UserController extends Controller
         $user->roles()->attach($restaurantRoleId);
 
         return response()->json($user->refresh()->load(['restaurantBranch', 'restaurantBranch.restaurant']), 201);
+    }
+
+    public function storeLogisticsUser(Request $request)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $validatedData = $request->validate(
+            [
+                'slug' => 'required|unique:users',
+                'username' => 'required|unique:users',
+                'name' => 'required',
+                'phone_number' => 'required|phone:MM|unique:users',
+                'password' => 'required|min:6',
+            ],
+            [
+                'phone_number.phone' => 'Invalid phone number.',
+            ]
+        );
+
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
+        $validatedData['password'] = Hash::make($validatedData['password']);
+        $user = User::create($validatedData);
+
+        $logisticRoleId = Role::where('name', 'Logistics')->first()->id;
+        $user->roles()->attach($logisticRoleId);
+
+        return response()->json($user->refresh()->load('roles'), 201);
     }
 
     private function getShopId($slug)
@@ -373,6 +414,34 @@ class UserController extends Controller
         return response()->json($user->refresh()->load(['restaurantBranch', 'restaurantBranch.restaurant']), 201);
     }
 
+    public function updateLogisticsUser(Request $request, $slug)
+    {
+        $user = User::where('slug', $slug)->firstOrFail();
+
+        $validatedData = $request->validate(
+            [
+                'name' => 'required',
+                'phone_number' => [
+                    'required',
+                    'phone:MM',
+                    Rule::unique('users')->ignore($user->id),
+                ],
+
+            ],
+            [
+                'phone_number.phone' => 'Invalid phone number.',
+            ]
+        );
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
+
+        $user->update($validatedData);
+
+        // $roles = Role::whereIn('slug', $request->roles)->pluck('id');
+        // $user->roles()->detach();
+        // $user->roles()->attach($roles);
+
+        return response()->json($user, 200);
+    }
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/users/{slug}",
