@@ -246,6 +246,10 @@ class ProductController extends Controller
             $this->updateFile($request->image_slug, 'products', $slug);
         }
 
+        if ($request->cover_slug) {
+            $this->updateFile($request->cover_slug, 'products', $slug);
+        }
+
         if ($request->product_variations) {
             $product->productVariations()->delete();
             $this->createProductVariation($productId, $validatedData['product_variations']);

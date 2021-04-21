@@ -222,6 +222,7 @@ class RestaurantController extends Controller
             'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
+            'cover_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
 
         $restaurant->update($validatedData);
@@ -232,6 +233,10 @@ class RestaurantController extends Controller
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
+        }
+
+        if ($request->cover_slug) {
+            $this->updateFile($request->cover_slug, 'restaurants', $restaurant->slug);
         }
 
         if ($request->available_categories) {
