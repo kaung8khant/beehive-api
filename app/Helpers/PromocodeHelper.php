@@ -46,7 +46,7 @@ trait PromocodeHelper
         }
     }
 
-    public function getPercentage($price, $id)
+    public static function getPercentage($price, $id)
     {
         $promo = Promocode::with('rules')->where('id', $id)->first();
         if ($promo->type === "fix") {

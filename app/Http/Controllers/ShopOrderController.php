@@ -89,6 +89,7 @@ class ShopOrderController extends Controller
 
     public function changeStatus(Request $request, $slug)
     {
+
         $order = ShopOrder::where('slug', $slug)->firstOrFail();
 
         if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
@@ -97,12 +98,24 @@ class ShopOrderController extends Controller
 
         $this->createOrderStatus($order->id, $request->status);
 
-        $this->notify([
+        $notificaitonData = $this->notificationData([
             'title' => 'Shop order updated',
             'body' => 'Shop order just has been updated',
             'status' => $request->status,
             'slug' => $slug,
         ]);
+
+        $this->notifyAdmin(
+            $notificaitonData
+        );
+
+        foreach ($order->vendors as $vendor) {
+
+            $this->notifyShop(
+                $vendor->shop->slug,
+                $notificaitonData
+            );
+        }
 
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
     }
@@ -122,21 +135,20 @@ class ShopOrderController extends Controller
             ]);
         }
     }
-    private function notify($data)
+    private function notificationData($data)
     {
-        $this->notifyAdmin(
-            [
-                'title' => $data['title'],
-                'body' => $data['body'],
-                'img' => '',
-                'data' => [
-                    'action' => 'update',
-                    'type' => 'shopOrder',
-                    'status' => $data['status'],
-                    'slug' => $data['slug'],
+        return [
+            'title' => $data['title'],
+            'body' => $data['body'],
+            'img' => '',
+            'data' => [
+                'action' => 'update',
+                'type' => 'shopOrder',
+                'status' => $data['status'],
+                'slug' => $data['slug'],
 
-                ],
-            ]
-        );
+            ],
+        ];
+
     }
 }

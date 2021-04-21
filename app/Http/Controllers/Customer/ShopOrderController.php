@@ -24,7 +24,7 @@ class ShopOrderController extends Controller
 {
     use StringHelper, ResponseHelper, NotificationHelper, PromocodeHelper;
 
-    protected $customer_id;
+    protected $customerId;
 
     public function __construct()
     {
@@ -35,11 +35,10 @@ class ShopOrderController extends Controller
 
     public function index(Request $request)
     {
-        $shopOrder = ShopOrder::where('customer_id', $this->customerId)
-            ->latest()
+        $customerId = Auth::guard('customers')->user()->id;
+        $shopOrder = ShopOrder::where('customer_id', $customerId)->latest()
             ->paginate($request->size)
             ->items();
-
         return $this->generateShopOrderResponse($shopOrder, 201, 'array');
     }
 
@@ -73,14 +72,27 @@ class ShopOrderController extends Controller
             $this->notify($this->getShop($item['slug'])->id, ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
         }
 
+        $this->notifyAdmin(
+            [
+                'title' => "New Order",
+                'body' => "New Order has been received. Check now!",
+                'data' => [
+                    'action' => 'update',
+                    'type' => 'shopOrder',
+                    'status' => 'pending',
+                    'slug' => $order->slug,
+                ],
+            ]
+        );
+
         return $this->generateShopOrderResponse($order->refresh(), 201);
     }
 
     public function show($slug)
     {
-        $shopOrder = ShopOrder::with('contact')
-            ->where('slug', $slug)
-            ->where('customer_id', $this->customerId)
+        $customerId = Auth::guard('customers')->user()->id;
+        $shopOrder = ShopOrder::where('slug', $slug)->where('customer_id', $customerId)
+            ->with('contact')
             ->firstOrFail();
 
         return $this->generateShopOrderResponse($shopOrder, 200);
@@ -262,5 +274,6 @@ class ShopOrderController extends Controller
                 ],
             ]
         );
+
     }
 }

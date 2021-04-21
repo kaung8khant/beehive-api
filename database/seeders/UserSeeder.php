@@ -57,6 +57,13 @@ class UserSeeder extends Seeder
                 'phone_number' => '0912345789',
                 'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'username' => 'logistics',
+                'name' => 'Logistics Admin',
+                'phone_number' => '0912345790',
+                'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+            ],
         ];
 
         foreach ($users as $user) {

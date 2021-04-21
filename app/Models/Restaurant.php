@@ -73,7 +73,7 @@ class Restaurant extends Model
 
     public function getCoversAttribute()
     {
-        return File::where('source', 'products')
+        return File::where('source', 'restaurants')
             ->where('source_id', $this->id)
             ->where('type', 'cover')
             ->whereIn('extension', ['png', 'jpg'])

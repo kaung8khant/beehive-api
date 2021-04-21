@@ -38,6 +38,10 @@ class RoleSeeder extends Seeder
                 'slug' => $this->generateUniqueSlug(),
                 'name' => 'Collector',
             ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Logistics',
+            ],
         ];
 
         foreach ($roles as $role) {
