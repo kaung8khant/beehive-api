@@ -121,6 +121,10 @@ class ProductController extends Controller
             $this->updateFile($request->image_slug, 'products', $product->slug);
         }
 
+        if ($request->cover_slug) {
+            $this->updateFile($request->cover_slug, 'products', $product->slug);
+        }
+
         if ($request->product_variations) {
             $this->createProductVariation($productId, $validatedData['product_variations']);
         }
@@ -242,6 +246,10 @@ class ProductController extends Controller
             $this->updateFile($request->image_slug, 'products', $slug);
         }
 
+        if ($request->cover_slug) {
+            $this->updateFile($request->cover_slug, 'products', $slug);
+        }
+
         if ($request->product_variations) {
             $product->productVariations()->delete();
             $this->createProductVariation($productId, $validatedData['product_variations']);
@@ -310,6 +318,7 @@ class ProductController extends Controller
             'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
+            'cover_slug' => 'nullable|exists:App\Models\File,slug',
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',
