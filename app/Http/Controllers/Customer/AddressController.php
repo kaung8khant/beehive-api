@@ -6,6 +6,7 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Address;
+use App\Models\City;
 use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,18 +16,18 @@ class AddressController extends Controller
 {
     use StringHelper, ResponseHelper;
 
-    protected $customer_id;
+    protected $customerId;
 
     public function __construct()
     {
         if (Auth::guard('customers')->check()) {
-            $this->customer_id = Auth::guard('customers')->user()->id;
+            $this->customerId = Auth::guard('customers')->user()->id;
         }
     }
 
     public function index()
     {
-        $addresses = Address::with('township')->where('customer_id', $this->customer_id)->paginate(10)->items();
+        $addresses = Address::with('township')->where('customer_id', $this->customerId)->paginate(10)->items();
         return $this->generateResponse($addresses, 200);
     }
 
@@ -40,7 +41,7 @@ class AddressController extends Controller
         }
 
         $validatedData = $validator->validated();
-        $validatedData['customer_id'] = $this->customer_id;
+        $validatedData['customer_id'] = $this->customerId;
         $validatedData['is_primary'] = true;
 
         if ($validatedData['township_slug']) {
@@ -69,7 +70,7 @@ class AddressController extends Controller
         }
 
         $validatedData = $validator->validated();
-        $validatedData['customer_id'] = $this->customer_id;
+        $validatedData['customer_id'] = $this->customerId;
         $validatedData['township_id'] = null;
 
         if ($validatedData['township_slug']) {
@@ -118,8 +119,27 @@ class AddressController extends Controller
 
     public function getPrimaryAddress()
     {
-        $address = Address::where('customer_id', $this->customer_id)->where('is_primary', 1)->firstOrFail();
+        $address = Address::where('customer_id', $this->customerId)->where('is_primary', 1)->firstOrFail();
         return $this->generateResponse($address, 200);
+    }
+
+    public function getAllCities(Request $request)
+    {
+        $cities = City::where('name', 'LIKE', '%' . $request->filter . '%')
+            ->paginate($request->size)
+            ->items();
+        return $this->generateResponse($cities, 200);
+    }
+
+    public function getTownshipsByCity(Request $request, $slug)
+    {
+        $cityId = City::where('slug', $slug)->firstOrFail()->id;
+
+        $townships = Township::where('city_id', $cityId)
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->paginate($request->size)
+            ->items();
+        return $this->generateResponse($townships, 200);
     }
 
     public function getAllTownships(Request $request)
@@ -130,11 +150,11 @@ class AddressController extends Controller
 
     private function getAddress($slug)
     {
-        return Address::with('township')->where('slug', $slug)->where('customer_id', $this->customer_id)->firstOrFail();
+        return Address::with('township')->where('slug', $slug)->where('customer_id', $this->customerId)->firstOrFail();
     }
 
     private function setNonPrimary()
     {
-        Address::where('customer_id', $this->customer_id)->update(['is_primary' => 0]);
+        Address::where('customer_id', $this->customerId)->update(['is_primary' => 0]);
     }
 }

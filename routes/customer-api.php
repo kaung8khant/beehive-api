@@ -53,6 +53,10 @@ Route::group(['prefix' => 'user'], function () {
 
         /* regist device token */
         Route::post('/register-device', 'Customer\HomeController@registerCustomerToken');
+        /* regist device token */
+
+        Route::get('cities', 'Customer\AddressController@getAllCities');
+        Route::get('cities/{slug}/townships', 'Customer\AddressController@getTownshipsByCity');
 
         Route::get('townships', 'Customer\AddressController@getAllTownships');
         Route::get('addresses/get-primary', 'Customer\AddressController@getPrimaryAddress');
@@ -71,6 +75,8 @@ Route::group(['prefix' => 'user'], function () {
         /* Restaurant */
 
         /* Shop */
+        Route::resource('shop-orders', 'Customer\ShopOrderController', ['as' => 'customer']);
+        Route::put('shop-orders/cancel/{slug}', 'Customer\ShopOrderController@cancelOrder');
         Route::post('shop/ratings', 'Customer\ShopRatingController@store');
         /* Shop */
 
@@ -79,9 +85,6 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('products/{slug}/favorites', 'Customer\ProductController@setFavorite');
         Route::delete('products/{slug}/favorites', 'Customer\ProductController@removeFavorite');
         /* Product */
-
-        Route::resource('shop-orders', 'Customer\ShopOrderController', ['as' => 'customer']);
-        Route::put('shop-orders/cancel/{slug}', 'Customer\ShopOrderController@cancelOrder');
 
         Route::get('promocode', 'Customer\PromocodeController@index');
         Route::get('promocode/validate/{slug}', 'Customer\PromocodeController@validatePromoCode');

@@ -24,7 +24,7 @@ class ShopOrderController extends Controller
 {
     use StringHelper, ResponseHelper, NotificationHelper, PromocodeHelper;
 
-    protected $customer_id;
+    protected $customerId;
 
     public function __construct()
     {
