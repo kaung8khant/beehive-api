@@ -517,6 +517,16 @@ class ProductController extends Controller
         })->paginate(10);
     }
 
+    public function getProductsByCategory(Request $request, $slug)
+    {
+        return Product::with('shop', 'shopCategory')->whereHas('shopCategory', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })->paginate(10);
+    }
+
     public function import(Request $request)
     {
         $validatedData = $request->validate([
