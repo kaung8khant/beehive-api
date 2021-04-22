@@ -113,6 +113,10 @@ class RestaurantBranchController extends Controller
         $validatedData['township_id'] = $this->getTownshipId($request->township_slug);
 
         $restaurantBranch = RestaurantBranch::create($validatedData);
+
+        $menuIds = Menu::where('restaurant_id', $validatedData['restaurant_id'])->pluck('id');
+        $restaurantBranch->availableMenus()->attach($menuIds);
+
         return response()->json($restaurantBranch->load('restaurant', 'township'), 201);
     }
 
@@ -545,7 +549,6 @@ class RestaurantBranchController extends Controller
                 'restaurant_branches.*.contact_number.phone' => 'Invalid phone number.',
             ]
         );
-
 
         foreach ($validatedData['restaurant_branches'] as $data) {
             $data['contact_number'] = PhoneNumber::make($data['contact_number'], 'MM');
