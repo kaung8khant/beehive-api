@@ -115,7 +115,8 @@ class RestaurantController extends Controller
 
     public function getAvailableMenusByBranch($slug)
     {
-        $restaurantBranch = RestaurantBranch::with('availableMenus')
+        $restaurantBranch = RestaurantBranch::with('restaurant')
+            ->with('availableMenus')
             ->with('availableMenus.restaurantCategory')
             ->with('availableMenus.menuVariations')
             ->with('availableMenus.menuVariations.menuVariationValues')
