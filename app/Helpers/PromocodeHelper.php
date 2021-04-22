@@ -5,7 +5,6 @@ namespace App\Helpers;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 
 trait PromocodeHelper
 {
@@ -16,10 +15,16 @@ trait PromocodeHelper
         }
     }
 
-    public function validatePromo($slug)
+    public function validatePromo($slug, $customerId, $usage)
     {
         $promo = $this->getPromo($slug);
-        return $this->validateRule($promo->rules, $promo->id);
+        if ($usage == $promo->usage) {
+            $this->customerId = $customerId;
+            $this->promoId = $promo->id;
+
+            return $this->validateRule($promo->rules);
+        }
+        return false;
     }
 
     public function validateRule($rules, $id)

@@ -193,6 +193,16 @@ class RestaurantOrderController extends Controller
 
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
+        $validatedData['promocode_id'] = null;
+
+        if ($validatedData['promo_code_slug']) {
+            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'restaurant');
+            if (!$isPromoValid) {
+                return $this->generateResponse('Invalid promo code.', 406, true);
+            }
+
+            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
+        }
 
         $order = RestaurantOrder::create($validatedData);
         $orderId = $order->id;

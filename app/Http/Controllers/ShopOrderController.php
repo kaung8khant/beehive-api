@@ -87,6 +87,90 @@ class ShopOrderController extends Controller
         return $this->generateResponse($shop, 200);
     }
 
+    public function store(Request $request)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $validatedData = $this->validateOrder($request);
+        $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
+        $validatedData['promocode_id'] = null;
+
+        if ($validatedData['promo_code_slug']) {
+            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'shop');
+            if (!$isPromoValid) {
+                return $this->generateResponse('Invalid promo code.', 406, true);
+            }
+
+            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
+        }
+
+        $order = ShopOrder::create($validatedData);
+        $orderId = $order->id;
+
+        $this->createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
+        $this->createShopOrderItem($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
+        $this->createOrderStatus($orderId);
+
+        foreach ($validatedData['order_items'] as $item) {
+            $this->notify($this->getShopByProduct($item['slug'])->id,
+                [
+                    'title' => 'New Order',
+                    'body' => "You've just recevied new order. Check now!",
+                ]
+            );
+        }
+
+        $this->notifyAdmin(
+            [
+                'title' => "New Order",
+                'body' => "New Order has been received. Check now!",
+                'data' => [
+                    'action' => 'create',
+                    'type' => 'shopOrder',
+                    'status' => 'pending',
+                    'shopOrder' => ShopOrder::with('contact')
+                        ->with('contact.township')
+                        ->with('vendors')
+                        ->where('slug', $order->slug)
+                        ->firstOrFail(),
+                ],
+            ]
+        );
+
+        return $this->generateShopOrderResponse($order->refresh(), 201);
+    }
+
+    private function validateOrder($request)
+    {
+        $rules = [
+            'slug' => 'required',
+            'order_date' => 'required|date_format:Y-m-d',
+            'special_instruction' => 'nullable',
+            'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
+            'delivery_mode' => 'required|in:pickup,delivery',
+            'customer_slug' => 'required|string|exists:App\Models\Customer,slug',
+            'promo_code_slug' => 'nullable|string|exists:App\Models\Promocode,slug',
+            'customer_info' => 'required',
+            'customer_info.customer_name' => 'required|string',
+            'customer_info.phone_number' => 'required|string',
+            'address' => 'required',
+            'address.house_number' => 'required|string',
+            'address.floor' => 'nullable|string',
+            'address.street_name' => 'required|string',
+            'address.latitude' => 'nullable|numeric',
+            'address.longitude' => 'nullable|numeric',
+            'address.township' => 'required',
+            'address.township.slug' => 'required|exists:App\Models\Township,slug',
+            'order_items' => 'required|array',
+            'order_items.*.slug' => 'required|string',
+            'order_items.*.quantity' => 'required|integer',
+            'order_items.*.variation_value_slugs' => 'nullable|array',
+            'order_items.*.variation_value_slugs.*' => 'required|exists:App\Models\ProductVariationValue,slug',
+        ];
+
+        return $request->validate($rules);
+    }
+
     public function changeStatus(Request $request, $slug)
     {
 
