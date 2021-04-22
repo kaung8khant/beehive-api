@@ -115,6 +115,23 @@ class ShopOrderController extends Controller
 
         $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customerId)->firstOrFail();
 
+        foreach ($shopOrder->vendors as $vendor) {
+            $this->notify($vendor->shop->slug, ['title' => 'Order cancelled', 'body' => "Your order been cancelled!"]);
+        }
+
+        $this->notifyAdmin(
+            [
+                'title' => "Order cancelled",
+                'body' => "Shop order just has been updated",
+                'data' => [
+                    'action' => 'update',
+                    'type' => 'shopOrder',
+                    'status' => 'cancelled',
+                    'slug' => $shopOrder->slug,
+                ],
+            ]
+        );
+
         return $this->generateResponse($shopOrder->order_status, 200);
     }
 
