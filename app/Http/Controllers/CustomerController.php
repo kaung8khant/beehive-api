@@ -257,7 +257,7 @@ class CustomerController extends Controller
         $customers = null;
         $promocode= Promocode::where('slug', $slug)->firstOrFail();
         if ($promocode->usage==='restaurant') {
-            $customers = Customer::leftJoin('restaurant_orders', function ($q) use ($promocode) {
+            $customers = Customer::join('restaurant_orders', function ($q) use ($promocode) {
                 $q->on('restaurant_orders.customer_id', '=', 'customers.id')
             ->where('restaurant_orders.promocode_id', '=', $promocode->id);
             })
@@ -268,7 +268,7 @@ class CustomerController extends Controller
             // ->orWhere('slug', $request->filter)
             ->paginate(10);
         } else {
-            $customers = Customer::leftJoin('shop_orders', function ($q) use ($promocode) {
+            $customers = Customer::join('shop_orders', function ($q) use ($promocode) {
                 $q->on('shop_orders.customer_id', '=', 'customers.id')
             ->where('shop_orders.promocode_id', '=', $promocode->id);
             })
