@@ -532,22 +532,14 @@ class ShopController extends Controller
 
     public function getShopsByBrand(Request $request, $slug)
     {
-        return
-
-        Shop::with('availableCategories', 'availableTags')
-        ->whereHas('products', function ($q) use ($slug) {
-            $q->whereHas('brand', function ($q) use ($slug) {
-                $q->where('slug', $slug);
-            });
-        })
+        return Shop::with('availableCategories', 'availableTags')
+            ->whereHas('products', function ($q) use ($slug) {
+                $q->whereHas('brand', function ($q) use ($slug) {
+                    $q->where('slug', $slug);
+                });
+            })
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
-        // return Product::with('shop', 'shopCategory')->whereHas('brand', function ($q) use ($slug) {
-        //     $q->where('slug', $slug);
-        // })->where(function ($q) use ($request) {
-        //     $q->where('name', 'LIKE', '%' . $request->filter . '%')
-        //         ->orWhere('slug', $request->filter);
-        // })->paginate(10);
     }
 }
