@@ -79,6 +79,8 @@ Route::group(['prefix' => 'vendor'], function () {
 
         Route::resource('shop-orders', 'ShopOrderController', ['as' => 'vendor']);
         Route::get('shops/{slug}/shop-orders', 'ShopOrderController@getShopOrders');
+        Route::post('shop-orders/{slug}/change-status', 'ShopOrderController@changeStatus');
+
 
         /* products */
         Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
