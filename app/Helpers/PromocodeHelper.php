@@ -11,35 +11,41 @@ trait PromocodeHelper
 {
     public function __construct()
     {
-        if (Auth::guard('customers')->check()) {
-            $this->customer_id = Auth::guard('customers')->user()->id;
-        }
+        // if (Auth::guard('customers')->check()) {
+        //     $this->customer_id = Auth::guard('customers')->user()->id;
+        // }
     }
 
-    public function validatePromo($slug)
+    public function validatePromo($slug, $customerId)
     {
         $promo = $this->getPromo($slug);
-        return $this->validateRule($promo->rules, $promo->id);
+
+        $this->customerId = $customerId;
+        $this->promoId = $promo->id;
+
+        return $this->validateRule($promo->rules);
     }
 
-    public function validateRule($rules, $id)
+    public function validateRule($rules)
     {
-        $this->promo_id = $id;
-        $returnvalue = false;
+        $returnValue = false;
+
         foreach ($rules as $rule) {
-            if (strpos($rule->data_type, "date") !== false) {
-                $returnvalue = $this->compareValue($rule->data_type, Carbon::parse($rule->value), Carbon::now());
+            if (strpos($rule->data_type, 'date') !== false) {
+                $returnValue = $this->compareValue($rule->data_type, Carbon::parse($rule->value), Carbon::now());
             } else {
-                $returnvalue = $this->compareValue($rule->data_type, $rule->value);
+                $returnValue = $this->compareValue($rule->data_type, $rule->value);
             }
         }
-        return $returnvalue;
+
+        return $returnValue;
     }
 
     public function calculateDiscount($price, $id)
     {
         $promo = Promocode::with('rules')->where('id', $id)->first();
-        if ($promo->type === "fix") {
+
+        if ($promo->type === 'fix') {
             return $promo->amount;
         } else {
             return $price * $promo->amount / 100;
@@ -49,7 +55,7 @@ trait PromocodeHelper
     public static function getPercentage($price, $id)
     {
         $promo = Promocode::with('rules')->where('id', $id)->first();
-        if ($promo->type === "fix") {
+        if ($promo->type === 'fix') {
             return ($promo->amount / $price) * 100;
         } else {
             return $promo->amount;
@@ -58,15 +64,17 @@ trait PromocodeHelper
 
     private function getPromo($slug)
     {
-        return Promocode::with("rules")->where('slug', $slug)->firstOrFail();
+        return Promocode::with('rules')->where('slug', $slug)->firstOrFail();
     }
 
     private function getValueFromModel($value)
     {
         $field = config('promo.' . $value);
-        if ($field['value'] === "auth") {
-            $field['value'] = $this->customer_id;
+
+        if ($field['value'] === 'auth') {
+            $field['value'] = $this->customerId;
         }
+
         $data = $field['model']::where($field['field'], $field['condition'], $field['value'])->get();
 
         return $data;
@@ -74,38 +82,42 @@ trait PromocodeHelper
 
     private function compareValue($rule, $value, $compareValue = null)
     {
-        if ($rule === "exact_date") {
+        if ($rule === 'exact_date') {
+
             return $value->startOfDay() == $compareValue->startOfDay();
-        } else if ($rule === "after_date") {
+
+        } else if ($rule === 'after_date') {
 
             return $compareValue >= $value; //current date greater than value (after value date)
 
-        } else if ($rule === "before_date") {
+        } else if ($rule === 'before_date') {
 
             return $compareValue <= $value; //current date less than value (before value date)
 
-        } else if ($rule === "total_usage") {
+        } else if ($rule === 'total_usage') {
 
-            $promo = Promocode::with('rules')->where('id', $this->promo_id)->firstOrFail();
-            $shopOrder = ShopOrder::where("promocode", $promo->id)->get();
+            $promo = Promocode::with('rules')->where('id', $this->promoId)->firstOrFail();
+            $shopOrder = ShopOrder::where('promocode', $promo->id)->get();
             return count($shopOrder) < $value;
-        } else if ($rule === "per_user_usage") {
 
-            $promo = Promocode::with('rules')->where('id', $this->promo_id)->firstOrFail();
-            $shopOrder = ShopOrder::where("promocode", $promo->id)->where('customer_id', Auth::guard('customers')->user()->id)->get();
+        } else if ($rule === 'per_user_usage') {
+
+            $promo = Promocode::with('rules')->where('id', $this->promoId)->firstOrFail();
+            $shopOrder = ShopOrder::where('promocode', $promo->id)->where('customer_id', $this->customerId)->get();
             return count($shopOrder) < $value;
-        } else if ($rule === "matching") {
 
-            if ($value === "dob") {
+        } else if ($rule === 'matching') {
 
-                $result = $this->getValueFromModel("dob");
+            if ($value === 'dob') {
+
+                $result = $this->getValueFromModel('dob');
                 $result = $result[0]->datae_of_birth;
 
                 return Carbon::parse($result)->startOfDay() == Carbon::now()->startOfDay();
-            } else if ($value === "new_customer") {
+            } else if ($value === 'new_customer') {
 
-                $result = $this->getValueFromModel("new_customer_shop");
-                $result2 = $this->getValueFromModel("new_customer_restaurant");
+                $result = $this->getValueFromModel('new_customer_shop');
+                $result2 = $this->getValueFromModel('new_customer_restaurant');
                 return count($result) + count($result2) == 0;
             }
 

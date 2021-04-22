@@ -36,6 +36,6 @@ class Address extends Model
 
     public function township()
     {
-        return $this->belongsTo(Township::class);
+        return $this->belongsTo(Township::class)->with('city');
     }
 }

@@ -21,6 +21,12 @@ class City extends Model
         'slug',
     ];
 
+    protected $hidden = [
+        'id',
+        'created_at',
+        'updated_at',
+    ];
+
     public function townships()
     {
         return $this->hasMany(Township::class);
