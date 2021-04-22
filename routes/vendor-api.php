@@ -63,7 +63,8 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('restaurant-orders/{slug}/change-status', 'RestaurantOrderController@changeStatus');
         Route::delete('restaurant-orders/{slug}', 'RestaurantOrderController@destroy');
 
-        // Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
+
+        Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
         /* restaurant */
 
         /* shop */
@@ -107,6 +108,10 @@ Route::group(['prefix' => 'vendor'], function () {
 
         Route::get('customers', 'CustomerController@index');
         Route::post('customers', 'CustomerController@store');
+
+        /* Address */
+        Route::get('customers/{slug}/addresses', 'AddressController@index');
+        Route::post('customers/{slug}/addresses', 'AddressController@store');
 
         /* shop */
 
