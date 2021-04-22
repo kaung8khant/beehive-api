@@ -36,6 +36,7 @@ Route::group(['prefix' => 'vendor'], function () {
         /* menus */
         Route::get('restaurant-branches/{slug}/menus', 'MenuController@getMenusByBranch');
         Route::get('restaurant-branches/{slug}/available-menus', 'MenuController@getAvailableMenusByBranch');
+        Route::get('restaurant-branches/{slug}/menus-with-additionals', 'MenuController@getMenusByBranchWithAdditionals');
         Route::get('menus/{slug}', 'MenuController@show');
         Route::post('menus', 'MenuController@store');
         Route::post('menus/import', 'MenuController@import');
