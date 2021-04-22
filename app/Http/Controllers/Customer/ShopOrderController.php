@@ -186,6 +186,7 @@ class ShopOrderController extends Controller
         }
 
     }
+
     private function createOrderContact($orderId, $customerInfo, $address)
     {
         $customerInfo = array_merge($customerInfo, $address);
@@ -246,7 +247,7 @@ class ShopOrderController extends Controller
         $variations = [];
 
         foreach ($variationValueSlugs as $variationValueSlug) {
-            $variationValue = $this->getMenuVariationValue($variationValueSlug);
+            $variationValue = $this->getProductVariationValue($variationValueSlug);
 
             $variation = [
                 'name' => $variationValue->productVariation->name,
@@ -260,7 +261,7 @@ class ShopOrderController extends Controller
         return $variations;
     }
 
-    private function getMenuVariationValue($slug)
+    private function getProductVariationValue($slug)
     {
         return ProductVariationValue::with('productVariation')->where('slug', $slug)->first();
     }

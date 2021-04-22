@@ -63,7 +63,8 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('restaurant-orders/{slug}/change-status', 'RestaurantOrderController@changeStatus');
         Route::delete('restaurant-orders/{slug}', 'RestaurantOrderController@destroy');
 
-        // Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
+
+        Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
         /* restaurant */
 
         /* shop */
@@ -75,6 +76,8 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
         Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
         Route::get('shop-categories/{slug}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
+
+        Route::resource('shop-orders', 'ShopOrderController', ['as' => 'vendor']);
         Route::get('shops/{slug}/shop-orders', 'ShopOrderController@getShopOrders');
 
         /* products */
@@ -107,6 +110,12 @@ Route::group(['prefix' => 'vendor'], function () {
 
         Route::get('customers', 'CustomerController@index');
         Route::post('customers', 'CustomerController@store');
+
+        /* Address */
+        Route::get('customers/{slug}/addresses', 'AddressController@index');
+        Route::post('customers/{slug}/addresses', 'AddressController@store');
+
+        Route::get('promocodes', 'PromocodeController@index');
 
         /* shop */
 

@@ -30,6 +30,20 @@ class ShopOrderVendor extends Model
         'promocode' => 'object',
     ];
 
+    protected $appends = ['total_amount'];
+
+    public function getTotalAmountAttribute()
+    {
+        $totalAmount = 0;
+
+        foreach ($this->items as $item) {
+            $amount = $item->amount + $item->tax - $item->discount;
+            $totalAmount += $amount;
+        }
+
+        return $totalAmount;
+    }
+
     public function shop()
     {
         return $this->belongsTo(Shop::class);
@@ -40,7 +54,7 @@ class ShopOrderVendor extends Model
         return $this->hasMany(ShopOrderItem::class);
     }
 
-    public function order()
+    public function shopOrder()
     {
         return $this->belongsTo(ShopOrder::class);
     }

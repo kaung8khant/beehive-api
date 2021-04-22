@@ -3,16 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\NotificationHelper;
+use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
+use App\Models\Customer;
+use App\Models\Product;
+use App\Models\ProductVariationValue;
+use App\Models\Promocode;
+use App\Models\Shop;
 use App\Models\ShopOrder;
+use App\Models\ShopOrderContact;
+use App\Models\ShopOrderItem;
 use App\Models\ShopOrderStatus;
 use App\Models\ShopOrderVendor;
+use App\Models\Township;
 use Illuminate\Http\Request;
 
 class ShopOrderController extends Controller
 {
-    use ResponseHelper, StringHelper, NotificationHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
 
     /**
      * @OA\Get(
@@ -61,19 +70,35 @@ class ShopOrderController extends Controller
 
     public function getShopOrders(Request $request, $slug)
     {
-        $shopOrders = ShopOrder::with('contact')->with('vendors')
-        // ->whereDate('order_date', '>=', $request->from)
-        // ->whereDate('order_date', '<=', $request->to)
-            ->where('slug', $slug)
-            ->whereHas('contact', function ($q) use ($request) {
-                $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('phone_number', $request->filter);
-            })->orWhere('slug', $request->filter)
+        $shopId = $this->getShop($slug)->id;
+
+        $vendorOrders = ShopOrderVendor::where('shop_id', $shopId)
+            ->where(function ($query) use ($request) {
+                $query->whereHas('shopOrder', function ($q) use ($request) {
+                    $q->where('slug', $request->filter);
+                })
+                    ->orWhereHas('shopOrder.contact', function ($q) use ($request) {
+                        $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                            ->orWhere('phone_number', $request->filter);
+                    });
+            })
             ->latest()
             ->paginate(10)
             ->items();
 
-        return $this->generateResponse($shopOrders, 200);
+        $result = [];
+        foreach ($vendorOrders as $order) {
+            $shopOrder = ShopOrder::find($order->shop_order_id)->toArray();
+            unset($shopOrder['vendors']);
+
+            $order->shop_order = $shopOrder;
+            $order = $order->toArray();
+
+            unset($order['items']);
+            $result[] = $order;
+        }
+
+        return $this->generateResponse($result, 200);
     }
 
     public function show($slug)
@@ -173,7 +198,6 @@ class ShopOrderController extends Controller
 
     public function changeStatus(Request $request, $slug)
     {
-
         $order = ShopOrder::where('slug', $slug)->firstOrFail();
 
         if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
@@ -219,6 +243,91 @@ class ShopOrderController extends Controller
             ]);
         }
     }
+
+    private function createOrderContact($orderId, $customerInfo, $address)
+    {
+        $customerInfo = array_merge($customerInfo, $address);
+        $customerInfo['shop_order_id'] = $orderId;
+        $customerInfo['township_id'] = $this->getTownshipId($customerInfo['township']['slug']);
+        ShopOrderContact::create($customerInfo);
+    }
+
+    private function createShopOrderItem($orderId, $orderItems, $promoCodeId)
+    {
+        $total = 0;
+
+        foreach ($orderItems as $item) {
+            $variations = collect($this->prepareVariations($item['variation_value_slugs']));
+            $product = $this->getProduct($item['slug']);
+            $total += ($product->price + $variations->sum('price')) * $item['quantity'];
+        }
+
+        $promoPercentage = 0;
+
+        if ($promoCodeId) {
+            $promoPercentage = $this->getPercentage($total, $promoCodeId);
+        }
+
+        foreach ($orderItems as $item) {
+            $variations = collect($this->prepareVariations($item['variation_value_slugs']));
+            $product = $this->getProduct($item['slug']);
+            $amount = ($product->price + $variations->sum('price')) * $item['quantity'];
+            $discount = $amount * $promoPercentage / 100;
+
+            $shop = $this->getShopByProduct($item['slug']);
+
+            $shopOrderVendor = $this->createShopOrderVendor($orderId, $shop->id);
+
+            $item['shop'] = $shop;
+            $item['shop_order_vendor_id'] = $shopOrderVendor->id;
+            $item['product_id'] = $product->id;
+            $item['shop_id'] = $shop->id;
+            $item['product_name'] = $product->name;
+            $item['amount'] = $amount;
+            $item['variations'] = $variations;
+            $item['discount'] = $discount;
+            $item['tax'] = ($amount) * $product->tax / 100;
+
+            ShopOrderItem::create($item);
+        }
+    }
+
+    private function createShopOrderVendor($orderId, $shopId)
+    {
+        return ShopOrderVendor::updateOrCreate(
+            ['shop_order_id' => $orderId, 'shop_id' => $shopId],
+            ['slug' => $this->generateUniqueSlug()]);
+    }
+
+    private function prepareVariations($variationValueSlugs)
+    {
+        $variations = [];
+
+        foreach ($variationValueSlugs as $variationValueSlug) {
+            $variationValue = $this->getProductVariationValue($variationValueSlug);
+
+            $variation = [
+                'name' => $variationValue->productVariation->name,
+                'value' => $variationValue->value,
+                'price' => $variationValue->price,
+            ];
+
+            array_push($variations, $variation);
+        }
+
+        return $variations;
+    }
+
+    private function getProductVariationValue($slug)
+    {
+        return ProductVariationValue::with('productVariation')->where('slug', $slug)->first();
+    }
+
+    private function getCustomerId($slug)
+    {
+        return Customer::where('slug', $slug)->first()->id;
+    }
+
     private function notificationData($data)
     {
         return [
@@ -233,6 +342,43 @@ class ShopOrderController extends Controller
 
             ],
         ];
+    }
+
+    private function getShop($slug)
+    {
+        return Shop::where('slug', $slug)->firstOrFail();
+    }
+
+    private function getTownshipId($slug)
+    {
+        return Township::where('slug', $slug)->first()->id;
+    }
+
+    private function getProduct($slug)
+    {
+        return Product::where('slug', $slug)->first();
+    }
+
+    private function getShopByProduct($slug)
+    {
+        $product = Product::with('shop')->where('slug', $slug)->firstOrFail();
+        return $product->shop;
+    }
+
+    private function notify($slug, $data)
+    {
+        $this->notifyShop(
+            $slug,
+            [
+                'title' => $data['title'],
+                'body' => $data['body'],
+                'img' => '',
+                'data' => [
+                    'action' => '',
+                    'type' => 'notification',
+                ],
+            ]
+        );
 
     }
 }
