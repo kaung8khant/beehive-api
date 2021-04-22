@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Helpers\StringHelper;
 use App\Models\Customer;
+use App\Models\Promocode;
+use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -248,5 +250,36 @@ class CustomerController extends Controller
         $customer->is_enable = !$customer->is_enable;
         $customer->save();
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function getPromocodeUsedCustomers(Request $request, $slug)
+    {
+        $customers = null;
+        $promocode= Promocode::where('slug', $slug)->firstOrFail();
+        if ($promocode->usage==='restaurant') {
+            $customers = Customer::leftJoin('restaurant_orders', function ($q) use ($promocode) {
+                $q->on('restaurant_orders.customer_id', '=', 'customers.id')
+            ->where('restaurant_orders.promocode_id', '=', $promocode->id);
+            })
+            ->select('customers.*')
+            ->where('email', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+            // ->orWhere('slug', $request->filter)
+            ->paginate(10);
+        } else {
+            $customers = Customer::leftJoin('shop_orders', function ($q) use ($promocode) {
+                $q->on('shop_orders.customer_id', '=', 'customers.id')
+            ->where('shop_orders.promocode_id', '=', $promocode->id);
+            })
+            ->select('customers.*')
+            ->where('email', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+            // ->orWhere('slug', $request->filter)
+            ->paginate(10);
+        }
+
+        return $customers;
     }
 }

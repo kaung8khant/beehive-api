@@ -138,6 +138,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('promocodes', 'PromocodeController');
             Route::post('promocodes/add-rules/{slug}', 'PromocodeController@addRules');
             Route::delete('rules/{id}', 'PromocodeController@removeRule');
+            Route::get('promocodes/{slug}/customers', 'CustomerController@getPromocodeUsedCustomers');
+
             /* Promocode */
 
             /* Device Token */
