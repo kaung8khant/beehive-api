@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Validator;
 
 trait RestaurantOrderHelper
 {
-    public static function validateOrder($request, $customerSlug = FALSE)
+    public static function validateOrder($request, $customerSlug = false)
     {
         $rules = [
             'slug' => 'required|unique:restaurant_orders',
@@ -66,7 +66,7 @@ trait RestaurantOrderHelper
         return Setting::where('key', 'tax')->first()->value;
     }
 
-    public function createOrderStatus($orderId, $status = 'pending')
+    public static function createOrderStatus($orderId, $status = 'pending')
     {
         RestaurantOrder::where('id', $orderId)->update(['order_status' => $status]);
 
