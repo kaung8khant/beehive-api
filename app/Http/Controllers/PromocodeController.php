@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\PromocodeHelper;
 use App\Helpers\StringHelper;
+use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\PromocodeRule;
 use Illuminate\Http\Request;
 
 class PromocodeController extends Controller
 {
-    use StringHelper;
+    use StringHelper, PromocodeHelper;
 
     /**
      * @OA\Get(
@@ -318,5 +320,19 @@ class PromocodeController extends Controller
     {
         Promocode::where('slug', $slug)->firstOrFail()->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+    }
+
+    public function validateCode(Request $request, $slug)
+    {
+        $validatedData = $request->validate([
+            'customer_slug' => 'required|string',
+            'usage' => 'required|string',
+        ]);
+        $customer = Customer::where("slug", $validatedData['customer_slug'])->firstOrFail();
+        $isPromoValid = $this->validatePromo($slug, $customer->id, $validatedData['usage']);
+        if (!$isPromoValid) {
+            return $this->generateResponse('Invalid promo code.', 406, true);
+        }
+        return $this->generateResponse('Promo code is valid', 200, true);
     }
 }

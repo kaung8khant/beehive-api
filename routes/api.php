@@ -88,6 +88,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('brands', 'BrandController');
             Route::get('brands/{slug}/products', 'ProductController@getProductsByBrand');
+            Route::get('brands/{slug}/shops', 'ShopController@getShopsByBrand');
             Route::post('brands/import', 'BrandController@import');
             /* Shop */
 
@@ -138,11 +139,15 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('promocodes', 'PromocodeController');
             Route::post('promocodes/add-rules/{slug}', 'PromocodeController@addRules');
             Route::delete('rules/{id}', 'PromocodeController@removeRule');
+            Route::post('promocodes/validate/{slug}', 'PromocodeController@validateCode');
+            Route::get('promocodes/{slug}/customers', 'CustomerController@getPromocodeUsedCustomers');
+
             /* Promocode */
 
             /* Device Token */
             Route::post('/register-device', 'UserController@registerToken');
             /* Device Token */
+
         });
     });
 
