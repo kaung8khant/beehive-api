@@ -391,7 +391,9 @@ class ProductController extends Controller
      */
     public function getProductsByShop(Request $request, $slug)
     {
-        return Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand')->whereHas('shop', function ($q) use ($slug) {
+        return Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand')
+        ->with('productVariations')->with('productVariations.productVariationValues')
+        ->whereHas('shop', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
@@ -510,6 +512,16 @@ class ProductController extends Controller
     public function getProductsByBrand(Request $request, $slug)
     {
         return Product::with('shop', 'shopCategory')->whereHas('brand', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })->paginate(10);
+    }
+
+    public function getProductsByCategory(Request $request, $slug)
+    {
+        return Product::with('shop', 'shopCategory')->whereHas('shopCategory', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
