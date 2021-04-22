@@ -113,6 +113,8 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('customers/{slug}/addresses', 'AddressController@index');
         Route::post('customers/{slug}/addresses', 'AddressController@store');
 
+        Route::get('promocodes', 'PromocodeController@index');
+
         /* shop */
 
         Route::post('/register-device', 'UserController@registerToken');
