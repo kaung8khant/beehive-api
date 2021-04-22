@@ -78,6 +78,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('products/import', 'ProductController@import');
             Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
             Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
+            Route::get('shop-categories/{slug}/products', 'ProductController@getProductsByCategory');
 
             Route::resource('product-variations', 'ProductVariationController');
             Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
@@ -87,6 +88,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('brands', 'BrandController');
             Route::get('brands/{slug}/products', 'ProductController@getProductsByBrand');
+            Route::get('brands/{slug}/shops', 'ShopController@getShopsByBrand');
             Route::post('brands/import', 'BrandController@import');
             /* Shop */
 
@@ -136,6 +138,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('promocodes', 'PromocodeController');
             Route::post('promocodes/add-rules/{slug}', 'PromocodeController@addRules');
             Route::delete('rules/{id}', 'PromocodeController@removeRule');
+            Route::get('promocodes/{slug}/customers', 'CustomerController@getPromocodeUsedCustomers');
+
             /* Promocode */
 
             /* Device Token */
