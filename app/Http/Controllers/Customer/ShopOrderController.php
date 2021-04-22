@@ -51,7 +51,7 @@ class ShopOrderController extends Controller
         $validatedData['promocode_id'] = null;
 
         if ($validatedData['promo_code_slug']) {
-            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id']);
+            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'shop');
             if (!$isPromoValid) {
                 return $this->generateResponse('Invalid promo code.', 406, true);
             }
