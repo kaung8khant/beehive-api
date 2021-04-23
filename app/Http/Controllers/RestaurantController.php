@@ -333,7 +333,7 @@ class RestaurantController extends Controller
             $restaurant->save();
         }
 
-        return response()->json(['message' => 'Success.'], 200);
+        return response()->json($validatedData, 200);
     }
 
     private function createRestaurantBranch($restaurantId, $restaurantBranch)
