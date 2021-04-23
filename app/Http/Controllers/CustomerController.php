@@ -256,48 +256,24 @@ class CustomerController extends Controller
     public function getPromocodeUsedCustomers(Request $request, $slug)
     {
         $promocode = Promocode::where('slug', $slug)->firstOrFail();
+
         $shopOrder = ShopOrder::where('promocode_id', $promocode->id)->get();
         $restaurantOrder = RestaurantOrder::where('promocode_id', $promocode->id)->get();
+
+        $orderList = $shopOrder->merge($restaurantOrder);
+
         $customerlist = [];
-        foreach ($shopOrder as $order) {
+
+        foreach ($orderList as $order) {
             $customer = Customer::where('id', $order->customer_id)->where('email', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter)->first();
             $customer && array_push($customerlist, $customer);
         }
-        foreach ($restaurantOrder as $order) {
-            $customer = Customer::where('id', $order->customer_id)->where('email', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter)->first();
-            $customer && array_push($customerlist, $customer);
-        }
+
         $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
 
         return response()->json(['data' => $customerlist], 200);
     }
 }
-
-// if ($promocode->usage==='restaurant') {
-//     return Customer::select('customers.*')->join('restaurant_orders', function ($q) use ($promocode) {
-//         $q->on('restaurant_orders.customer_id', '=', 'customers.id')
-//     ->where('restaurant_orders.promocode_id', '=', $promocode->id);
-//     })
-//     ->where('email', 'LIKE', '%' . $request->filter . '%')
-//     ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-//     ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-//     ->orWhere('customers.slug', $request->filter)
-//     ->paginate(10);
-// } else {
-//     return Customer::select('customers.*')->join('shop_orders', function ($q) use ($promocode) {
-//         $q->on('shop_orders.customer_id', '=', 'customers.id')
-//     ->where('shop_orders.promocode_id', '=', $promocode->id);
-//     })
-
-//     ->where('email', 'LIKE', '%' . $request->filter . '%')
-//     ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-//     ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-//     ->orWhere('customers.slug', $request->filter)
-//     ->paginate(10);
-// }
