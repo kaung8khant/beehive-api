@@ -33,7 +33,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('roles', 'RoleController');
             Route::resource('users', 'UserController');
             Route::patch('users/toggle-enable/{slug}', 'UserController@toggleEnable');
-            Route::post('users/multi-toggle-enable', 'UserController@multiToggleEnable');
             Route::get('shop-users', 'UserController@getShopUsers');
             Route::post('shop-users', 'UserController@storeShopUser');
             Route::put('shop-users/{slug}', 'UserController@updateShopUser');
@@ -103,7 +102,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('restaurants', 'RestaurantController');
             Route::post('restaurants/import', 'RestaurantController@import');
             Route::patch('restaurants/toggle-enable/{slug}', 'RestaurantController@toggleEnable');
-            Route::post('restaurants/multi-toggle-enable', 'RestaurantController@multiToggleEnable');
+            Route::post('restaurants/status', 'RestaurantController@multipleStatusUpdate');
             Route::patch('restaurants/toggle-official/{slug}', 'RestaurantController@toggleOfficial');
             Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
             Route::post('restaurants/remove-restaurant-categories/{slug}', 'RestaurantController@removeRestaurantCategories');
@@ -128,7 +127,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
             Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
             Route::patch('restaurant-branches/toggle-enable/{slug}', 'RestaurantBranchController@toggleEnable');
-            Route::post('restaurant-branches/multi-toggle-enable', 'RestaurantBranchController@multiToggleEnable');
+            Route::post('restaurant-branches/status', 'RestaurantBranchController@multipleStatusUpdate');
             Route::post('restaurant-branches/import', 'RestaurantBranchController@import');
             Route::get('restaurants/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByRestaurant');
             Route::get('townships/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');

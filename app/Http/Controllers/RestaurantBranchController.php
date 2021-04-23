@@ -377,20 +377,21 @@ class RestaurantBranchController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function multiToggleEnable(Request $request)
+    public function multipleStatusUpdate(Request $request)
     {
         $validatedData = $request->validate([
-            'slugs' => 'required|array',
-            'slugs.*' => 'required|exists:App\Models\RestaurantBranch,slug',
+            'restaurant_branches' => 'required|array',
+            'restaurant_branches.*.slug' => 'required|exists:App\Models\RestaurantBranch,slug',
+            'restaurant_branches.*.is_enable' => 'required|boolean',
         ]);
 
-        foreach ($validatedData['slugs'] as $slug) {
-            $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
-            $restaurantBranch->is_enable = !$restaurantBranch->is_enable;
+        foreach ($validatedData['restaurant_branches'] as $data) {
+            $restaurantBranch = RestaurantBranch::where('slug', $data['slug'])->firstOrFail();
+            $restaurantBranch->is_enable = $data['is_enable'];
             $restaurantBranch->save();
         }
 
-        return response()->json(['message' => 'Success.'], 200);
+        return response()->json($validatedData, 200);
     }
 
     /**

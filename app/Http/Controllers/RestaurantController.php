@@ -318,20 +318,22 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function multiToggleEnable(Request $request)
+    public function multipleStatusUpdate(Request $request)
     {
         $validatedData = $request->validate([
-            'slugs' => 'required|array',
-            'slugs.*' => 'required|exists:App\Models\Restaurant,slug',
+            'restaurants' => 'required|array',
+            'restaurants.*.slug' => 'required|exists:App\Models\Restaurant,slug',
+            'restaurants.*.is_enable' => 'required|boolean',
         ]);
 
-        foreach ($validatedData['slugs'] as $slug) {
-            $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-            $restaurant->is_enable = !$restaurant->is_enable;
+        foreach ($validatedData['restaurants'] as $data) {
+
+            $restaurant = Restaurant::where('slug', $data['slug'])->firstOrFail();
+            $restaurant->is_enable = $data['is_enable'];
             $restaurant->save();
         }
 
-        return response()->json(['message' => 'Success.'], 200);
+        return response()->json($validatedData, 200);
     }
 
     private function createRestaurantBranch($restaurantId, $restaurantBranch)
@@ -477,7 +479,7 @@ class RestaurantController extends Controller
             $this->createRestaurantBranch($restaurantId, $data['restaurant_branch']);
         }
 
-        return response()->json(['message' => 'Success.'], 200);
+        return response()->json($validatedData, 200);
     }
 
     public function createAvailableRestaurantCategories(Request $request, $slug)
