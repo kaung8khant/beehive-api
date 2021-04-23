@@ -318,16 +318,17 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function multiToggleEnable(Request $request)
+    public function multipleStatusUpdate(Request $request)
     {
         $validatedData = $request->validate([
-            'slugs' => 'required|array',
-            'slugs.*' => 'required|exists:App\Models\Restaurant,slug',
+            'restaurants' => 'required|array',
+            'restaurants.*.slug' => 'required|exists:App\Models\Restaurant,slug',
+            'restaurants.*.is_enable' => 'required|boolean',
         ]);
 
-        foreach ($validatedData['slugs'] as $slug) {
-            $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-            $restaurant->is_enable = !$restaurant->is_enable;
+        foreach ($validatedData['restaurants'] as $r) {
+            $restaurant = Restaurant::where('slug', $r)->firstOrFail();
+            $restaurant->is_enable = $r->is_enable;
             $restaurant->save();
         }
 
