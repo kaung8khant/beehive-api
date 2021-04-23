@@ -386,12 +386,7 @@ class RestaurantBranchController extends Controller
 
         foreach ($validatedData['slugs'] as $slug) {
             $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
-            if ($request->type === 'enable') {
-                $restaurantBranch->is_enable = true;
-            } else {
-                $request['type'] = 'disable';
-                $restaurantBranch->is_enable = false;
-            }
+            $restaurantBranch->is_enable = $request->is_enable;
             $restaurantBranch->save();
         }
 

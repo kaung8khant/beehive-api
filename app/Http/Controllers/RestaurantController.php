@@ -325,20 +325,9 @@ class RestaurantController extends Controller
             'slugs.*' => 'required|exists:App\Models\Restaurant,slug',
         ]);
 
-<<<<<<< HEAD
-        foreach ($validatedData['restaurants'] as $data) {
-            $restaurant = Restaurant::where('slug', $data['slug'])->firstOrFail();
-            $restaurant->is_enable = $data['is_enable'];
-=======
         foreach ($validatedData['slugs'] as $slug) {
             $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-            if ($request->type === 'enable') {
-                $restaurant->is_enable = true;
-            } else {
-                $request['type'] = 'disable';
-                $restaurant->is_enable = false;
-            }
->>>>>>> 3f61378909b479c6a91bb703e43b2388dfa3564f
+            $restaurant->is_enable = $request->is_enable;
             $restaurant->save();
         }
 

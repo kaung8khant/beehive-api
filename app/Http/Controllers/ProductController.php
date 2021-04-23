@@ -484,12 +484,7 @@ class ProductController extends Controller
 
         foreach ($validatedData['slugs'] as $slug) {
             $product = Product::where('slug', $slug)->firstOrFail();
-            if ($request->type === 'enable') {
-                $product->is_enable = true;
-            } else {
-                $request['type'] = 'disable';
-                $product->is_enable = false;
-            }
+            $product->is_enable = $request->is_enable;
             $product->save();
         }
 
