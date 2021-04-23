@@ -26,7 +26,7 @@ class OtpController extends Controller
         $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
         $checkRegister = Customer::where('phone_number', $phoneNumber)->first();
 
-        if ($checkRegister) {
+        if ($checkRegister && $checkRegister->created_by === 'customer') {
             return $this->generateResponse('The phone number has already been taken.', 422, true);
         }
 

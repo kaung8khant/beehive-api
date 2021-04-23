@@ -94,7 +94,7 @@ class CustomerController extends Controller
                 'email' => 'nullable|email|unique:customers',
                 'name' => 'required|max:255',
                 'phone_number' => 'required|phone:MM|unique:customers',
-                'password' => 'required|string|min:6',
+                'password' => 'nullable|string|min:6',
                 'gender' => 'required|in:Male,Female',
             ],
             [
@@ -102,8 +102,11 @@ class CustomerController extends Controller
             ]
         );
 
+        $password = $validatedData['password'] ? $validatedData['password'] : $this->generateRandomPassword();
+
         $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-        $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData['password'] = Hash::make($password);
+        $validatedData['created_by'] = 'admin';
 
         $customer = Customer::create($validatedData);
         return response()->json($customer->refresh(), 201);
