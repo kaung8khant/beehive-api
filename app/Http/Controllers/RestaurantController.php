@@ -321,20 +321,40 @@ class RestaurantController extends Controller
     public function multipleStatusUpdate(Request $request)
     {
         $validatedData = $request->validate([
-            'restaurants' => 'required|array',
-            'restaurants.*.slug' => 'required|exists:App\Models\Restaurant,slug',
-            'restaurants.*.is_enable' => 'required|boolean',
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Restaurant,slug',
         ]);
 
-        foreach ($validatedData['restaurants'] as $data) {
-
-            $restaurant = Restaurant::where('slug', $data['slug'])->firstOrFail();
-            $restaurant->is_enable = $data['is_enable'];
+        foreach ($validatedData['slugs'] as $slug) {
+            $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+            if ($request->type === 'enable') {
+                $restaurant->is_enable = true;
+            } else {
+                $restaurant->is_enable = false;
+            }
             $restaurant->save();
         }
 
-        return response()->json($validatedData, 200);
+        return response()->json(['message' => 'Success.'], 200);
     }
+
+    // public function multipleStatusUpdate(Request $request)
+    // {
+    //     $validatedData = $request->validate([
+    //         'restaurants' => 'required|array',
+    //         'restaurants.*.slug' => 'required|exists:App\Models\Restaurant,slug',
+    //         'restaurants.*.is_enable' => 'required|boolean',
+    //     ]);
+
+    //     foreach ($validatedData['restaurants'] as $data) {
+
+    //         $restaurant = Restaurant::where('slug', $data['slug'])->firstOrFail();
+    //         $restaurant->is_enable = $data['is_enable'];
+    //         $restaurant->save();
+    //     }
+
+    //     return response()->json($validatedData, 200);
+    // }
 
     private function createRestaurantBranch($restaurantId, $restaurantBranch)
     {

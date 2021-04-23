@@ -475,7 +475,7 @@ class ProductController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function multiToggleEnable(Request $request)
+    public function multipleStatusUpdate(Request $request)
     {
         $validatedData = $request->validate([
             'slugs' => 'required|array',
