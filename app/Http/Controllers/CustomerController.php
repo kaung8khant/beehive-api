@@ -277,6 +277,6 @@ class CustomerController extends Controller
         $customerlist = collect($customerlist)->unique()->values()->all();
         $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
 
-        return response()->json(['data' => $customerlist], 200);
+        return response()->json($customerlist, 200);
     }
 }
