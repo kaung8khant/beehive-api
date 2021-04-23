@@ -265,15 +265,18 @@ class CustomerController extends Controller
         $customerlist = [];
 
         foreach ($orderList as $order) {
-            $customer = Customer::where('id', $order->customer_id)->where('email', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter)->first();
+            $customer = Customer::where('id', $order->customer_id)->where(function ($query) use ($request) {
+                $query->where('email', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })->first();
             $customer && array_push($customerlist, $customer);
         }
 
+        $customerlist = collect($customerlist)->unique()->values()->all();
         $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
 
-        return response()->json(['data' => $customerlist], 200);
+        return response()->json($customerlist, 200);
     }
 }

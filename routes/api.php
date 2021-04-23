@@ -65,7 +65,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('shop-tags/import', 'ShopTagController@import');
             Route::resource('shops', 'ShopController');
             Route::patch('shops/toggle-enable/{slug}', 'ShopController@toggleEnable');
-            Route::post('shops/multi-toggle-enable', 'ShopController@multiToggleEnable');
+            Route::post('shops/status', 'ShopController@multipleStatusUpdate');
             Route::patch('shops/toggle-official/{slug}', 'ShopController@toggleOfficial');
             Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
             Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
@@ -78,7 +78,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('products', 'ProductController');
             Route::post('products/import', 'ProductController@import');
             Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
-            Route::post('products/multi-toggle-enable', 'ProductController@multiToggleEnable');
+            Route::post('products/status', 'ProductController@multipleStatusUpdate');
             Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
             Route::get('shop-categories/{slug}/products', 'ProductController@getProductsByCategory');
 
@@ -115,7 +115,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('menu-variation-values', 'MenuVariationValueController');
             Route::resource('menu-toppings', 'MenuToppingController');
             Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
-            Route::post('menus/multi-toggle-enable', 'MenuController@multiToggleEnable');
+            Route::post('menus/status', 'MenuController@multipleStatusUpdate');
             Route::get('restaurants/{slug}/menus', 'MenuController@getMenusByRestaurant');
             Route::get('menus/{slug}/menu-variations', 'MenuVariationController@getVariationsByMenu');
             Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
