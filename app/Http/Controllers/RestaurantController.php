@@ -478,7 +478,7 @@ class RestaurantController extends Controller
             $this->createRestaurantBranch($restaurantId, $data['restaurant_branch']);
         }
 
-        return response()->json(['message' => 'Success.'], 200);
+        return response()->json($validatedData, 200);
     }
 
     public function createAvailableRestaurantCategories(Request $request, $slug)
