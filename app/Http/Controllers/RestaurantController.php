@@ -327,7 +327,6 @@ class RestaurantController extends Controller
         ]);
 
         foreach ($validatedData['restaurants'] as $data) {
-
             $restaurant = Restaurant::where('slug', $data['slug'])->firstOrFail();
             $restaurant->is_enable = $data['is_enable'];
             $restaurant->save();
