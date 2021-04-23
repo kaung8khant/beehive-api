@@ -380,18 +380,22 @@ class RestaurantBranchController extends Controller
     public function multipleStatusUpdate(Request $request)
     {
         $validatedData = $request->validate([
-            'restaurant_branches' => 'required|array',
-            'restaurant_branches.*.slug' => 'required|exists:App\Models\RestaurantBranch,slug',
-            'restaurant_branches.*.is_enable' => 'required|boolean',
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\RestaurantBranch,slug',
         ]);
 
-        foreach ($validatedData['restaurant_branches'] as $data) {
-            $restaurantBranch = RestaurantBranch::where('slug', $data['slug'])->firstOrFail();
-            $restaurantBranch->is_enable = $data['is_enable'];
+        foreach ($validatedData['slugs'] as $slug) {
+            $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
+            if ($request->type === 'enable') {
+                $restaurantBranch->is_enable = true;
+            } else {
+                $request['type'] = 'disable';
+                $restaurantBranch->is_enable = false;
+            }
             $restaurantBranch->save();
         }
 
-        return response()->json($validatedData, 200);
+        return response()->json(['message' => 'Success.'], 200);
     }
 
     /**

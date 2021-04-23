@@ -329,7 +329,12 @@ class ShopController extends Controller
 
         foreach ($validatedData['slugs'] as $slug) {
             $shop = Shop::where('slug', $slug)->firstOrFail();
-            $shop->is_enable = !$shop->is_enable;
+            if ($request->type === 'enable') {
+                $shop->is_enable = true;
+            } else {
+                $request['type'] = 'disable';
+                $shop->is_enable = false;
+            }
             $shop->save();
         }
 

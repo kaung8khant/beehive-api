@@ -330,6 +330,7 @@ class RestaurantController extends Controller
             if ($request->type === 'enable') {
                 $restaurant->is_enable = true;
             } else {
+                $request['type'] = 'disable';
                 $restaurant->is_enable = false;
             }
             $restaurant->save();

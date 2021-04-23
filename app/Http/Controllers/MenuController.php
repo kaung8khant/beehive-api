@@ -492,7 +492,12 @@ class MenuController extends Controller
 
         foreach ($validatedData['slugs'] as $slug) {
             $menu = Menu::where('slug', $slug)->firstOrFail();
-            $menu->is_enable = !$menu->is_enable;
+            if ($request->type === 'enable') {
+                $menu->is_enable = true;
+            } else {
+                $request['type'] = 'disable';
+                $menu->is_enable = false;
+            }
             $menu->save();
         }
 
