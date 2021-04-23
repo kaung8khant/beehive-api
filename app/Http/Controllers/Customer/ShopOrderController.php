@@ -60,7 +60,7 @@ class ShopOrderController extends Controller
         OrderHelper::createOrderStatus($orderId);
 
         foreach ($validatedData['order_items'] as $item) {
-            $this->notify(self::getShopByProduct($item['slug'])->id, ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
+            $this->notify(OrderHelper::getShopByProduct($item['slug'])->id, ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
         }
 
         $this->notifyAdmin(
