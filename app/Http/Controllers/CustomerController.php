@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
+use App\Models\ShopOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -13,7 +15,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class CustomerController extends Controller
 {
-    use StringHelper;
+    use StringHelper, CollectionHelper;
 
     /**
      * @OA\Get(
@@ -137,7 +139,6 @@ class CustomerController extends Controller
         return Customer::with('addresses')->where('slug', $slug)->firstOrFail();
     }
 
-
     /**
      * @OA\Put(
      *      path="/api/v2/admin/customers/{slug}",
@@ -254,28 +255,18 @@ class CustomerController extends Controller
 
     public function getPromocodeUsedCustomers(Request $request, $slug)
     {
-        $promocode= Promocode::where('slug', $slug)->firstOrFail();
-        if ($promocode->usage==='restaurant') {
-            return Customer::select('customers.*')->join('restaurant_orders', function ($q) use ($promocode) {
-                $q->on('restaurant_orders.customer_id', '=', 'customers.id')
-            ->where('restaurant_orders.promocode_id', '=', $promocode->id);
-            })
-            ->where('email', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('customers.slug', $request->filter)
-            ->paginate(10);
-        } else {
-            return Customer::select('customers.*')->join('shop_orders', function ($q) use ($promocode) {
-                $q->on('shop_orders.customer_id', '=', 'customers.id')
-            ->where('shop_orders.promocode_id', '=', $promocode->id);
-            })
-
-            ->where('email', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('customers.slug', $request->filter)
-            ->paginate(10);
+        $promocode = Promocode::where('slug', $slug)->firstOrFail();
+        $shopOrder = ShopOrder::where('promocode_id', $promocode->id)->get();
+        $restaurantOrder = RestaurantOrder::where('promocode_id', $promocode->id)->get();
+        $customerlist = [];
+        foreach ($shopOrder as $order) {
+            array_push($customerlist, Customer::where('id', $order->customer_id)->firstOrFail());
         }
+        foreach ($restaurantOrder as $order) {
+            array_push($customerlist, Customer::where('id', $order->customer_id)->firstOrFail());
+        }
+        $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
+
+        return response()->json(['data' => $customerlist], 200);
     }
 }
