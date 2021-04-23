@@ -320,6 +320,22 @@ class ShopController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
+    public function multiToggleEnable(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Shop,slug',
+        ]);
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $shop = Shop::where('slug', $slug)->firstOrFail();
+            $shop->is_enable = !$shop->is_enable;
+            $shop->save();
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
     /**
      * @OA\Patch(
      *      path="/api/v2/admin/shops/toggle-official/{slug}",

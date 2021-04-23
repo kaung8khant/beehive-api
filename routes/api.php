@@ -33,6 +33,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('roles', 'RoleController');
             Route::resource('users', 'UserController');
             Route::patch('users/toggle-enable/{slug}', 'UserController@toggleEnable');
+            Route::post('users/multi-toggle-enable', 'UserController@multiToggleEnable');
             Route::get('shop-users', 'UserController@getShopUsers');
             Route::post('shop-users', 'UserController@storeShopUser');
             Route::put('shop-users/{slug}', 'UserController@updateShopUser');
@@ -65,6 +66,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('shop-tags/import', 'ShopTagController@import');
             Route::resource('shops', 'ShopController');
             Route::patch('shops/toggle-enable/{slug}', 'ShopController@toggleEnable');
+            Route::post('shops/multi-toggle-enable', 'ShopController@multiToggleEnable');
             Route::patch('shops/toggle-official/{slug}', 'ShopController@toggleOfficial');
             Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
             Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
@@ -77,6 +79,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('products', 'ProductController');
             Route::post('products/import', 'ProductController@import');
             Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
+            Route::post('products/multi-toggle-enable', 'ProductController@multiToggleEnable');
             Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
             Route::get('shop-categories/{slug}/products', 'ProductController@getProductsByCategory');
 
@@ -100,6 +103,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('restaurants', 'RestaurantController');
             Route::post('restaurants/import', 'RestaurantController@import');
             Route::patch('restaurants/toggle-enable/{slug}', 'RestaurantController@toggleEnable');
+            Route::post('restaurants/multi-toggle-enable', 'RestaurantController@multiToggleEnable');
             Route::patch('restaurants/toggle-official/{slug}', 'RestaurantController@toggleOfficial');
             Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
             Route::post('restaurants/remove-restaurant-categories/{slug}', 'RestaurantController@removeRestaurantCategories');
@@ -112,6 +116,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('menu-variation-values', 'MenuVariationValueController');
             Route::resource('menu-toppings', 'MenuToppingController');
             Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
+            Route::post('menus/multi-toggle-enable', 'MenuController@multiToggleEnable');
             Route::get('restaurants/{slug}/menus', 'MenuController@getMenusByRestaurant');
             Route::get('menus/{slug}/menu-variations', 'MenuVariationController@getVariationsByMenu');
             Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
@@ -123,6 +128,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('restaurant-branches/add-available-menus/{slug}', 'RestaurantBranchController@addAvailableMenus');
             Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
             Route::patch('restaurant-branches/toggle-enable/{slug}', 'RestaurantBranchController@toggleEnable');
+            Route::post('restaurant-branches/multi-toggle-enable', 'RestaurantBranchController@multiToggleEnable');
             Route::post('restaurant-branches/import', 'RestaurantBranchController@import');
             Route::get('restaurants/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByRestaurant');
             Route::get('townships/{slug}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');
@@ -147,7 +153,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             /* Device Token */
             Route::post('/register-device', 'UserController@registerToken');
             /* Device Token */
-
         });
     });
 

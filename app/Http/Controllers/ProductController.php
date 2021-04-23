@@ -392,13 +392,13 @@ class ProductController extends Controller
     public function getProductsByShop(Request $request, $slug)
     {
         return Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand')
-        ->with('productVariations')->with('productVariations.productVariationValues')
-        ->whereHas('shop', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+            ->with('productVariations')->with('productVariations.productVariationValues')
+            ->whereHas('shop', function ($q) use ($slug) {
+                $q->where('slug', $slug);
+            })->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })->paginate(10);
     }
 
     /**
@@ -472,6 +472,22 @@ class ProductController extends Controller
         $product = Product::where('slug', $slug)->firstOrFail();
         $product->is_enable = !$product->is_enable;
         $product->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function multiToggleEnable(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Product,slug',
+        ]);
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $product = Product::where('slug', $slug)->firstOrFail();
+            $product->is_enable = !$product->is_enable;
+            $product->save();
+        }
+
         return response()->json(['message' => 'Success.'], 200);
     }
 

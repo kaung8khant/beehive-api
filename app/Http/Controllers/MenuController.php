@@ -483,6 +483,22 @@ class MenuController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
+    public function multiToggleEnable(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Menu,slug',
+        ]);
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $menu = Menu::where('slug', $slug)->firstOrFail();
+            $menu->is_enable = !$menu->is_enable;
+            $menu->save();
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
     public function import(Request $request)
     {
         $validatedData = $request->validate([

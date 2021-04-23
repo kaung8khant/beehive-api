@@ -377,6 +377,22 @@ class RestaurantBranchController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
+    public function multiToggleEnable(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\RestaurantBranch,slug',
+        ]);
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
+            $restaurantBranch->is_enable = !$restaurantBranch->is_enable;
+            $restaurantBranch->save();
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
     /**
      * @OA\Post(
      *      path="/api/v2/admin/restaurant-branches/add-available-menus/{slug}",
