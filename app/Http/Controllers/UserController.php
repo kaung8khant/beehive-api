@@ -517,27 +517,6 @@ class UserController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function multiToggleEnable(Request $request)
-    {
-        $validatedData = $request->validate([
-            'slugs' => 'required|array',
-            'slugs.*' => 'required|exists:App\Models\User,slug',
-        ]);
-
-        foreach ($validatedData['slugs'] as $slug) {
-            $user = User::where('slug', $slug)->firstOrFail();
-
-            if ($user->id === Auth::guard('users')->user()->id) {
-                return response()->json(['message' => 'You cannot change your own status.'], 406);
-            }
-
-            $user->is_enable = !$user->is_enable;
-            $user->save();
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
-
     public function registerToken(Request $request)
     {
         $userId = Auth::guard('vendors')->user()->id;
