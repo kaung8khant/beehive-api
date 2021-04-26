@@ -41,6 +41,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('menus', 'MenuController@store');
         Route::post('menus/import', 'MenuController@import');
         Route::put('menus/{slug}', 'MenuController@update');
+        Route::post('menus/status', 'MenuController@multipleStatusUpdate');
         Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
         Route::post('restaurant-branches/{restaurantBranchSlug}/menus/{slug}', 'RestaurantBranchController@toggleAvailable');
 
@@ -90,6 +91,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::put('products/{slug}', 'ProductController@update');
         Route::delete('products/{slug}', 'ProductController@destroy');
         Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
+        Route::post('products/status', 'ProductController@multipleStatusUpdate');
         Route::post('products/import', 'ProductController@import');
 
         Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
