@@ -121,8 +121,10 @@ class ProductController extends Controller
             $this->updateFile($request->image_slug, 'products', $product->slug);
         }
 
-        if ($request->cover_slug) {
-            $this->updateFile($request->cover_slug, 'products', $product->slug);
+        if ($request->cover_slugs) {
+            foreach ($request->cover_slugs as $coverSlug) {
+                $this->updateFile($coverSlug, 'products', $product->slug);
+            }
         }
 
         if ($request->product_variations) {
@@ -246,8 +248,10 @@ class ProductController extends Controller
             $this->updateFile($request->image_slug, 'products', $slug);
         }
 
-        if ($request->cover_slug) {
-            $this->updateFile($request->cover_slug, 'products', $slug);
+        if ($request->cover_slugs) {
+            foreach ($request->cover_slugs as $coverSlug) {
+                $this->updateFile($coverSlug, 'products', $slug);
+            }
         }
 
         if ($request->product_variations) {
@@ -318,7 +322,8 @@ class ProductController extends Controller
             'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
-            'cover_slug' => 'nullable|exists:App\Models\File,slug',
+            'cover_slugs' => 'nullable|array',
+            'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',
@@ -396,9 +401,9 @@ class ProductController extends Controller
             ->whereHas('shop', function ($q) use ($slug) {
                 $q->where('slug', $slug);
             })->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })->paginate(10);
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })->paginate(10);
     }
 
     /**
