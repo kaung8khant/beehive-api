@@ -67,6 +67,7 @@ Route::group(['prefix' => 'vendor'], function () {
 
 
         Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
+        Route::get('restaurant-branches/{slug}/customers', 'RestaurantBranchController@getRestaurantBranchByCustomers');
         /* restaurant */
 
         /* shop */
