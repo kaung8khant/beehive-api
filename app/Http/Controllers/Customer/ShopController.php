@@ -59,7 +59,7 @@ class ShopController extends Controller
             ->orWhere('slug', $request->filter)
             ->get();
 
-        $shopCategories = $this->getProductFromShop($shopCategories);
+        //$shopCategories = $this->getProductFromShop($shopCategories);
 
         return $this->generateProductResponse($shopCategories, 200, 'cattag');
     }
@@ -124,7 +124,7 @@ class ShopController extends Controller
 
         $data['products'] = collect($products)->collapse()->values();
         $data['products'] = $data['products'];
-        //unset($data['shops']);
+        unset($data['shops']);
 
         return $data;
     }
