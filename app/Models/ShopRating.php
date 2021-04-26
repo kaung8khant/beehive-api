@@ -26,6 +26,19 @@ class ShopRating extends Model
         'updated_at',
     ];
 
+    protected $appends = ['customer'];
+
+    public function getCustomerAttribute()
+    {
+        $customer = Customer::where('id', $this->source_id)->firstOrFail();
+
+        return [
+            'slug' => $customer->slug,
+            'name' => $customer->name,
+            'phone_number' => $customer->phone_number,
+        ];
+    }
+
     public function shopOrder()
     {
         return $this->belongsTo(ShopOrder::class);
