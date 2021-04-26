@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, OrderHelper, StringHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
 
     /**
      * @OA\Get(
@@ -188,6 +188,12 @@ class RestaurantOrderController extends Controller
         }
 
         $validatedData = $validator->validated();
+
+        $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
+        if ($checkVariations) {
+            return $this->generateResponse($checkVariations, 422, true);
+        }
+
         $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
 
         $restaurantBranch = OrderHelper::getRestaurantBranch($validatedData['restaurant_branch_slug']);

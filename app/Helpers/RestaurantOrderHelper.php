@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Helpers\PromocodeHelper;
 use App\Models\Menu;
 use App\Models\MenuTopping;
+use App\Models\MenuVariation;
 use App\Models\MenuVariationValue;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
@@ -54,6 +55,19 @@ trait RestaurantOrderHelper
         }
 
         return Validator::make($request->all(), $rules);
+    }
+
+    public static function checkVariationsExist($menus)
+    {
+        foreach ($menus as $key => $value) {
+            $variationsCount = Menu::where('slug', $value['slug'])->first()->menuVariations()->count();
+
+            if ($variationsCount > 0 && empty($value['variation_value_slugs'])) {
+                return 'The order_items.' . $key . '.variation_value_slugs is required.';
+            }
+        }
+
+        return false;
     }
 
     public static function getRestaurantBranch($slug)
