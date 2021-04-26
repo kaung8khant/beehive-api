@@ -24,7 +24,7 @@ class FileController extends Controller
 
         return File::where('source', $source)
             ->where('source_id', $sourceId)
-            ->whereIn('extension', ['png', 'jpg'])
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
             ->get();
     }
 
@@ -38,7 +38,7 @@ class FileController extends Controller
     {
         $file = File::where('slug', $slug)->firstOrFail();
 
-        if ($file->extension === 'png' || $file->extension === 'jpg') {
+        if ($file->extension === 'png' || $file->extension === 'jpg' || $file->extension === 'jpeg') {
             $path = 'images/large/';
         } elseif ($file->extension === 'gif') {
             $path = 'gifs/';
@@ -71,7 +71,7 @@ class FileController extends Controller
     {
         $file = File::where('slug', $slug)->firstOrFail();
 
-        if ($file->extension === 'png' || $file->extension === 'jpg') {
+        if ($file->extension === 'png' || $file->extension === 'jpg' || $file->extension === 'jpeg') {
             $this->deleteImagesFromStorage($file->file_name);
         } elseif ($file->extension === 'gif') {
             Storage::delete('gifs/' . $file->file_name);

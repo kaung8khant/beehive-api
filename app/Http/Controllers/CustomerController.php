@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
+use App\Models\ShopOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -13,7 +15,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class CustomerController extends Controller
 {
-    use StringHelper;
+    use StringHelper, CollectionHelper;
 
     /**
      * @OA\Get(
@@ -92,7 +94,7 @@ class CustomerController extends Controller
                 'email' => 'nullable|email|unique:customers',
                 'name' => 'required|max:255',
                 'phone_number' => 'required|phone:MM|unique:customers',
-                'password' => 'required|string|min:6',
+                'password' => 'nullable|string|min:6',
                 'gender' => 'required|in:Male,Female',
             ],
             [
@@ -100,8 +102,11 @@ class CustomerController extends Controller
             ]
         );
 
+        $password = $validatedData['password'] ? $validatedData['password'] : $this->generateRandomPassword();
+
         $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-        $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData['password'] = Hash::make($password);
+        $validatedData['created_by'] = 'admin';
 
         $customer = Customer::create($validatedData);
         return response()->json($customer->refresh(), 201);
@@ -136,7 +141,6 @@ class CustomerController extends Controller
     {
         return Customer::with('addresses')->where('slug', $slug)->firstOrFail();
     }
-
 
     /**
      * @OA\Put(
@@ -254,32 +258,28 @@ class CustomerController extends Controller
 
     public function getPromocodeUsedCustomers(Request $request, $slug)
     {
-        $customers = null;
-        $promocode= Promocode::where('slug', $slug)->firstOrFail();
-        if ($promocode->usage==='restaurant') {
-            $customers = Customer::leftJoin('restaurant_orders', function ($q) use ($promocode) {
-                $q->on('restaurant_orders.customer_id', '=', 'customers.id')
-            ->where('restaurant_orders.promocode_id', '=', $promocode->id);
-            })
-            ->select('customers.*')
-            ->where('email', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-            // ->orWhere('slug', $request->filter)
-            ->paginate(10);
-        } else {
-            $customers = Customer::leftJoin('shop_orders', function ($q) use ($promocode) {
-                $q->on('shop_orders.customer_id', '=', 'customers.id')
-            ->where('shop_orders.promocode_id', '=', $promocode->id);
-            })
-            ->select('customers.*')
-            ->where('email', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-            // ->orWhere('slug', $request->filter)
-            ->paginate(10);
+        $promocode = Promocode::where('slug', $slug)->firstOrFail();
+
+        $shopOrder = ShopOrder::where('promocode_id', $promocode->id)->get();
+        $restaurantOrder = RestaurantOrder::where('promocode_id', $promocode->id)->get();
+
+        $orderList = $shopOrder->merge($restaurantOrder);
+
+        $customerlist = [];
+
+        foreach ($orderList as $order) {
+            $customer = Customer::where('id', $order->customer_id)->where(function ($query) use ($request) {
+                $query->where('email', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })->first();
+            $customer && array_push($customerlist, $customer);
         }
 
-        return $customers;
+        $customerlist = collect($customerlist)->unique()->values()->all();
+        $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
+
+        return response()->json($customerlist, 200);
     }
 }

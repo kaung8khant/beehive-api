@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
+use App\Models\Customer;
 use App\Models\Menu;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
+use App\Models\RestaurantOrder;
 use App\Models\RestaurantTag;
 use App\Models\Township;
 use Illuminate\Http\Request;
@@ -377,6 +380,22 @@ class RestaurantBranchController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
+    public function multipleStatusUpdate(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\RestaurantBranch,slug',
+        ]);
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
+            $restaurantBranch->is_enable = $request->is_enable;
+            $restaurantBranch->save();
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
     /**
      * @OA\Post(
      *      path="/api/v2/admin/restaurant-branches/add-available-menus/{slug}",
@@ -560,5 +579,31 @@ class RestaurantBranchController extends Controller
         }
 
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function getRestaurantBranchByCustomers(Request $request, $slug)
+    {
+        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
+
+        $restaurantOrder = RestaurantOrder::where('restaurant_branch_id', $restaurantBranch->id)->get();
+
+        $orderList = $restaurantOrder;
+
+        $customerlist = [];
+
+        foreach ($orderList as $order) {
+            $customer = Customer::where('id', $order->customer_id)->where(function ($query) use ($request) {
+                $query->where('email', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })->first();
+            $customer && array_push($customerlist, $customer);
+        }
+
+        $customerlist = collect($customerlist)->unique()->values()->all();
+        $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
+
+        return response()->json($customerlist, 200);
     }
 }

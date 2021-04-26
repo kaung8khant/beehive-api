@@ -124,7 +124,7 @@ class ShopController extends Controller
 
         $data['products'] = collect($products)->collapse()->values();
         $data['products'] = $data['products'];
-        unset($data['shops']);
+        //unset($data['shops']);
 
         return $data;
     }

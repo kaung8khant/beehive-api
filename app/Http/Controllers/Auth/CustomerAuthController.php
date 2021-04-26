@@ -72,6 +72,11 @@ class CustomerAuthController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
         $request['phone_number'] = PhoneNumber::make($request->phone_number, 'MM');
 
+        $customer = Customer::where('phone_number', $request['phone_number'])->first();
+        if ($customer && $customer->created_by === 'customer') {
+            return $this->generateResponse('The phone number has already been taken.', 422, true);
+        }
+
         $validator = $this->validateRegister($request);
 
         if ($validator->fails()) {
@@ -80,6 +85,7 @@ class CustomerAuthController extends Controller
 
         $validatedData = $validator->validated();
         $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData['created_by'] = 'customer';
 
         $otp = $this->getOtp($validatedData['phone_number'], 'register');
 
@@ -87,7 +93,12 @@ class CustomerAuthController extends Controller
             return $this->generateResponse('The OTP code is incorrect.', 406, true);
         }
 
-        $customer = Customer::create($validatedData);
+        if ($customer) {
+            $customer->update($validatedData);
+        } else {
+            $customer = Customer::create($validatedData);
+        }
+
         $token = JWTAuth::claims($customer->refresh()->toArray())->fromUser($customer);
 
         $otp->update(['is_used' => 1]);
@@ -165,7 +176,7 @@ class CustomerAuthController extends Controller
                 'slug' => 'required|unique:customers',
                 'email' => 'nullable|email|unique:customers',
                 'name' => 'required|max:255',
-                'phone_number' => 'required|phone:MM|unique:customers',
+                'phone_number' => 'required|phone:MM',
                 'password' => 'required|string|min:6',
                 'gender' => 'nullable|in:Male,Female',
                 'date_of_birth' => 'nullable|date_format:Y-m-d',

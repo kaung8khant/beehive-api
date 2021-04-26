@@ -343,6 +343,16 @@ class MenuController extends Controller
         return $menus;
     }
 
+    public function getMenusByCategory(Request $request, $slug)
+    {
+        return Menu::with('restaurant', 'restaurantCategory')->whereHas('restaurantCategory', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })->paginate(10);
+    }
+
     public function getMenusByBranchWithAdditionals(Request $request, $slug)
     {
         $branch = RestaurantBranch::with('availableMenus')
@@ -470,6 +480,22 @@ class MenuController extends Controller
         $menu = Menu::where('slug', $slug)->firstOrFail();
         $menu->is_enable = !$menu->is_enable;
         $menu->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function multipleStatusUpdate(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Menu,slug',
+        ]);
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $menu = Menu::where('slug', $slug)->firstOrFail();
+            $menu->is_enable = $request->is_enable;
+            $menu->save();
+        }
+
         return response()->json(['message' => 'Success.'], 200);
     }
 

@@ -43,7 +43,7 @@ class UploadController extends Controller
 
         $request->validate([
             'slug' => 'required|unique:files',
-            'file' => 'required|file|mimes:jpg,png,gif,pdf|max:4096',
+            'file' => 'required|file|mimes:jpg,jpeg,png,gif,pdf|max:4096',
             'source' => 'nullable|string',
             'sourceSlug' => 'nullable|string|exists:' . $request->source . ',slug',
             'type' => 'nullable|string|in:image,cover',
@@ -51,7 +51,7 @@ class UploadController extends Controller
 
         $file = $request->file('file');
         $fileName = $file->hashName();
-        $extension = $file->getClientOriginalExtension();
+        $extension = strtolower($file->getClientOriginalExtension());
 
         $this->storeFile($file, $fileName, $extension);
 
@@ -61,7 +61,7 @@ class UploadController extends Controller
 
     private function storeFile($file, $fileName, $extension)
     {
-        if ($extension === 'png' || $extension === 'jpg') {
+        if ($extension === 'png' || $extension === 'jpg' || $extension === 'jpeg') {
             $this->storeImage($file, $fileName);
         } elseif ($extension === 'gif') {
             Storage::put('gifs/' . $fileName, fopen($file, 'r+'));

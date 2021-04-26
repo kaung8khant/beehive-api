@@ -49,7 +49,7 @@ trait FileHelper
     {
         $file = File::where('slug', $slug)->firstOrFail();
 
-        if ($file->extension === 'png' || $file->extension === 'jpg') {
+        if ($file->extension === 'png' || $file->extension === 'jpg' || $file->extension === 'jpeg') {
             $this->deleteImagesFromStorage($file->file_name);
         } elseif ($file->extension === 'gif') {
             Storage::delete('gifs/' . $file->file_name);

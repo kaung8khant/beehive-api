@@ -121,8 +121,10 @@ class ProductController extends Controller
             $this->updateFile($request->image_slug, 'products', $product->slug);
         }
 
-        if ($request->cover_slug) {
-            $this->updateFile($request->cover_slug, 'products', $product->slug);
+        if ($request->cover_slugs) {
+            foreach ($request->cover_slugs as $coverSlug) {
+                $this->updateFile($coverSlug, 'products', $product->slug);
+            }
         }
 
         if ($request->product_variations) {
@@ -246,8 +248,10 @@ class ProductController extends Controller
             $this->updateFile($request->image_slug, 'products', $slug);
         }
 
-        if ($request->cover_slug) {
-            $this->updateFile($request->cover_slug, 'products', $slug);
+        if ($request->cover_slugs) {
+            foreach ($request->cover_slugs as $coverSlug) {
+                $this->updateFile($coverSlug, 'products', $slug);
+            }
         }
 
         if ($request->product_variations) {
@@ -318,7 +322,8 @@ class ProductController extends Controller
             'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
-            'cover_slug' => 'nullable|exists:App\Models\File,slug',
+            'cover_slugs' => 'nullable|array',
+            'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
 
             'product_variations' => 'nullable|array',
             'product_variations.*.slug' => '',
@@ -392,10 +397,10 @@ class ProductController extends Controller
     public function getProductsByShop(Request $request, $slug)
     {
         return Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand')
-        ->with('productVariations')->with('productVariations.productVariationValues')
-        ->whereHas('shop', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
+            ->with('productVariations')->with('productVariations.productVariationValues')
+            ->whereHas('shop', function ($q) use ($slug) {
+                $q->where('slug', $slug);
+            })->where(function ($q) use ($request) {
             $q->where('name', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
@@ -472,6 +477,22 @@ class ProductController extends Controller
         $product = Product::where('slug', $slug)->firstOrFail();
         $product->is_enable = !$product->is_enable;
         $product->save();
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function multipleStatusUpdate(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Product,slug',
+        ]);
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $product = Product::where('slug', $slug)->firstOrFail();
+            $product->is_enable = $request->is_enable;
+            $product->save();
+        }
+
         return response()->json(['message' => 'Success.'], 200);
     }
 

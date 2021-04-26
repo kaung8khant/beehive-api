@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
+use App\Models\Customer;
 use App\Models\Shop;
 use App\Models\ShopCategory;
+use App\Models\ShopOrder;
 use App\Models\ShopTag;
 use App\Models\Township;
 use Illuminate\Http\Request;
@@ -320,6 +323,22 @@ class ShopController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
+    public function multipleStatusUpdate(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Shop,slug',
+        ]);
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $shop = Shop::where('slug', $slug)->firstOrFail();
+            $shop->is_enable = $request->is_enable;
+            $shop->save();
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
     /**
      * @OA\Patch(
      *      path="/api/v2/admin/shops/toggle-official/{slug}",
@@ -541,5 +560,31 @@ class ShopController extends Controller
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
+    }
+
+    public function getShopByCustomers(Request $request, $slug)
+    {
+        $shop = Shop::where('slug', $slug)->firstOrFail();
+
+        $shopOrder = ShopOrder::where('shop_id', $shop->id)->get();
+
+        $orderList = $shopOrder;
+
+        $customerlist = [];
+
+        foreach ($orderList as $order) {
+            $customer = Customer::where('id', $order->customer_id)->where(function ($query) use ($request) {
+                $query->where('email', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })->first();
+            $customer && array_push($customerlist, $customer);
+        }
+
+        $customerlist = collect($customerlist)->unique()->values()->all();
+        $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
+
+        return response()->json($customerlist, 200);
     }
 }

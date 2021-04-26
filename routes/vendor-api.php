@@ -36,10 +36,12 @@ Route::group(['prefix' => 'vendor'], function () {
         /* menus */
         Route::get('restaurant-branches/{slug}/menus', 'MenuController@getMenusByBranch');
         Route::get('restaurant-branches/{slug}/available-menus', 'MenuController@getAvailableMenusByBranch');
+        Route::get('restaurant-branches/{slug}/menus-with-additionals', 'MenuController@getMenusByBranchWithAdditionals');
         Route::get('menus/{slug}', 'MenuController@show');
         Route::post('menus', 'MenuController@store');
         Route::post('menus/import', 'MenuController@import');
         Route::put('menus/{slug}', 'MenuController@update');
+        Route::post('menus/status', 'MenuController@multipleStatusUpdate');
         Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
         Route::post('restaurant-branches/{restaurantBranchSlug}/menus/{slug}', 'RestaurantBranchController@toggleAvailable');
 
@@ -65,6 +67,7 @@ Route::group(['prefix' => 'vendor'], function () {
 
 
         Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
+        Route::get('restaurant-branches/{slug}/customers', 'RestaurantBranchController@getRestaurantBranchByCustomers');
         /* restaurant */
 
         /* shop */
@@ -79,6 +82,9 @@ Route::group(['prefix' => 'vendor'], function () {
 
         Route::resource('shop-orders', 'ShopOrderController', ['as' => 'vendor']);
         Route::get('shops/{slug}/shop-orders', 'ShopOrderController@getShopOrders');
+        Route::post('shop-orders/{slug}/change-status', 'ShopOrderController@changeStatus');
+        Route::get('shops/{slug}/customers', 'ShopController@getShopByCustomers');
+
 
         /* products */
         Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
@@ -87,6 +93,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::put('products/{slug}', 'ProductController@update');
         Route::delete('products/{slug}', 'ProductController@destroy');
         Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
+        Route::post('products/status', 'ProductController@multipleStatusUpdate');
         Route::post('products/import', 'ProductController@import');
 
         Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');

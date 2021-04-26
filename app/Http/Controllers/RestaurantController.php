@@ -102,11 +102,12 @@ class RestaurantController extends Controller
                 'restaurant_branch.contact_number' => 'required|phone:MM',
                 'restaurant_branch.opening_time' => 'required|date_format:H:i',
                 'restaurant_branch.closing_time' => 'required|date_format:H:i',
-                'restaurant_branch.latitude' => 'nullable|numeric',
-                'restaurant_branch.longitude' => 'nullable|numeric',
+                'restaurant_branch.latitude' => 'required|numeric',
+                'restaurant_branch.longitude' => 'required|numeric',
                 'restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
                 'image_slug' => 'nullable|exists:App\Models\File,slug',
-                'cover_slug' => 'nullable|exists:App\Models\File,slug',
+                'cover_slugs' => 'nullable|array',
+                'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
             ],
             [
                 'restaurant_branch.contact_number.phone' => 'Invalid phone number.',
@@ -124,8 +125,10 @@ class RestaurantController extends Controller
             $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
         }
 
-        if ($request->cover_slug) {
-            $this->updateFile($request->cover_slug, 'restaurants', $restaurant->slug);
+        if ($request->cover_slugs) {
+            foreach ($request->cover_slugs as $coverSlug) {
+                $this->updateFile($coverSlug, 'restaurants', $restaurant->slug);
+            }
         }
 
         $this->createRestaurantBranch($restaurantId, $validatedData['restaurant_branch']);
@@ -222,7 +225,8 @@ class RestaurantController extends Controller
             'available_categories' => 'nullable|array',
             'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
-            'cover_slug' => 'nullable|exists:App\Models\File,slug',
+            'cover_slugs' => 'nullable|array',
+            'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
         ]);
 
         $restaurant->update($validatedData);
@@ -235,8 +239,10 @@ class RestaurantController extends Controller
             $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
         }
 
-        if ($request->cover_slug) {
-            $this->updateFile($request->cover_slug, 'restaurants', $restaurant->slug);
+        if ($request->cover_slugs) {
+            foreach ($request->cover_slugs as $coverSlug) {
+                $this->updateFile($coverSlug, 'restaurants', $restaurant->slug);
+            }
         }
 
         if ($request->available_categories) {
@@ -317,6 +323,40 @@ class RestaurantController extends Controller
         $restaurant->save();
         return response()->json(['message' => 'Success.'], 200);
     }
+
+    public function multipleStatusUpdate(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Restaurant,slug',
+        ]);
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+            $restaurant->is_enable = $request->is_enable;
+            $restaurant->save();
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
+    // public function multipleStatusUpdate(Request $request)
+    // {
+    //     $validatedData = $request->validate([
+    //         'restaurants' => 'required|array',
+    //         'restaurants.*.slug' => 'required|exists:App\Models\Restaurant,slug',
+    //         'restaurants.*.is_enable' => 'required|boolean',
+    //     ]);
+
+    //     foreach ($validatedData['restaurants'] as $data) {
+
+    //         $restaurant = Restaurant::where('slug', $data['slug'])->firstOrFail();
+    //         $restaurant->is_enable = $data['is_enable'];
+    //         $restaurant->save();
+    //     }
+
+    //     return response()->json($validatedData, 200);
+    // }
 
     private function createRestaurantBranch($restaurantId, $restaurantBranch)
     {
@@ -444,8 +484,8 @@ class RestaurantController extends Controller
                 'restaurants.*.restaurant_branch.contact_number' => 'required|phone:MM',
                 'restaurants.*.restaurant_branch.opening_time' => 'required|date_format:H:i',
                 'restaurants.*.restaurant_branch.closing_time' => 'required|date_format:H:i',
-                'restaurants.*.restaurant_branch.latitude' => 'nullable|numeric',
-                'restaurants.*.restaurant_branch.longitude' => 'nullable|numeric',
+                'restaurants.*.restaurant_branch.latitude' => 'required|numeric',
+                'restaurants.*.restaurant_branch.longitude' => 'required|numeric',
                 'restaurants.*.restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
             ],
             [
@@ -461,7 +501,7 @@ class RestaurantController extends Controller
             $this->createRestaurantBranch($restaurantId, $data['restaurant_branch']);
         }
 
-        return response()->json(['message' => 'Success.'], 200);
+        return response()->json($validatedData, 200);
     }
 
     public function createAvailableRestaurantCategories(Request $request, $slug)
