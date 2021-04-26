@@ -51,7 +51,7 @@ class UploadController extends Controller
 
         $file = $request->file('file');
         $fileName = $file->hashName();
-        $extension = $file->getClientOriginalExtension();
+        $extension = strtolower($file->getClientOriginalExtension());
 
         $this->storeFile($file, $fileName, $extension);
 
