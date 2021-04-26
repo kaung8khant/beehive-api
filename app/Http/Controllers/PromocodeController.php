@@ -49,7 +49,7 @@ class PromocodeController extends Controller
      */
     public function index(Request $request)
     {
-        return Promocode::where('code', 'LIKE', '%' . $request->filter . '%')
+        return Promocode::with('rules')->where('code', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
