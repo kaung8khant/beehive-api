@@ -59,7 +59,9 @@ class ShopController extends Controller
             ->orWhere('slug', $request->filter)
             ->get();
 
-        $shopCategories = $this->getProductFromShop($shopCategories);
+        foreach ($shopCategories as $item) {
+            unset($item['shops']);
+        }
 
         return $this->generateProductResponse($shopCategories, 200, 'cattag');
     }

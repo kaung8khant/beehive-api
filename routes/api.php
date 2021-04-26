@@ -74,6 +74,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('shop-categories/{slug}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
             Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
             Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
+            Route::get('shops/{slug}/ratings', 'ShopRatingController@getShopRatings');
 
             Route::resource('products', 'ProductController');
             Route::post('products/import', 'ProductController@import');
