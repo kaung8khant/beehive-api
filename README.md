@@ -1,3 +1,5 @@
+# How to run this project?
+
 copy .env.example and rename to .env
 
 composer install
