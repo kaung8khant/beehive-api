@@ -49,6 +49,19 @@ trait ShopOrderHelper
         return $request->validate($rules);
     }
 
+    public static function checkVariationsExist($products)
+    {
+        foreach ($products as $key => $value) {
+            $variationsCount = Product::where('slug', $value['slug'])->first()->productVariations()->count();
+
+            if ($variationsCount > 0 && empty($value['variation_value_slugs'])) {
+                return 'The order_items.' . $key . '.variation_value_slugs is required.';
+            }
+        }
+
+        return false;
+    }
+
     public static function createOrderStatus($orderId, $status = 'pending')
     {
         ShopOrder::where('id', $orderId)->update(['order_status' => $status]);

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, OrderHelper, StringHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
 
     public function index(Request $request)
     {
@@ -54,6 +54,12 @@ class RestaurantOrderController extends Controller
         }
 
         $validatedData = $validator->validated();
+
+        $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
+        if ($checkVariations) {
+            return $this->generateResponse($checkVariations, 422, true);
+        }
+
         $validatedData['customer_id'] = Auth::guard('customers')->user()->id;
 
         $restaurantBranch = OrderHelper::getRestaurantBranch($validatedData['restaurant_branch_slug']);

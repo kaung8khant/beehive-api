@@ -585,9 +585,7 @@ class RestaurantBranchController extends Controller
     {
         $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
 
-        $restaurantOrder = RestaurantOrder::where('restaurant_branch_id', $restaurantBranch->id)->get();
-
-        $orderList = $restaurantOrder;
+        $orderList = RestaurantOrder::where('restaurant_branch_id', $restaurantBranch->id)->get();
 
         $customerlist = [];
 

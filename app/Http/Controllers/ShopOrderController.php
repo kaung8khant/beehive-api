@@ -112,6 +112,12 @@ class ShopOrderController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $validatedData = OrderHelper::validateOrder($request, true);
+
+        $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
+        if ($checkVariations) {
+            return $this->generateResponse($checkVariations, 422, true);
+        }
+
         $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
         $validatedData['promocode_id'] = null;
 

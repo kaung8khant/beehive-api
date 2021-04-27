@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Menu;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
@@ -159,16 +160,21 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantCategories = RestaurantCategory::with('restaurants')
-            ->with(['restaurants.restaurantBranches' => function ($query) use ($request) {
-                $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
-            }])
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
+        $restaurantCategories = RestaurantCategory::where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate($request->size)
             ->items();
 
-        $restaurantCategories = $this->getBranchesFromRestaurants($restaurantCategories);
+        foreach ($restaurantCategories as $category) {
+            $restaurantIds = Menu::where('restaurant_category_id', $category->id)->groupBy('restaurant_id')->pluck('restaurant_id');
+
+            $categorizedBranches = $restaurantIds->map(function ($restaurantId) use ($request) {
+                return $this->getBranches($request)->where('restaurant_id', $restaurantId)->get();
+            });
+
+            $category->restaurant_branches = $categorizedBranches->collapse()->sortBy('distance')->values();
+        }
+
         return $this->generateBranchResponse($restaurantCategories, 200, 'arrobj');
     }
 
@@ -199,14 +205,14 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantCategory = RestaurantCategory::with('restaurants')
-            ->with(['restaurants.restaurantBranches' => function ($query) use ($request) {
-                $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
-            }])
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $restaurantCategory = RestaurantCategory::where('slug', $slug)->firstOrFail();
+        $restaurantIds = Menu::where('restaurant_category_id', $restaurantCategory->id)->groupBy('restaurant_id')->pluck('restaurant_id');
 
-        $restaurantCategory = $this->replaceRestaurantsWtihBranches($restaurantCategory);
+        $categorizedBranches = $restaurantIds->map(function ($restaurantId) use ($request) {
+            return $this->getBranches($request)->where('restaurant_id', $restaurantId)->get();
+        });
+
+        $restaurantCategory->restaurant_branches = $categorizedBranches->collapse()->sortBy('distance')->values();
         return $this->generateBranchResponse($restaurantCategory, 200, 'cattag');
     }
 
