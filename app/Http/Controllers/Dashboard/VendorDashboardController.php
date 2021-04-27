@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\Product;
+use App\Models\ShopOrder;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -326,15 +327,17 @@ class VendorDashboardController extends Controller
     {
         $orders = DB::table('shop_order_vendors')
             ->where('shop_id', $this->vendorId)
-            ->select('id', 'shop_order_id', 'order_status', 'slug')
+            ->select('id', 'shop_order_id', 'order_status')
             ->orderBy('id', 'DESC')
             ->limit(10)
             ->get();
 
+
         $result = [];
         foreach ($orders as $key) {
+            $orderSlug=ShopOrder::where('id', $key->id)->firstOrFail()->slug;
             $order = [
-                'order_id' => $key->slug,
+                'order_id' => $orderSlug,
                 'location' => $this->getShopContactLocation($key->shop_order_id),
                 'status' => $key->order_status,
                 'delivered_time' => $this->getShopDeliveredTime($key->id),
