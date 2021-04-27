@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, OrderHelper, StringHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
 
     /**
      * @OA\Get(
@@ -188,6 +188,12 @@ class RestaurantOrderController extends Controller
         }
 
         $validatedData = $validator->validated();
+
+        $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
+        if ($checkVariations) {
+            return $this->generateResponse($checkVariations, 422, true);
+        }
+
         $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
 
         $restaurantBranch = OrderHelper::getRestaurantBranch($validatedData['restaurant_branch_slug']);
@@ -209,7 +215,7 @@ class RestaurantOrderController extends Controller
         $order = RestaurantOrder::create($validatedData);
         $orderId = $order->id;
 
-        $this->createOrderStatus($orderId);
+        OrderHelper::createOrderStatus($orderId);
         OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
         OrderHelper::createOrderItems($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
 
@@ -249,7 +255,7 @@ class RestaurantOrderController extends Controller
             return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
         }
 
-        $this->createOrderStatus($order->id, 'cancelled');
+        OrderHelper::createOrderStatus($order->id, 'cancelled');
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
 
@@ -261,7 +267,7 @@ class RestaurantOrderController extends Controller
             return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
         }
 
-        $this->createOrderStatus($order->id, $request->status);
+        OrderHelper::createOrderStatus($order->id, $request->status);
 
         $this->notify([
             'title' => 'Restaurant order updated',
