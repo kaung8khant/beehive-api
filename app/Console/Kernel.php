@@ -24,8 +24,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('delete:database-images')->withoutOverlapping()->weekly()->timezone('Asia/Yangon');
-        $schedule->command('delete:storage-images')->withoutOverlapping()->weekly()->timezone('Asia/Yangon');
+        $schedule->command('delete:database-images')->withoutOverlapping()->weeklyOn(0, '4:00')->timezone('Asia/Yangon');
+        $schedule->command('delete:storage-images')->withoutOverlapping()->weeklyOn(0, '4:00')->timezone('Asia/Yangon');
     }
 
     /**
