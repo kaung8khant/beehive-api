@@ -22,7 +22,7 @@ class VendorDashboardController extends Controller
 
             if ($this->userRole === 'Restaurant') {
                 $this->vendorId = $user->restaurant_branch_id;
-            } else if ($this->userRole === 'Shop') {
+            } elseif ($this->userRole === 'Shop') {
                 $this->vendorId = $user->shop_id;
             }
         }
@@ -32,7 +32,7 @@ class VendorDashboardController extends Controller
     {
         if ($this->userRole === 'Restaurant') {
             $result = $this->getRestaurantOrderData();
-        } else if ($this->userRole === 'Shop') {
+        } elseif ($this->userRole === 'Shop') {
             $result = $this->getShopOrderData();
         }
 
@@ -116,7 +116,7 @@ class VendorDashboardController extends Controller
 
         if ($this->userRole === 'Restaurant') {
             $result = $this->getRestaurantDaywiseOrders($startDate, $endDate);
-        } else if ($this->userRole === 'Shop') {
+        } elseif ($this->userRole === 'Shop') {
             $result = $this->getShopDaywiseOrders($startDate, $endDate);
         }
 
@@ -156,7 +156,7 @@ class VendorDashboardController extends Controller
                 'today_earning' => $this->getRestaurantEarning($today),
                 'yesterday_earning' => $this->getRestaurantEarning($yesterday),
             ];
-        } else if ($this->userRole === 'Shop') {
+        } elseif ($this->userRole === 'Shop') {
             $result = [
                 'today_earning' => $this->getShopEarning($today),
                 'yesterday_earning' => $this->getShopEarning($yesterday),
@@ -189,7 +189,7 @@ class VendorDashboardController extends Controller
     {
         if ($this->userRole === 'Restaurant') {
             $result = $this->getRestaurantTopSellings();
-        } else if ($this->userRole === 'Shop') {
+        } elseif ($this->userRole === 'Shop') {
             $result = $this->getShopTopSellings();
         }
 
@@ -275,7 +275,7 @@ class VendorDashboardController extends Controller
     {
         if ($this->userRole === 'Restaurant') {
             $result = $this->getRestaurantRecentOrders();
-        } else if ($this->userRole === 'Shop') {
+        } elseif ($this->userRole === 'Shop') {
             $result = $this->getShopRecentOrders();
         }
 
@@ -286,7 +286,7 @@ class VendorDashboardController extends Controller
     {
         $orders = DB::table('restaurant_orders')
             ->where('restaurant_branch_id', $this->vendorId)
-            ->select('id', 'order_status')
+            ->select('id', 'order_status', 'slug')
             ->orderBy('id', 'DESC')
             ->limit(10)
             ->get();
@@ -294,7 +294,7 @@ class VendorDashboardController extends Controller
         $result = [];
         foreach ($orders as $key) {
             $order = [
-                'order_id' => $key->id,
+                'order_id' => $key->slug,
                 'location' => $this->getRestaurantContactLocation($key->id),
                 'status' => $key->order_status,
                 'delivered_time' => $this->getRestaurantDeliveredTime($key->id),
@@ -326,7 +326,7 @@ class VendorDashboardController extends Controller
     {
         $orders = DB::table('shop_order_vendors')
             ->where('shop_id', $this->vendorId)
-            ->select('id', 'shop_order_id', 'order_status')
+            ->select('id', 'shop_order_id', 'order_status', 'slug')
             ->orderBy('id', 'DESC')
             ->limit(10)
             ->get();
@@ -334,7 +334,7 @@ class VendorDashboardController extends Controller
         $result = [];
         foreach ($orders as $key) {
             $order = [
-                'order_id' => $key->id,
+                'order_id' => $key->slug,
                 'location' => $this->getShopContactLocation($key->shop_order_id),
                 'status' => $key->order_status,
                 'delivered_time' => $this->getShopDeliveredTime($key->id),
