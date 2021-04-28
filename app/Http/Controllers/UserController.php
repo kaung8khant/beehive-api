@@ -529,6 +529,7 @@ class UserController extends Controller
         $userSession = UserSession::where('jwt', $jwt)->orWhere('device_token', $request->token)->first();
 
         if ($userSession) {
+            $userSession['user_id'] = $userId;
             $userSession['jwt'] = $data['jwt'];
             $userSession['device_token'] = $data['device_token'];
             $userSession->update();

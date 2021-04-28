@@ -125,9 +125,7 @@ class AddressController extends Controller
 
     public function getAllCities(Request $request)
     {
-        $cities = City::where('name', 'LIKE', '%' . $request->filter . '%')
-            ->paginate($request->size)
-            ->items();
+        $cities = City::where('name', 'LIKE', '%' . $request->filter . '%')->get();
         return $this->generateResponse($cities, 200);
     }
 
@@ -137,14 +135,14 @@ class AddressController extends Controller
 
         $townships = Township::where('city_id', $cityId)
             ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->paginate($request->size)
-            ->items();
+            ->get();
+
         return $this->generateResponse($townships, 200);
     }
 
     public function getAllTownships(Request $request)
     {
-        $townships = Township::paginate($request->size)->items();
+        $townships = Township::all();
         return $this->generateResponse($townships, 200);
     }
 
