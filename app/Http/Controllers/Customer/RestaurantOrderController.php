@@ -124,7 +124,7 @@ class RestaurantOrderController extends Controller
                 'status' => 'cancelled',
             ]);
 
-        $this->createOrderStatus($order->id, 'cancelled');
+        OrderHelper::createOrderStatus($order->id, 'cancelled');
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
 

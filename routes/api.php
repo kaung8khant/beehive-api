@@ -153,6 +153,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             /* Device Token */
             Route::post('/register-device', 'UserController@registerToken');
             /* Device Token */
+
+            Route::resource('customer-groups', 'Group\CustomerGroupController');
+            Route::post('customer-groups/add/{slug}', 'Group\CustomerGroupController@addCustomersToGroup');
+            Route::delete('customer-groups/remove/{slug}', 'Group\CustomerGroupController@removeCustomersFromGroup');
         });
     });
 
