@@ -85,7 +85,19 @@ class RestaurantOrderController extends Controller
         OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
         OrderHelper::createOrderItems($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
 
-        $this->notify($validatedData['restaurant_branch_slug'], ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
+        $this->notify(
+            $validatedData['restaurant_branch_slug'],
+            [
+                'title' => 'New Order',
+                'body' => "You've just recevied new order. Check now!",
+                'type' => 'create',
+                'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
+                    ->with('restaurantOrderContact.township')
+                    ->with('RestaurantOrderItems')
+                    ->where('slug', $order->slug)
+                    ->firstOrFail(),
+
+            ]);
 
         return $this->generateResponse(
             $order->refresh()->load('restaurantOrderContact', 'restaurantOrderContact.township', 'restaurantOrderItems'),
@@ -102,7 +114,17 @@ class RestaurantOrderController extends Controller
             return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
         }
 
-        OrderHelper::createOrderStatus($order->id, 'cancelled');
+        $this->notify(
+            $order->restaurantBranch->slug,
+            [
+                'title' => 'Order cancelled',
+                'body' => "Restaurant order just has been updated",
+                'type' => 'update',
+                'slug' => $order->slug,
+                'status' => 'cancelled',
+            ]);
+
+        $this->createOrderStatus($order->id, 'cancelled');
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
 
@@ -111,12 +133,28 @@ class RestaurantOrderController extends Controller
         $this->notifyRestaurant(
             $slug,
             [
-                'title' => $data['title'],
+                'title' => $data['title'] . 'client',
                 'body' => $data['body'],
-                'img' => '',
                 'data' => [
-                    'action' => '',
-                    'type' => 'notification',
+                    'action' => $data['type'],
+                    'type' => 'restaurantOrder',
+                    'status' => !empty($data['status']) ? $data['status'] : "",
+                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
+                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
+                ],
+            ]
+        );
+
+        $this->notifyAdmin(
+            [
+                'title' => $data['title'] . 'client',
+                'body' => $data['body'],
+                'data' => [
+                    'action' => $data['type'],
+                    'type' => 'restaurantOrder',
+                    'status' => !empty($data['status']) ? $data['status'] : "",
+                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
+                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
                 ],
             ]
         );
