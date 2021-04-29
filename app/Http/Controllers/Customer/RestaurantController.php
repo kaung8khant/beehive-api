@@ -11,6 +11,7 @@ use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class RestaurantController extends Controller
@@ -160,22 +161,40 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantCategories = RestaurantCategory::where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->paginate($request->size)
-            ->items();
+        $radius = config('system.restaurant_search_radius');
+        $size = $request->size ? $request->size : 10;
+        $page = $request->page ? $request->page : 1;
 
-        foreach ($restaurantCategories as $category) {
-            $restaurantIds = Menu::where('restaurant_category_id', $category->id)->groupBy('restaurant_id')->pluck('restaurant_id');
+        $branches = DB::table('restaurant_branches')
+            ->selectRaw('id,
+            ( 6371 * acos( cos(radians(?)) *
+                cos(radians(latitude)) * cos(radians(longitude) - radians(?))
+                + sin(radians(?)) * sin(radians(latitude)) )
+            ) AS distance', [$request->lat, $request->lng, $request->lat])
+            ->where('is_enable', 1)
+            ->having('distance', '<', $radius)
+            ->orderBy('distance', 'asc')
+            ->get();
 
-            $categorizedBranches = $restaurantIds->map(function ($restaurantId) use ($request) {
-                return $this->getBranches($request)->where('restaurant_id', $restaurantId)->get();
-            });
+        $categoryIds = $branches->map(function ($branch) {
+            return DB::table('menus as m')
+                ->join('restaurant_branch_menu_map as rbmm', 'rbmm.menu_id', '=', 'm.id')
+                ->where('rbmm.restaurant_branch_id', $branch->id)
+                ->pluck('restaurant_category_id');
+        })->collapse()->unique()->values();
 
-            $category->restaurant_branches = $categorizedBranches->collapse()->sortBy('distance')->values();
-        }
+        $categorizedBranches = $categoryIds->map(function ($categoryId) use ($branches) {
+            $category = RestaurantCategory::find($categoryId);
+            $restaurantIds = Menu::where('restaurant_category_id', $categoryId)->groupBy('restaurant_id')->pluck('restaurant_id');
 
-        return $this->generateBranchResponse($restaurantCategories, 200, 'arrobj');
+            $category->restaurant_branches = $restaurantIds->map(function ($restaurantId) use ($branches) {
+                return RestaurantBranch::where('restaurant_id', $restaurantId)->whereIn('id', $branches->pluck('id'))->get();
+            })->collapse()->values();
+
+            return $category;
+        })->slice(($page - 1) * $size, $size);
+
+        return $this->generateBranchResponse($categorizedBranches, 200, 'arrobj');
     }
 
     public function getTags(Request $request)
