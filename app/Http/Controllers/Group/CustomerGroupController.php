@@ -15,7 +15,8 @@ class CustomerGroupController extends Controller
 
     public function index(Request $request)
     {
-        return CustomerGroup::where('name', 'LIKE', '%' . $request->filter . '%')
+        return CustomerGroup::with('customers')
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('description', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
@@ -30,7 +31,7 @@ class CustomerGroupController extends Controller
 
     public function show($slug)
     {
-        return CustomerGroup::where('slug', $slug)->firstOrFail();
+        return CustomerGroup::with('customers')->where('slug', $slug)->firstOrFail();
     }
 
     public function update(Request $request, $slug)
