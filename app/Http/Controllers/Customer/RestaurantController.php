@@ -176,22 +176,28 @@ class RestaurantController extends Controller
             ->orderBy('distance', 'asc')
             ->get();
 
-        $categoryIds = $branches->map(function ($branch) {
+        $branchIds = $branches->pluck('id');
+
+        $categoryIds = $branchIds->map(function ($branchId) {
             return DB::table('menus as m')
                 ->join('restaurant_branch_menu_map as rbmm', 'rbmm.menu_id', '=', 'm.id')
-                ->where('rbmm.restaurant_branch_id', $branch->id)
+                ->where('rbmm.restaurant_branch_id', $branchId)
                 ->pluck('restaurant_category_id');
         })->collapse()->unique()->values();
 
-        $categorizedBranches = $categoryIds->map(function ($categoryId) use ($branches) {
+        $categorizedBranches = $categoryIds->map(function ($categoryId) use ($request) {
             $category = RestaurantCategory::find($categoryId);
             $restaurantIds = Menu::where('restaurant_category_id', $categoryId)->groupBy('restaurant_id')->pluck('restaurant_id');
 
-            $category->restaurant_branches = $restaurantIds->map(function ($restaurantId) use ($branches) {
-                return RestaurantBranch::where('restaurant_id', $restaurantId)->whereIn('id', $branches->pluck('id'))->get();
-            })->collapse()->values();
+            $category->restaurant_branches = $restaurantIds->map(function ($restaurantId) use ($request) {
+                return $this->getBranches($request)
+                    ->where('restaurant_id', $restaurantId)
+                    ->orderBy('distance', 'asc')
+                    ->get();
+            })->collapse()->sortBy('distance')->values();
 
             return $category;
+
         })->slice(($page - 1) * $size, $size);
 
         return $this->generateBranchResponse($categorizedBranches, 200, 'arrobj');
