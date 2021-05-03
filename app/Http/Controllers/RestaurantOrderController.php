@@ -219,6 +219,19 @@ class RestaurantOrderController extends Controller
         OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
         OrderHelper::createOrderItems($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
 
+        $this->notify([
+            'title' => 'Restaurant order updated',
+            'body' => 'Restaurant order just has been updated',
+            'status' => $request->status,
+            'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
+                ->with('restaurantOrderContact.township')
+                ->with('RestaurantOrderItems')
+                ->where('slug', $order->slug)
+                ->firstOrFail(),
+            'action' => 'create',
+            'slug' => $order->slug,
+        ]);
+
         return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
     }
 
@@ -274,6 +287,7 @@ class RestaurantOrderController extends Controller
             'body' => 'Restaurant order just has been updated',
             'status' => $request->status,
             'slug' => $slug,
+            'action' => 'update',
         ]);
 
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
@@ -290,13 +304,26 @@ class RestaurantOrderController extends Controller
             [
                 'title' => $data['title'],
                 'body' => $data['body'],
-                'img' => '',
                 'data' => [
-                    'action' => 'update',
+                    'action' => $data['action'],
                     'type' => 'restaurantOrder',
-                    'status' => $data['status'],
-                    'slug' => $data['slug'],
-
+                    'status' => !empty($data['status']) ? $data['status'] : "",
+                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
+                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
+                ],
+            ]
+        );
+        $this->notifyRestaurant(
+            $data['slug'],
+            [
+                'title' => $data['title'],
+                'body' => $data['body'],
+                'data' => [
+                    'action' => $data['action'],
+                    'type' => 'restaurantOrder',
+                    'status' => !empty($data['status']) ? $data['status'] : "",
+                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
+                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
                 ],
             ]
         );

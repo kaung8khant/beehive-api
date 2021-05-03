@@ -66,7 +66,28 @@ class ShopOrderController extends Controller
         OrderHelper::createOrderStatus($orderId);
 
         foreach ($validatedData['order_items'] as $item) {
-            $this->notify(OrderHelper::getShopByProduct($item['slug'])->id, ['title' => 'New Order', 'body' => "You've just recevied new order. Check now!"]);
+            $this->notify(
+                OrderHelper::getShopByProduct($item['slug'])->slug,
+                [
+                    'title' => 'New Order',
+                    'body' => "You've just recevied new order. Check now!",
+                    'action' => 'create',
+                    'status' => 'pending',
+                    'shopOrder' => [
+                        'slug' => OrderHelper::getShopByProduct($item['slug'])->slug,
+                        'order_status' => 'pending',
+                        'total_amount' => ShopOrder::with('contact')
+                            ->with('contact.township')
+                            ->with('vendors')
+                            ->where('slug', $order->slug)
+                            ->firstOrFail()->total_amount,
+                        'shop_order' => ShopOrder::with('contact')
+                            ->with('contact.township')
+                            ->with('vendors')
+                            ->where('slug', $order->slug)
+                            ->firstOrFail(),
+                    ],
+                ]);
         }
 
         $this->notifyAdmin(
@@ -112,7 +133,13 @@ class ShopOrderController extends Controller
         $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customerId)->firstOrFail();
 
         foreach ($shopOrder->vendors as $vendor) {
-            $this->notify($vendor->shop->slug, ['title' => 'Order cancelled', 'body' => "Your order been cancelled!"]);
+            $this->notify($vendor->shop->slug, [
+                'title' => 'Order cancelled',
+                'body' => "Your order been cancelled!",
+                'action' => 'update',
+                'status' => 'cancelled',
+                'slug' => $shopOrder->slug,
+            ]);
         }
 
         $this->notifyAdmin(
@@ -138,10 +165,12 @@ class ShopOrderController extends Controller
             [
                 'title' => $data['title'],
                 'body' => $data['body'],
-                'img' => '',
                 'data' => [
-                    'action' => '',
-                    'type' => 'notification',
+                    'action' => $data['action'],
+                    'type' => 'shopOrder',
+                    'status' => !empty($data['status']) ? $data['status'] : "",
+                    'shopOrder' => !empty($data['shopOrder']) ? $data['shopOrder'] : "",
+                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
                 ],
             ]
         );
