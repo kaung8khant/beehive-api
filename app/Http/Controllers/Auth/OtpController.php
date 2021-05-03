@@ -72,7 +72,7 @@ class OtpController extends Controller
             }
         }
 
-        $smsResponse = SmsHelper::send($phoneNumber, 'Your OTP code is ' . $otpCode . '.');
+        $smsResponse = SmsHelper::sendSms($phoneNumber, 'Your OTP code is ' . $otpCode . '.');
 
         if ($smsResponse['status'] !== 0) {
             $this->storeOtp($phoneNumber, $otpCode, $smsResponse['message_id'], 'Error', $type, $source);

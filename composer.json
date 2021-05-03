@@ -20,6 +20,7 @@
         "laravel/tinker": "^2.5",
         "league/flysystem-aws-s3-v3": "~1.0",
         "nesbot/carbon": "^2.45",
+        "phlib/sms-length": "^1.1",
         "propaganistas/laravel-phone": "^4.3",
         "sentry/sentry-laravel": "^2.4",
         "tymon/jwt-auth": "^1.0"
