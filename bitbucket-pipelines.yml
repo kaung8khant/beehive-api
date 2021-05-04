@@ -23,7 +23,7 @@ pipelines:
             - pipe: atlassian/ssh-run:0.3.0
               variables:
                 SSH_USER: "root"
-                SERVER: "139.162.51.4"
+                SERVER: "172.104.166.202"
                 COMMAND: "./deploy.sh"
     master:
       - parallel:
