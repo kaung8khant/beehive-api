@@ -61,6 +61,7 @@ pipelines:
                   SENTRY_TRACES_SAMPLE_RATE=1
                   APP_DEBUG=false
                   FILESYSTEM_DRIVER=s3
+                  BUILD_NUMBER=${BITBUCKET_BUILD_NUMBER}
 
                 # install dependencies
                 - composer update
