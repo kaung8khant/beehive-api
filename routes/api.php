@@ -161,6 +161,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('customer-groups', 'Group\CustomerGroupController');
             Route::post('customer-groups/add/{slug}', 'Group\CustomerGroupController@addCustomersToGroup');
             Route::delete('customer-groups/remove/{slug}', 'Group\CustomerGroupController@removeCustomersFromGroup');
+
+            Route::post('sms/send', 'Sms\SmsController@send');
         });
     });
 
