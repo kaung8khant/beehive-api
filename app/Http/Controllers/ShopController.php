@@ -567,9 +567,9 @@ class ShopController extends Controller
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
-        $orderList = ShopOrder::with(['vendors' => function ($query) use ($shop) {
+        $orderList = ShopOrder::whereHas('vendors', function ($query) use ($shop) {
             $query->where('shop_id', $shop->id);
-        }])->get();
+        })->get();
 
         $customerlist = [];
 
