@@ -3,91 +3,37 @@
 namespace App\Http\Controllers\Sms;
 
 use App\Helpers\SmsHelper;
+use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
-use App\Models\SmsLog;
-use Carbon\Carbon;
+use App\Jobs\SendSms;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
-use Phlib\SmsLength\SmsLength;
-use Propaganistas\LaravelPhone\PhoneNumber;
 
 class SmsController extends Controller
 {
+    protected $phonesPerWorker;
+
+    public function __construct()
+    {
+        $this->phonesPerWorker = 200;
+    }
+
     public function send(Request $request)
     {
         $this->validateRequest($request);
 
+        $userId = Auth::guard('users')->user()->id;
         $message = trim(SmsHelper::removeEmoji($request->message));
-        $smsData = $this->prepareSmsData($message);
+        $smsData = SmsHelper::prepareSmsData($message, $userId);
+        $workerCount = $this->calculateWorkerCount($request->phone_numbers);
 
-        // return $jobCount = count($request->phone_numbers) % 100;
-
-        foreach ($request->phone_numbers as $number) {
-            $validator = $this->validateNumber($number);
-
-            if (!$validator->fails()) {
-                $phoneNumber = PhoneNumber::make($number, 'MM');
-
-                try {
-                    $smsResponse = SmsHelper::sendSms($phoneNumber, $message);
-                    $status = 'Success';
-
-                    if ($smsResponse['status'] !== 0) {
-                        $status = 'Failed';
-                    }
-
-                    $this->storeSmsLog($smsData, $smsResponse, $phoneNumber, $request->type, $status);
-
-                } catch (\Exception $e) {
-                    Log::critical($e);
-                    $this->storeSmsLog($smsData, null, $phoneNumber, $request->type, 'Error');
-                }
-            } else {
-                $this->storeSmsLog($smsData, null, $number, $request->type, 'Rejected');
-            }
+        for ($i = 0; $i < $workerCount; $i++) {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $phoneNumbers = array_slice($request->phone_numbers, $i * $this->phonesPerWorker, $this->phonesPerWorker);
+            SendSms::dispatch($uniqueKey, $phoneNumbers, $message, $request->type, $smsData);
         }
 
         return response()->json(['Your sms is preparing and being sent to users.'], 200);
-    }
-
-    private function prepareSmsData($message)
-    {
-        $smsLength = new SmsLength($message);
-
-        return [
-            'batchId' => Carbon::now()->getPreciseTimestamp(2),
-            'message' => $message,
-            'totalCharacters' => $smsLength->getSize(),
-            'messageParts' => $smsLength->getMessageCount(),
-            'encoding' => $smsLength->getEncoding() === 'ucs-2' ? 'Unicode' : 'Plain Text',
-            'userId' => Auth::guard('users')->user()->id,
-        ];
-    }
-
-    private function storeSmsLog($smsData, $smsResponse, $phoneNumber, $type, $status)
-    {
-        $params = [
-            'batch_id' => $smsData['batchId'],
-            'message_id' => isset($smsResponse['message_id']) ? $smsResponse['message_id'] : null,
-            'phone_number' => $phoneNumber,
-            'message' => $smsData['message'],
-            'message_parts' => $smsData['messageParts'],
-            'total_characters' => $smsData['totalCharacters'],
-            'encoding' => $smsData['encoding'],
-            'type' => $type,
-            'status' => $status,
-            'user_id' => $smsData['userId'],
-        ];
-
-        if ($status === 'Failed') {
-            $params['error_message'] = $smsResponse['error-text'];
-        } else if ($status === 'Error') {
-            $params['error_message'] = 'Internal Server Error';
-        }
-
-        SmsLog::create($params);
     }
 
     private function validateRequest($request)
@@ -99,10 +45,15 @@ class SmsController extends Controller
         ]);
     }
 
-    private function validateNumber($number)
+    private function calculateWorkerCount($phoneNumbers)
     {
-        return Validator::make(['number' => $number], [
-            'number' => 'phone:MM',
-        ]);
+        $phoneNumberCount = count($phoneNumbers);
+        $workerCount = intval($phoneNumberCount / $this->phonesPerWorker);
+
+        if ($phoneNumberCount % $this->phonesPerWorker !== 0) {
+            $workerCount += 1;
+        }
+
+        return $workerCount;
     }
 }
