@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install composer dependencies
-composer install
+php composer.phar install
 
 # Run database migration
 php artisan migrate --force
