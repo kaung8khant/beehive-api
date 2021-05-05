@@ -120,6 +120,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('menu-toppings', 'MenuToppingController');
             Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
             Route::post('menus/status', 'MenuController@multipleStatusUpdate');
+            Route::post('menus/multiple-delete', 'MenuController@multipleDelete');
             Route::get('restaurants/{slug}/menus', 'MenuController@getMenusByRestaurant');
             Route::get('menus/{slug}/menu-variations', 'MenuVariationController@getVariationsByMenu');
             Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
