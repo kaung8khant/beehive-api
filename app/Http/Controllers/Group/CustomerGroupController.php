@@ -53,7 +53,7 @@ class CustomerGroupController extends Controller
         $this->validateCustomers($request);
 
         $customerIds = $this->getCustomerIds($request->customer_slugs);
-        // $group->customers()->detach();
+        $group->customers()->detach($customerIds);
         $group->customers()->attach($customerIds);
         return response()->json(['message' => 'The selected customers have been added to the group.'], 200);
     }
