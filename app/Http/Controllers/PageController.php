@@ -41,7 +41,7 @@ class PageController extends Controller
     {
         $page = Page::where('slug', $slug)->firstOrFail();
 
-        $page->update($request->validate([
+        $page->update($request->validate(
             [
                 'name' => [
                     'required',
@@ -51,7 +51,7 @@ class PageController extends Controller
                 'created_by' => 'nullable|string',
                 'modified_by' => 'nullable|string'
             ]
-        ]));
+        ));
 
         return response()->json($page, 200);
     }
