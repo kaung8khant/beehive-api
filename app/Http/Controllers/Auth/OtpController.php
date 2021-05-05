@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\OneTimePassword;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
@@ -72,14 +73,23 @@ class OtpController extends Controller
             }
         }
 
-        $smsResponse = SmsHelper::sendSms($phoneNumber, 'Your OTP code is ' . $otpCode . '.');
+        $smsData = SmsHelper::prepareSmsData($otpCode);
 
-        if ($smsResponse['status'] !== 0) {
-            $this->storeOtp($phoneNumber, $otpCode, $smsResponse['message_id'], 'Error', $type, $source);
-            return $this->generateResponse('Something went wrong when sending OTP.', 406, true);
+        try {
+            $smsResponse = SmsHelper::sendSms($phoneNumber, 'Your OTP code is ' . $otpCode . '.');
+
+            if ($smsResponse['status'] !== 0) {
+                $this->storeOtp($phoneNumber, $otpCode, $smsResponse['message_id'], 'Failed', $type, $source);
+                return $this->generateResponse('Something went wrong when sending OTP.', 406, true);
+            }
+
+            $this->storeOtp($phoneNumber, $otpCode, $smsResponse['message_id'], 'Success', $type, $source);
+            SmsHelper::storeSmsLog($smsData, $smsResponse, $phoneNumber, 'otp', 'Success');
+        } catch (\Exception $e) {
+            Log::critical($e);
+            SmsHelper::storeSmsLog($smsData, null, $phoneNumber, 'otp', 'Error');
         }
 
-        $this->storeOtp($phoneNumber, $otpCode, $smsResponse['message_id'], 'Success', $type, $source);
         return $this->generateResponse('Otp code has been successfully sent to your phone.', 200, true);
     }
 

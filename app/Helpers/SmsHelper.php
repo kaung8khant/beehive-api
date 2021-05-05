@@ -2,6 +2,9 @@
 
 namespace App\Helpers;
 
+use App\Helpers\SmsLength;
+use App\Models\SmsLog;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
@@ -32,6 +35,44 @@ trait SmsHelper
         } catch (RequestException $e) {
             throw $e;
         }
+    }
+
+    public static function prepareSmsData($message, $userId = null)
+    {
+        $smsLength = new SmsLength($message);
+
+        return [
+            'batchId' => Carbon::now()->getPreciseTimestamp(2),
+            'message' => $message,
+            'totalCharacters' => $smsLength->getSize(),
+            'messageParts' => $smsLength->getMessageCount(),
+            'encoding' => $smsLength->getEncoding() === 'ucs-2' ? 'Unicode' : 'Plain Text',
+            'userId' => $userId ? $userId : null,
+        ];
+    }
+
+    public static function storeSmsLog($smsData, $smsResponse, $phoneNumber, $type, $status)
+    {
+        $params = [
+            'batch_id' => $smsData['batchId'],
+            'message_id' => isset($smsResponse['message_id']) ? $smsResponse['message_id'] : null,
+            'phone_number' => $phoneNumber,
+            'message' => $smsData['message'],
+            'message_parts' => $smsData['messageParts'],
+            'total_characters' => $smsData['totalCharacters'],
+            'encoding' => $smsData['encoding'],
+            'type' => $type,
+            'status' => $status,
+            'user_id' => $smsData['userId'],
+        ];
+
+        if ($status === 'Failed') {
+            $params['error_message'] = $smsResponse['error-text'];
+        } else if ($status === 'Error') {
+            $params['error_message'] = 'Internal Server Error';
+        }
+
+        SmsLog::create($params);
     }
 
     public static function removeEmoji($string)

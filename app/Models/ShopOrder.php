@@ -24,7 +24,6 @@ class ShopOrder extends Model
     protected $hidden = [
         'id',
         'promocode_id',
-        'customer_id',
         'created_at',
         'updated_at',
         'pivot',
