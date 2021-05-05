@@ -44,6 +44,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('menus/status', 'MenuController@multipleStatusUpdate');
         Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
         Route::post('menus/multiple-delete', 'MenuController@multipleDelete');
+        Route::delete('menus/{slug}', 'MenuController@destroy');
 
         Route::post('restaurant-branches/{restaurantBranchSlug}/menus/{slug}', 'RestaurantBranchController@toggleAvailable');
 
