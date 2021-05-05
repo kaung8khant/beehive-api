@@ -83,6 +83,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('products/status', 'ProductController@multipleStatusUpdate');
             Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
             Route::get('shop-categories/{slug}/products', 'ProductController@getProductsByCategory');
+            Route::post('products/multiple-delete', 'ProductController@multipleDelete');
+
 
             Route::resource('product-variations', 'ProductVariationController');
             Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');

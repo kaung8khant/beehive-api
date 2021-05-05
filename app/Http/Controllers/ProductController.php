@@ -496,6 +496,28 @@ class ProductController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
+    public function multipleDelete(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Product,slug',
+        ]);
+
+        $productIdList = Product::whereIn('slug', $validatedData['slugs'])->pluck('id');
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $product = Product::where('slug', $slug)->firstOrFail();
+
+            foreach ($product->images as $image) {
+                 $this->deleteFile($image->slug);
+            }
+        }
+
+        Product::whereIn('id',$productIdList)->delete();
+
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
     /**
      * @OA\Get(
      *      path="/api/v2/admin/brands/{slug}/products",
