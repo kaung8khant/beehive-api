@@ -188,7 +188,6 @@ class CustomerController extends Controller
                     Rule::unique('customers')->ignore($customer->id),
                 ],
                 'gender' => 'required|in:Male,Female',
-
             ],
             [
                 'phone_number.phone' => 'Invalid phone number.',
