@@ -104,7 +104,9 @@ class CustomerGroupController extends Controller
         return Customer::whereHas('customerGroups', function ($q) use ($slug) {
             $q->where('slug', $slug);
         })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+            $q->where('email', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
         })->paginate(10);
     }
