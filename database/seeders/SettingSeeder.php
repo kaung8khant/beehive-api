@@ -16,14 +16,23 @@ class SettingSeeder extends Seeder
     {
         $settings = [
             [
-                'key' => 'tax',
+                'key' => 'Restaurant Filter Range',
+                'value' => '10',
+                'data_type' => 'integer',
+            ],
+            [
+                'key' => 'Default Commercial Tax (%)',
                 'value' => '5',
                 'data_type' => 'integer',
             ],
             [
-                'key' => 'commission',
-                'value' => '10',
-                'data_type' => 'integer',
+                'key' => 'Default Currency',
+                'value' => 'MMK',
+                'data_type' => 'string',
+            ],  [
+                'key' => 'Printer Format',
+                'value' => 'A4',
+                'data_type' => 'string',
             ],
         ];
         foreach ($settings as $setting) {
