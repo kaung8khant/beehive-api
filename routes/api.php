@@ -163,6 +163,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::delete('customer-groups/remove/{slug}', 'Group\CustomerGroupController@removeCustomersFromGroup');
 
             Route::post('sms/send', 'Sms\SmsController@send');
+
+            Route::get('pages', 'PageController@index');
+            Route::get('pages/{slug}', 'PageController@show');
+            Route::patch('pages/{slug}', 'PageController@update');
         });
     });
 
