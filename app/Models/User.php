@@ -37,6 +37,7 @@ class User extends Authenticatable implements JWTSubject
         'is_locked',
         'shop_id',
         'restaurant_branch_id',
+        'created_by',
     ];
 
     protected $hidden = [
@@ -54,6 +55,11 @@ class User extends Authenticatable implements JWTSubject
         'is_enable' => 'boolean',
         'is_locked' => 'boolean',
     ];
+
+    public function getCreatedByAttribute($value)
+    {
+        return User::find($value);
+    }
 
     public function getJWTIdentifier()
     {
