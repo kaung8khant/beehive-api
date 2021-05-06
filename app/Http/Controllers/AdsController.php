@@ -133,7 +133,7 @@ class AdsController extends Controller
         ];
 
         if ($slug) {
-            $params['slug'] = 'required|unique:menus';
+            $params['slug'] = 'required|unique:ads';
         }
 
         return $params;
