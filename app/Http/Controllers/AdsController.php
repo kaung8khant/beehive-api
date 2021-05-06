@@ -121,10 +121,10 @@ class AdsController extends Controller
     private function getParamsToValidate($slug = false)
     {
         $params = [
-            'label' => 'required',
-            'contact_person' => 'required',
-            'company_name' => 'required',
-            'phone_number' => 'required',
+            'label' => 'nullable',
+            'contact_person' => 'nullable',
+            'company_name' => 'nullable',
+            'phone_number' => 'nullable',
             'email' => 'nullable',
             'type' => 'required|in:banner',
             'source' => 'required|in:restaurant,shop',
