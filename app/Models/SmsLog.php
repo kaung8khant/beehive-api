@@ -23,10 +23,6 @@ class SmsLog extends Model
         'user_id',
     ];
 
-    protected $hidden = [
-        'id',
-    ];
-
     public function user()
     {
         return $this->belongsTo(User::class);

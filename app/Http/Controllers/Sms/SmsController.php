@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 class SmsController extends Controller
 {
@@ -60,7 +61,7 @@ class SmsController extends Controller
         return $workerCount;
     }
 
-    public function getLogs(Request $request)
+    public function getLogs()
     {
         return SmsLog::with('user')->paginate(10);
     }
@@ -68,6 +69,22 @@ class SmsController extends Controller
     public function getLogsByBatchId($batchId)
     {
         return SmsLog::with('user')->where('batch_id', $batchId)->paginate(10);
+    }
+
+    public function getLogsByPhone($phone)
+    {
+        $validator = Validator::make(
+            ['phone' => $phone],
+            ['phone' => 'phone:MM'],
+            ['phone.phone' => 'Invalid phone number.']
+        );
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        $phoneNumber = PhoneNumber::make($phone, 'MM');
+        return SmsLog::with('user')->where('phone_number', $phoneNumber)->paginate(10);
     }
 
     public function getLogsByDate($from, $to)

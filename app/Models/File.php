@@ -26,6 +26,8 @@ class File extends Model
         'updated_at',
     ];
 
+    protected $appends = ['url'];
+
     public function getUrlAttribute()
     {
         if ($this->attributes['extension'] === 'png' || $this->attributes['extension'] === 'jpg') {
@@ -36,6 +38,4 @@ class File extends Model
 
         return $url;
     }
-
-    protected $appends = ['url'];
 }
