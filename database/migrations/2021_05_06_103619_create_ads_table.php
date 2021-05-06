@@ -16,11 +16,11 @@ class CreateAdsTable extends Migration
         Schema::create('ads', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique();
-            $table->string('label');
-            $table->string('contact_person');
-            $table->string('company_name');
-            $table->string('phone_number');
-            $table->string('email');
+            $table->string('label')->nullable();
+            $table->string('contact_person')->nullable();
+            $table->string('company_name')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->string('email')->nullable();
             $table->enum('type', ['banner']);
             $table->enum('source', ['shop', 'restaurant']);
             $table->string('created_by');
