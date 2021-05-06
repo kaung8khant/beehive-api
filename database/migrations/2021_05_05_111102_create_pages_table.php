@@ -17,9 +17,9 @@ class CreatePagesTable extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->string('name')->unique();
-            $table->longText('content');
-            $table->string('created_by');
-            $table->string('modified_by');
+            $table->longText('content')->nullable();
+            $table->string('created_by')->default('admin');
+            $table->string('modified_by')->default('admin');
             $table->timestamps();
         });
     }

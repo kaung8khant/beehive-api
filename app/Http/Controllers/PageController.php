@@ -29,7 +29,6 @@ class PageController extends Controller
         return Page::where('slug', $slug)->firstOrFail();
     }
 
-
     /**
      * Update the specified resource in storage.
      *
@@ -48,8 +47,7 @@ class PageController extends Controller
                     Rule::unique('pages')->ignore($page->id)
                 ],
                 'content' => 'nullable',
-                'created_by' => 'nullable|string',
-                'modified_by' => 'nullable|string'
+                'modified_by' => 'required|string'
             ]
         ));
 
