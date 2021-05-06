@@ -168,8 +168,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::post('sms/send', 'Sms\SmsController@send');
             Route::get('sms/logs', 'Sms\SmsController@getLogs');
-            Route::get('sms/logs/{batchId}', 'Sms\SmsController@getLogsByBatchId');
-            Route::get('sms/logs/{from}/{to}', 'Sms\SmsController@getLogsByDate');
+            Route::get('sms/logs/batch/{batchId}', 'Sms\SmsController@getLogsByBatchId');
+            Route::get('sms/logs/phone/{phone}', 'Sms\SmsController@getLogsByPhone');
+            Route::get('sms/logs/date/{from}/{to}', 'Sms\SmsController@getLogsByDate');
         });
     });
 
