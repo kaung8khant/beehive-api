@@ -179,14 +179,21 @@ class CustomerController extends Controller
     {
         $customer = Customer::where('slug', $slug)->firstOrFail();
 
-        $validatedData = $request->validate([
-            'name' => 'required',
-            'phone_number' => [
-                'required',
-                Rule::unique('customers')->ignore($customer->id),
+        $validatedData = $request->validate(
+            [
+                'name' => 'required',
+                'phone_number' => [
+                    'required',
+                    'phone:MM',
+                    Rule::unique('customers')->ignore($customer->id),
+                ],
+                'gender' => 'required|in:Male,Female',
             ],
-            'gender' => 'required|in:Male,Female',
-        ]);
+            [
+                'phone_number.phone' => 'Invalid phone number.',
+            ]
+        );
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
 
         $customer->update($validatedData);
         return response()->json($customer, 200);

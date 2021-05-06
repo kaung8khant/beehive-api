@@ -53,7 +53,7 @@ class CustomerGroupController extends Controller
         $this->validateCustomers($request);
 
         $customerIds = $this->getCustomerIds($request->customer_slugs);
-        $group->customers()->detach();
+        $group->customers()->detach($customerIds);
         $group->customers()->attach($customerIds);
         return response()->json(['message' => 'The selected customers have been added to the group.'], 200);
     }
@@ -97,5 +97,17 @@ class CustomerGroupController extends Controller
         return collect($slugs)->map(function ($slug) {
             return Customer::where('slug', $slug)->value('id');
         });
+    }
+
+    public function getCustomersByGroup(Request $request, $slug)
+    {
+        return Customer::whereHas('customerGroups', function ($q) use ($slug) {
+            $q->where('slug', $slug);
+        })->where(function ($q) use ($request) {
+            $q->where('email', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+        })->paginate(10);
     }
 }

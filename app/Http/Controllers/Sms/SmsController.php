@@ -6,8 +6,11 @@ use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
+use App\Models\SmsLog;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class SmsController extends Controller
 {
@@ -55,5 +58,45 @@ class SmsController extends Controller
         }
 
         return $workerCount;
+    }
+
+    public function getLogs(Request $request)
+    {
+        return SmsLog::with('user')->paginate(10);
+    }
+
+    public function getLogsByBatchId($batchId)
+    {
+        return SmsLog::with('user')->where('batch_id', $batchId)->paginate(10);
+    }
+
+    public function getLogsByDate($from, $to)
+    {
+        $validator = Validator::make(
+            [
+                'from' => $from,
+                'to' => $to,
+            ],
+            [
+                'from' => 'required|date_format:Y-m-d',
+                'to' => 'required|date_format:Y-m-d',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        $from = Carbon::parse($from);
+        $to = Carbon::parse($to);
+
+        if ($from->gt($to)) {
+            return response()->json(['error' => 'from date cannot be greater than to date'], 406);
+        }
+
+        $from = $from->format('Y-m-d 00:00:00');
+        $to = $to->format('Y-m-d 23:59:59');
+
+        return SmsLog::with('user')->whereBetween('created_at', [$from, $to])->paginate(10);
     }
 }

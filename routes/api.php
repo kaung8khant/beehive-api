@@ -83,6 +83,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('products/status', 'ProductController@multipleStatusUpdate');
             Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
             Route::get('shop-categories/{slug}/products', 'ProductController@getProductsByCategory');
+            Route::post('products/multiple-delete', 'ProductController@multipleDelete');
+
 
             Route::resource('product-variations', 'ProductVariationController');
             Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
@@ -118,6 +120,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('menu-toppings', 'MenuToppingController');
             Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
             Route::post('menus/status', 'MenuController@multipleStatusUpdate');
+            Route::post('menus/multiple-delete', 'MenuController@multipleDelete');
             Route::get('restaurants/{slug}/menus', 'MenuController@getMenusByRestaurant');
             Route::get('menus/{slug}/menu-variations', 'MenuVariationController@getVariationsByMenu');
             Route::get('menus/{slug}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
@@ -161,8 +164,16 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('customer-groups', 'Group\CustomerGroupController');
             Route::post('customer-groups/add/{slug}', 'Group\CustomerGroupController@addCustomersToGroup');
             Route::delete('customer-groups/remove/{slug}', 'Group\CustomerGroupController@removeCustomersFromGroup');
+            Route::get('customer-groups/{slug}/customers', 'Group\CustomerGroupController@getCustomersByGroup');
 
             Route::post('sms/send', 'Sms\SmsController@send');
+            Route::get('sms/logs', 'Sms\SmsController@getLogs');
+            Route::get('sms/logs/{batchId}', 'Sms\SmsController@getLogsByBatchId');
+            Route::get('sms/logs/{from}/{to}', 'Sms\SmsController@getLogsByDate');
+
+            Route::get('pages', 'PageController@index');
+            Route::get('pages/{slug}', 'PageController@show');
+            Route::patch('pages/{slug}', 'PageController@update');
         });
     });
 

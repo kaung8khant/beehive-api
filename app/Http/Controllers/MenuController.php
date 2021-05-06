@@ -499,6 +499,28 @@ class MenuController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
+    public function multipleDelete(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Menu,slug',
+        ]);
+
+        $menuIdList = Menu::whereIn('slug', $validatedData['slugs'])->pluck('id');
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $menu = Menu::where('slug', $slug)->firstOrFail();
+
+            foreach ($menu->images as $image) {
+                 $this->deleteFile($image->slug);
+            }
+        }
+
+        Menu::whereIn('id',$menuIdList)->delete();
+
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
     public function import(Request $request)
     {
         $validatedData = $request->validate([
