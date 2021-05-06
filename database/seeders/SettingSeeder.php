@@ -19,20 +19,49 @@ class SettingSeeder extends Seeder
                 'key' => 'Restaurant Filter Range',
                 'value' => '10',
                 'data_type' => 'integer',
+                'group_name' => 'business'
             ],
             [
                 'key' => 'Default Commercial Tax (%)',
                 'value' => '5',
                 'data_type' => 'integer',
+                'group_name' => 'business'
             ],
             [
                 'key' => 'Default Currency',
                 'value' => 'MMK',
                 'data_type' => 'string',
-            ],  [
+                'group_name' => 'business'
+            ],
+            [
                 'key' => 'Printer Format',
                 'value' => 'A4',
                 'data_type' => 'string',
+                'group_name' => 'business'
+            ],
+            [
+                'key' => 'Phone Number',
+                'value' => '0977777777',
+                'data_type' => 'string',
+                'group_name' => 'contact'
+            ],
+            [
+                'key' => 'Email',
+                'value' => 'beehive@gmail.com',
+                'data_type' => 'string',
+                'group_name' => 'contact'
+            ],
+            [
+                'key' => 'Facebook',
+                'value' => 'beehive@facebook.com',
+                'data_type' => 'string',
+                'group_name' => 'contact'
+            ],
+            [
+                'key' => 'Website',
+                'value' => 'www.beehive.com',
+                'data_type' => 'string',
+                'group_name' => 'contact'
             ],
         ];
         foreach ($settings as $setting) {

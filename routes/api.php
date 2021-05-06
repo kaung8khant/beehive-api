@@ -170,6 +170,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('sms/logs', 'Sms\SmsController@getLogs');
             Route::get('sms/logs/{batchId}', 'Sms\SmsController@getLogsByBatchId');
             Route::get('sms/logs/{from}/{to}', 'Sms\SmsController@getLogsByDate');
+
+            Route::get('pages', 'PageController@index');
+            Route::get('pages/{slug}', 'PageController@show');
+            Route::patch('pages/{slug}', 'PageController@update');
         });
     });
 
