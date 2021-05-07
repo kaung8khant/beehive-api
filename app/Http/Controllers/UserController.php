@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantBranch;
 use App\Models\Role;
@@ -16,7 +17,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserController extends Controller
 {
-    use StringHelper;
+    use StringHelper, ResponseHelper;
 
     /**
      * @OA\Get(
@@ -459,5 +460,22 @@ class UserController extends Controller
         }
 
         return $rules;
+    }
+
+    public function updatePassword(Request $request, $slug)
+    {
+        $user = User::where('slug', $slug)->firstOrFail();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if (Hash::check($request->current_password, Auth::guard('users')->user()->password)) {
+            $user->update(['password' => Hash::make($request->new_password)]);
+            return $this->generateResponse('The password has been successfully updated.', 200, true);
+        }
+
+        return $this->generateResponse('Your current password is incorrect.', 403, true);
     }
 }
