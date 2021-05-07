@@ -33,6 +33,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('roles', 'RoleController');
             Route::resource('users', 'UserController');
             Route::post('users/reset-password/{slug}', 'UserController@updatePassword');
+            Route::post('users/reset-password/customer/{slug}', 'UserController@updatePasswordForCustomer');
             Route::patch('users/toggle-enable/{slug}', 'UserController@toggleEnable');
             Route::get('shop-users', 'UserController@getShopUsers');
             Route::post('shop-users', 'UserController@storeShopUser');

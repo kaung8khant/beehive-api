@@ -8,6 +8,7 @@ use App\Models\RestaurantBranch;
 use App\Models\Role;
 use App\Models\Shop;
 use App\Models\User;
+use App\Models\Customer;
 use App\Models\UserSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -464,6 +465,7 @@ class UserController extends Controller
 
     public function updatePassword(Request $request, $slug)
     {
+
         $user = User::where('slug', $slug)->firstOrFail();
 
         $request->validate([
@@ -478,4 +480,22 @@ class UserController extends Controller
 
         return $this->generateResponse('Your current password is incorrect.', 403, true);
     }
+
+    public function updatePasswordForCustomer(Request $request, $slug)
+    {
+        $customer = Customer::where('slug', $slug)->firstOrFail();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if (Hash::check($request->current_password, Auth::guard('users')->user()->password)) {
+            $customer->update(['password' => Hash::make($request->new_password)]);
+            return $this->generateResponse('The password has been successfully updated.', 200, true);
+        }
+
+        return $this->generateResponse('Your current password is incorrect.', 403, true);
+    }
+
 }
