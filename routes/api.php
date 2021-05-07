@@ -20,7 +20,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('customers/{slug}/addresses', 'AddressController@store');
 
             Route::get('settings', 'SettingController@index');
-            Route::get('settings/{key}', 'SettingController@show');
+            Route::get('settings/{groupName}', 'SettingController@show');
             Route::put('settings/update', 'SettingController@updateSetting');
 
             /* Dashboard */
@@ -32,6 +32,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('roles', 'RoleController');
             Route::resource('users', 'UserController');
+            Route::post('users/reset-password/{slug}', 'UserController@updatePassword');
+            Route::post('users/reset-password/customer/{slug}', 'UserController@updatePasswordForCustomer');
             Route::patch('users/toggle-enable/{slug}', 'UserController@toggleEnable');
             Route::get('shop-users', 'UserController@getShopUsers');
             Route::post('shop-users', 'UserController@storeShopUser');
@@ -84,7 +86,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
             Route::get('shop-categories/{slug}/products', 'ProductController@getProductsByCategory');
             Route::post('products/multiple-delete', 'ProductController@multipleDelete');
-
 
             Route::resource('product-variations', 'ProductVariationController');
             Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
@@ -146,7 +147,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('shop-orders', 'ShopOrderController');
             Route::post('shop-orders/{slug}/change-status', 'ShopOrderController@changeStatus');
             /* Order */
-
 
             /* Promocode */
             Route::resource('promocodes', 'PromocodeController');

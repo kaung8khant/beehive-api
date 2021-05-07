@@ -62,9 +62,9 @@ class SettingController extends Controller
      *      }
      *)
      */
-    public function show($key)
+    public function show($groupName)
     {
-        return Setting::where('key', $key)->firstOrFail();
+        return Setting::where('group_name', $groupName)->firstOrFail();
     }
 
     /**

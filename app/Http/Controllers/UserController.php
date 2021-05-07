@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantBranch;
 use App\Models\Role;
 use App\Models\Shop;
 use App\Models\User;
+use App\Models\Customer;
 use App\Models\UserSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +18,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserController extends Controller
 {
-    use StringHelper;
+    use StringHelper, ResponseHelper;
 
     /**
      * @OA\Get(
@@ -460,4 +462,40 @@ class UserController extends Controller
 
         return $rules;
     }
+
+    public function updatePassword(Request $request, $slug)
+    {
+
+        $user = User::where('slug', $slug)->firstOrFail();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if (Hash::check($request->current_password, Auth::guard('users')->user()->password)) {
+            $user->update(['password' => Hash::make($request->new_password)]);
+            return $this->generateResponse('The password has been successfully updated.', 200, true);
+        }
+
+        return $this->generateResponse('Your current password is incorrect.', 403, true);
+    }
+
+    public function updatePasswordForCustomer(Request $request, $slug)
+    {
+        $customer = Customer::where('slug', $slug)->firstOrFail();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if (Hash::check($request->current_password, Auth::guard('users')->user()->password)) {
+            $customer->update(['password' => Hash::make($request->new_password)]);
+            return $this->generateResponse('The password has been successfully updated.', 200, true);
+        }
+
+        return $this->generateResponse('Your current password is incorrect.', 403, true);
+    }
+
 }
