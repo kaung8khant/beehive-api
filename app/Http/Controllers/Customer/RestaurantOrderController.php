@@ -6,8 +6,10 @@ use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
+use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
@@ -107,7 +109,8 @@ class RestaurantOrderController extends Controller
 
     public function destroy($slug)
     {
-        $customerId = Auth::guard('customers')->user()->id;
+        $customer = Auth::guard('customers')->user();
+        $customerId = $customer->id;
         $order = RestaurantOrder::where('customer_id', $customerId)->where('slug', $slug)->firstOrFail();
 
         if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
@@ -124,8 +127,14 @@ class RestaurantOrderController extends Controller
                 'status' => 'cancelled',
             ]);
 
+        $message = 'Your order has successfully been cancelled.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+
+        SendSms::dispatch($uniqueKey, [$customer->phone_number], $message, 'order', $smsData);
         OrderHelper::createOrderStatus($order->id, 'cancelled');
-        return $this->generateResponse('The order has successfully been cancelled.', 200, true);
+
+        return $this->generateResponse($message, 200, true);
     }
 
     private function notify($slug, $data)
