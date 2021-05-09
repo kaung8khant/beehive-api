@@ -175,6 +175,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('pages', 'PageController@index');
             Route::get('pages/{slug}', 'PageController@show');
             Route::patch('pages/{slug}', 'PageController@update');
+
+            /*Ads */
+            Route::resource('ads', 'AdsController');
         });
     });
 

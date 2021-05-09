@@ -13,4 +13,5 @@ return [
     'product_variation_values' => 'App\Models\ProductVariationValue',
     'users' => 'App\Models\User',
     'customers' => 'App\Models\Customer',
+    'ads' => 'App\Models\Ads',
 ];
