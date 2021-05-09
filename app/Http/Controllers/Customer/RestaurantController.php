@@ -111,28 +111,31 @@ class RestaurantController extends Controller
             ->with('restaurant.availableTags')
             ->with('township')
             ->where('slug', $slug)
+            ->where('is_enable', 1)
             ->firstOrFail();
+
         return $this->generateBranchResponse($restaurantBranch, 200, 'obj');
     }
 
     public function getAvailableMenusByBranch($slug)
     {
         $restaurantBranch = RestaurantBranch::with('restaurant')
-            ->with('availableMenus')
-            ->with('availableMenus.restaurantCategory')
-            ->with('availableMenus.menuVariations')
-            ->with('availableMenus.menuVariations.menuVariationValues')
-            ->with('availableMenus.menuToppings')
+            ->with(['availableMenus' => function ($query) {
+                $query->with('restaurantCategory')
+                    ->with('menuVariations')
+                    ->with('menuVariations.menuVariationValues')
+                    ->with('menuToppings')
+                    ->where('is_enable', 1);
+            }])
             ->where('slug', $slug)
+            ->where('is_enable', 1)
             ->firstOrFail();
 
-        $availableCategories = collect([]);
-        foreach ($restaurantBranch->availableMenus as $menu) {
+        $availableCategories = $restaurantBranch->availableMenus->map(function ($menu) {
             $menu->setAppends(['is_available', 'images']);
-            $availableCategories->push($menu->restaurantCategory);
-        }
+            return $menu->restaurantCategory;
+        })->unique()->values()->toArray();
 
-        $availableCategories = $availableCategories->unique()->values()->toArray();
         $restaurantBranch = $restaurantBranch->toArray();
 
         for ($i = 0; $i < count($availableCategories); $i++) {
@@ -187,7 +190,7 @@ class RestaurantController extends Controller
 
         $categorizedBranches = $categoryIds->map(function ($categoryId) use ($request) {
             $category = RestaurantCategory::find($categoryId);
-            $restaurantIds = Menu::where('restaurant_category_id', $categoryId)->groupBy('restaurant_id')->pluck('restaurant_id');
+            $restaurantIds = Menu::where('restaurant_category_id', $categoryId)->where('is_enable', 1)->groupBy('restaurant_id')->pluck('restaurant_id');
 
             $category->restaurant_branches = $restaurantIds->map(function ($restaurantId) use ($request) {
                 return $this->getBranches($request)
@@ -231,7 +234,7 @@ class RestaurantController extends Controller
         }
 
         $restaurantCategory = RestaurantCategory::where('slug', $slug)->firstOrFail();
-        $restaurantIds = Menu::where('restaurant_category_id', $restaurantCategory->id)->groupBy('restaurant_id')->pluck('restaurant_id');
+        $restaurantIds = Menu::where('restaurant_category_id', $restaurantCategory->id)->where('is_enable', 1)->groupBy('restaurant_id')->pluck('restaurant_id');
 
         $categorizedBranches = $restaurantIds->map(function ($restaurantId) use ($request) {
             return $this->getBranches($request)->where('restaurant_id', $restaurantId)->get();
@@ -284,6 +287,9 @@ class RestaurantController extends Controller
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
                 + sin(radians(?)) * sin(radians(latitude)) )
             ) AS distance', [$request->lat, $request->lng, $request->lat])
+            ->whereHas('restaurant', function ($q) {
+                $q->where('is_enable', 1);
+            })
             ->where('is_enable', 1)
             ->having('distance', '<', $radius);
     }

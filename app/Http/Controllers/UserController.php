@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantBranch;
 use App\Models\Role;
 use App\Models\Shop;
 use App\Models\User;
+use App\Models\Customer;
 use App\Models\UserSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +18,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserController extends Controller
 {
-    use StringHelper;
+    use StringHelper, ResponseHelper;
 
     /**
      * @OA\Get(
@@ -111,6 +113,7 @@ class UserController extends Controller
             })
             ->paginate(10);
     }
+
     /**
      * @OA\Post(
      *      path="/api/v2/admin/users",
@@ -139,21 +142,7 @@ class UserController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate(
-            [
-                'slug' => 'required|unique:users',
-                'username' => 'required|unique:users',
-                'name' => 'required',
-                'phone_number' => 'required|phone:MM|unique:users',
-                'password' => 'required|min:6',
-            ],
-            [
-                'phone_number.phone' => 'Invalid phone number.',
-            ]
-        );
-
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-        $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData = $this->validateUserCreate($request);
         $user = User::create($validatedData);
 
         $adminRoleId = Role::where('name', 'Admin')->first()->id;
@@ -166,22 +155,7 @@ class UserController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate(
-            [
-                'slug' => 'required|unique:users',
-                'username' => 'required|unique:users',
-                'name' => 'required',
-                'phone_number' => 'required|phone:MM|unique:users',
-                'password' => 'required|min:6',
-                'shop_slug' => 'required|exists:App\Models\Shop,slug',
-            ],
-            [
-                'phone_number.phone' => 'Invalid phone number.',
-            ]
-        );
-
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-        $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData = $this->validateUserCreate($request, 'shop');
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $user = User::create($validatedData);
 
@@ -195,22 +169,7 @@ class UserController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate(
-            [
-                'slug' => 'required|unique:users',
-                'username' => 'required|unique:users',
-                'name' => 'required',
-                'phone_number' => 'required|phone:MM|unique:users',
-                'password' => 'required|min:6',
-                'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
-            ],
-            [
-                'phone_number.phone' => 'Invalid phone number.',
-            ]
-        );
-
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-        $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData = $this->validateUserCreate($request, 'restaurant');
         $validatedData['restaurant_branch_id'] = $this->getRestaruantBranchId($request->restaurant_branch_slug);
         $user = User::create($validatedData);
 
@@ -224,21 +183,7 @@ class UserController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate(
-            [
-                'slug' => 'required|unique:users',
-                'username' => 'required|unique:users',
-                'name' => 'required',
-                'phone_number' => 'required|phone:MM|unique:users',
-                'password' => 'required|min:6',
-            ],
-            [
-                'phone_number.phone' => 'Invalid phone number.',
-            ]
-        );
-
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-        $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData = $this->validateUserCreate($request);
         $user = User::create($validatedData);
 
         $logisticRoleId = Role::where('name', 'Logistics')->first()->id;
@@ -324,27 +269,8 @@ class UserController extends Controller
     {
         $user = User::where('slug', $slug)->firstOrFail();
 
-        $validatedData = $request->validate(
-            [
-                'name' => 'required',
-                'phone_number' => [
-                    'required',
-                    'phone:MM',
-                    Rule::unique('users')->ignore($user->id),
-                ],
-
-            ],
-            [
-                'phone_number.phone' => 'Invalid phone number.',
-            ]
-        );
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-
+        $validatedData = $this->validateUserUpdate($request, $user->id);
         $user->update($validatedData);
-
-        // $roles = Role::whereIn('slug', $request->roles)->pluck('id');
-        // $user->roles()->detach();
-        // $user->roles()->attach($roles);
 
         return response()->json($user, 200);
     }
@@ -353,29 +279,8 @@ class UserController extends Controller
     {
         $user = User::where('slug', $slug)->firstOrFail();
 
-        $validatedData = $request->validate(
-            [
-                // 'username' => [
-                //     'required',
-                //     Rule::unique('users')->ignore($user->id),
-                // ],
-                'name' => 'required',
-                'phone_number' => [
-                    'required',
-                    'phone:MM',
-                    Rule::unique('users')->ignore($user->id),
-                ],
-
-                'shop_slug' => 'required|exists:App\Models\Shop,slug',
-            ],
-            [
-                'phone_number.phone' => 'Invalid phone number.',
-            ],
-        );
-
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
+        $validatedData = $this->validateUserUpdate($request, $user->id, 'shop');
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
-
         $user->update($validatedData);
 
         return response()->json($user->refresh()->load(['shop']), 200);
@@ -385,30 +290,8 @@ class UserController extends Controller
     {
         $user = User::where('slug', $slug)->firstOrFail();
 
-        $validatedData = $request->validate(
-            [
-                // 'username' => [
-                //     'required',
-                //     Rule::unique('users')->ignore($user->id),
-                // ],
-                'name' => 'required',
-                'phone_number' => [
-                    'required',
-                    'phone:MM',
-                    Rule::unique('users')->ignore($user->id),
-                ],
-
-                'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
-            ],
-            [
-                'phone_number.phone' => 'Invalid phone number.',
-            ],
-        );
-
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-
+        $validatedData = $this->validateUserUpdate($request, $user->id, 'restaurant');
         $validatedData['restaurant_branch_id'] = $this->getRestaruantBranchId($request->restaurant_branch_slug);
-
         $user->update($validatedData);
 
         return response()->json($user->refresh()->load(['restaurantBranch', 'restaurantBranch.restaurant']), 201);
@@ -418,30 +301,12 @@ class UserController extends Controller
     {
         $user = User::where('slug', $slug)->firstOrFail();
 
-        $validatedData = $request->validate(
-            [
-                'name' => 'required',
-                'phone_number' => [
-                    'required',
-                    'phone:MM',
-                    Rule::unique('users')->ignore($user->id),
-                ],
-
-            ],
-            [
-                'phone_number.phone' => 'Invalid phone number.',
-            ]
-        );
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-
+        $validatedData = $this->validateUserUpdate($request, $user->id);
         $user->update($validatedData);
-
-        // $roles = Role::whereIn('slug', $request->roles)->pluck('id');
-        // $user->roles()->detach();
-        // $user->roles()->attach($roles);
 
         return response()->json($user, 200);
     }
+
     /**
      * @OA\Delete(
      *      path="/api/v2/admin/users/{slug}",
@@ -539,4 +404,98 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Success.'], 200);
     }
+
+    private function validateUserCreate($request, $type = null)
+    {
+        $request['phone_number'] = PhoneNumber::make($request->phone_number, 'MM');
+
+        $rules = [
+            'slug' => 'required|unique:users',
+            'username' => 'required|unique:users',
+            'name' => 'required',
+            'phone_number' => 'required|phone:MM|unique:users',
+            'password' => 'required|min:6',
+        ];
+
+        $rules = $this->getRulesByType($rules, $type);
+
+        $messages = [
+            'phone_number.phone' => 'Invalid phone number.',
+        ];
+
+        $validatedData = $request->validate($rules, $messages);
+        $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData['created_by'] = Auth::guard('users')->user()->id;
+        return $validatedData;
+    }
+
+    private function validateUserUpdate($request, $userId, $type = null)
+    {
+        $request['phone_number'] = PhoneNumber::make($request->phone_number, 'MM');
+
+        $rules = [
+            'name' => 'required',
+            'phone_number' => [
+                'required',
+                'phone:MM',
+                Rule::unique('users')->ignore($userId),
+            ],
+        ];
+
+        $rules = $this->getRulesByType($rules, $type);
+
+        $messages = [
+            'phone_number.phone' => 'Invalid phone number.',
+        ];
+
+        $validatedData = $request->validate($rules, $messages);
+        return $validatedData;
+    }
+
+    private function getRulesByType($rules, $type)
+    {
+        if ($type === 'shop') {
+            $rules['shop_slug'] = 'required|exists:App\Models\Shop,slug';
+        } else if ($type === 'restaurant') {
+            $rules['restaurant_branch_slug'] = 'required|exists:App\Models\RestaurantBranch,slug';
+        }
+
+        return $rules;
+    }
+
+    public function updatePassword(Request $request, $slug)
+    {
+
+        $user = User::where('slug', $slug)->firstOrFail();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if (Hash::check($request->current_password, Auth::guard('users')->user()->password)) {
+            $user->update(['password' => Hash::make($request->new_password)]);
+            return $this->generateResponse('The password has been successfully updated.', 200, true);
+        }
+
+        return $this->generateResponse('Your current password is incorrect.', 403, true);
+    }
+
+    public function updatePasswordForCustomer(Request $request, $slug)
+    {
+        $customer = Customer::where('slug', $slug)->firstOrFail();
+
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if (Hash::check($request->current_password, Auth::guard('users')->user()->password)) {
+            $customer->update(['password' => Hash::make($request->new_password)]);
+            return $this->generateResponse('The password has been successfully updated.', 200, true);
+        }
+
+        return $this->generateResponse('Your current password is incorrect.', 403, true);
+    }
+
 }

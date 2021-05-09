@@ -27,9 +27,13 @@ class ProductController extends Controller
         $product = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
             ->with('productVariations')
             ->with('productVariations.productVariationValues')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->paginate($request->size)->items();
+            ->where('is_enable', 1)
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->paginate($request->size)
+            ->items();
 
         return $this->generateProductResponse($product, 200);
     }
@@ -39,7 +43,9 @@ class ProductController extends Controller
         $product = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
             ->with('productVariations')
             ->with('productVariations.productVariationValues')
-            ->where('slug', $slug)->first();
+            ->where('slug', $slug)
+            ->where('is_enable', 1)
+            ->firstOrFail();
 
         return $this->generateProductResponse($product, 200, 'other');
     }
@@ -47,7 +53,7 @@ class ProductController extends Controller
     public function getByCategory(Request $request, $slug)
     {
         $category_id = $this->getShopCategoryId($slug);
-        $product = Product::where('shop_category_id', $category_id)->paginate($request->size)->items();
+        $product = Product::where('shop_category_id', $category_id)->where('is_enable', 1)->paginate($request->size)->items();
 
         return $this->generateProductResponse($product, 200);
     }
@@ -55,13 +61,12 @@ class ProductController extends Controller
     public function getByShop(Request $request, $slug)
     {
         $shopId = $this->getShopId($slug);
-        $product = Product::where('shop_id', $shopId)->paginate($request->size)->items();
+        $product = Product::where('shop_id', $shopId)->where('is_enable', 1)->paginate($request->size)->items();
 
         return $this->generateProductResponse($product, 200);
     }
-    public function getAllBrand(Request $request)
+    public function getAllBrand()
     {
-
         $brand = Brand::all();
         return $this->generateResponse($brand, 200);
     }
@@ -69,7 +74,7 @@ class ProductController extends Controller
     public function getByBrand(Request $request, $slug)
     {
         $brandId = $this->getBrandId($slug);
-        $product = Product::where('brand_id', $brandId)->paginate($request->size)->items();
+        $product = Product::where('brand_id', $brandId)->where('is_enable', 1)->paginate($request->size)->items();
 
         return $this->generateProductResponse($product, 200);
     }
@@ -114,7 +119,7 @@ class ProductController extends Controller
 
     private function getProductId($slug)
     {
-        return Product::where('slug', $slug)->firstOrFail()->id;
+        return Product::where('slug', $slug)->where('is_enable', 1)->firstOrFail()->id;
     }
 
     private function getBrandId($slug)
@@ -129,6 +134,6 @@ class ProductController extends Controller
 
     private function getShopId($slug)
     {
-        return Shop::where('slug', $slug)->firstOrFail()->id;
+        return Shop::where('slug', $slug)->where('is_enable', 1)->firstOrFail()->id;
     }
 }

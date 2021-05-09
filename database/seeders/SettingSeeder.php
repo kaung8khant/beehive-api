@@ -37,7 +37,7 @@ class SettingSeeder extends Seeder
                 'key' => 'Printer Format',
                 'value' => 'A4',
                 'data_type' => 'string',
-                'group_name' => 'business'
+                'group_name' => 'printer'
             ],
             [
                 'key' => 'Phone Number',
@@ -59,7 +59,7 @@ class SettingSeeder extends Seeder
             ],
             [
                 'key' => 'Website',
-                'value' => 'www.beehive.com',
+                'value' => 'www.beehivemm.com',
                 'data_type' => 'string',
                 'group_name' => 'contact'
             ],

@@ -27,8 +27,11 @@ class ShopController extends Controller
     public function index(Request $request)
     {
         $shop = Shop::with('availableCategories', 'availableTags')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
+            ->where('is_enable', 1)
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
             ->paginate($request->size)->items();
         return $this->generateResponse($shop, 200);
     }
@@ -37,13 +40,13 @@ class ShopController extends Controller
     {
         $shop = Shop::with('availableCategories', 'availableTags', 'township')
             ->where('slug', $slug)
-            ->first();
+            ->where('is_enable', 1)
+            ->firstOrFail();
         return $this->generateResponse($shop, 200);
     }
 
     public function getCategories(Request $request)
     {
-
         $shopCategories = ShopCategory::with('shopSubCategories')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -74,21 +77,17 @@ class ShopController extends Controller
             ->get();
 
         $shopTags = $this->getProductFromShop($shopTags);
-
         return $this->generateProductResponse($shopTags, 200, 'cattag');
     }
 
-    public function getByTag(Request $request, $slug)
+    public function getByTag($slug)
     {
-
         $shopTag = ShopTag::with('shops', 'shops.products', 'shops.products.shop')->where('slug', $slug)->firstOrFail();
-
         $shopTag = $this->replaceShopWithProduct($shopTag);
-
         return $this->generateResponse($shopTag, 200);
     }
 
-    public function getByCategory(Request $request, $slug)
+    public function getByCategory($slug)
     {
         $shopCategory = ShopCategory::with('shops', 'shops.products', 'shops.products.shop')->where('slug', $slug)->firstOrFail();
         $shopCategory = $this->replaceShopWithProduct($shopCategory);
@@ -98,7 +97,6 @@ class ShopController extends Controller
     public function getBySubCategory(Request $request, $slug)
     {
         $shop = ShopSubCategory::with('shopCategory')->with('shopCategory.shops')->where('slug', $slug)->paginate($request->size)->items();
-
         return $this->generateResponse($shop, 200);
     }
 

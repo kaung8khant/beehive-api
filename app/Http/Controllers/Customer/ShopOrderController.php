@@ -6,8 +6,10 @@ use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper as OrderHelper;
+use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
@@ -128,6 +130,12 @@ class ShopOrderController extends Controller
             return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
         }
 
+        $message = 'Your order has successfully been cancelled.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = Auth::guard('customers')->user()->phone_number;
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         OrderHelper::createOrderStatus($shopOrder->id, 'cancelled');
 
         $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customerId)->firstOrFail();
