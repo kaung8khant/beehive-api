@@ -107,7 +107,7 @@ trait RestaurantOrderHelper
             $variations = collect(self::prepareVariations($item['variation_value_slugs']));
             $toppings = collect(self::prepareToppings($item['topping_slugs']));
 
-            $total += ($menu->price + $variations->sum('price') + $toppings->sum('price')) * $item['quantity'];
+            $total += ($menu->price - $menu->discount + $variations->sum('price') + $toppings->sum('price')) * $item['quantity'];
         }
 
         $promoPercentage = 0;
@@ -121,7 +121,7 @@ trait RestaurantOrderHelper
             $variations = collect(self::prepareVariations($item['variation_value_slugs']));
             $toppings = collect(self::prepareToppings($item['topping_slugs']));
 
-            $amount = ($menu->price + $variations->sum('price') + $toppings->sum('price')) * $item['quantity'];
+            $amount = ($menu->price - $menu->discount + $variations->sum('price') + $toppings->sum('price')) * $item['quantity'];
             $discount = $amount * $promoPercentage / 100;
 
             $item['menu_name'] = $menu->name;

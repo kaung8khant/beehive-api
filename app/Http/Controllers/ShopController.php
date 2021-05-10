@@ -98,8 +98,6 @@ class ShopController extends Controller
                 'is_official' => 'required|boolean',
                 'shop_tags' => 'nullable|array',
                 'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-                'available_categories' => 'nullable|array',
-                'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
                 'address' => 'required',
                 'contact_number' => 'required|phone:MM',
                 'address' => 'nullable',
@@ -129,11 +127,6 @@ class ShopController extends Controller
         if ($request->shop_tags) {
             $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
             $shop->availableTags()->attach($shopTags);
-        }
-
-        if ($request->available_categories) {
-            $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
-            $shop->availableCategories()->attach($shopCategories);
         }
 
         return response()->json($shop->refresh()->load(['availableTags', 'availableCategories']), 201);
@@ -166,7 +159,7 @@ class ShopController extends Controller
      */
     public function show($slug)
     {
-        $shop = Shop::with('availableCategories', 'availableTags', 'township', 'township.city')->where('slug', $slug)->firstOrFail();
+        $shop = Shop::with('availableTags', 'township', 'township.city')->where('slug', $slug)->firstOrFail();
         return response()->json($shop, 200);
     }
 
@@ -217,8 +210,6 @@ class ShopController extends Controller
                 'is_official' => 'required|boolean',
                 'shop_tags' => 'nullable|array',
                 'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-                'available_categories' => 'nullable|array',
-                'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
                 'address' => 'nullable',
                 'contact_number' => 'required|phone:MM',
                 'opening_time' => 'required|date_format:H:i',
@@ -243,12 +234,6 @@ class ShopController extends Controller
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'shops', $shop->slug);
-        }
-
-        if ($request->available_categories) {
-            $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
-            $shop->availableCategories()->detach();
-            $shop->availableCategories()->attach($shopCategories);
         }
 
         return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
@@ -378,139 +363,6 @@ class ShopController extends Controller
         return Township::where('slug', $slug)->first()->id;
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/shops/add-shop-categories/{slug}",
-     *      operationId="addShopCategories",
-     *      tags={"Shops"},
-     *      summary="Add ShopCategories",
-     *      description="Add ShopCategories in a shop",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a shop",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Add ShopCategories in a shop",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(
-     *               @OA\Property(property="available_categories", type="array", @OA\Items(oneOf={
-     *                @OA\Schema(
-     *                 type="string", example="CB965585"
-     *                   ),
-     *                })),
-     *              )
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
-    public function addShopCategories(Request $request, $slug)
-    {
-        $shop = $request->validate([
-            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
-        ]);
-
-        $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
-
-        $shop = $this->addCategories($shopCategories, $slug);
-
-        return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
-    }
-
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/shops/remove-shop-categories/{slug}",
-     *      operationId="removeShopCategories",
-     *      tags={"Shops"},
-     *      summary="Remove ShopCategories",
-     *      description="Remove ShopCategories in a shop",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a shop",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Remove ShopCategories in a shop",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(
-     *               @OA\Property(property="available_categories", type="array", @OA\Items(oneOf={
-     *                @OA\Schema(
-     *                 type="string", example="CB965585"
-     *                   ),
-     *                })),
-     *              )
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
-    public function removeShopCategories(Request $request, $slug)
-    {
-        $shop = $request->validate([
-            'available_categories.*' => 'exists:App\Models\ShopCategory,slug',
-        ]);
-        $shop = Shop::where('slug', $slug)->firstOrFail();
-
-        $shopCategories = ShopCategory::whereIn('slug', $request->available_categories)->pluck('id');
-        $shop->availableCategories()->detach($shopCategories);
-
-        return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
-    }
-
-    public function createAvailableCategory(Request $request, $slug)
-    {
-        $request['slug'] = $this->generateUniqueSlug();
-
-        $shopCategory = ShopCategory::create($request->validate(
-            [
-                'name' => 'required|unique:shop_categories',
-                'slug' => 'required|unique:shop_categories',
-                'image_slug' => 'nullable|exists:App\Models\File,slug',
-            ]
-        ));
-
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
-        }
-
-        $categoryList = ShopCategory::whereHas('shops', function ($query) use ($slug) {
-            return $query->where('slug', $slug);
-        })->pluck("id")->toArray();
-
-        array_push($categoryList, $shopCategory->id);
-
-        $request['available_categories'] = $shopCategory->slug;
-
-        $shop = $this->addCategories($categoryList, $slug);
-
-        return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
-    }
-
     public function import(Request $request)
     {
         $validatedData = $request->validate(
@@ -540,14 +392,6 @@ class ShopController extends Controller
         }
 
         return response()->json(['message' => 'Success.'], 200);
-    }
-
-    public function addCategories($data, $slug)
-    {
-        $shop = Shop::where('slug', $slug)->firstOrFail();
-        $shop->availableCategories()->detach();
-        $shop->availableCategories()->attach($data);
-        return $shop;
     }
 
     public function getShopsByBrand(Request $request, $slug)
