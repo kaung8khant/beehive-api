@@ -47,6 +47,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('customers', 'CustomerController');
             Route::patch('customers/toggle-enable/{slug}', 'CustomerController@toggleEnable');
+            Route::post('customers/import', 'CustomerController@import');
 
             Route::resource('drivers', 'DriverController');
             Route::patch('drivers/toggle-enable/{slug}', 'DriverController@toggleEnable');
