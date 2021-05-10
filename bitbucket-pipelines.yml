@@ -41,8 +41,8 @@ pipelines:
                 # Installing first the libraries necessary to configure and install gd
                 - apt-get update && apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev
                 - docker-php-ext-configure gd --with-freetype --with-jpeg
-                - apt-get install -y zlib1g-dev
-                - docker-php-ext-install -j$(nproc) gd
+                # - apt-get install -y zlib1g-dev
+                - docker-php-ext-install -j$(nproc) gd zip
                 # copy env file
                 - cp .env.example .env
                 - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
