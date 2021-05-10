@@ -14,7 +14,7 @@ class AddDiscountColumnToMenusTable extends Migration
     public function up()
     {
         Schema::table('menus', function (Blueprint $table) {
-            $table->decimal('discount', 12, 2);
+            $table->decimal('discount', 12, 2)->after('tax');
         });
     }
 
@@ -26,7 +26,7 @@ class AddDiscountColumnToMenusTable extends Migration
     public function down()
     {
         Schema::table('menus', function (Blueprint $table) {
-            //
+            $table->dropColumn(['discount']);
         });
     }
 }
