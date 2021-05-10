@@ -53,7 +53,7 @@ class RestaurantController extends Controller
      */
     public function index(Request $request)
     {
-        return Restaurant::with('availableCategories', 'availableTags')
+        return Restaurant::with('availableTags')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
@@ -94,8 +94,6 @@ class RestaurantController extends Controller
                 'is_enable' => 'required|boolean',
                 'restaurant_tags' => 'nullable|array',
                 'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
-                'available_categories' => 'nullable|array',
-                'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
                 'restaurant_branch' => 'required',
                 'restaurant_branch.name' => 'required|string',
                 'restaurant_branch.address' => 'required',
@@ -138,11 +136,6 @@ class RestaurantController extends Controller
             $restaurant->availableTags()->attach($restaurantTags);
         }
 
-        if ($request->available_categories) {
-            $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
-            $restaurant->availableCategories()->attach($restaurantCategories);
-        }
-
         return response()->json($restaurant->load('availableTags', 'availableCategories', 'restaurantBranches'), 201);
     }
 
@@ -173,7 +166,7 @@ class RestaurantController extends Controller
      */
     public function show($slug)
     {
-        $restaurant = Restaurant::with('availableCategories', 'availableTags')->where('slug', $slug)->firstOrFail();
+        $restaurant = Restaurant::with('availableTags')->where('slug', $slug)->firstOrFail();
         return response()->json($restaurant, 200);
     }
 
@@ -222,8 +215,6 @@ class RestaurantController extends Controller
             'is_enable' => 'required|boolean',
             'restaurant_tags' => 'nullable|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
-            'available_categories' => 'nullable|array',
-            'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
             'cover_slugs' => 'nullable|array',
             'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
@@ -243,12 +234,6 @@ class RestaurantController extends Controller
             foreach ($request->cover_slugs as $coverSlug) {
                 $this->updateFile($coverSlug, 'restaurants', $restaurant->slug);
             }
-        }
-
-        if ($request->available_categories) {
-            $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
-            $restaurant->availableCategories()->detach();
-            $restaurant->availableCategories()->attach($restaurantCategories);
         }
 
         return response()->json($restaurant->load(['availableCategories', 'availableTags']), 200);
@@ -371,106 +356,6 @@ class RestaurantController extends Controller
         return Township::where('slug', $slug)->first()->id;
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/restaurants/add-restaurant-categories/{slug}",
-     *      operationId="addRestaurantCategories",
-     *      tags={"Restaurants"},
-     *      summary="Add restaurant categories",
-     *      description="Returns newly added restaurant categories",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the Restaurant",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Added restaurant categories",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Restaurant")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
-    public function addRestaurantCategories(Request $request, $slug)
-    {
-        $restaurant = $request->validate([
-            'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
-        ]);
-
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
-
-        $restaurant = $this->addCategories($restaurantCategories, $slug);
-
-        return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
-    }
-
-    public function addCategories($data, $slug)
-    {
-        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-        $restaurant->availableCategories()->detach();
-        $restaurant->availableCategories()->attach($data);
-        return $restaurant;
-    }
-
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/restaurants/remove-restaurant-categories/{slug}",
-     *      operationId="removeRestaurantCategories",
-     *      tags={"Restaurants"},
-     *      summary="Remove restaurant categories",
-     *      description="Returns newly removed restaurant categories",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the Restaurant",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Removed restaurant categores",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Restaurant")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
-    public function removeRestaurantCategories(Request $request, $slug)
-    {
-        $restaurant = $request->validate([
-            'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
-        ]);
-        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-
-        $restaurantCategories = RestaurantCategory::whereIn('slug', $request->available_categories)->pluck('id');
-        $restaurant->availableCategories()->detach($restaurantCategories);
-
-        return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
-    }
-
     public function import(Request $request)
     {
         $validatedData = $request->validate(
@@ -502,31 +387,5 @@ class RestaurantController extends Controller
         }
 
         return response()->json($validatedData, 200);
-    }
-
-    public function createAvailableRestaurantCategories(Request $request, $slug)
-    {
-        $request['slug'] = $this->generateUniqueSlug();
-
-        $restaurantCategory = RestaurantCategory::create($request->validate([
-            'name' => 'required|unique:restaurant_categories',
-            'slug' => 'required|unique:restaurant_categories',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]));
-
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
-        }
-        $categoryList = RestaurantCategory::whereHas('restaurants', function ($query) use ($slug) {
-            return $query->where('slug', $slug);
-        })->pluck("id")->toArray();
-
-        array_push($categoryList, $restaurantCategory->id);
-
-        $request['available_categories'] = $restaurantCategory->slug;
-
-        $restaurant = $this->addCategories($categoryList, $slug);
-
-        return response()->json($restaurant->load(['availableCategories', 'availableTags']), 201);
     }
 }
