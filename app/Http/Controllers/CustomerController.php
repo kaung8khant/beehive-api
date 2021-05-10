@@ -289,4 +289,32 @@ class CustomerController extends Controller
 
         return response()->json($customerlist, 200);
     }
+
+    public function import(Request $request)
+    {
+        $validatedData = $request->validate(
+            [
+                'customers' => 'nullable|array',
+                'customers.*.email' => 'nullable|email|unique:customers',
+                'customers.*.name' => 'required|max:255',
+                'customers.*.phone_number' => 'required|phone:MM|unique:customers',
+                'customers.*password' => 'nullable|string|min:6',
+                'customers.*.gender' => 'required|in:Male,Female',
+            ],
+            [
+                'customers*.phone_number.phone' => 'Invalid phone number.',
+            ]
+        );
+
+        foreach ($validatedData['customers'] as $data) {
+            $data['phone_number'] = PhoneNumber::make($data['phone_number'], 'MM');
+            $password = $data['password'] ? $data['password'] : $this->generateRandomPassword();
+            $data['password'] = Hash::make($password);
+            $data['created_by'] = 'admin';
+            $data['slug'] = $this->generateUniqueSlug();
+            Customer::create($data);
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
+    }
 }
