@@ -7,6 +7,7 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\Ads;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdsController extends Controller
 {
@@ -45,6 +46,8 @@ class AdsController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $validatedData = $request->validate($this->getParamsToValidate(true));
+
+        $validatedData['created_by'] = Auth::guard('users')->user()->id;
 
         $ads = Ads::create($validatedData);
 
@@ -90,7 +93,6 @@ class AdsController extends Controller
 
         $validatedData = $request->validate($this->getParamsToValidate());
 
-
         $ads->update($validatedData);
 
         if ($request->image_slug) {
@@ -128,7 +130,6 @@ class AdsController extends Controller
             'email' => 'nullable',
             'type' => 'required|in:banner',
             'source' => 'required|in:restaurant,shop',
-            'created_by' => 'required',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ];
 
