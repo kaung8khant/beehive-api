@@ -6,7 +6,7 @@ copy .env.example and rename to .env
 
 composer install
 
-php artisan migrate
+php artisan migrate:fresh
 
 php artisan db:seed
 
