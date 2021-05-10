@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class PageController extends Controller
 {
@@ -40,16 +41,17 @@ class PageController extends Controller
     {
         $page = Page::where('slug', $slug)->firstOrFail();
 
-        $page->update($request->validate(
+        $validatedData = $request->validate(
             [
                 'name' => [
                     'required',
                     Rule::unique('pages')->ignore($page->id)
                 ],
                 'content' => 'nullable',
-                'modified_by' => 'required|string'
             ]
-        ));
+        );
+        $validatedData['modified_by'] = Auth::guard('users')->user()->id;
+        $page->update($validatedData);
 
         return response()->json($page, 200);
     }
