@@ -47,6 +47,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('customers', 'CustomerController');
             Route::patch('customers/toggle-enable/{slug}', 'CustomerController@toggleEnable');
+            Route::post('customers/import', 'CustomerController@import');
 
             Route::resource('drivers', 'DriverController');
             Route::patch('drivers/toggle-enable/{slug}', 'DriverController@toggleEnable');
@@ -69,13 +70,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('shops/toggle-enable/{slug}', 'ShopController@toggleEnable');
             Route::post('shops/status', 'ShopController@multipleStatusUpdate');
             Route::patch('shops/toggle-official/{slug}', 'ShopController@toggleOfficial');
-            Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
-            Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
-            Route::post('shops/{slug}/createAvailableCategory', 'ShopController@createAvailableCategory');
             Route::post('shops/import', 'ShopController@import');
             Route::get('shops/{slug}/customers', 'ShopController@getShopByCustomers');
             Route::get('shop-categories/{slug}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
-            Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
             Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
             Route::get('shops/{slug}/ratings', 'ShopRatingController@getShopRatings');
 
@@ -109,10 +106,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('restaurants/toggle-enable/{slug}', 'RestaurantController@toggleEnable');
             Route::post('restaurants/status', 'RestaurantController@multipleStatusUpdate');
             Route::patch('restaurants/toggle-official/{slug}', 'RestaurantController@toggleOfficial');
-            Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
-            Route::post('restaurants/remove-restaurant-categories/{slug}', 'RestaurantController@removeRestaurantCategories');
-            Route::post('restaurants/create-restaurant-categories/{slug}', 'RestaurantController@createAvailableRestaurantCategories');
-            Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
             Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
             Route::resource('menus', 'MenuController');
             Route::post('menus/import', 'MenuController@import');

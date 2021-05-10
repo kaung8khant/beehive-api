@@ -107,6 +107,7 @@ class DriverController extends Controller
 
         $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
         $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData['created_by'] = Auth::guard('users')->user()->id;
 
         $driver = User::create($validatedData);
 

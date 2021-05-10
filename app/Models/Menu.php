@@ -46,6 +46,7 @@ class Menu extends Model
         'description',
         'price',
         'tax',
+        'discount',
         'restaurant_id',
         'restaurant_category_id',
         'is_enable',

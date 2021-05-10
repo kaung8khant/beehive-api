@@ -125,7 +125,8 @@ class RestaurantController extends Controller
                     ->with('menuVariations')
                     ->with('menuVariations.menuVariationValues')
                     ->with('menuToppings')
-                    ->where('is_enable', 1);
+                    ->where('is_enable', 1)
+                    ->where('is_available', 1);
             }])
             ->where('slug', $slug)
             ->where('is_enable', 1)
@@ -134,7 +135,7 @@ class RestaurantController extends Controller
         $availableCategories = $restaurantBranch->availableMenus->map(function ($menu) {
             $menu->setAppends(['is_available', 'images']);
             return $menu->restaurantCategory;
-        })->unique()->values()->toArray();
+        })->unique()->values();
 
         $restaurantBranch = $restaurantBranch->toArray();
 
@@ -142,7 +143,7 @@ class RestaurantController extends Controller
             $categoryMenus = [];
 
             foreach ($restaurantBranch['available_menus'] as $menu) {
-                if ($availableCategories[$i]['slug'] === $menu['restaurant_category']['slug']) {
+                if ($availableCategories[$i]['slug'] === $menu['restaurant_category']['slug'] && $menu['is_enable'] && $menu['is_available']) {
                     unset($menu['restaurant_category']);
                     array_push($categoryMenus, $menu);
                 }
@@ -152,6 +153,11 @@ class RestaurantController extends Controller
         }
 
         unset($restaurantBranch['available_menus']);
+
+        $availableCategories = $availableCategories->filter(function ($value) {
+            return count($value['menus']) > 0;
+        })->values();
+
         $restaurantBranch['available_categories'] = $availableCategories;
 
         return $this->generateResponse($restaurantBranch, 200);
@@ -168,7 +174,7 @@ class RestaurantController extends Controller
         $size = $request->size ? $request->size : 10;
         $page = $request->page ? $request->page : 1;
 
-        $branches = DB::table('restaurant_branches')
+        $branchIds = DB::table('restaurant_branches')
             ->selectRaw('id,
             ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
@@ -177,14 +183,14 @@ class RestaurantController extends Controller
             ->where('is_enable', 1)
             ->having('distance', '<', $radius)
             ->orderBy('distance', 'asc')
-            ->get();
-
-        $branchIds = $branches->pluck('id');
+            ->pluck('id');
 
         $categoryIds = $branchIds->map(function ($branchId) {
             return DB::table('menus as m')
                 ->join('restaurant_branch_menu_map as rbmm', 'rbmm.menu_id', '=', 'm.id')
                 ->where('rbmm.restaurant_branch_id', $branchId)
+                ->where('m.is_enable', 1)
+                ->where('rbmm.is_available', 1)
                 ->pluck('restaurant_category_id');
         })->collapse()->unique()->values();
 
@@ -200,8 +206,9 @@ class RestaurantController extends Controller
             })->collapse()->sortBy('distance')->values();
 
             return $category;
-
-        })->slice(($page - 1) * $size, $size);
+        })->filter(function ($value) {
+            return count($value['restaurant_branches']) > 0;
+        })->values()->slice(($page - 1) * $size, $size);
 
         return $this->generateBranchResponse($categorizedBranches, 200, 'arrobj');
     }
