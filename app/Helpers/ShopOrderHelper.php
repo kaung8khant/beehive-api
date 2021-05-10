@@ -93,7 +93,7 @@ trait ShopOrderHelper
         foreach ($orderItems as $item) {
             $variations = collect(self::prepareVariations($item['variation_value_slugs']));
             $product = self::getProduct($item['slug']);
-            $total += ($product->price + $variations->sum('price')) * $item['quantity'];
+            $total += ($product->price - $product->discount + $variations->sum('price')) * $item['quantity'];
         }
 
         $promoPercentage = 0;
@@ -103,13 +103,13 @@ trait ShopOrderHelper
         }
 
         foreach ($orderItems as $item) {
-            $variations = collect(self::prepareVariations($item['variation_value_slugs']));
             $product = self::getProduct($item['slug']);
-            $amount = ($product->price + $variations->sum('price')) * $item['quantity'];
+            $variations = collect(self::prepareVariations($item['variation_value_slugs']));
+
+            $amount = ($product->price - $product->discount + $variations->sum('price')) * $item['quantity'];
             $discount = $amount * $promoPercentage / 100;
 
             $shop = self::getShopByProduct($item['slug']);
-
             $shopOrderVendor = self::createShopOrderVendor($orderId, $shop->id);
 
             $item['shop'] = $shop;
@@ -118,9 +118,9 @@ trait ShopOrderHelper
             $item['shop_id'] = $shop->id;
             $item['product_name'] = $product->name;
             $item['amount'] = $amount;
-            $item['variations'] = $variations;
             $item['discount'] = $discount;
-            $item['tax'] = ($amount) * $product->tax / 100;
+            $item['tax'] = ($amount - $discount) * $product->tax / 100;
+            $item['variations'] = $variations;
 
             ShopOrderItem::create($item);
         }
