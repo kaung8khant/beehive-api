@@ -43,6 +43,7 @@ class Product extends Model
         'description',
         'price',
         'tax',
+        'discount',
         'shop_id',
         'shop_category_id',
         'shop_sub_category_id',
