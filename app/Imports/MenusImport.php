@@ -6,7 +6,6 @@ use App\Helpers\StringHelper;
 use App\Models\Menu;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;

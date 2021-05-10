@@ -305,7 +305,7 @@ return [
         | in conjunction with queued imports and exports.
         |
         */
-        'remote_disk'         => 's3',
+        'remote_disk'         => null,
         'remote_prefix'       => null,
 
         /*
@@ -323,6 +323,6 @@ return [
         | processed it.
         |
         */
-        'force_resync_remote' => true,
+        'force_resync_remote' => null,
     ],
 ];
