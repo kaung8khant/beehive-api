@@ -8,12 +8,16 @@ use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class MenusImport implements ToModel, WithHeadingRow, WithBatchInserts, WithChunkReading, ShouldQueue
+class MenusImport implements ToModel, WithHeadingRow, WithChunkReading
 {
+    public function __construct()
+    {
+        ini_set('memory_limit', '256M');
+    }
+
     /**
      * @param array $row
      *
@@ -32,11 +36,6 @@ class MenusImport implements ToModel, WithHeadingRow, WithBatchInserts, WithChun
             'restaurant_id' => Restaurant::where('slug', $row['restaurant_slug'])->value('id'),
             'restaurant_category_id' => RestaurantCategory::where('slug', $row['restaurant_category_slug'])->value('id'),
         ]);
-    }
-
-    public function batchSize(): int
-    {
-        return 1000;
     }
 
     public function chunkSize(): int
