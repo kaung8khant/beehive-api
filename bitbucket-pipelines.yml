@@ -39,8 +39,8 @@ pipelines:
               deployment: Production
               script:
                 # Installing first the libraries necessary to configure and install gd
-                - apt-get update && apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng12-dev zlib1g-dev
-                # Now we can configure and install the extension
+                - apt-get update && apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev
+                - docker-php-ext-configure gd --with-freetype --with-jpeg
                 - docker-php-ext-install -j$(nproc) gd
                 # copy env file
                 - cp .env.example .env
