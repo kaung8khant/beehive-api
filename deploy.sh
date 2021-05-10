@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install composer dependencies
-php composer.phar install
+php /home/beehive/composer.phar install
 
 # Run database migration
 php artisan migrate --force

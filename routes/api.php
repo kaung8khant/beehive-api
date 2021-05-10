@@ -165,6 +165,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('sms/logs/phone/{phone}', 'Sms\SmsController@getLogsByPhone');
             Route::get('sms/logs/date/{from}/{to}', 'Sms\SmsController@getLogsByDate');
 
+            Route::post('excels/import/{type}', 'Excel\ImportController@importMenus');
+
             Route::get('pages', 'PageController@index');
             Route::get('pages/{slug}', 'PageController@show');
             Route::patch('pages/{slug}', 'PageController@update');
