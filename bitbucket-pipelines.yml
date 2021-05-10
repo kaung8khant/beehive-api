@@ -68,6 +68,8 @@ pipelines:
                   FILESYSTEM_DRIVER=s3
                   BUILD_NUMBER=${BITBUCKET_BUILD_NUMBER}
 
+                # install composer
+                - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
                 # install dependencies
                 - composer update
                 - composer install
