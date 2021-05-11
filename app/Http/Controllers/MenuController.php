@@ -380,6 +380,7 @@ class MenuController extends Controller
             'description' => 'nullable',
             'price' => 'required|numeric',
             'tax' => 'required|numeric',
+            'discount' => 'required|numeric',
             'is_enable' => 'required|boolean',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
@@ -512,11 +513,11 @@ class MenuController extends Controller
             $menu = Menu::where('slug', $slug)->firstOrFail();
 
             foreach ($menu->images as $image) {
-                 $this->deleteFile($image->slug);
+                $this->deleteFile($image->slug);
             }
         }
 
-        Menu::whereIn('id',$menuIdList)->delete();
+        Menu::whereIn('id', $menuIdList)->delete();
 
         return response()->json(['message' => 'Success.'], 200);
     }
@@ -529,6 +530,7 @@ class MenuController extends Controller
             'menus.*.description' => 'nullable',
             'menus.*.price' => 'required|numeric',
             'menus.*.tax' => 'required|numeric',
+            'menus.*.discount' => 'required|numeric',
             'menus.*.is_enable' => 'required|boolean',
             'menus.*.restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'menus.*.restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
