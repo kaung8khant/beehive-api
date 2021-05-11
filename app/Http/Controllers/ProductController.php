@@ -316,6 +316,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|max:99999999',
             'tax' => 'required|numeric',
+            'discount' => 'required|numeric',
             'is_enable' => 'required|boolean',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
@@ -401,9 +402,9 @@ class ProductController extends Controller
             ->whereHas('shop', function ($q) use ($slug) {
                 $q->where('slug', $slug);
             })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
                 ->orWhere('slug', $request->filter);
-        })->paginate(10);
+            })->paginate(10);
     }
 
     /**
@@ -509,11 +510,11 @@ class ProductController extends Controller
             $product = Product::where('slug', $slug)->firstOrFail();
 
             foreach ($product->images as $image) {
-                 $this->deleteFile($image->slug);
+                $this->deleteFile($image->slug);
             }
         }
 
-        Product::whereIn('id',$productIdList)->delete();
+        Product::whereIn('id', $productIdList)->delete();
 
         return response()->json(['message' => 'Success.'], 200);
     }
@@ -580,6 +581,7 @@ class ProductController extends Controller
             'products.*.description' => 'nullable|string',
             'products.*.price' => 'required|max:99999999',
             'products.*.tax' => 'required|numeric',
+            'products.*.discount' => 'required|numeric',
             'products.*.is_enable' => 'required|boolean',
             'products.*.shop_slug' => 'required|exists:App\Models\Shop,slug',
             'products.*.shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
