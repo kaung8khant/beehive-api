@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @OA\Schema(
@@ -21,23 +20,11 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-class RestaurantBranch extends Model
+class RestaurantBranch extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'name',
-        'is_enable',
-        'address',
-        'contact_number',
-        'opening_time',
-        'closing_time',
-        'latitude',
-        'longitude',
-        'restaurant_id',
-        'township_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

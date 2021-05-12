@@ -17,11 +17,7 @@ class MenuVariation extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'name',
-        'menu_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

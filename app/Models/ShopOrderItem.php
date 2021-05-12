@@ -9,19 +9,7 @@ class ShopOrderItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'product_name',
-        'quantity',
-        'amount',
-        'tax',
-        'discount',
-        'variations',
-        'shop',
-        'is_deleted',
-        'shop_order_vendor_id',
-        'product_id',
-        'shop_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',
@@ -48,6 +36,7 @@ class ShopOrderItem extends Model
     {
         return $this->belongsTo(Shop::class);
     }
+
     public function product()
     {
         return $this->belongsTo(Product::class);

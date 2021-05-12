@@ -9,11 +9,7 @@ class UserSession extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        "user_id",
-        "device_token",
-        "jwt",
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

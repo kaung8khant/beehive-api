@@ -2,24 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\ShopOrderContact;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class ShopOrder extends Model
+class ShopOrder extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'order_date',
-        'special_instruction',
-        'payment_mode',
-        'delivery_mode',
-        'order_status',
-        'promocode_id',
-        'customer_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

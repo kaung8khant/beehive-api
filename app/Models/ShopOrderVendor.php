@@ -10,12 +10,7 @@ class ShopOrderVendor extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'shop_order_id',
-        'shop_id',
-        'order_status',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

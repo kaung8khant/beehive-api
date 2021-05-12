@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
@@ -27,18 +28,7 @@ class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = [
-        'slug',
-        'username',
-        'name',
-        'phone_number',
-        'password',
-        'is_enable',
-        'is_locked',
-        'shop_id',
-        'restaurant_branch_id',
-        'created_by',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',
@@ -56,9 +46,30 @@ class User extends Authenticatable implements JWTSubject
         'is_locked' => 'boolean',
     ];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function($model)
+        {
+            $model->created_by = Auth::guard('users')->user()->id;
+            $model->updated_by = Auth::guard('users')->user()->id;
+        });
+
+        static::updating(function($model)
+        {
+            $model->updated_by = Auth::guard('users')->user()->id;
+        });
+    }
+
     public function getCreatedByAttribute($value)
     {
-        return User::with("roles")->find($value);
+        return User::find($value);
+    }
+
+    public function getUpdatedByAttribute($value)
+    {
+        return User::find($value);
     }
 
     public function getJWTIdentifier()

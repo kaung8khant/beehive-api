@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @OA\Schema(
@@ -15,13 +14,9 @@ use Illuminate\Database\Eloquent\Model;
  *   ),
  * )
  */
-class Setting extends Model
+class Setting extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'key',
-        'value',
-        'data_type',
-    ];
+    protected $guarded = ['id'];
 }

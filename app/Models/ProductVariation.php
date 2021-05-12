@@ -29,11 +29,7 @@ class ProductVariation extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'name',
-        'product_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

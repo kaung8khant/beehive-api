@@ -3,24 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class Address extends Model
+class Address extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'label',
-        'house_number',
-        'floor',
-        'street_name',
-        'latitude',
-        'longitude',
-        'is_primary',
-        'township_id',
-        'customer_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

@@ -23,18 +23,7 @@ class Customer extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = [
-        'slug',
-        'email',
-        'name',
-        'phone_number',
-        'password',
-        'gender',
-        'date_of_birth',
-        'created_by',
-        'is_enable',
-        'device_token',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

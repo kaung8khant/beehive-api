@@ -9,11 +9,7 @@ class RestaurantOrderStatus extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'status',
-        'created_by',
-        'restaurant_order_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

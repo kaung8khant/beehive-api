@@ -9,15 +9,7 @@ class RestaurantRating extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'target_id',
-        'target_type',
-        'source_id',
-        'source_type',
-        'rating',
-        'review',
-        'restaurant_order_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

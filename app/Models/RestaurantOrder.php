@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @OA\Schema(
@@ -18,23 +17,11 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-class RestaurantOrder extends Model
+class RestaurantOrder extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'order_date',
-        'special_instruction',
-        'payment_mode',
-        'delivery_mode',
-        'restaurant_branch_info',
-        'order_status',
-        'customer_id',
-        'restaurant_id',
-        'restaurant_branch_id',
-        'promocode_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

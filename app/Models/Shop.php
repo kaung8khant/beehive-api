@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @OA\Schema(
@@ -26,23 +25,11 @@ use Illuminate\Database\Eloquent\Model;
  *     })),
  * )
  */
-class Shop extends Model
+class Shop extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'name',
-        'is_official',
-        'is_enable',
-        'address',
-        'contact_number',
-        'opening_time',
-        'closing_time',
-        'latitude',
-        'longitude',
-        'township_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',
