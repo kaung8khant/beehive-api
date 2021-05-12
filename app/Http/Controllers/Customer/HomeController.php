@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Ads;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\RestaurantBranch;
@@ -241,5 +242,10 @@ class HomeController extends Controller
         $customer->update();
 
         return $this->generateResponse("Success.", 200);
+    }
+
+    public function getAds()
+    {
+        return Ads::latest()->limit(5)->get();
     }
 }

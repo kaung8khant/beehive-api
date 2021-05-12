@@ -20,20 +20,12 @@ class AdsController extends Controller
      */
     public function index(Request $request)
     {
-        return Ads::where('label', 'LIKE', '%' . $request->filter . '%')
+        $ads = Ads::where('label', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
-            ->paginate(10);
+            ->get();
+        return $this->generateResponse($ads, 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -67,17 +59,6 @@ class AdsController extends Controller
     {
         $ads = Ads::where('slug', $slug)->firstOrFail();
         return response()->json($ads, 200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Ads  $ads
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Ads $ads)
-    {
-        //
     }
 
     /**
