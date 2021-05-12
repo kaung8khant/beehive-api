@@ -3,19 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class Page extends Model
+class Page extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'name',
-        'content',
-        'created_by',
-        'modified_by'
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

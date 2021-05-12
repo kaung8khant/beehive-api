@@ -9,14 +9,7 @@ class File extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'file_name',
-        'extension',
-        'source',
-        'source_id',
-        'type',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

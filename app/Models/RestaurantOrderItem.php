@@ -10,19 +10,7 @@ class RestaurantOrderItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'menu_name',
-        'quantity',
-        'amount',
-        'tax',
-        'discount',
-        'is_deleted',
-        'variations',
-        'toppings',
-        'restaurant_order_id',
-        'menu_id',
-        'restaurant_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

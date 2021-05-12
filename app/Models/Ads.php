@@ -3,23 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class Ads extends Model
+class Ads extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'label',
-        'contact_person',
-        'company_name',
-        'phone_number',
-        'email',
-        'type',
-        'source',
-        'created_by'
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

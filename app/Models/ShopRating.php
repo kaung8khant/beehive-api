@@ -9,15 +9,7 @@ class ShopRating extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'target_id',
-        'target_type',
-        'source_id',
-        'source_type',
-        'rating',
-        'review',
-        'shop_order_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

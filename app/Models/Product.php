@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @OA\Schema(
@@ -33,23 +32,11 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-class Product extends Model
+class Product extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'name',
-        'description',
-        'price',
-        'tax',
-        'discount',
-        'shop_id',
-        'shop_category_id',
-        'shop_sub_category_id',
-        'brand_id',
-        'is_enable',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

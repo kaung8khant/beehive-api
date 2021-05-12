@@ -9,19 +9,7 @@ class SmsLog extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'batch_id',
-        'message_id',
-        'phone_number',
-        'message',
-        'message_parts',
-        'total_characters',
-        'encoding',
-        'type',
-        'status',
-        'error_message',
-        'user_id',
-    ];
+    protected $guarded = ['id'];
 
     public function user()
     {
