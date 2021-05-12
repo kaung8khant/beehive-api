@@ -88,7 +88,6 @@ Route::group(['prefix' => 'user'], function () {
 
         Route::get('promocode', 'Customer\PromocodeController@index');
         Route::get('promocode/validate/{slug}', 'Customer\PromocodeController@validatePromoCode');
-
     });
 
     /* Product */
@@ -101,4 +100,8 @@ Route::group(['prefix' => 'user'], function () {
     Route::get('product-shops/{slug}', 'Customer\ProductController@getByShop');
     Route::get('product-brands/{slug}', 'Customer\ProductController@getByBrand');
     /* Product */
+
+    /* Ads */
+    Route::get('ads', 'Customer\HomeController@getAds');
+    /* Ads */
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Ads;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\RestaurantBranch;
@@ -241,5 +242,28 @@ class HomeController extends Controller
         $customer->update();
 
         return $this->generateResponse("Success.", 200);
+    }
+
+    public function getAds(Request $request)
+    {
+        if ($request->source) {
+            $ads = Ads::where('source', $request->source)
+                ->where('type',  $request->type)
+                ->get();
+        } else {
+            $ads = Ads::where('type', $request->type)->get();
+        }
+
+        $result = [];
+
+        foreach ($ads as $data) {
+            $ad = [
+                'images' => $data->images,
+                'source' => $data->source,
+                'type' => $data->type,
+            ];
+            array_push($result, $ad);
+        }
+        return $this->generateResponse($result, 200);
     }
 }
