@@ -3,15 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
-use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
-use App\Models\Ads;
+use App\Models\Announcement;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
-class AdsController extends Controller
+class AnnouncementController extends Controller
 {
-    use FileHelper, ResponseHelper, StringHelper;
+    use FileHelper, StringHelper;
 
     /**
      * Display a listing of the resource.
@@ -20,12 +18,10 @@ class AdsController extends Controller
      */
     public function index(Request $request)
     {
-        $ads = Ads::where('label', 'LIKE', '%' . $request->filter . '%')
+        return Announcement::where('title', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
-            ->get();
-        return $this->generateResponse($ads, 200);
+            ->paginate(10);
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -39,83 +35,78 @@ class AdsController extends Controller
 
         $validatedData = $request->validate($this->getParamsToValidate(true));
 
-        $validatedData['created_by'] = Auth::guard('users')->user()->id;
-
-        $ads = Ads::create($validatedData);
+        $announcement = Announcement::create($validatedData);
 
         if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'ads', $ads->slug);
+            $this->updateFile($request->image_slug, 'announcements', $announcement->slug);
         }
-        return response()->json($ads, 201);
+
+        return response()->json($announcement, 201);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Ads  $ads
+     * @param  \App\Models\Announcement  $announcement
      * @return \Illuminate\Http\Response
      */
     public function show($slug)
     {
-        $ads = Ads::where('slug', $slug)->firstOrFail();
-        return response()->json($ads, 200);
+        $announcement = Announcement::where('slug', $slug)->firstOrFail();
+        return response()->json($announcement, 200);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Ads  $ads
+     * @param  \App\Models\Announcement  $announcement
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $slug)
     {
-        $ads = Ads::where('slug', $slug)->firstOrFail();
+        $announcement = Announcement::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate($this->getParamsToValidate());
 
-        $ads->update($validatedData);
+        $announcement->update($validatedData);
 
         if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'ads', $slug);
+            $this->updateFile($request->image_slug, 'announcements', $slug);
         }
 
-        return response()->json($ads, 200);
+        return response()->json($announcement, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Ads  $ads
+     * @param  \App\Models\Announcement  $announcement
      * @return \Illuminate\Http\Response
      */
     public function destroy($slug)
     {
-        $ads = Ads::where('slug', $slug)->firstOrFail();
+        $announcement = Announcement::where('slug', $slug)->firstOrFail();
 
-        foreach ($ads->images as $image) {
+        foreach ($announcement->images as $image) {
             $this->deleteFile($image->slug);
         }
 
-        $ads->delete();
+        $announcement->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
     private function getParamsToValidate($slug = false)
     {
         $params = [
-            'label' => 'nullable',
-            'contact_person' => 'nullable',
-            'company_name' => 'nullable',
-            'phone_number' => 'nullable',
-            'email' => 'nullable',
-            'type' => 'required|in:banner',
-            'source' => 'required|in:restaurant,shop',
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'announcement_date' => 'required|date_format:Y-m-d',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ];
 
         if ($slug) {
-            $params['slug'] = 'required|unique:ads';
+            $params['slug'] = 'required|unique:announcements';
         }
 
         return $params;
