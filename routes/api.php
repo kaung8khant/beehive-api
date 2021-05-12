@@ -165,7 +165,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('sms/logs/phone/{phone}', 'Sms\SmsController@getLogsByPhone');
             Route::get('sms/logs/date/{from}/{to}', 'Sms\SmsController@getLogsByDate');
 
-            Route::post('excels/import/{type}', 'Excel\ImportController@importMenus');
+            Route::post('excels/import/{type}', 'Excel\ExportImportController@import');
+            Route::get('excels/export/{type}', 'Excel\ExportImportController@export');
 
             Route::get('pages', 'PageController@index');
             Route::get('pages/{slug}', 'PageController@show');
@@ -184,6 +185,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
     Route::get('images/{source}/{sourceSlug}', 'File\FileController@getImagesBySource');
 
     Route::delete('files/{slug}', 'File\FileController@deleteFile');
+
+    Route::get('fix-slug/{table}', 'SlugFixController@fix');
 
     /*
      * -----------
