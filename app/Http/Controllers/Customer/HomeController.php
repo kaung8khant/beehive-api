@@ -244,8 +244,14 @@ class HomeController extends Controller
         return $this->generateResponse("Success.", 200);
     }
 
-    public function getAds()
+    public function getAds(Request $request)
     {
-        return Ads::latest()->limit(5)->get();
+        if ($request->source) {
+            return Ads::where('source', $request->source)
+                ->where('type',  $request->type)
+                ->get();
+        }
+        return Ads::where('type', $request->type)
+            ->get();
     }
 }
