@@ -3,15 +3,16 @@
 namespace App\Imports;
 
 use App\Helpers\StringHelper;
-use App\Models\Menu;
-use App\Models\Restaurant;
-use App\Models\RestaurantCategory;
+use App\Models\Product;
+use App\Models\Shop;
+use App\Models\ShopCategory;
+use App\Models\ShopSubCategory;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
 
-class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
+class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
 {
     public function __construct()
     {
@@ -25,7 +26,7 @@ class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
      */
     public function model(array $row)
     {
-        return new Menu([
+        return new Product([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'description' => $row['description'],
@@ -33,8 +34,9 @@ class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
             'tax' => $row['tax'],
             'discount' => $row['discount'],
             'is_enable' => $row['is_enable'],
-            'restaurant_id' => Restaurant::where('slug', $row['restaurant_slug'])->value('id'),
-            'restaurant_category_id' => RestaurantCategory::where('slug', $row['restaurant_category_slug'])->value('id'),
+            'shop_id' => Shop::where('slug', $row['shop_slug'])->value('id'),
+            'shop_category_id' => ShopCategory::where('slug', $row['shop_category_slug'])->value('id'),
+            'shop_sub_category_id' => ShopSubCategory::where('slug', $row['shop_sub_category_slug'])->value('id'),
         ]);
     }
 
