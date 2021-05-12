@@ -247,11 +247,23 @@ class HomeController extends Controller
     public function getAds(Request $request)
     {
         if ($request->source) {
-            return Ads::where('source', $request->source)
+            $ads = Ads::where('source', $request->source)
                 ->where('type',  $request->type)
                 ->get();
+        } else {
+            $ads = Ads::where('type', $request->type)->get();
         }
-        return Ads::where('type', $request->type)
-            ->get();
+
+        $result = [];
+
+        foreach ($ads as $data) {
+            $ad = [
+                'images' => $data->images,
+                'source' => $data->source,
+                'type' => $data->type,
+            ];
+            array_push($result, $ad);
+        }
+        return $this->generateResponse($result, 200);
     }
 }
