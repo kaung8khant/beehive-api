@@ -3,7 +3,7 @@
 # This template allows you to validate your PHP application.
 # The workflow allows running tests and code linting on the default branch.
 
-image: composer:2.0
+image: php:8.0
 
 pipelines:
   branches:
@@ -38,6 +38,11 @@ pipelines:
               # Track production environments builds using deployments.
               deployment: Production
               script:
+                # Installing first the libraries necessary to configure and install gd
+                - apt update && apt install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev libzip-dev zip && docker-php-ext-install zip
+                - docker-php-ext-configure gd --with-freetype --with-jpeg
+                # - apt-get install -y zlib1g-dev
+                - docker-php-ext-install -j$(nproc) gd
                 # copy env file
                 - cp .env.example .env
                 - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
@@ -63,6 +68,8 @@ pipelines:
                   FILESYSTEM_DRIVER=s3
                   BUILD_NUMBER=${BITBUCKET_BUILD_NUMBER}
 
+                # install composer
+                - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
                 # install dependencies
                 - composer update
                 - composer install
