@@ -39,6 +39,16 @@ class RestaurantOrderItem extends Model
         'toppings' => AsArrayObject::class,
     ];
 
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'menus')
+            ->where('source_id', $this->menu_id)
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
     public function restaurantOrder()
     {
         return $this->belongsTo(RestaurantOrder::class);

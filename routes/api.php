@@ -173,6 +173,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /*Ads */
             Route::resource('ads', 'AdsController');
+
+            /*Announcement */
+            Route::resource('announcements', 'AnnouncementController');
         });
     });
 
