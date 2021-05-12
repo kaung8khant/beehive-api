@@ -14,4 +14,5 @@ return [
     'users' => 'App\Models\User',
     'customers' => 'App\Models\Customer',
     'ads' => 'App\Models\Ads',
+    'announcements' => 'App\Models\Announcement',
 ];
