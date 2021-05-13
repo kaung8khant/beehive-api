@@ -18,25 +18,23 @@ class RestaurantController extends Controller
 {
     use ResponseHelper;
 
-    public function setFavoriteRestaurant($slug)
+    public function setFavoriteRestaurant(Restaurant $restaurant)
     {
-        $restaurantId = $this->getRestaurantId($slug);
         $customer = Auth::guard('customers')->user();
 
         try {
-            $customer->favoriteRestaurants()->attach($restaurantId);
-        } catch (\Exception $e) {
+            $customer->favoriteRestaurants()->attach($restaurant->id);
+        } catch (\Illuminate\Database\QueryException $e) {
             return $this->generateResponse('You already set favorite this restaurant.', 409, true);
         }
 
         return $this->generateResponse('Success.', 200, true);
     }
 
-    public function removeFavoriteRestaurant($slug)
+    public function removeFavoriteRestaurant(Restaurant $restaurant)
     {
-        $restaurantId = $this->getRestaurantId($slug);
         $customer = Auth::guard('customers')->user();
-        $customer->favoriteRestaurants()->detach($restaurantId);
+        $customer->favoriteRestaurants()->detach($restaurant->id);
         return $this->generateResponse('Success.', 200, true);
     }
 
@@ -105,16 +103,9 @@ class RestaurantController extends Controller
         return $this->generateBranchResponse($restaurantBranches, 200);
     }
 
-    public function getOneBranch($slug)
+    public function getOneBranch(RestaurantBranch $branch)
     {
-        $restaurantBranch = RestaurantBranch::with('restaurant')
-            ->with('restaurant.availableTags')
-            ->with('township')
-            ->where('slug', $slug)
-            ->where('is_enable', 1)
-            ->firstOrFail();
-
-        return $this->generateBranchResponse($restaurantBranch, 200, 'obj');
+        return $this->generateBranchResponse($branch->load('restaurant', 'restaurant.availableTags', 'township'), 200, 'obj');
     }
 
     public function getAvailableMenusByBranch($slug)
@@ -233,22 +224,21 @@ class RestaurantController extends Controller
         return $this->generateBranchResponse($restaurantTags, 200, 'arrobj');
     }
 
-    public function getByCategory(Request $request, $slug)
+    public function getByCategory(Request $request, RestaurantCategory $category)
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantCategory = RestaurantCategory::where('slug', $slug)->firstOrFail();
-        $restaurantIds = Menu::where('restaurant_category_id', $restaurantCategory->id)->where('is_enable', 1)->groupBy('restaurant_id')->pluck('restaurant_id');
+        $restaurantIds = Menu::where('restaurant_category_id', $category->id)->where('is_enable', 1)->groupBy('restaurant_id')->pluck('restaurant_id');
 
         $categorizedBranches = $restaurantIds->map(function ($restaurantId) use ($request) {
             return $this->getBranches($request)->where('restaurant_id', $restaurantId)->get();
         });
 
-        $restaurantCategory->restaurant_branches = $categorizedBranches->collapse()->sortBy('distance')->values();
-        return $this->generateBranchResponse($restaurantCategory, 200, 'cattag');
+        $category->restaurant_branches = $categorizedBranches->collapse()->sortBy('distance')->values();
+        return $this->generateBranchResponse($category, 200, 'cattag');
     }
 
     public function getByTag(Request $request, $slug)
@@ -322,10 +312,5 @@ class RestaurantController extends Controller
         unset($data['restaurants']);
 
         return $data;
-    }
-
-    private function getRestaurantId($slug)
-    {
-        return Restaurant::where('slug', $slug)->firstOrFail()->id;
     }
 }

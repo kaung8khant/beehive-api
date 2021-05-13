@@ -38,4 +38,9 @@ class BaseModel extends Model
     {
         return User::find($value);
     }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
 }

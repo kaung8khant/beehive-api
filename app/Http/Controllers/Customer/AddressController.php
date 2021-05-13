@@ -54,16 +54,13 @@ class AddressController extends Controller
         return $this->generateResponse($address->refresh()->load('township'), 201);
     }
 
-    public function show($slug)
+    public function show(Address $address)
     {
-        $address = $this->getAddress($slug);
-        return $this->generateResponse($address, 200);
+        return $this->generateResponse($address->load('township'), 200);
     }
 
-    public function update(Request $request, $slug)
+    public function update(Request $request, Address $address)
     {
-        $address = $this->getAddress($slug);
-
         $validator = Validator::make($request->all(), $this->getParamsToValidate());
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
@@ -78,12 +75,12 @@ class AddressController extends Controller
         }
 
         $address->update($validatedData);
-        return $this->generateResponse($address->refresh(), 200);
+        return $this->generateResponse($address->load('township'), 200);
     }
 
-    public function destroy($slug)
+    public function destroy(Address $address)
     {
-        $this->getAddress($slug)->delete();
+        $address->delete();
         return $this->generateResponse('Successfully deleted.', 200, true);
     }
 
@@ -106,11 +103,9 @@ class AddressController extends Controller
         return $params;
     }
 
-    public function setPrimaryAddress($slug)
+    public function setPrimaryAddress(Address $address)
     {
         $this->setNonPrimary();
-
-        $address = $this->getAddress($slug);
         $address->is_primary = !$address->is_primary;
         $address->save();
 
@@ -129,26 +124,19 @@ class AddressController extends Controller
         return $this->generateResponse($cities, 200);
     }
 
-    public function getTownshipsByCity(Request $request, $slug)
+    public function getTownshipsByCity(Request $request, City $city)
     {
-        $cityId = City::where('slug', $slug)->firstOrFail()->id;
-
-        $townships = Township::where('city_id', $cityId)
+        $townships = Township::where('city_id', $city->id)
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->get();
 
         return $this->generateResponse($townships, 200);
     }
 
-    public function getAllTownships(Request $request)
+    public function getAllTownships()
     {
         $townships = Township::all();
         return $this->generateResponse($townships, 200);
-    }
-
-    private function getAddress($slug)
-    {
-        return Address::with('township')->where('slug', $slug)->where('customer_id', $this->customerId)->firstOrFail();
     }
 
     private function setNonPrimary()
