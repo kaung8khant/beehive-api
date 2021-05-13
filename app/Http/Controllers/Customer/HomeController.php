@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Helpers\ResponseHelper;
+use App\Helpers\CacheHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Ads;
 use App\Models\Customer;
@@ -87,7 +88,7 @@ class HomeController extends Controller
     // duplicate from restaurant controller
     private function getBranchQuery($query, $request)
     {
-        $radius = config('system.restaurant_search_radius');
+        $radius = CacheHelper::getRestaurantSearchRadius();
 
         return $query->with('restaurant')
             ->with('restaurant.availableTags')
@@ -110,7 +111,7 @@ class HomeController extends Controller
 
     private function getRestaurantBranches($request, $suggestion = false)
     {
-        $radius = config('system.restaurant_search_radius');
+        $radius = CacheHelper::getRestaurantSearchRadius();
 
         return RestaurantBranch::with('restaurant')
             ->with('restaurant.availableTags')
