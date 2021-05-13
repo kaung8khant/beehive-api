@@ -103,8 +103,8 @@ class SettingController extends Controller
         foreach ($validatedData as $data) {
             Cache::forget($data['key']);
 
-            Setting::where('key', $data['key'])->update([
-                'key' => $data['key'],
+            $setting = Setting::where('key', $data['key'])->first();
+            $setting->update([
                 'value' => $data['value'],
                 'data_type' => $data['data_type'],
             ]);

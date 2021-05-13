@@ -21,6 +21,12 @@ class BaseModel extends Model
             }
         });
 
+        static::saving(function ($model) {
+            if (Auth::guard('users')->check()) {
+                $model->updated_by = Auth::guard('users')->user()->id;
+            }
+        });
+
         static::updating(function ($model) {
             if (Auth::guard('users')->check()) {
                 $model->updated_by = Auth::guard('users')->user()->id;
