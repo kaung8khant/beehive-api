@@ -20,8 +20,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('customers/{slug}/addresses', 'AddressController@store');
 
             Route::get('settings', 'SettingController@index');
-            Route::get('settings/{groupName}', 'SettingController@show');
-            Route::put('settings/update', 'SettingController@updateSetting');
+            Route::get('settings/{setting:key}', 'SettingController@show');
+            Route::put('settings/update', 'SettingController@updateSettings');
 
             /* Dashboard */
             Route::get('dashboard/counts', 'Dashboard\AdminDashboardController@getCountData');

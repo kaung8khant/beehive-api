@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Helpers\ResponseHelper;
+use App\Helpers\CacheHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\Restaurant;
@@ -161,7 +162,7 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $radius = config('system.restaurant_search_radius');
+        $radius = CacheHelper::getRestaurantSearchRadius();
         $size = $request->size ? $request->size : 10;
         $page = $request->page ? $request->page : 1;
 
@@ -275,7 +276,7 @@ class RestaurantController extends Controller
 
     private function getBranchQuery($query, $request)
     {
-        $radius = config('system.restaurant_search_radius');
+        $radius = CacheHelper::getRestaurantSearchRadius();
 
         return $query->with('restaurant')
             ->with('restaurant.availableTags')
