@@ -175,8 +175,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             /*Ads */
             Route::resource('ads', 'AdsController');
 
-            /*Announcement */
-            Route::resource('announcements', 'AnnouncementController');
+            /*Content */
+            Route::resource('contents', 'ContentController');
         });
     });
 
@@ -190,6 +190,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
     Route::delete('files/{file:slug}', 'File\FileController@deleteFile');
 
     Route::get('fix-slug/{table}', 'SlugFixController@fix');
+
+    Route::get('contents', 'ContentController@index');
+
 
     /*
      * -----------

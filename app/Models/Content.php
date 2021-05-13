@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class Announcement extends BaseModel
+class Content extends Model
 {
     use HasFactory;
 
@@ -12,17 +13,16 @@ class Announcement extends BaseModel
 
     protected $hidden = [
         'id',
-        'created_at',
         'updated_at',
     ];
 
-    protected $appends = ['images'];
+    protected $appends = ['covers'];
 
-    public function getImagesAttribute()
+    public function getCoversAttribute()
     {
-        return File::where('source', 'announcements')
+        return File::where('source', 'contents')
             ->where('source_id', $this->id)
-            ->where('type', 'image')
+            ->where('type', 'cover')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }

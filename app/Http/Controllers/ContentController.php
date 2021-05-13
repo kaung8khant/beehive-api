@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
-use App\Models\Announcement;
+use App\Models\Content;
 use Illuminate\Http\Request;
 
-class AnnouncementController extends Controller
+class ContentController extends Controller
 {
     use FileHelper, StringHelper;
 
@@ -18,8 +18,11 @@ class AnnouncementController extends Controller
      */
     public function index(Request $request)
     {
-        return Announcement::where('title', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
+        return Content::where('type', $request->type)
+            ->where(function ($q) use ($request) {
+                $q->where('title', 'LIKE', '%' . $request->filter . '%')
+                ->orWhere('slug', $request->filter);
+            })
             ->paginate(10);
     }
 
@@ -35,64 +38,68 @@ class AnnouncementController extends Controller
 
         $validatedData = $request->validate($this->getParamsToValidate(true));
 
-        $announcement = Announcement::create($validatedData);
+        $content = Content::create($validatedData);
 
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'announcements', $announcement->slug);
+        if ($request->cover_slugs) {
+            foreach ($request->cover_slugs as $coverSlug) {
+                $this->updateFile($coverSlug, 'contents', $content->slug);
+            }
         }
 
-        return response()->json($announcement, 201);
+        return response()->json($content, 201);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Announcement  $announcement
+     * @param  \App\Models\Content  $content
      * @return \Illuminate\Http\Response
      */
     public function show($slug)
     {
-        $announcement = Announcement::where('slug', $slug)->firstOrFail();
-        return response()->json($announcement, 200);
+        $content = Content::where('slug', $slug)->firstOrFail();
+        return response()->json($content, 200);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Announcement  $announcement
+     * @param  \App\Models\Content  $content
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $slug)
     {
-        $announcement = Announcement::where('slug', $slug)->firstOrFail();
+        $content = Content::where('slug', $slug)->firstOrFail();
 
         $validatedData = $request->validate($this->getParamsToValidate());
 
-        $announcement->update($validatedData);
+        $content->update($validatedData);
 
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'announcements', $slug);
+        if ($request->cover_slugs) {
+            foreach ($request->cover_slugs as $coverSlug) {
+                $this->updateFile($coverSlug, 'contents', $content->slug);
+            }
         }
 
-        return response()->json($announcement, 200);
+        return response()->json($content, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Announcement  $announcement
+     * @param  \App\Models\Content  $content
      * @return \Illuminate\Http\Response
      */
     public function destroy($slug)
     {
-        $announcement = Announcement::where('slug', $slug)->firstOrFail();
+        $content = Content::where('slug', $slug)->firstOrFail();
 
-        foreach ($announcement->images as $image) {
-            $this->deleteFile($image->slug);
+        foreach ($content->covers as $cover) {
+            $this->deleteFile($cover->slug);
         }
 
-        $announcement->delete();
+        $content->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -101,12 +108,13 @@ class AnnouncementController extends Controller
         $params = [
             'title' => 'required|string',
             'description' => 'required|string',
-            'announcement_date' => 'required|date_format:Y-m-d',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
+            'type' => 'nullable|in:announcement,news,blog',
+            'cover_slugs' => 'nullable|array',
+            'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
         ];
 
         if ($slug) {
-            $params['slug'] = 'required|unique:announcements';
+            $params['slug'] = 'required|unique:contents';
         }
 
         return $params;
