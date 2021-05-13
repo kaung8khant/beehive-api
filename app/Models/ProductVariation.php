@@ -38,6 +38,8 @@ class ProductVariation extends Model
         'updated_at',
     ];
 
+    protected $with = ['productVariationValues'];
+
     public function product()
     {
         return $this->belongsTo(Product::class);

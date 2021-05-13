@@ -66,12 +66,12 @@ class User extends Authenticatable implements JWTSubject
 
     public function getCreatedByAttribute($value)
     {
-        return User::find($value);
+        return User::with('roles')->find($value);
     }
 
     public function getUpdatedByAttribute($value)
     {
-        return User::find($value);
+        return User::with('roles')->find($value);
     }
 
     public function getJWTIdentifier()

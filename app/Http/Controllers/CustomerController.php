@@ -298,8 +298,8 @@ class CustomerController extends Controller
                 'customers.*.email' => 'nullable|email|unique:customers',
                 'customers.*.name' => 'required|max:255',
                 'customers.*.phone_number' => 'required|phone:MM|unique:customers',
-                'customers.*password' => 'nullable|string|min:6',
-                'customers.*.gender' => 'required|in:Male,Female',
+                'customers.*.password' => 'nullable|string|min:6',
+                'customers.*.gender' => 'nullable|in:Male,Female',
             ],
             [
                 'customers*.phone_number.phone' => 'Invalid phone number.',

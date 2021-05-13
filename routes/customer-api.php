@@ -23,11 +23,11 @@ Route::group(['prefix' => 'user'], function () {
 
     Route::get('restaurants/branches', 'Customer\RestaurantController@getAllBranches');
     Route::get('restaurants/branches/search', 'Customer\HomeController@searchRestaurantBranches');
-    Route::get('restaurants/branches/{slug}', 'Customer\RestaurantController@getOneBranch');
+    Route::get('restaurants/branches/{branch}', 'Customer\RestaurantController@getOneBranch');
     Route::get('restaurants/branches/{slug}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
 
     Route::get('restaurant-categories', 'Customer\RestaurantController@getCategories');
-    Route::get('restaurant-categories/{slug}/restaurants', 'Customer\RestaurantController@getByCategory');
+    Route::get('restaurant-categories/{category}/restaurants', 'Customer\RestaurantController@getByCategory');
 
     Route::get('restaurant-tags', 'Customer\RestaurantController@getTags');
     Route::get('restaurant-tags/{slug}/restaurants', 'Customer\RestaurantController@getByTag');
@@ -41,7 +41,7 @@ Route::group(['prefix' => 'user'], function () {
     Route::get('shop-tags/{slug}', 'Customer\ShopController@getByTag');
     Route::get('shop-categories/{slug}', 'Customer\ShopController@getByCategory');
     Route::get('shop-subcategories/{slug}', 'Customer\ShopController@getBySubCategory');
-    Route::get('shops/{slug}', 'Customer\ShopController@show');
+    Route::get('shops/{shop}', 'Customer\ShopController@show');
     /* Shop */
 
     Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
@@ -56,19 +56,19 @@ Route::group(['prefix' => 'user'], function () {
         /* regist device token */
 
         Route::get('cities', 'Customer\AddressController@getAllCities');
-        Route::get('cities/{slug}/townships', 'Customer\AddressController@getTownshipsByCity');
+        Route::get('cities/{city}/townships', 'Customer\AddressController@getTownshipsByCity');
 
         Route::get('townships', 'Customer\AddressController@getAllTownships');
         Route::get('addresses/get-primary', 'Customer\AddressController@getPrimaryAddress');
-        Route::patch('addresses/{slug}/set-primary', 'Customer\AddressController@setPrimaryAddress');
-        Route::resource('addresses', 'Customer\AddressController', ['as' => 'customer.addresses']);
+        Route::patch('addresses/{address}/set-primary', 'Customer\AddressController@setPrimaryAddress');
+        Route::resource('addresses', 'Customer\AddressController', ['as' => 'customer.addresses', 'except' => ['create', 'edit']]);
 
         Route::get('favorites-count', 'Auth\CustomerAuthController@getFavoritesCount');
 
         /* Restaurant */
         Route::get('restaurants/favorites', 'Customer\RestaurantController@getFavoriteRestaurants');
-        Route::post('restaurants/{slug}/favorites', 'Customer\RestaurantController@setFavoriteRestaurant');
-        Route::delete('restaurants/{slug}/favorites', 'Customer\RestaurantController@removeFavoriteRestaurant');
+        Route::post('restaurants/{restaurant}/favorites', 'Customer\RestaurantController@setFavoriteRestaurant');
+        Route::delete('restaurants/{restaurant}/favorites', 'Customer\RestaurantController@removeFavoriteRestaurant');
 
         Route::resource('restaurants/orders', 'Customer\RestaurantOrderController', ['as' => 'customer.restaurants']);
         Route::post('restaurants/ratings', 'Customer\RestaurantRatingController@store');
@@ -82,8 +82,8 @@ Route::group(['prefix' => 'user'], function () {
 
         /* Product */
         Route::get('products/favorites', 'Customer\ProductController@getFavorite');
-        Route::post('products/{slug}/favorites', 'Customer\ProductController@setFavorite');
-        Route::delete('products/{slug}/favorites', 'Customer\ProductController@removeFavorite');
+        Route::post('products/{product}/favorites', 'Customer\ProductController@setFavorite');
+        Route::delete('products/{product}/favorites', 'Customer\ProductController@removeFavorite');
         /* Product */
 
         Route::get('promocode', 'Customer\PromocodeController@index');
@@ -95,10 +95,10 @@ Route::group(['prefix' => 'user'], function () {
     Route::get('products/brands', 'Customer\ProductController@getAllBrand');
     Route::get('products/search', 'Customer\HomeController@searchProduct');
     Route::get('products/recommendations', 'Customer\ProductController@getRecommendations');
-    Route::get('products/{slug}', 'Customer\ProductController@show');
-    Route::get('product-categories/{slug}', 'Customer\ProductController@getByCategory');
-    Route::get('product-shops/{slug}', 'Customer\ProductController@getByShop');
-    Route::get('product-brands/{slug}', 'Customer\ProductController@getByBrand');
+    Route::get('products/{product}', 'Customer\ProductController@show');
+    Route::get('product-categories/{category}', 'Customer\ProductController@getByCategory');
+    Route::get('product-shops/{shop}', 'Customer\ProductController@getByShop');
+    Route::get('product-brands/{brand}', 'Customer\ProductController@getByBrand');
     /* Product */
 
     /* Ads */
