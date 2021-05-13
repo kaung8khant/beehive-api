@@ -50,15 +50,17 @@ class User extends Authenticatable implements JWTSubject
     {
         parent::boot();
 
-        static::creating(function($model)
-        {
-            $model->created_by = Auth::guard('users')->user()->id;
-            $model->updated_by = Auth::guard('users')->user()->id;
+        static::creating(function ($model) {
+            if (Auth::guard('users')->check()) {
+                $model->created_by = Auth::guard('users')->user()->id;
+                $model->updated_by = Auth::guard('users')->user()->id;
+            }
         });
 
-        static::updating(function($model)
-        {
-            $model->updated_by = Auth::guard('users')->user()->id;
+        static::updating(function ($model) {
+            if (Auth::guard('users')->check()) {
+                $model->updated_by = Auth::guard('users')->user()->id;
+            }
         });
     }
 
