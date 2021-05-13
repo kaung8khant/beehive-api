@@ -13,6 +13,7 @@ class Content extends Model
 
     protected $hidden = [
         'id',
+        'updated_at',
     ];
 
     protected $appends = ['covers'];
