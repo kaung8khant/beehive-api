@@ -19,7 +19,6 @@ class BaseModel extends Model
                 $model->created_by = Auth::guard('users')->user()->id;
                 $model->updated_by = Auth::guard('users')->user()->id;
             }
-
         });
 
         static::updating(function ($model) {
@@ -31,11 +30,11 @@ class BaseModel extends Model
 
     public function getCreatedByAttribute($value)
     {
-        return User::find($value);
+        return User::with('roles')->find($value);
     }
 
     public function getUpdatedByAttribute($value)
     {
-        return User::find($value);
+        return User::with('roles')->find($value);
     }
 }
