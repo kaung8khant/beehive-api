@@ -158,6 +158,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('customer-groups/add/{slug}', 'Group\CustomerGroupController@addCustomersToGroup');
             Route::delete('customer-groups/remove/{slug}', 'Group\CustomerGroupController@removeCustomersFromGroup');
             Route::get('customer-groups/{slug}/customers', 'Group\CustomerGroupController@getCustomersByGroup');
+            Route::post('customer-groups/import', 'Group\CustomerGroupController@import');
+            Route::post('customer-groups/{slug}/customers/import', 'Group\CustomerGroupController@importCustomerToGroup');
 
             Route::post('sms/send', 'Sms\SmsController@send');
             Route::get('sms/logs', 'Sms\SmsController@getLogs');
