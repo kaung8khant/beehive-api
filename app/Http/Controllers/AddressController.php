@@ -34,7 +34,7 @@ class AddressController extends Controller
 
         $validatedData = $validator->validated();
 
-        $customer= Customer::where('slug', $slug)->firstOrFail();
+        $customer = Customer::where('slug', $slug)->firstOrFail();
         $validatedData['customer_id'] = $customer->id;
         $validatedData['is_primary'] = true;
 
@@ -52,9 +52,9 @@ class AddressController extends Controller
     {
         $params = [
             'label' => 'required',
-            'house_number' => 'required',
+            'house_number' => 'nullable',
             'floor' => 'nullable|min:0|max:50',
-            'street_name' => 'required',
+            'street_name' => 'nullable',
             'latitude' => 'nullable',
             'longitude' => 'nullable',
             'township_slug' => 'nullable|exists:App\Models\Township,slug',

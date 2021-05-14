@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\Customer;
+use App\Models\CustomerGroup;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
 use App\Models\ShopOrder;
@@ -139,7 +140,7 @@ class CustomerController extends Controller
      */
     public function show($slug)
     {
-        return Customer::with('addresses')->where('slug', $slug)->firstOrFail();
+        return Customer::with('addresses')->with('customerGroups')->where('slug', $slug)->firstOrFail();
     }
 
     /**
