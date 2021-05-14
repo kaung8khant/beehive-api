@@ -16,54 +16,55 @@ class SettingSeeder extends Seeder
     {
         $settings = [
             [
-                'key' => 'Restaurant Filter Range',
+                'key' => 'restaurant_search_radius',
                 'value' => '10',
                 'data_type' => 'integer',
-                'group_name' => 'business'
+                'group_name' => 'general',
             ],
             [
-                'key' => 'Default Commercial Tax (%)',
+                'key' => 'commercial',
                 'value' => '5',
                 'data_type' => 'integer',
-                'group_name' => 'business'
+                'group_name' => 'general',
             ],
             [
-                'key' => 'Default Currency',
+                'key' => 'currency',
                 'value' => 'MMK',
                 'data_type' => 'string',
-                'group_name' => 'business'
+                'group_name' => 'general',
             ],
             [
-                'key' => 'Printer Format',
+                'key' => 'printer',
                 'value' => 'A4',
                 'data_type' => 'string',
-                'group_name' => 'printer'
+                'group_name' => 'general',
             ],
             [
-                'key' => 'Phone Number',
+                'key' => 'phone_number',
                 'value' => '0977777777',
                 'data_type' => 'string',
-                'group_name' => 'contact'
+                'group_name' => 'contact',
             ],
             [
-                'key' => 'Email',
+                'key' => 'email',
                 'value' => 'beehive@gmail.com',
                 'data_type' => 'string',
-                'group_name' => 'contact'
+                'group_name' => 'contact',
             ],
             [
-                'key' => 'Facebook',
+                'key' => 'facebook',
                 'value' => 'beehive@facebook.com',
                 'data_type' => 'string',
-                'group_name' => 'contact'
+                'group_name' => 'contact',
             ],
             [
-                'key' => 'Website',
+                'key' => 'website',
                 'value' => 'www.beehivemm.com',
                 'data_type' => 'string',
-                'group_name' => 'contact'
+                'group_name' => 'contact',
             ],
         ];
+
         foreach ($settings as $setting) {
             Setting::create($setting);
         }

@@ -48,6 +48,5 @@ class DatabaseSeeder extends Seeder
         $this->call(PromocodeSeeder::class);
         $this->call(PromocodeRuleSeeder::class);
         $this->call(PageSeeder::class);
-        $this->call(AnnouncementSeeder::class);
     }
 }

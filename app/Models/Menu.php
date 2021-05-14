@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Ramsey\Uuid\Type\Decimal;
 
 /**
  * @OA\Schema(
@@ -36,21 +34,11 @@ use Ramsey\Uuid\Type\Decimal;
  *      })),
  * )
  */
-class Menu extends Model
+class Menu extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'name',
-        'description',
-        'price',
-        'tax',
-        'discount',
-        'restaurant_id',
-        'restaurant_category_id',
-        'is_enable',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

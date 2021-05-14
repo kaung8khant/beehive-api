@@ -23,17 +23,7 @@ class RestaurantOrderContact extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'customer_name',
-        'phone_number',
-        'house_number',
-        'floor',
-        'street_name',
-        'latitude',
-        'longitude',
-        'restaurant_order_id',
-        'township_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

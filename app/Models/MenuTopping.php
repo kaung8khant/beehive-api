@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @OA\Schema(
@@ -14,18 +13,11 @@ use Illuminate\Database\Eloquent\Model;
  *      @OA\Property(property="slug", type="string", readOnly=true)
  * )
  */
-class MenuTopping extends Model
+class MenuTopping extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'name',
-        'price',
-        'is_incremental',
-        'max_quantity',
-        'menu_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

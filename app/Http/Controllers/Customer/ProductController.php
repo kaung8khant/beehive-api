@@ -38,44 +38,32 @@ class ProductController extends Controller
         return $this->generateProductResponse($product, 200);
     }
 
-    public function show($slug)
+    public function show(Product $product)
     {
-        $product = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
-            ->with('productVariations')
-            ->with('productVariations.productVariationValues')
-            ->where('slug', $slug)
-            ->where('is_enable', 1)
-            ->firstOrFail();
-
-        return $this->generateProductResponse($product, 200, 'other');
+        return $this->generateProductResponse($product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations'), 200, 'other');
     }
 
-    public function getByCategory(Request $request, $slug)
+    public function getByCategory(Request $request, ShopCategory $test)
     {
-        $category_id = $this->getShopCategoryId($slug);
-        $product = Product::where('shop_category_id', $category_id)->where('is_enable', 1)->paginate($request->size)->items();
-
+        $product = Product::where('shop_category_id', $test->id)->where('is_enable', 1)->paginate($request->size)->items();
         return $this->generateProductResponse($product, 200);
     }
 
-    public function getByShop(Request $request, $slug)
+    public function getByShop(Request $request, Shop $shop)
     {
-        $shopId = $this->getShopId($slug);
-        $product = Product::where('shop_id', $shopId)->where('is_enable', 1)->paginate($request->size)->items();
-
+        $product = Product::where('shop_id', $shop->id)->where('is_enable', 1)->paginate($request->size)->items();
         return $this->generateProductResponse($product, 200);
     }
+
     public function getAllBrand()
     {
         $brand = Brand::all();
         return $this->generateResponse($brand, 200);
     }
 
-    public function getByBrand(Request $request, $slug)
+    public function getByBrand(Request $request, Brand $brand)
     {
-        $brandId = $this->getBrandId($slug);
-        $product = Product::where('brand_id', $brandId)->where('is_enable', 1)->paginate($request->size)->items();
-
+        $product = Product::where('brand_id', $brand->id)->where('is_enable', 1)->paginate($request->size)->items();
         return $this->generateProductResponse($product, 200);
     }
 
@@ -86,12 +74,10 @@ class ProductController extends Controller
         return $this->generateProductResponse($fav, 200);
     }
 
-    public function setFavorite($slug)
+    public function setFavorite(Product $product)
     {
-        $productId = $this->getProductId($slug);
-
         try {
-            $this->customer->favoriteProducts()->attach($productId);
+            $this->customer->favoriteProducts()->attach($product->id);
         } catch (\Illuminate\Database\QueryException $e) {
             return $this->generateResponse('You already set favorite this product.', 409, true);
         }
@@ -99,10 +85,9 @@ class ProductController extends Controller
         return $this->generateResponse('Success.', 200, true);
     }
 
-    public function removeFavorite($slug)
+    public function removeFavorite(Product $product)
     {
-        $productId = $this->getProductId($slug);
-        $this->customer->favoriteProducts()->detach($productId);
+        $this->customer->favoriteProducts()->detach($product->id);
         return $this->generateResponse('Success.', 200, true);
     }
 
@@ -115,25 +100,5 @@ class ProductController extends Controller
             ->items();
 
         return $this->generateProductResponse($product, 200);
-    }
-
-    private function getProductId($slug)
-    {
-        return Product::where('slug', $slug)->where('is_enable', 1)->firstOrFail()->id;
-    }
-
-    private function getBrandId($slug)
-    {
-        return Brand::where('slug', $slug)->firstOrFail()->id;
-    }
-
-    private function getShopCategoryId($slug)
-    {
-        return ShopCategory::where('slug', $slug)->firstOrFail()->id;
-    }
-
-    private function getShopId($slug)
-    {
-        return Shop::where('slug', $slug)->where('is_enable', 1)->firstOrFail()->id;
     }
 }

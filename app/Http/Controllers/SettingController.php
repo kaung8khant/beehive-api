@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {
@@ -91,7 +92,7 @@ class SettingController extends Controller
      *      }
      *)
      */
-    public function updateSetting(Request $request)
+    public function updateSettings(Request $request)
     {
         $validatedData = $request->validate([
             '*.key' => 'required|exists:App\Models\Setting,key',
@@ -100,8 +101,10 @@ class SettingController extends Controller
         ]);
 
         foreach ($validatedData as $data) {
-            Setting::where('key', $data['key'])->update([
-                'key' => $data['key'],
+            Cache::forget($data['key']);
+
+            $setting = Setting::where('key', $data['key'])->first();
+            $setting->update([
                 'value' => $data['value'],
                 'data_type' => $data['data_type'],
             ]);

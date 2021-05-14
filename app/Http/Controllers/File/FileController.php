@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Storage;
 
 class FileController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:users')->only('deleteFile') || $this->middleware('auth:vendors')->only('deleteFile');
+    }
+
     public function getFilesBySource($source, $sourceSlug)
     {
         $sourceId = $this->getSourceIdBySourceAndSlug($source, $sourceSlug);
@@ -34,25 +39,22 @@ class FileController extends Controller
         return $model::where('slug', $sourceSlug)->firstOrFail()->id;
     }
 
-    public function getFile($slug)
+    public function getFile(File $file)
     {
-        $file = File::where('slug', $slug)->firstOrFail();
-
-        if ($file->extension === 'png' || $file->extension === 'jpg' || $file->extension === 'jpeg') {
-            $path = 'images/large/';
-        } elseif ($file->extension === 'gif') {
-            $path = 'gifs/';
-        } elseif ($file->extension === 'pdf') {
-            $path = 'documents/';
-        }
-
+        $path = 'images/large/';
         return Storage::download($path . $file->file_name);
+
+        // if ($file->extension === 'png' || $file->extension === 'jpg' || $file->extension === 'jpeg') {
+        //     $path = 'images/large/';
+        // } elseif ($file->extension === 'gif') {
+        //     $path = 'gifs/';
+        // } elseif ($file->extension === 'pdf') {
+        //     $path = 'documents/';
+        // }
     }
 
-    public function getImage(Request $request, $slug)
+    public function getImage(Request $request, File $file)
     {
-        $fileName = File::where('slug', $slug)->firstOrFail()->file_name;
-
         $imageData = config('images');
         $imageSizes = array_keys($imageData);
 
@@ -61,26 +63,25 @@ class FileController extends Controller
         }
 
         if (in_array($request->size, $imageSizes)) {
-            return Storage::download($imageData[$request->size]['path'] . $fileName);
+            return Storage::download($imageData[$request->size]['path'] . $file->file_name);
         }
 
         return null;
     }
 
-    public function deleteFile($slug)
+    public function deleteFile(File $file)
     {
-        $file = File::where('slug', $slug)->firstOrFail();
-
-        if ($file->extension === 'png' || $file->extension === 'jpg' || $file->extension === 'jpeg') {
-            $this->deleteImagesFromStorage($file->file_name);
-        } elseif ($file->extension === 'gif') {
-            Storage::delete('gifs/' . $file->file_name);
-        } elseif ($file->extension === 'pdf') {
-            Storage::delete('documents/' . $file->file_name);
-        }
-
+        $this->deleteImagesFromStorage($file->file_name);
         $file->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+
+        // if ($file->extension === 'png' || $file->extension === 'jpg' || $file->extension === 'jpeg') {
+        //     $this->deleteImagesFromStorage($file->file_name);
+        // } elseif ($file->extension === 'gif') {
+        //     Storage::delete('gifs/' . $file->file_name);
+        // } elseif ($file->extension === 'pdf') {
+        //     Storage::delete('documents/' . $file->file_name);
+        // }
     }
 
     private function deleteImagesFromStorage($fileName)

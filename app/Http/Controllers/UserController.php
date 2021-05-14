@@ -425,7 +425,6 @@ class UserController extends Controller
 
         $validatedData = $request->validate($rules, $messages);
         $validatedData['password'] = Hash::make($validatedData['password']);
-        $validatedData['created_by'] = Auth::guard('users')->user()->id;
         return $validatedData;
     }
 

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * @OA\Schema(
@@ -22,18 +21,11 @@ use Illuminate\Database\Eloquent\Model;
  *      })),
  * )
  */
-class Promocode extends Model
+class Promocode extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'code',
-        'type',
-        'usage',
-        'amount',
-        'description',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

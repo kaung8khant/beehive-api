@@ -18,12 +18,7 @@ class ProductVariationValue extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'slug',
-        'value',
-        'price',
-        'product_variation_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'id',

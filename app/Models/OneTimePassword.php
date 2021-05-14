@@ -9,13 +9,5 @@ class OneTimePassword extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'phone_number',
-        'otp_code',
-        'status',
-        'message_id',
-        'type',
-        'source',
-        'is_used',
-    ];
+    protected $guarded = ['id'];
 }

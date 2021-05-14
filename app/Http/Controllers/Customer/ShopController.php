@@ -36,13 +36,9 @@ class ShopController extends Controller
         return $this->generateResponse($shop, 200);
     }
 
-    public function show($slug)
+    public function show(Shop $shop)
     {
-        $shop = Shop::with('availableCategories', 'availableTags', 'township')
-            ->where('slug', $slug)
-            ->where('is_enable', 1)
-            ->firstOrFail();
-        return $this->generateResponse($shop, 200);
+        return $this->generateResponse($shop->load('availableCategories', 'availableTags', 'township'), 200);
     }
 
     public function getCategories(Request $request)

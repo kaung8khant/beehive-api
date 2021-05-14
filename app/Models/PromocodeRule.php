@@ -3,17 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class PromocodeRule extends Model
+class PromocodeRule extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
-        'value',
-        'data_type',
-        'promocode_id',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'promocode_id',
