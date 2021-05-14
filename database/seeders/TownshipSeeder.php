@@ -1081,6 +1081,41 @@ class TownshipSeeder extends Seeder
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
+                'name' => 'Amarapura',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Aungmyaythazan',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),,
+                'name' => 'Chanayethazan',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),,
+                'name' => 'Chanmyathazi',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Mahaaungmyay',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Patheingyi',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Pyigyitagon',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
                 'name' => 'Mawlamyine',
                 'city_id' => 5,
             ],
