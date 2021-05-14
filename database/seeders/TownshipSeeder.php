@@ -1090,12 +1090,12 @@ class TownshipSeeder extends Seeder
                 'city_id' => 16,
             ],
             [
-                'slug' => $this->generateUniqueSlug(),,
+                'slug' => $this->generateUniqueSlug(),
                 'name' => 'Chanayethazan',
                 'city_id' => 16,
             ],
             [
-                'slug' => $this->generateUniqueSlug(),,
+                'slug' => $this->generateUniqueSlug(),
                 'name' => 'Chanmyathazi',
                 'city_id' => 16,
             ],
