@@ -97,6 +97,8 @@ class CustomerController extends Controller
                 'phone_number' => 'required|phone:MM|unique:customers',
                 'password' => 'nullable|string|min:6',
                 'gender' => 'required|in:Male,Female',
+                'customer_groups' => 'nullable|array',
+                'customer_groups.*' => 'exists:App\Models\CustomerGroup,slug',
             ],
             [
                 'phone_number.phone' => 'Invalid phone number.',
@@ -110,7 +112,13 @@ class CustomerController extends Controller
         $validatedData['created_by'] = 'admin';
 
         $customer = Customer::create($validatedData);
-        return response()->json($customer->refresh(), 201);
+
+        if ($request->customer_groups) {
+            $customerGroups = CustomerGroup::whereIn('slug', $request->customer_groups)->pluck('id');
+            $customer->customerGroups()->attach($customerGroups);
+        }
+
+        return response()->json($customer->load('customerGroups'), 201);
     }
 
     /**
