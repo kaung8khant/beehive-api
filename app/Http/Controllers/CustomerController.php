@@ -197,6 +197,8 @@ class CustomerController extends Controller
                     Rule::unique('customers')->ignore($customer->id),
                 ],
                 'gender' => 'required|in:Male,Female',
+                'customer_groups' => 'nullable|array',
+                'customer_groups.*' => 'exists:App\Models\CustomerGroup,slug',
             ],
             [
                 'phone_number.phone' => 'Invalid phone number.',
@@ -204,8 +206,12 @@ class CustomerController extends Controller
         );
         $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
 
+        $customerGroups = CustomerGroup::whereIn('slug', $request->customer_groups)->pluck('id');
+        $customer->customerGroups()->detach();
+        $customer->customerGroups()->attach($customerGroups);
+
         $customer->update($validatedData);
-        return response()->json($customer, 200);
+        return response()->json($customer->load('customerGroups'), 200);
     }
 
     /**
