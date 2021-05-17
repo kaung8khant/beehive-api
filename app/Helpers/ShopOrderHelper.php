@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-use App\Helpers\PromocodeHelper;
+use App\Exceptions\BadRequestException;
 use App\Helpers\StringHelper;
 use App\Models\Product;
 use App\Models\ProductVariationValue;
@@ -28,9 +28,10 @@ trait ShopOrderHelper
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
             'address' => 'required',
-            'address.house_number' => 'required|string',
-            'address.floor' => 'nullable|string',
-            'address.street_name' => 'required|string',
+            // 'address.label' => 'required|string',
+            'address.house_number' => 'nullable|string',
+            'address.floor' => 'nullable|numeric',
+            'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
             'address.township' => 'required',
@@ -47,6 +48,48 @@ trait ShopOrderHelper
         }
 
         return $request->validate($rules);
+    }
+
+    public static function validateProductVariations($key, $value)
+    {
+        $product = Product::where('slug', $value['slug'])
+            ->with('productVariations')
+            ->with('productVariations.productVariationValues')
+            ->first();
+        if ($product->productVariations()->count() > 0 && empty($value['variation_value_slugs'])) {
+            throw new BadRequestException('The order_items.' . $key . '.variation_value_slugs is required.', 400);
+        }
+        return $product;
+    }
+
+    public static function prepareProductVariations($validatedData)
+    {
+        $orderItems = [];
+        $subTotal = 0;
+        $tax = 0;
+        foreach ($validatedData['order_items'] as $key => $value) {
+            // validate variation
+            $product = self::validateProductVariations($key, $value);
+            // prepare variations for calculation
+            $variations = collect(self::prepareVariations($value['variation_value_slugs']));
+            // calculate amount, subTotal and tax
+            $amount = $product->price + $variations->sum('price');
+
+            $subTotal += ($amount  - $product->discount) * $value['quantity'];
+
+            $tax += ($amount - $product->discount) * $product->tax * 0.01 * $value['quantity'];
+            $product['price'] = $amount;
+            $product['variations'] = $variations;
+            $product['quantity'] = $value['quantity'];
+            $product['tax'] = ($amount - $product->discount) * $product->tax * 0.01;
+            array_push($orderItems, $product->toArray());
+        }
+        $validatedData['product_id'] = $product['id'];
+        $validatedData['order_items'] = $orderItems;
+        $validatedData['subTotal'] = $subTotal;
+        $validatedData['tax'] = $tax;
+        // Log::debug('validatedData => ' . json_encode($validatedData));
+        return $validatedData;
     }
 
     public static function checkVariationsExist($products)
@@ -86,42 +129,16 @@ trait ShopOrderHelper
         ShopOrderContact::create($customerInfo);
     }
 
-    public static function createShopOrderItem($orderId, $orderItems, $promoCodeId)
+    public static function createShopOrderItem($orderId, $orderItems)
     {
-        $total = 0;
-
         foreach ($orderItems as $item) {
-            $variations = collect(self::prepareVariations($item['variation_value_slugs']));
-            $product = self::getProduct($item['slug']);
-            $total += ($product->price - $product->discount + $variations->sum('price')) * $item['quantity'];
-        }
-
-        $promoPercentage = 0;
-
-        if ($promoCodeId) {
-            $promoPercentage = PromocodeHelper::getPercentage($total, $promoCodeId);
-        }
-
-        foreach ($orderItems as $item) {
-            $product = self::getProduct($item['slug']);
-            $variations = collect(self::prepareVariations($item['variation_value_slugs']));
-
-            $amount = ($product->price - $product->discount + $variations->sum('price')) * $item['quantity'];
-            $discount = $amount * $promoPercentage / 100;
-
             $shop = self::getShopByProduct($item['slug']);
             $shopOrderVendor = self::createShopOrderVendor($orderId, $shop->id);
-
             $item['shop'] = $shop;
             $item['shop_order_vendor_id'] = $shopOrderVendor->id;
-            $item['product_id'] = $product->id;
             $item['shop_id'] = $shop->id;
-            $item['product_name'] = $product->name;
-            $item['amount'] = $amount;
-            $item['discount'] = $discount;
-            $item['tax'] = ($amount - $discount) * $product->tax / 100;
-            $item['variations'] = $variations;
-
+            $item['product_name'] = $item['name'];
+            $item['amount'] = $item['price'];
             ShopOrderItem::create($item);
         }
     }
@@ -154,7 +171,8 @@ trait ShopOrderHelper
     {
         return ShopOrderVendor::updateOrCreate(
             ['shop_order_id' => $orderId, 'shop_id' => $shopId],
-            ['slug' => StringHelper::generateUniqueSlug()]);
+            ['slug' => StringHelper::generateUniqueSlug()]
+        );
     }
 
     private static function getProductVariationValue($slug)
