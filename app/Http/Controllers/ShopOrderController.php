@@ -100,47 +100,52 @@ class ShopOrderController extends Controller
 
     public function show($slug)
     {
-        $shop = ShopOrder::with('contact')
+        $shopOrder = ShopOrder::with('contact')
             ->with('contact.township')
             ->with('vendors')
             ->where('slug', $slug)
             ->firstOrFail();
 
-        return $this->generateResponse($shop, 200);
+        return $this->generateResponse($shopOrder, 200);
     }
 
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
-
+        // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
-
-        $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
-        if ($checkVariations) {
-            return $this->generateResponse($checkVariations, 422, true);
-        }
-
-        $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
-        $validatedData['promocode_id'] = null;
-
+        // get Customer Info
+        $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
+        // append customer data
+        $validatedData['customer_id'] = $customer['id'];
+        // validate and prepare variation
+        $validatedData = OrderHelper::prepareProductVariations($validatedData);
+        // validate promocode
         if ($validatedData['promo_code_slug']) {
-            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'shop');
-            if (!$isPromoValid) {
-                return $this->generateResponse('Invalid promo code.', 406, true);
-            }
-
-            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
+            // may require amount validation.
+            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
+            PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
+            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer);
+            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal']);
+            // $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'shop');
+            // if (!$isPromoValid) {
+            //     return $this->generateResponse('Invalid promo code', 400, true);
+            // }
+            $validatedData['promocode_id'] = $promocode->id;
+            $validatedData['promocode'] = $promocode->code;
+            $validatedData['promocode_amount'] = $promocodeAmount;
         }
 
+        // TODO:: try catch and rollback if failed.
         $order = ShopOrder::create($validatedData);
         $orderId = $order->id;
-
         OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
+        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
         OrderHelper::createOrderStatus($orderId);
 
         foreach ($validatedData['order_items'] as $item) {
-            $this->notify(OrderHelper::getShopByProduct($item['slug'])->id,
+            $this->notify(
+                OrderHelper::getShopByProduct($item['slug'])->id,
                 [
                     'title' => 'New Order',
                     'body' => "You've just recevied new order. Check now!",
@@ -166,6 +171,63 @@ class ShopOrderController extends Controller
         );
 
         return $this->generateShopOrderResponse($order->refresh(), 201);
+
+        // $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
+        // if ($checkVariations) {
+        //     return $this->generateResponse($checkVariations, 422, true);
+        // }
+
+        // $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
+        // $validatedData['promocode_id'] = null;
+
+        // if ($validatedData['promo_code_slug']) {
+        //     // may require amount validation.
+        //     $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'shop');
+        //     if (!$isPromoValid) {
+        //         return $this->generateResponse('Invalid promo code', 400, true);
+        //     }
+        //     $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->first();
+        //     $validatedData['promocode_id'] = $promocode->id;
+        //     $validatedData['promocode'] = $promocode->code;
+        //     $validatedData['promocode_amount'] = 0;
+        // }
+
+        // $order = ShopOrder::create($validatedData);
+        // $orderId = $order->id;
+
+        // Log::debug('validated data: ' . json_encode($validatedData));
+        // OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
+        // OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
+        // OrderHelper::createOrderStatus($orderId);
+
+        // foreach ($validatedData['order_items'] as $item) {
+        //     $this->notify(
+        //         OrderHelper::getShopByProduct($item['slug'])->id,
+        //         [
+        //             'title' => 'New Order',
+        //             'body' => "You've just recevied new order. Check now!",
+        //         ]
+        //     );
+        // }
+
+        // $this->notifyAdmin(
+        //     [
+        //         'title' => "New Order",
+        //         'body' => "New Order has been received. Check now!",
+        //         'data' => [
+        //             'action' => 'create',
+        //             'type' => 'shopOrder',
+        //             'status' => 'pending',
+        //             'shopOrder' => ShopOrder::with('contact')
+        //                 ->with('contact.township')
+        //                 ->with('vendors')
+        //                 ->where('slug', $order->slug)
+        //                 ->firstOrFail(),
+        //         ],
+        //     ]
+        // );
+
+        // return $this->generateShopOrderResponse($order->refresh(), 201);
     }
 
     public function changeStatus(Request $request, $slug)
@@ -245,6 +307,5 @@ class ShopOrderController extends Controller
                 ],
             ]
         );
-
     }
 }
