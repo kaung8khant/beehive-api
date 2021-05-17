@@ -38,8 +38,11 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             $product->tax ? $product->tax : '0',
             $product->discount ? $product->discount : '0',
             $product->is_enable ? '1' : '0',
+            Shop::where('id', $product->shop_id)->value('name'),
             Shop::where('id', $product->shop_id)->value('slug'),
+            ShopCategory::where('id', $product->shop_category_id)->value('name'),
             ShopCategory::where('id', $product->shop_category_id)->value('slug'),
+            ShopSubCategory::where('id', $product->shop_sub_category_id)->value('name'),
             ShopSubCategory::where('id', $product->shop_sub_category_id)->value('slug'),
         ];
     }
@@ -54,8 +57,11 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'tax',
             'discount',
             'is_enable',
+            'shop',
             'shop_slug',
+            'shop_category',
             'shop_category_slug',
+            'shop_sub_category',
             'shop_sub_category_slug',
         ];
     }
@@ -75,6 +81,9 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'H' => ['alignment' => ['horizontal' => 'center']],
             'I' => ['alignment' => ['horizontal' => 'center']],
             'J' => ['alignment' => ['horizontal' => 'center']],
+            'K' => ['alignment' => ['horizontal' => 'center']],
+            'L' => ['alignment' => ['horizontal' => 'center']],
+            'M' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -88,9 +97,12 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'E' => 10,
             'F' => 10,
             'G' => 10,
-            'H' => 15,
-            'I' => 20,
+            'H' => 25,
+            'I' => 25,
             'J' => 25,
+            'K' => 25,
+            'L' => 25,
+            'M' => 25,
         ];
     }
 }

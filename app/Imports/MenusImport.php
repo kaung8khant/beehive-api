@@ -50,4 +50,18 @@ class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
     {
         return 'slug';
     }
+
+    public function rules(): array
+    {
+        return [
+            'name' => 'required',
+            'description' => 'nullable',
+            'price' => 'required|numeric',
+            'tax' => 'required|numeric',
+            'discount' => 'required|numeric',
+            'is_enable' => 'required|boolean',
+            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
+            'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
+        ];
+    }
 }

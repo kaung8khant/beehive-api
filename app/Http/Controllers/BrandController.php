@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
@@ -48,7 +49,11 @@ class BrandController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('brands', 'name', $request->by, $request->order);
+
         return Brand::where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -120,10 +125,9 @@ class BrandController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(Brand $brand)
     {
-        $brand = Brand::with('products')->where('slug', $slug)->firstOrFail();
-        return response()->json($brand, 200);
+        return response()->json($brand->load('products'), 200);
     }
 
     /**
@@ -159,10 +163,8 @@ class BrandController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, Brand $brand)
     {
-        $brand = Brand::where('slug', $slug)->firstOrFail();
-
         $brand->update($request->validate([
             'name' => [
                 'required',
@@ -203,10 +205,8 @@ class BrandController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(Brand $brand)
     {
-        $brand = Brand::where('slug', $slug)->firstOrFail();
-
         foreach ($brand->images as $image) {
             $this->deleteFile($image->slug);
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\City;
 use Illuminate\Http\Request;
@@ -47,9 +48,12 @@ class CityController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('cities', 'name', $request->by, $request->order);
+
         return City::with('townships')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -82,8 +86,8 @@ class CityController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $city = City::create($request->validate([
-            'name' => 'required|unique:cities',
             'slug' => 'required|unique:cities',
+            'name' => 'required|unique:cities',
         ]));
 
         return response()->json($city, 201);
@@ -114,9 +118,9 @@ class CityController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(City $city)
     {
-        return response()->json(City::with('townships')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json($city->load('townships'), 200);
     }
 
     /**
@@ -152,10 +156,8 @@ class CityController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, City $city)
     {
-        $city = City::where('slug', $slug)->firstOrFail();
-
         $city->update($request->validate([
             'name' => [
                 'required',
@@ -191,9 +193,9 @@ class CityController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(City $city)
     {
-        City::where('slug', $slug)->firstOrFail()->delete();
+        $city->delete();
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 }
