@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\Customer;
+use App\Models\RestaurantCategory;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class CustomersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class RestaurantCategoriesExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
     public function __construct()
     {
@@ -19,21 +19,17 @@ class CustomersExport implements FromQuery, WithHeadings, WithMapping, WithStyle
 
     public function query()
     {
-        return Customer::query();
+        return RestaurantCategory::query();
     }
 
     /**
-     * @var Customer $customer
+     * @var RestaurantCategory $restaurantCategory
      */
-    public function map($customer): array
+    public function map($restaurantCategory): array
     {
         return [
-            $customer->slug,
-            $customer->name,
-            $customer->email,
-            $customer->phone_number,
-            $customer->gender,
-            $customer->created_by,
+            $restaurantCategory->slug,
+            $restaurantCategory->name,
         ];
     }
 
@@ -42,10 +38,6 @@ class CustomersExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         return [
             'id',
             'name',
-            'email',
-            'phone_number',
-            'gender',
-            'created_by',
         ];
     }
 
@@ -56,10 +48,6 @@ class CustomersExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             1 => ['font' => ['bold' => true]],
             'A' => ['alignment' => ['horizontal' => 'center']],
             'B' => ['alignment' => ['horizontal' => 'center']],
-            'C' => ['alignment' => ['horizontal' => 'center']],
-            'D' => ['alignment' => ['horizontal' => 'center']],
-            'E' => ['alignment' => ['horizontal' => 'center']],
-            'F' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -67,11 +55,7 @@ class CustomersExport implements FromQuery, WithHeadings, WithMapping, WithStyle
     {
         return [
             'A' => 15,
-            'B' => 25,
-            'C' => 20,
-            'D' => 50,
-            'E' => 15,
-            'F' => 10,
+            'B' => 40,
         ];
     }
 }

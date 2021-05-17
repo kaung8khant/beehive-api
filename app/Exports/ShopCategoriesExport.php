@@ -9,7 +9,6 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Carbon\Carbon;
 
 class ShopCategoriesExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
@@ -24,13 +23,13 @@ class ShopCategoriesExport implements FromQuery, WithHeadings, WithMapping, With
     }
 
     /**
-     * @var Shop $shop
+     * @var ShopCategory $shopCategory
      */
-    public function map($shop): array
+    public function map($shopCategory): array
     {
         return [
-            $shop->slug,
-            $shop->name,
+            $shopCategory->slug,
+            $shopCategory->name,
         ];
     }
 
