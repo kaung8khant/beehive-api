@@ -43,9 +43,9 @@ class ProductController extends Controller
         return $this->generateProductResponse($product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations'), 200, 'other');
     }
 
-    public function getByCategory(Request $request, ShopCategory $test)
+    public function getByCategory(Request $request, ShopCategory $category)
     {
-        $product = Product::where('shop_category_id', $test->id)->where('is_enable', 1)->paginate($request->size)->items();
+        $product = Product::where('shop_category_id', $category->id)->where('is_enable', 1)->paginate($request->size)->items();
         return $this->generateProductResponse($product, 200);
     }
 

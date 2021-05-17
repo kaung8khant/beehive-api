@@ -2,17 +2,19 @@
 
 namespace App\Exports;
 
-use App\Models\Menu;
+use App\Models\Shop;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
+use App\Models\Township;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Carbon\Carbon;
 
-class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
     public function __construct()
     {
@@ -21,43 +23,39 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
 
     public function query()
     {
-        return Menu::query();
+        return Shop::query();
     }
 
     /**
-     * @var Menu $menu
+     * @var Shop $shop
      */
-    public function map($menu): array
+    public function map($shop): array
     {
         return [
-            $menu->slug,
-            $menu->name,
-            $menu->description,
-            $menu->price ? $menu->price : '0',
-            $menu->tax ? $menu->tax : '0',
-            $menu->discount ? $menu->discount : '0',
-            $menu->is_enable ? '1' : '0',
-            Restaurant::where('id', $menu->restaurant_id)->value('name'),
-            Restaurant::where('id', $menu->restaurant_id)->value('slug'),
-            RestaurantCategory::where('id', $menu->restaurant_category_id)->value('name'),
-            RestaurantCategory::where('id', $menu->restaurant_category_id)->value('slug'),
+            $shop->slug,
+            $shop->name,
+            $shop->contact_number,
+            Carbon::parse($shop->opening_time)->format('g:i A').' - '.Carbon::parse($shop->closing_time)->format('g:i A'),
+            $shop->address,
+            $shop->is_enable ? '1' : '0',
+            $shop->is_official ? '1' : '0',
+            Township::where('id', $shop->township_id)->value('name'),
+            Township::where('id', $shop->township_id)->value('slug'),
         ];
     }
 
     public function headings(): array
     {
         return [
-            'slug',
+            'id',
             'name',
-            'description',
-            'price',
-            'tax',
-            'discount',
+            'contact_number',
+            'opening_hours',
+            'address',
             'is_enable',
-            'restaurant',
-            'restaurant_slug',
-            'restaurant_category',
-            'restaurant_category_slug',
+            'is_official',
+            'township',
+            'township_slug',
         ];
     }
 
@@ -75,8 +73,6 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'G' => ['alignment' => ['horizontal' => 'center']],
             'H' => ['alignment' => ['horizontal' => 'center']],
             'I' => ['alignment' => ['horizontal' => 'center']],
-            'J' => ['alignment' => ['horizontal' => 'center']],
-            'K' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -84,16 +80,14 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
     {
         return [
             'A' => 15,
-            'B' => 30,
-            'C' => 45,
-            'D' => 10,
-            'E' => 10,
+            'B' => 50,
+            'C' => 20,
+            'D' => 50,
+            'E' => 100,
             'F' => 10,
             'G' => 10,
-            'H' => 25,
+            'H' => 20,
             'I' => 15,
-            'J' => 25,
-            'K' => 25,
         ];
     }
 }

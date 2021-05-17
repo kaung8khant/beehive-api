@@ -40,6 +40,5 @@ class ExportImportController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'failed'], 400);
         }
-
     }
 }

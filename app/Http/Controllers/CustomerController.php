@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\Customer;
+use App\Models\CustomerGroup;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
 use App\Models\ShopOrder;
@@ -96,6 +97,8 @@ class CustomerController extends Controller
                 'phone_number' => 'required|phone:MM|unique:customers',
                 'password' => 'nullable|string|min:6',
                 'gender' => 'required|in:Male,Female',
+                'customer_groups' => 'nullable|array',
+                'customer_groups.*' => 'exists:App\Models\CustomerGroup,slug',
             ],
             [
                 'phone_number.phone' => 'Invalid phone number.',
@@ -109,7 +112,13 @@ class CustomerController extends Controller
         $validatedData['created_by'] = 'admin';
 
         $customer = Customer::create($validatedData);
-        return response()->json($customer->refresh(), 201);
+
+        if ($request->customer_groups) {
+            $customerGroups = CustomerGroup::whereIn('slug', $request->customer_groups)->pluck('id');
+            $customer->customerGroups()->attach($customerGroups);
+        }
+
+        return response()->json($customer->load('customerGroups'), 201);
     }
 
     /**
@@ -139,7 +148,7 @@ class CustomerController extends Controller
      */
     public function show($slug)
     {
-        return Customer::with('addresses')->where('slug', $slug)->firstOrFail();
+        return Customer::with('addresses')->with('customerGroups')->where('slug', $slug)->firstOrFail();
     }
 
     /**
@@ -188,6 +197,8 @@ class CustomerController extends Controller
                     Rule::unique('customers')->ignore($customer->id),
                 ],
                 'gender' => 'required|in:Male,Female',
+                'customer_groups' => 'nullable|array',
+                'customer_groups.*' => 'exists:App\Models\CustomerGroup,slug',
             ],
             [
                 'phone_number.phone' => 'Invalid phone number.',
@@ -195,8 +206,12 @@ class CustomerController extends Controller
         );
         $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
 
+        $customerGroups = CustomerGroup::whereIn('slug', $request->customer_groups)->pluck('id');
+        $customer->customerGroups()->detach();
+        $customer->customerGroups()->attach($customerGroups);
+
         $customer->update($validatedData);
-        return response()->json($customer, 200);
+        return response()->json($customer->load('customerGroups'), 200);
     }
 
     /**
