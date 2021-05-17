@@ -18,10 +18,10 @@ class ShopsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
     }
 
     /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
+     * @param array $row
+     *
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
     public function model(array $row)
     {
         return new Shop([
@@ -50,5 +50,22 @@ class ShopsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
     public function uniqueBy()
     {
         return 'slug';
+    }
+
+    public function rules(): array
+    {
+        return [
+            'name' => 'required|unique:shops',
+            'is_enable' => 'required|boolean',
+            'is_official' => 'required|boolean',
+            'address' => 'nullable',
+            'contact_number' => 'required|phone:MM',
+            'opening_time' => 'required|date_format:H:i',
+            'closing_time' => 'required|date_format:H:i',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'township_slug' => 'nullable|exists:App\Models\Township,slug',
+            'contact_number.phone' => 'Invalid phone number.',
+        ];
     }
 }

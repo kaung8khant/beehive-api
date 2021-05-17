@@ -2,17 +2,15 @@
 
 namespace App\Exports;
 
-use App\Models\Shop;
-use App\Models\Township;
+use App\Models\Customer;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Carbon\Carbon;
 
-class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class CustomersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
     public function __construct()
     {
@@ -21,24 +19,21 @@ class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
 
     public function query()
     {
-        return Shop::query();
+        return Customer::query();
     }
 
     /**
-     * @var Shop $shop
+     * @var Customer $shop
      */
-    public function map($shop): array
+    public function map($customer): array
     {
         return [
-            $shop->slug,
-            $shop->name,
-            $shop->contact_number,
-            Carbon::parse($shop->opening_time)->format('g:i A').' - '.Carbon::parse($shop->closing_time)->format('g:i A'),
-            $shop->address,
-            $shop->is_enable ? '1' : '0',
-            $shop->is_official ? '1' : '0',
-            Township::where('id', $shop->township_id)->value('name'),
-            Township::where('id', $shop->township_id)->value('slug'),
+            $customer->slug,
+            $customer->name,
+            $customer->email,
+            $customer->phone_number,
+            $customer->gender,
+            $customer->created_by,
         ];
     }
 
@@ -47,13 +42,10 @@ class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
         return [
             'id',
             'name',
-            'contact_number',
-            'opening_hours',
-            'address',
-            'is_enable',
-            'is_official',
-            'township',
-            'township_slug',
+            'email',
+            'phone_number',
+            'gender',
+            'created_by',
         ];
     }
 
@@ -68,9 +60,6 @@ class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'D' => ['alignment' => ['horizontal' => 'center']],
             'E' => ['alignment' => ['horizontal' => 'center']],
             'F' => ['alignment' => ['horizontal' => 'center']],
-            'G' => ['alignment' => ['horizontal' => 'center']],
-            'H' => ['alignment' => ['horizontal' => 'center']],
-            'I' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -78,14 +67,11 @@ class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
     {
         return [
             'A' => 15,
-            'B' => 50,
+            'B' => 25,
             'C' => 20,
             'D' => 50,
-            'E' => 100,
+            'E' => 15,
             'F' => 10,
-            'G' => 10,
-            'H' => 20,
-            'I' => 15,
         ];
     }
 }
