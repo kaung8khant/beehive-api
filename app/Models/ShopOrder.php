@@ -36,12 +36,11 @@ class ShopOrder extends BaseModel
 
         foreach ($vendors as $vendor) {
             foreach ($vendor->items as $item) {
-                $amount = $item->amount + $item->tax - $item->discount;
-                $totalAmount += $amount;
+                $totalAmount += ($item->amount - $item->discount + $item->tax) * $item->quantity;
             }
         }
 
-        return $totalAmount;
+        return $totalAmount - $this->promocode_amount;
     }
 
     public function contact()
