@@ -7,6 +7,7 @@ return [
         'shop' => 'ShopsImport',
         'customer' => 'CustomersImport',
         'shop-category' => 'ShopCategoriesImport',
+        'restaurant-category' => 'RestaurantCategoriesImport',
     ],
     'export' => [
         'menu' => 'MenusExport',
@@ -14,5 +15,6 @@ return [
         'shop' => 'ShopsExport',
         'customer' => 'CustomersExport',
         'shop-category' => 'ShopCategoriesExport',
+        'restaurant-category' => 'RestaurantCategoriesExport',
     ],
 ];
