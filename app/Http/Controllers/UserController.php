@@ -286,7 +286,12 @@ class UserController extends Controller
         $user = User::where('slug', $slug)->firstOrFail();
 
         $validatedData = $this->validateUserUpdate($request, $user->id);
+
         $user->update($validatedData);
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $user->slug);
+        }
 
         return response()->json($user, 200);
     }
@@ -299,6 +304,10 @@ class UserController extends Controller
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $user->update($validatedData);
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $user->slug);
+        }
+
         return response()->json($user->refresh()->load(['shop']), 200);
     }
 
@@ -310,6 +319,10 @@ class UserController extends Controller
         $validatedData['restaurant_branch_id'] = $this->getRestaruantBranchId($request->restaurant_branch_slug);
         $user->update($validatedData);
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $user->slug);
+        }
+
         return response()->json($user->refresh()->load(['restaurantBranch', 'restaurantBranch.restaurant']), 201);
     }
 
@@ -319,6 +332,10 @@ class UserController extends Controller
 
         $validatedData = $this->validateUserUpdate($request, $user->id);
         $user->update($validatedData);
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $user->slug);
+        }
 
         return response()->json($user, 200);
     }
@@ -451,6 +468,7 @@ class UserController extends Controller
 
         $rules = [
             'name' => 'required',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
             'phone_number' => [
                 'required',
                 'phone:MM',
