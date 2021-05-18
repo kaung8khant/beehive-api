@@ -11,10 +11,12 @@ use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Jobs\SendSms;
 use App\Models\Customer;
+use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderVendor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
@@ -155,7 +157,6 @@ class ShopOrderController extends Controller
 
             return $this->generateShopOrderResponse($order->refresh(), 201);
         });
-
     }
 
     public function changeStatus(Request $request, ShopOrder $shopOrder)

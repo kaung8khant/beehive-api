@@ -1841,7 +1841,7 @@ class TownshipSeeder extends Seeder
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
-                'name' => 'ááá¯áá±á¬',
+                'name' => 'Mazaligone',
                 'city_id' => 18,
             ],
             [
