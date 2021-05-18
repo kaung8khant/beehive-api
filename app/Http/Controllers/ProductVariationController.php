@@ -96,17 +96,17 @@ class ProductVariationController extends Controller
 
         ]);
 
-        $productId = $this->getProductId($request->product_slug);
-        $productVariations = $validatedData["product_variations"];
+        $productVariations = $validatedData['product_variations'];
 
         foreach ($productVariations as $variation) {
             $variation['slug'] = $this->generateUniqueSlug();
-            $variation['product_id'] = $productId;
+            $variation['product_id'] = $this->getProductId($request->product_slug);
             $productVariation = ProductVariation::create($variation);
 
             $variationId = $productVariation->id;
             $this->createVariationValues($variationId, $variation['product_variation_values']);
         }
+
         return response()->json($productVariation->load('product', 'productVariationValues'), 201);
     }
 
@@ -135,10 +135,9 @@ class ProductVariationController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(ProductVariation $productVariation)
     {
-        $productVariation = ProductVariation::with('product', 'productVariationValues')->where('slug', $slug)->firstOrFail();
-        return response()->json($productVariation, 200);
+        return response()->json($productVariation->load('product', 'productVariationValues'), 200);
     }
 
     /**
@@ -174,18 +173,16 @@ class ProductVariationController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, ProductVariation $productVariation)
     {
-        $productVariation = ProductVariation::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate([
             'name' => 'required|string',
             'product_slug' => 'required|exists:App\Models\Product,slug',
         ]);
 
         $validatedData['product_id'] = $this->getProductId($request->product_slug);
-
         $productVariation->update($validatedData);
+
         return response()->json($productVariation->load('product'), 200);
     }
 
@@ -214,9 +211,9 @@ class ProductVariationController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(ProductVariation $productVariation)
     {
-        ProductVariation::where('slug', $slug)->firstOrFail()->delete();
+        $productVariation->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -259,13 +256,14 @@ class ProductVariationController extends Controller
      *      }
      *)
      */
-    public function getProductVariationsByProduct($slug, Request $request)
+    public function getProductVariationsByProduct(Request $request, Product $product)
     {
         return ProductVariation::with('productVariationValues')
-            ->whereHas('product', function ($q) use ($slug) {
-                $q->where('slug', $slug);
-            })->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
+            ->where('product_id', $product->id)
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
             ->paginate(10);
     }
 

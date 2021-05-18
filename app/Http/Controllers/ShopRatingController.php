@@ -4,15 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Shop;
 use App\Models\ShopRating;
-use Illuminate\Http\Request;
 
 class ShopRatingController extends Controller
 {
-
-    public function getShopRatings($slug)
+    public function getShopRatings(Shop $shop)
     {
-        $shop = Shop::where('slug', $slug)->firstOrFail();
-        return ShopRating::where('target_id', $shop->id)
-            ->paginate(10);
+        return ShopRating::where('target_id', $shop->id)->paginate(10);
     }
 }

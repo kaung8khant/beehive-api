@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CacheHelper;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -35,7 +36,7 @@ class SettingController extends Controller
      */
     public function index()
     {
-        return Setting::all();
+        return CacheHelper::getAllSettings();
     }
 
     /**
@@ -99,6 +100,8 @@ class SettingController extends Controller
             '*.value' => 'required|string',
             '*.data_type' => 'required|in:string,integer,decimal',
         ]);
+
+        Cache::forget('all_settings');
 
         foreach ($validatedData as $data) {
             Cache::forget($data['key']);

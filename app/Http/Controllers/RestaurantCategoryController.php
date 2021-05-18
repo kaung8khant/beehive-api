@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantCategory;
@@ -39,8 +40,11 @@ class RestaurantCategoryController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('restaurant_categories', 'name', $request->by, $request->order);
+
         return RestaurantCategory::where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -81,6 +85,7 @@ class RestaurantCategoryController extends Controller
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
         }
+
         return response()->json($restaurantCategory, 201);
     }
 
@@ -109,9 +114,8 @@ class RestaurantCategoryController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(RestaurantCategory $restaurantCategory)
     {
-        $restaurantCategory = RestaurantCategory::where('slug', $slug)->firstOrFail();
         return response()->json($restaurantCategory, 200);
     }
 
@@ -148,10 +152,8 @@ class RestaurantCategoryController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, RestaurantCategory $restaurantCategory)
     {
-        $restaurantCategory = RestaurantCategory::where('slug', $slug)->firstOrFail();
-
         $restaurantCategory->update($request->validate([
             'name' => [
                 'required',
@@ -163,6 +165,7 @@ class RestaurantCategoryController extends Controller
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
         }
+
         return response()->json($restaurantCategory, 200);
     }
 
@@ -191,10 +194,8 @@ class RestaurantCategoryController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(RestaurantCategory $restaurantCategory)
     {
-        $restaurantCategory = RestaurantCategory::where('slug', $slug)->firstOrFail();
-
         foreach ($restaurantCategory->images as $image) {
             $this->deleteFile($image->slug);
         }
@@ -230,12 +231,17 @@ class RestaurantCategoryController extends Controller
      */
     public function getCategoriesByRestaurant(Request $request, $slug)
     {
+        $sorting = CollectionHelper::getSorting('restaurant_categories', 'name', $request->by, $request->order);
+
         return RestaurantCategory::whereHas('restaurants', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        })
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
     public function import(Request $request)

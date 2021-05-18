@@ -25,6 +25,11 @@ class Role extends Model
         'pivot',
     ];
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_role_map');
