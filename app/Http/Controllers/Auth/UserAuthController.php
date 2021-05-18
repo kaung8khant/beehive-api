@@ -134,28 +134,29 @@ class UserAuthController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        $user = Auth::guard('users')->user();
+        $userId = Auth::guard('users')->user()->id;
 
-        $user->update($request->validate(
+        return User::find($userId);
+
+        $validatedData = $request->validate(
             [
-                'username' => [
-                    'required',
-                    Rule::unique('users')->ignore($user->id),
-                ],
                 'name' => 'required',
                 'phone_number' => [
                     'required',
                     'phone:MM',
                     Rule::unique('users')->ignore($user->id),
                 ],
-
             ],
             [
                 'phone_number.phone' => 'Invalid phone number.',
             ],
-        ));
+        );
 
-        $validatedData['phone_number'] = PhoneNumber::make(['phone_number'], 'MM');
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
+
+        return $validatedData;
+
+        $user->update($validatedData);
 
         return response()->json($user, 200);
     }
