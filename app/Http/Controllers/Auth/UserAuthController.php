@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\OneTimePassword;
@@ -16,7 +17,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserAuthController extends Controller
 {
-    use ResponseHelper;
+    use ResponseHelper, FileHelper;
 
     /**
      * @OA\Post(
@@ -139,6 +140,7 @@ class UserAuthController extends Controller
         $validatedData = $request->validate(
             [
                 'name' => 'required',
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
                 'phone_number' => [
                     'required',
                     'phone:MM',
@@ -151,6 +153,10 @@ class UserAuthController extends Controller
         );
 
         $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $user->slug);
+        }
 
         $user->update($validatedData);
 
