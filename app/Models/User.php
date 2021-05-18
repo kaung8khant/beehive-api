@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
@@ -46,6 +47,18 @@ class User extends Authenticatable implements JWTSubject
         'is_locked' => 'boolean',
     ];
 
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'users')
+            ->where('source_id', $this->id)
+            ->where('type', 'image')
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
+
     public static function boot()
     {
         parent::boot();
@@ -64,14 +77,19 @@ class User extends Authenticatable implements JWTSubject
         });
     }
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
     public function getCreatedByAttribute($value)
     {
-        return User::with('roles')->find($value);
+        return DB::table('users')->where('id', $value)->select('slug', 'username', 'name', 'phone_number')->first();
     }
 
     public function getUpdatedByAttribute($value)
     {
-        return User::with('roles')->find($value);
+        return DB::table('users')->where('id', $value)->select('slug', 'username', 'name', 'phone_number')->first();
     }
 
     public function getJWTIdentifier()
