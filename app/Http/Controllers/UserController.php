@@ -145,6 +145,10 @@ class UserController extends Controller
         $validatedData = $this->validateUserCreate($request);
         $user = User::create($validatedData);
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $user->slug);
+        }
+
         $adminRoleId = Role::where('name', 'Admin')->first()->id;
         $user->roles()->attach($adminRoleId);
 
@@ -158,6 +162,10 @@ class UserController extends Controller
         $validatedData = $this->validateUserCreate($request, 'shop');
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $user = User::create($validatedData);
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $user->slug);
+        }
 
         $shopRoleId = Role::where('name', 'Shop')->first()->id;
         $user->roles()->attach($shopRoleId);
@@ -173,6 +181,10 @@ class UserController extends Controller
         $validatedData['restaurant_branch_id'] = $this->getRestaruantBranchId($request->restaurant_branch_slug);
         $user = User::create($validatedData);
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $user->slug);
+        }
+
         $restaurantRoleId = Role::where('name', 'Restaurant')->first()->id;
         $user->roles()->attach($restaurantRoleId);
 
@@ -185,6 +197,10 @@ class UserController extends Controller
 
         $validatedData = $this->validateUserCreate($request);
         $user = User::create($validatedData);
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $user->slug);
+        }
 
         $logisticRoleId = Role::where('name', 'Logistics')->first()->id;
         $user->roles()->attach($logisticRoleId);
@@ -415,6 +431,7 @@ class UserController extends Controller
             'name' => 'required',
             'phone_number' => 'required|phone:MM|unique:users',
             'password' => 'required|min:6',
+            'image_slug' => 'nullable|exists:App\Models\File,slug'
         ];
 
         $rules = $this->getRulesByType($rules, $type);
@@ -496,5 +513,4 @@ class UserController extends Controller
 
         return $this->generateResponse('Your current password is incorrect.', 403, true);
     }
-
 }
