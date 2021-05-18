@@ -31,4 +31,9 @@ class File extends Model
 
         return config('app.url') . $url;
     }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
 }

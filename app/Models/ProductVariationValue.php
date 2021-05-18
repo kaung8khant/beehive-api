@@ -38,6 +38,11 @@ class ProductVariationValue extends Model
             ->get();
     }
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
     public function productVariation()
     {
         return $this->belongsTo(ProductVariation::class);

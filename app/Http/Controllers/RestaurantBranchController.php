@@ -56,10 +56,13 @@ class RestaurantBranchController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
+
         return RestaurantBranch::with('restaurant', 'township')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('contact_number', $request->filter)
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -111,7 +114,6 @@ class RestaurantBranchController extends Controller
         );
 
         $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
-
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
         $validatedData['township_id'] = $this->getTownshipId($request->township_slug);
 
@@ -148,10 +150,9 @@ class RestaurantBranchController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(RestaurantBranch $restaurantBranch)
     {
-        $restaurantBranch = RestaurantBranch::with('restaurant', 'township', 'township.city')->where('slug', $slug)->firstOrFail();
-        return response()->json($restaurantBranch, 200);
+        return response()->json($restaurantBranch->load('restaurant', 'township', 'township.city'), 200);
     }
 
     /**
@@ -187,10 +188,8 @@ class RestaurantBranchController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate(
             [
                 'name' => [
@@ -245,9 +244,9 @@ class RestaurantBranchController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(RestaurantBranch $restaurantBranch)
     {
-        RestaurantBranch::where('slug', $slug)->firstOrFail()->delete();
+        $restaurantBranch->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -295,11 +294,13 @@ class RestaurantBranchController extends Controller
      *      }
      *)
      */
-    public function getBranchesByRestaurant(Request $request, $slug)
+    public function getBranchesByRestaurant(Request $request, Restaurant $restaurant)
     {
-        return RestaurantBranch::whereHas('restaurant', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where('name', 'LIKE', '%' . $request->filter . '%')
+        $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        return RestaurantBranch::where('restaurant_id', $restaurant->id)
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -337,14 +338,14 @@ class RestaurantBranchController extends Controller
      *      }
      *)
      */
-    public function getBranchesByTownship(Request $request, $slug)
+    public function getBranchesByTownship(Request $request, Township $township)
     {
-        return RestaurantBranch::whereHas('township', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        return RestaurantBranch::where('township_id', $township->id)
+            ->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
     /**
@@ -372,11 +373,9 @@ class RestaurantBranchController extends Controller
      *      }
      *)
      */
-    public function toggleEnable($slug)
+    public function toggleEnable(RestaurantBranch $restaurantBranch)
     {
-        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
-        $restaurantBranch->is_enable = !$restaurantBranch->is_enable;
-        $restaurantBranch->save();
+        $restaurantBranch->update(['is_enable' => !$restaurantBranch->is_enable]);
         return response()->json(['message' => 'Success.'], 200);
     }
 
@@ -389,8 +388,7 @@ class RestaurantBranchController extends Controller
 
         foreach ($validatedData['slugs'] as $slug) {
             $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
-            $restaurantBranch->is_enable = $request->is_enable;
-            $restaurantBranch->save();
+            $restaurantBranch->update(['is_enable' => $request->is_enable]);
         }
 
         return response()->json(['message' => 'Success.'], 200);
@@ -429,13 +427,11 @@ class RestaurantBranchController extends Controller
      *      }
      *)
      */
-    public function addAvailableMenus(Request $request, $slug)
+    public function addAvailableMenus(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $restaurantBranch = $request->validate([
+        $request->validate([
             'available_menus.*' => 'exists:App\Models\Menu,slug',
         ]);
-
-        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
 
         $availableMenus = Menu::whereIn('slug', $request->available_menus)->pluck('id');
         $restaurantBranch->availableMenus()->detach();
@@ -477,12 +473,11 @@ class RestaurantBranchController extends Controller
      *      }
      *)
      */
-    public function removeAvailableMenus(Request $request, $slug)
+    public function removeAvailableMenus(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $restaurantBranch = $request->validate([
+        $request->validate([
             'available_menus.*' => 'exists:App\Models\Menu,slug',
         ]);
-        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
 
         $availableMenus = Menu::whereIn('slug', $request->available_menus)->pluck('id');
         $restaurantBranch->availableMenus()->detach($availableMenus);
@@ -490,10 +485,8 @@ class RestaurantBranchController extends Controller
         return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
     }
 
-    public function updateWithTagsAndCategories(Request $request, $slug)
+    public function updateWithTagsAndCategories(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate([
             'name' => [
                 'required',
@@ -529,22 +522,20 @@ class RestaurantBranchController extends Controller
             $restaurant->availableCategories()->detach();
             $restaurant->availableCategories()->attach($restaurantCategories);
         }
+
         return response()->json($restaurantBranch->load('restaurant', 'township'), 200);
     }
 
-    public function toggleAvailable(Request $request, $restaurantBranchSlug, $slug)
+    public function toggleAvailable(Request $request, RestaurantBranch $restaurantBranch, Menu $menu)
     {
         $validatedData = $request->validate([
             'is_available' => 'required|boolean',
         ]);
 
-        $restaurantBranch = RestaurantBranch::with('availableMenus')
-            ->where('slug', $restaurantBranchSlug)
-            ->firstOrFail();
+        $restaurantBranch->availableMenus()->sync([
+            $menu->id => ['is_available' => $validatedData['is_available']],
+        ], false);
 
-        $availableMenus = Menu::where('slug', $slug)->firstOrFail();
-        $restaurantBranch->availableMenus()->sync([$availableMenus->id => ['is_available' => $validatedData['is_available']]], false);
-        // $restaurantBranch->availableMenus()->save($availableMenus, ['is_available' => $validatedData['is_available']]);
         return response()->json(['message' => 'Success.'], 200);
     }
 
@@ -581,21 +572,22 @@ class RestaurantBranchController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function getRestaurantBranchByCustomers(Request $request, $slug)
+    public function getRestaurantBranchByCustomers(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
-
         $orderList = RestaurantOrder::where('restaurant_branch_id', $restaurantBranch->id)->get();
 
         $customerlist = [];
 
         foreach ($orderList as $order) {
-            $customer = Customer::where('id', $order->customer_id)->where(function ($query) use ($request) {
-                $query->where('email', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })->first();
+            $customer = Customer::where('id', $order->customer_id)
+                ->where(function ($query) use ($request) {
+                    $query->where('email', 'LIKE', '%' . $request->filter . '%')
+                        ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                        ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                        ->orWhere('slug', $request->filter);
+                })
+                ->first();
+
             $customer && array_push($customerlist, $customer);
         }
 
