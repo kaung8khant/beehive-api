@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
@@ -48,9 +49,12 @@ class ShopSubCategoryController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('shop_sub_categories', 'name', $request->by, $request->order);
+
         return ShopSubCategory::with('shopCategory')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -119,10 +123,9 @@ class ShopSubCategoryController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(ShopSubCategory $shopSubCategory)
     {
-        $subCategory = ShopSubCategory::with('shopCategory')->where('slug', $slug)->firstOrFail();
-        return response()->json($subCategory, 200);
+        return response()->json($shopSubCategory->load('shopCategory'), 200);
     }
 
     /**
@@ -158,29 +161,27 @@ class ShopSubCategoryController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, ShopSubCategory $shopSubCategory)
     {
-        $subCategory = ShopSubCategory::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate([
             'name' => [
                 'required',
-                Rule::unique('shop_sub_categories')->ignore($subCategory->id),
+                Rule::unique('shop_sub_categories')->ignore($shopSubCategory->id),
             ],
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ]);
 
         $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
-        $subCategory->update($validatedData);
+        $shopSubCategory->update($validatedData);
 
         // Update the category ids of related products
-        foreach ($subCategory->products as $product) {
+        foreach ($shopSubCategory->products as $product) {
             $product->update([
                 'shop_category_id' => $validatedData['shop_category_id'],
             ]);
         }
 
-        return response()->json($subCategory->load('shopCategory')->unsetRelation('products'), 200);
+        return response()->json($shopSubCategory->load('shopCategory')->unsetRelation('products'), 200);
     }
 
     /**
@@ -208,9 +209,9 @@ class ShopSubCategoryController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(ShopSubCategory $shopSubCategory)
     {
-        ShopSubCategory::where('slug', $slug)->firstOrFail()->delete();
+        $shopSubCategory->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -253,14 +254,17 @@ class ShopSubCategoryController extends Controller
      *      }
      *)
      */
-    public function getSubCategoriesByCategory(Request $request, $slug)
+    public function getSubCategoriesByCategory(Request $request, ShopCategory $shopCategory)
     {
-        return ShopSubCategory::whereHas('shopCategory', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        $sorting = CollectionHelper::getSorting('shop_sub_categories', 'name', $request->by, $request->order);
+
+        return ShopSubCategory::where('shop_category_id', $shopCategory->id)
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
     public function import(Request $request)

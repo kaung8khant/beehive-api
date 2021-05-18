@@ -38,6 +38,11 @@ class Customer extends Authenticatable implements JWTSubject
         'is_enable' => 'boolean',
     ];
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();

@@ -47,6 +47,18 @@ class User extends Authenticatable implements JWTSubject
         'is_locked' => 'boolean',
     ];
 
+    protected $appends = ['images'];
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'users')
+            ->where('source_id', $this->id)
+            ->where('type', 'image')
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
+
     public static function boot()
     {
         parent::boot();
@@ -63,6 +75,11 @@ class User extends Authenticatable implements JWTSubject
                 $model->updated_by = Auth::guard('users')->user()->id;
             }
         });
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
     }
 
     public function getCreatedByAttribute($value)

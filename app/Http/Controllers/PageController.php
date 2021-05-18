@@ -24,9 +24,9 @@ class PageController extends Controller
      * @param  \App\Models\Page  $page
      * @return \Illuminate\Http\Response
      */
-    public function show($slug)
+    public function show(Page $page)
     {
-        return Page::where('slug', $slug)->firstOrFail();
+        return $page;
     }
 
     /**
@@ -36,10 +36,8 @@ class PageController extends Controller
      * @param  \App\Models\Page  $page
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, Page $page)
     {
-        $page = Page::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate(
             [
                 'name' => [

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
@@ -53,10 +54,12 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        return Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
-            ->with('productVariations')->with('productVariations.productVariationValues')
+        $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        return Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariations.productVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -115,7 +118,6 @@ class ProductController extends Controller
         }
 
         $product = Product::create($validatedData);
-        $productId = $product->id;
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'products', $product->slug);
@@ -128,7 +130,7 @@ class ProductController extends Controller
         }
 
         if ($request->product_variations) {
-            $this->createProductVariation($productId, $validatedData['product_variations']);
+            $this->createProductVariation($product->id, $validatedData['product_variations']);
         }
 
         return response()->json($product->refresh()->load('shop', "productVariations"), 201);
@@ -170,12 +172,9 @@ class ProductController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(Product $product)
     {
-        $product = Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand')
-            ->with('productVariations')->with('productVariations.productVariationValues')
-            ->where('slug', $slug)->firstOrFail();
-        return response()->json($product, 200);
+        return response()->json($product->load('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues'), 200);
     }
 
     /**
@@ -222,10 +221,8 @@ class ProductController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, Product $product)
     {
-        $product = Product::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate($this->getParamsToValidate());
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
 
@@ -240,24 +237,24 @@ class ProductController extends Controller
         if ($request->brand_slug) {
             $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
         }
+
         $product->update($validatedData);
 
-        $productId = $product->id;
-
         if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'products', $slug);
+            $this->updateFile($request->image_slug, 'products', $product->slug);
         }
 
         if ($request->cover_slugs) {
             foreach ($request->cover_slugs as $coverSlug) {
-                $this->updateFile($coverSlug, 'products', $slug);
+                $this->updateFile($coverSlug, 'products', $product->slug);
             }
         }
 
         if ($request->product_variations) {
             $product->productVariations()->delete();
-            $this->createProductVariation($productId, $validatedData['product_variations']);
+            $this->createProductVariation($product->id, $validatedData['product_variations']);
         }
+
         return response()->json($product, 200);
     }
 
@@ -297,10 +294,8 @@ class ProductController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(Product $product)
     {
-        $product = Product::where('slug', $slug)->firstOrFail();
-
         foreach ($product->images as $image) {
             $this->deleteFile($image->slug);
         }
@@ -395,29 +390,18 @@ class ProductController extends Controller
      *      }
      *)
      */
-    public function getProductsByShop(Request $request, $slug)
+    public function getProductsByShop(Request $request, Shop $shop)
     {
-        return Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand')
-            ->with('productVariations')->with('productVariations.productVariationValues')
-            ->whereHas('shop', function ($q) use ($slug) {
-                $q->where('slug', $slug);
-            })->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-            })->paginate(10);
-    }
+        $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-    /**
-     * Display available products by one shop branch.
-     */
-    public function getAvailableProductsByShopBranch(Request $request, $slug)
-    {
-        return Product::with('shopCategory', 'brand')->whereHas('shop_branches', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        return Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues')
+            ->where('shop_id', $shop->id)
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
     private function getBrandId($slug)
@@ -473,11 +457,9 @@ class ProductController extends Controller
      *      }
      *)
      */
-    public function toggleEnable($slug)
+    public function toggleEnable(Product $product)
     {
-        $product = Product::where('slug', $slug)->firstOrFail();
-        $product->is_enable = !$product->is_enable;
-        $product->save();
+        $product->update(['is_enable' => !$product->is_enable]);
         return response()->json(['message' => 'Success.'], 200);
     }
 
@@ -490,8 +472,7 @@ class ProductController extends Controller
 
         foreach ($validatedData['slugs'] as $slug) {
             $product = Product::where('slug', $slug)->firstOrFail();
-            $product->is_enable = $request->is_enable;
-            $product->save();
+            $product->update(['is_enable' => $request->is_enable]);
         }
 
         return response()->json(['message' => 'Success.'], 200);
@@ -504,17 +485,15 @@ class ProductController extends Controller
             'slugs.*' => 'required|exists:App\Models\Product,slug',
         ]);
 
-        $productIdList = Product::whereIn('slug', $validatedData['slugs'])->pluck('id');
-
         foreach ($validatedData['slugs'] as $slug) {
             $product = Product::where('slug', $slug)->firstOrFail();
 
             foreach ($product->images as $image) {
                 $this->deleteFile($image->slug);
             }
-        }
 
-        Product::whereIn('id', $productIdList)->delete();
+            $product->delete();
+        }
 
         return response()->json(['message' => 'Success.'], 200);
     }
@@ -553,24 +532,32 @@ class ProductController extends Controller
      *      }
      *)
      */
-    public function getProductsByBrand(Request $request, $slug)
+    public function getProductsByBrand(Request $request, Brand $brand)
     {
-        return Product::with('shop', 'shopCategory')->whereHas('brand', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        return Product::with('shop', 'shopCategory')
+            ->where('brand_id', $brand->id)
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
-    public function getProductsByCategory(Request $request, $slug)
+    public function getProductsByCategory(Request $request, ShopCategory $shopCategory)
     {
-        return Product::with('shop', 'shopCategory')->whereHas('shopCategory', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        return Product::with('shop', 'shopCategory')
+            ->where('shop_category_id', $shopCategory->id)
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
     public function import(Request $request)

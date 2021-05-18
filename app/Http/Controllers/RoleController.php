@@ -38,7 +38,7 @@ class RoleController extends Controller
      */
     public function index()
     {
-        return Role::paginate(10);
+        return Role::orderBy('name', 'asc')->paginate(10);
     }
 
     /**
@@ -102,9 +102,9 @@ class RoleController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(Role $role)
     {
-        return Role::where('slug', $slug)->firstOrFail();
+        return $role;
     }
 
     /**
@@ -140,10 +140,8 @@ class RoleController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, Role $role)
     {
-        $role = Role::where('slug', $slug)->firstOrFail();
-
         $role->update($request->validate([
             'name' => [
                 'required',
@@ -179,9 +177,9 @@ class RoleController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(Role $role)
     {
-        Role::where('slug', $slug)->firstOrFail()->delete();
+        $role->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 }

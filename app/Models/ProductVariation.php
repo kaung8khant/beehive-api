@@ -40,6 +40,11 @@ class ProductVariation extends Model
 
     protected $with = ['productVariationValues'];
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);
