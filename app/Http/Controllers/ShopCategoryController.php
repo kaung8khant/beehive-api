@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Models\ShopCategory;
@@ -48,9 +49,12 @@ class ShopCategoryController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('shop_categories', 'name', $request->by, $request->order);
+
         return ShopCategory::with('shopSubCategories')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -122,10 +126,9 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(ShopCategory $shopCategory)
     {
-        $shopCategory = ShopCategory::with('shopSubCategories')->where('slug', $slug)->firstOrFail();
-        return response()->json($shopCategory, 200);
+        return response()->json($shopCategory->load('shopSubCategories'), 200);
     }
 
     /**
@@ -161,10 +164,8 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, ShopCategory $shopCategory)
     {
-        $shopCategory = ShopCategory::where('slug', $slug)->firstOrFail();
-
         $shopCategory->update($request->validate([
             'name' => [
                 'required',
@@ -205,16 +206,13 @@ class ShopCategoryController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(ShopCategory $shopCategory)
     {
-        $shopCategory = ShopCategory::where('slug', $slug)->firstOrFail();
-
         foreach ($shopCategory->images as $image) {
             $this->deleteFile($image->slug);
         }
 
         $shopCategory->delete();
-
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
@@ -256,10 +254,12 @@ class ShopCategoryController extends Controller
     {
         return ShopCategory::whereHas('shops', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        })
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->paginate(10);
     }
 
     public function import(Request $request)

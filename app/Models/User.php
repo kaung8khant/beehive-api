@@ -64,6 +64,11 @@ class User extends Authenticatable implements JWTSubject
         });
     }
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
     public function getCreatedByAttribute($value)
     {
         return User::with('roles')->find($value);

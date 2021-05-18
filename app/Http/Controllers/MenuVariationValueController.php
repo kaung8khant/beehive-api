@@ -91,9 +91,7 @@ class MenuVariationValueController extends Controller
             $this->updateFile($request->image_slug, 'menu_variation_values', $menuVariationValue->slug);
         }
 
-        return $request;
-
-        // return response()->json($menuVariationValue->load('menuVariation'), 201);
+        return response()->json($menuVariationValue->load('menuVariation'), 201);
     }
 
     /**
@@ -121,10 +119,9 @@ class MenuVariationValueController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(MenuVariationValue $menuVariationValue)
     {
-        $menuVariationValue = MenuVariationValue::with('menuVariation')->where('slug', $slug)->firstOrFail();
-        return response()->json($menuVariationValue, 200);
+        return response()->json($menuVariationValue->load('menuVariation'), 200);
     }
 
     /**
@@ -160,13 +157,10 @@ class MenuVariationValueController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, MenuVariationValue $menuVariationValue)
     {
-        $menuVariationValue = MenuVariationValue::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate($this->getParamsToValidate());
         $validatedData['menu_variation_id'] = $this->getMenuVariationId($request->menu_variation_slug);
-
         $menuVariationValue->update($validatedData);
 
         if ($request->image_slug) {
@@ -201,16 +195,13 @@ class MenuVariationValueController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(MenuVariationValue $menuVariationValue)
     {
-        $menuVariationValue = MenuVariationValue::where('slug', $slug)->firstOrFail();
-
         foreach ($menuVariationValue->images as $image) {
             $this->deleteFile($image->slug);
         }
 
         $menuVariationValue->delete();
-
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 

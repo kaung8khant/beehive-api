@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
+use App\Models\Customer;
 use App\Models\RestaurantBranch;
 use App\Models\Role;
 use App\Models\Shop;
 use App\Models\User;
-use App\Models\Customer;
 use App\Models\UserSession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -56,6 +57,8 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
+
         return User::with('roles')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Admin');
@@ -66,11 +69,14 @@ class UserController extends Controller
                     ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
     public function getShopUsers(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
+
         return User::with('roles')->with('shop')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Shop');
@@ -81,11 +87,14 @@ class UserController extends Controller
                     ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
     public function getRestaurantUsers(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
+
         return User::with('roles')->with('restaurantBranch')->with('restaurantBranch.restaurant')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Restaurant');
@@ -96,11 +105,14 @@ class UserController extends Controller
                     ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
     public function getLogisticsUsers(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
+
         return User::with('roles')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Logistics');
@@ -111,6 +123,7 @@ class UserController extends Controller
                     ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -227,9 +240,9 @@ class UserController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(User $user)
     {
-        return User::with('roles')->where('slug', $slug)->firstOrFail();
+        return $user->load('roles');
     }
 
     /**
@@ -265,20 +278,16 @@ class UserController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, User $user)
     {
-        $user = User::where('slug', $slug)->firstOrFail();
-
         $validatedData = $this->validateUserUpdate($request, $user->id);
         $user->update($validatedData);
 
         return response()->json($user, 200);
     }
 
-    public function updateShopUser(Request $request, $slug)
+    public function updateShopUser(Request $request, User $user)
     {
-        $user = User::where('slug', $slug)->firstOrFail();
-
         $validatedData = $this->validateUserUpdate($request, $user->id, 'shop');
         $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
         $user->update($validatedData);
@@ -286,10 +295,8 @@ class UserController extends Controller
         return response()->json($user->refresh()->load(['shop']), 200);
     }
 
-    public function updateRestaurantUser(Request $request, $slug)
+    public function updateRestaurantUser(Request $request, User $user)
     {
-        $user = User::where('slug', $slug)->firstOrFail();
-
         $validatedData = $this->validateUserUpdate($request, $user->id, 'restaurant');
         $validatedData['restaurant_branch_id'] = $this->getRestaruantBranchId($request->restaurant_branch_slug);
         $user->update($validatedData);
@@ -297,10 +304,8 @@ class UserController extends Controller
         return response()->json($user->refresh()->load(['restaurantBranch', 'restaurantBranch.restaurant']), 201);
     }
 
-    public function updateLogisticsUser(Request $request, $slug)
+    public function updateLogisticsUser(Request $request, User $user)
     {
-        $user = User::where('slug', $slug)->firstOrFail();
-
         $validatedData = $this->validateUserUpdate($request, $user->id);
         $user->update($validatedData);
 
@@ -332,10 +337,8 @@ class UserController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(User $user)
     {
-        $user = User::where('slug', $slug)->firstOrFail();
-
         if ($user->id === Auth::guard('users')->user()->id) {
             return response()->json(['message' => 'You cannot delete yourself.'], 406);
         }
@@ -369,16 +372,13 @@ class UserController extends Controller
      *      }
      *)
      */
-    public function toggleEnable($slug)
+    public function toggleEnable(User $user)
     {
-        $user = User::where('slug', $slug)->firstOrFail();
-
         if ($user->id === Auth::guard('users')->user()->id) {
             return response()->json(['message' => 'You cannot change your own status.'], 406);
         }
 
-        $user->is_enable = !$user->is_enable;
-        $user->save();
+        $user->update(['is_enable' => !$user->is_enable]);
         return response()->json(['message' => 'Success.'], 200);
     }
 
@@ -462,11 +462,8 @@ class UserController extends Controller
         return $rules;
     }
 
-    public function updatePassword(Request $request, $slug)
+    public function updatePassword(Request $request, User $user)
     {
-
-        $user = User::where('slug', $slug)->firstOrFail();
-
         $request->validate([
             'current_password' => 'required|string',
             'new_password' => 'required|string|min:6',
@@ -480,10 +477,8 @@ class UserController extends Controller
         return $this->generateResponse('Your current password is incorrect.', 403, true);
     }
 
-    public function updatePasswordForCustomer(Request $request, $slug)
+    public function updatePasswordForCustomer(Request $request, Customer $customer)
     {
-        $customer = Customer::where('slug', $slug)->firstOrFail();
-
         $request->validate([
             'current_password' => 'required|string',
             'new_password' => 'required|string|min:6',
@@ -496,5 +491,4 @@ class UserController extends Controller
 
         return $this->generateResponse('Your current password is incorrect.', 403, true);
     }
-
 }

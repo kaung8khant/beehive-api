@@ -38,6 +38,11 @@ class MenuVariationValue extends Model
             ->get();
     }
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
     public function menuVariation()
     {
         return $this->belongsTo(MenuVariation::class);

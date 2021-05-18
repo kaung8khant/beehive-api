@@ -49,8 +49,7 @@ class MenuVariationController extends Controller
      */
     public function index(Request $request)
     {
-        return MenuVariation::with('menu')
-            ->with('menuVariationValues')
+        return MenuVariation::with('menu', 'menuVariationValues')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
@@ -115,14 +114,14 @@ class MenuVariationController extends Controller
             foreach ($menuVariation['menu_variation_values'] as $menuVariationValue) {
                 $menuVariationValue['slug'] = $this->generateUniqueSlug();
                 $menuVariationValue['menu_variation_id'] = $menuVariationId;
+
                 MenuVariationValue::create($menuVariationValue);
+
                 if (!empty($menuVariationValue['image_slug'])) {
                     $this->updateFile($menuVariationValue['image_slug'], 'menu_variation_values', $menuVariationValue['slug']);
                 }
             }
         }
-
-        $menuVariation = MenuVariation::where('menu_id', $menu->slug);
 
         return response()->json(['message' => 'Successfully Created.'], 201);
     }
@@ -152,10 +151,9 @@ class MenuVariationController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(MenuVariation $menuVariation)
     {
-        $menu = MenuVariation::with('menu')->with('menuVariationValues')->where('slug', $slug)->firstOrFail();
-        return response()->json($menu, 200);
+        return response()->json($menuVariation->load('menu', 'menuVariationValues'), 200);
     }
 
     /**
@@ -191,17 +189,13 @@ class MenuVariationController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, MenuVariation $menuVariation)
     {
-        $menuVariation = MenuVariation::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate($this->getParamsToValidate());
         $validatedData['menu_id'] = $this->getMenu($request->menu_slug)->id;
-
         $menuVariation->update($validatedData);
 
         return response()->json($menuVariation->load('menuVariationValues'), 200);
-        // return response()->json(['message' => 'Successfully Updated.'], 201);
     }
 
     /**
@@ -238,14 +232,15 @@ class MenuVariationController extends Controller
      *      }
      *)
      */
-    public function getVariationsByMenu(Request $request, $slug)
+    public function getVariationsByMenu(Request $request, Menu $menu)
     {
-        return MenuVariation::with('menuVariationValues')->whereHas('menu', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        return MenuVariation::with('menuVariationValues')
+            ->where('menu_id', $menu->id)
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->paginate(10);
     }
 
     /**
@@ -273,9 +268,9 @@ class MenuVariationController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(MenuVariation $menuVariation)
     {
-        MenuVariation::where('slug', $slug)->firstOrFail()->delete();
+        $menuVariation->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 

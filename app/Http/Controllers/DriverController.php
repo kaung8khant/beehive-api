@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\Role;
 use App\Models\User;
@@ -51,6 +52,8 @@ class DriverController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
+
         return User::with('roles')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Driver');
@@ -61,6 +64,7 @@ class DriverController extends Controller
                     ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -276,16 +280,13 @@ class DriverController extends Controller
      *      }
      *)
      */
-    public function toggleEnable($slug)
+    public function toggleEnable(User $user)
     {
-        $driver = User::where('slug', $slug)->firstOrFail();
-
-        if ($driver->id === Auth::guard('users')->user()->id) {
+        if ($user->id === Auth::guard('users')->user()->id) {
             return response()->json(['message' => 'You cannot change your own status.'], 406);
         }
 
-        $driver->is_enable = !$driver->is_enable;
-        $driver->save();
+        $user->update(['is_enable' => !$user->is_enable]);
         return response()->json(['message' => 'Success.'], 200);
     }
 }
