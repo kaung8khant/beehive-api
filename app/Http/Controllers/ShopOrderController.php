@@ -129,32 +129,32 @@ class ShopOrderController extends Controller
             $validatedData['promocode_amount'] = $promocodeAmount;
         }
 
-        // TODO:: try catch and rollback if failed.
-        $order = ShopOrder::create($validatedData);
-        $orderId = $order->id;
+        DB::transaction(function () use ($validatedData) {
+            $order = ShopOrder::create($validatedData);
+            $orderId = $order->id;
+            OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
+            OrderHelper::createOrderStatus($orderId);
 
-        OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
-        OrderHelper::createOrderStatus($orderId);
+            $this->notifyAdmin(
+                [
+                    'title' => "New Order",
+                    'body' => "New Order has been received. Check now!",
+                    'data' => [
+                        'action' => 'create',
+                        'type' => 'shopOrder',
+                        'status' => 'pending',
+                        'shopOrder' => ShopOrder::with('contact')
+                            ->with('contact.township')
+                            ->with('vendors')
+                            ->where('slug', $order->slug)
+                            ->firstOrFail(),
+                    ],
+                ]
+            );
 
-        $this->notifyAdmin(
-            [
-                'title' => "New Order",
-                'body' => "New Order has been received. Check now!",
-                'data' => [
-                    'action' => 'create',
-                    'type' => 'shopOrder',
-                    'status' => 'pending',
-                    'shopOrder' => ShopOrder::with('contact')
-                        ->with('contact.township')
-                        ->with('vendors')
-                        ->where('slug', $order->slug)
-                        ->firstOrFail(),
-                ],
-            ]
-        );
-
-        return $this->generateShopOrderResponse($order->refresh(), 201);
+            return $this->generateShopOrderResponse($order->refresh(), 201);
+        });
 
     }
 
