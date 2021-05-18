@@ -2,10 +2,25 @@
 
 namespace App\Rules;
 
-class Matching implements Rule
+use Carbon\Carbon;
+
+class Matching
 {
-    public function validate($items, $subTotal, $customer): bool
+    public function validate($items, $subTotal, $customer, $value): bool
     {
-        return true;
+        switch ($value) {
+            case 'dob':
+                $result = $this->getValueFromModel('dob');
+                $result = $result[0]->datae_of_birth;
+
+                return Carbon::parse($result)->startOfDay() == Carbon::now()->startOfDay();
+                break;
+            case 'dob':
+                $result = $this->getValueFromModel('new_customer_shop');
+                $result2 = $this->getValueFromModel('new_customer_restaurant');
+                return count($result) + count($result2) == 0;
+                break;
+        }
+
     }
 }

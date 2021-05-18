@@ -2,10 +2,22 @@
 
 namespace App\Rules;
 
+use App\Models\Promocode;
+use App\Models\ShopOrder;
+
 class PerUserUsage implements Rule
 {
-    public function validate($items, $subTotal, $customer): bool
+    private $promocode;
+
+    public function __construct($promocode)
     {
-        return true;
+        $this->promocode = $promocode;
+    }
+
+    public function validate($items, $subTotal, $customer, $value): bool
+    {
+        $promo = Promocode::with('rules')->where('id', $this->promocode->id)->firstOrFail();
+        $shopOrder = ShopOrder::where('promocode_id', $promo->id)->where('customer_id', $customer->id)->get();
+        return count($shopOrder) < $value;
     }
 }

@@ -5,9 +5,7 @@ namespace App\Helpers;
 use App\Exceptions\BadRequestException;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
-use Exception;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 
 trait PromocodeHelper
 {
@@ -18,22 +16,34 @@ trait PromocodeHelper
         // }
     }
 
-    public static function validatePromocodeRules($promocode, $orderItems, $subTotal, $customer)
+    public static function validatePromocodeRules($promocode, $orderItem, $subTotal, $customer)
     {
         foreach ($promocode['rules'] as $data) {
             $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
-            $rule = new $_class();
-            $rule->validate($orderItems, $subTotal, $customer);
+            $rule = new $_class($promocode);
+            $value = $rule->validate($orderItem, $subTotal, $customer, $data['value']);
+            if (!$value) {
+                throw new BadRequestException("Invalid promocode.", 400);
+            }
         }
     }
 
-    public static function calculatePromocodeAmount($promocode, $orderItems, $subTotal)
+    public static function calculatePromocodeAmount($promocode, $orderItem, $subTotal)
     {
-        // TODO:: calculate based on order items.
+
+        $isItemRule = false;
+        foreach ($promocode->rules as $rule) {
+            if ($rule === "shop" || $rule === "brand" || $rule === "menu" || $rule === "category") {
+                $isItemRule = true;
+            }
+        }
+
+        $total = $isItemRule ? ($orderItem->price - $orderItem->discount * $orderItem->quantity) : $subTotal;
+
         if ($promocode->type === 'fix') {
             return $promocode->amount;
         } else {
-            return $subTotal * $promocode->amount * 0.01;
+            return $total * $promocode->amount * 0.01;
         }
     }
 

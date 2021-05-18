@@ -4,5 +4,5 @@ namespace App\Rules;
 
 interface Rule
 {
-    public function validate($items, $subTotal, $customer): bool;
+    public function validate($items, $subTotal, $customer, $value): bool;
 }

@@ -2,10 +2,12 @@
 
 namespace App\Rules;
 
+use Carbon\Carbon;
+
 class AfterDate implements Rule
 {
-    public function validate($items, $subTotal, $customer): bool
+    public function validate($items, $subTotal, $customer, $value): bool
     {
-        return true;
+        return Carbon::now() >= Carbon::parse($value);
     }
 }

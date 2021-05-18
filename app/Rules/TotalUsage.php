@@ -2,10 +2,20 @@
 
 namespace App\Rules;
 
+use App\Models\ShopOrder;
+
 class TotalUsage implements Rule
 {
-    public function validate($items, $subTotal, $customer): bool
+    private $promocode;
+
+    public function __construct($promocode)
     {
-        return true;
+        $this->promocode = $promocode;
+    }
+
+    public function validate($items, $subTotal, $customer, $value): bool
+    {
+        $shopOrder = ShopOrder::where('promocode', $this->promocode->id)->get();
+        return count($shopOrder) < $value;
     }
 }

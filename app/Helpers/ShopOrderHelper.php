@@ -6,6 +6,7 @@ use App\Exceptions\BadRequestException;
 use App\Helpers\StringHelper;
 use App\Models\Product;
 use App\Models\ProductVariationValue;
+use App\Models\Promocode;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderContact;
 use App\Models\ShopOrderItem;
@@ -68,6 +69,7 @@ trait ShopOrderHelper
         $subTotal = 0;
         $tax = 0;
         foreach ($validatedData['order_items'] as $key => $value) {
+
             // validate variation
             $product = self::validateProductVariations($key, $value);
             // prepare variations for calculation
@@ -75,7 +77,7 @@ trait ShopOrderHelper
             // calculate amount, subTotal and tax
             $amount = $product->price + $variations->sum('price');
 
-            $subTotal += ($amount  - $product->discount) * $value['quantity'];
+            $subTotal += ($amount - $product->discount) * $value['quantity'];
 
             $tax += ($amount - $product->discount) * $product->tax * 0.01 * $value['quantity'];
             $product['price'] = $amount;
@@ -129,11 +131,21 @@ trait ShopOrderHelper
         ShopOrderContact::create($customerInfo);
     }
 
-    public static function createShopOrderItem($orderId, $orderItems)
+    public static function createShopOrderItem($orderId, $orderItems, $validatedData, $customer)
     {
         foreach ($orderItems as $item) {
+            // validate promocode
+            if ($validatedData['promo_code_slug']) {
+                // may require amount validation.
+                $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
+                PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
+                PromocodeHelper::validatePromocodeRules($promocode, $item, $validatedData['subTotal'], $customer);
+                $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $item, $validatedData['subTotal']);
+
+            }
             $shop = self::getShopByProduct($item['slug']);
             $shopOrderVendor = self::createShopOrderVendor($orderId, $shop->id);
+            $item['discount'] = $item['discount'] + $promocodeAmount;
             $item['shop'] = $shop;
             $item['shop_order_vendor_id'] = $shopOrderVendor->id;
             $item['shop_id'] = $shop->id;
