@@ -377,6 +377,10 @@ class UserController extends Controller
             return response()->json(['message' => 'You cannot delete yourself.'], 406);
         }
 
+        foreach ($user->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
         $user->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
