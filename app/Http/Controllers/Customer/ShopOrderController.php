@@ -15,6 +15,7 @@ use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
@@ -64,13 +65,14 @@ class ShopOrderController extends Controller
             $validatedData['promocode_amount'] = $promocodeAmount;
         }
 
-        // TODO:: try catch and rollback if failed.
-        $order = ShopOrder::create($validatedData);
-        $orderId = $order->id;
-
-        OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
-        OrderHelper::createOrderStatus($orderId);
+        // (transaction) try catch and rollback if failed.
+        DB::transaction(function () use ($validatedData) {
+            $order = ShopOrder::create($validatedData);
+            $orderId = $order->id;
+            OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
+            OrderHelper::createOrderStatus($orderId);
+        });
 
         foreach ($validatedData['order_items'] as $item) {
             $this->notify(
