@@ -134,9 +134,7 @@ class UserAuthController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        $userId = Auth::guard('users')->user()->id;
-
-        return User::find($userId);
+        $user = Auth::guard('users')->user();
 
         $validatedData = $request->validate(
             [
@@ -153,8 +151,6 @@ class UserAuthController extends Controller
         );
 
         $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-
-        return $validatedData;
 
         $user->update($validatedData);
 
