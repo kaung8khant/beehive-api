@@ -10,7 +10,6 @@ use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
-use App\Models\Promocode;
 use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,44 +47,63 @@ class RestaurantOrderController extends Controller
 
     public function store(Request $request)
     {
+
         $request['slug'] = $this->generateUniqueSlug();
+        // validate order
+        $validatedData = OrderHelper::validateOrder($request, true);
+        // get Customer Info
+        $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
+        // append customer data
+        $validatedData['customer_id'] = $customer['id'];
+        // validate and prepare variation
+        $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
 
-        $validator = OrderHelper::validateOrder($request);
-        if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, true);
-        }
-
-        $validatedData = $validator->validated();
-
-        $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
-        if ($checkVariations) {
-            return $this->generateResponse($checkVariations, 422, true);
-        }
-
-        $validatedData['customer_id'] = Auth::guard('customers')->user()->id;
-
-        $restaurantBranch = OrderHelper::getRestaurantBranch($validatedData['restaurant_branch_slug']);
-
-        $validatedData['restaurant_branch_info'] = $restaurantBranch;
-        $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
-        $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
-        $validatedData['promocode_id'] = null;
-
-        if ($validatedData['promo_code_slug']) {
-            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'restaurant');
-            if (!$isPromoValid) {
-                return $this->generateResponse('Invalid promo code.', 406, true);
-            }
-
-            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
-        }
-
-        $order = RestaurantOrder::create($validatedData);
+        // TODO:: try catch and rollback if failed.
+        $order = ShopOrder::create($validatedData);
         $orderId = $order->id;
 
-        OrderHelper::createOrderStatus($orderId);
         OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        OrderHelper::createOrderItems($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
+        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items'], $validatedData, $customer);
+        OrderHelper::createOrderStatus($orderId);
+
+        // $request['slug'] = $this->generateUniqueSlug();
+
+        // $validator = OrderHelper::validateOrder($request);
+        // if ($validator->fails()) {
+        //     return $this->generateResponse($validator->errors()->first(), 422, true);
+        // }
+
+        // $validatedData = $validator->validated();
+
+        // $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
+        // if ($checkVariations) {
+        //     return $this->generateResponse($checkVariations, 422, true);
+        // }
+
+        // $validatedData['customer_id'] = Auth::guard('customers')->user()->id;
+
+        // $restaurantBranch = OrderHelper::getRestaurantBranch($validatedData['restaurant_branch_slug']);
+
+        // $validatedData['restaurant_branch_info'] = $restaurantBranch;
+        // $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
+        // $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
+        // $validatedData['promocode_id'] = null;
+
+        // if ($validatedData['promo_code_slug']) {
+        //     $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'restaurant');
+        //     if (!$isPromoValid) {
+        //         return $this->generateResponse('Invalid promo code.', 406, true);
+        //     }
+
+        //     $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
+        // }
+
+        // $order = RestaurantOrder::create($validatedData);
+        // $orderId = $order->id;
+
+        // OrderHelper::createOrderStatus($orderId);
+        // OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
+        // OrderHelper::createOrderItems($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
 
         $this->notify(
             $validatedData['restaurant_branch_slug'],

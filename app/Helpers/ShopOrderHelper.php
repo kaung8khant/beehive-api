@@ -6,7 +6,6 @@ use App\Exceptions\BadRequestException;
 use App\Helpers\StringHelper;
 use App\Models\Product;
 use App\Models\ProductVariationValue;
-use App\Models\Promocode;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderContact;
 use App\Models\ShopOrderItem;
@@ -131,21 +130,14 @@ trait ShopOrderHelper
         ShopOrderContact::create($customerInfo);
     }
 
-    public static function createShopOrderItem($orderId, $orderItems, $validatedData, $customer)
+    public static function createShopOrderItem($orderId, $orderItems)
     {
         foreach ($orderItems as $item) {
-            // validate promocode
-            if ($validatedData['promo_code_slug']) {
-                // may require amount validation.
-                $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
-                PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
-                PromocodeHelper::validatePromocodeRules($promocode, $item, $validatedData['subTotal'], $customer);
-                $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $item, $validatedData['subTotal']);
 
-            }
             $shop = self::getShopByProduct($item['slug']);
             $shopOrderVendor = self::createShopOrderVendor($orderId, $shop->id);
-            $item['discount'] = $item['discount'] + $promocodeAmount;
+            $item['discount'] = $item['discount'];
+
             $item['shop'] = $shop;
             $item['shop_order_vendor_id'] = $shopOrderVendor->id;
             $item['shop_id'] = $shop->id;

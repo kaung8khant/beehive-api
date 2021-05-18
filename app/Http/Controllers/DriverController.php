@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\Role;
@@ -14,7 +15,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class DriverController extends Controller
 {
-    use StringHelper;
+    use FileHelper, StringHelper;
 
     /**
      * @OA\Get(
@@ -103,6 +104,7 @@ class DriverController extends Controller
                 'name' => 'required|string',
                 'phone_number' => 'required|phone:MM|unique:users',
                 'password' => 'required|min:6',
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
             ],
             [
                 'phone_number.phone' => 'Invalid phone number.',
@@ -118,6 +120,9 @@ class DriverController extends Controller
         $driverRoleId = Role::where('name', 'Driver')->first()->id;
         $driver->roles()->attach($driverRoleId);
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $driver->slug);
+        }
         return response()->json($driver->refresh()->load('roles'), 201);
     }
 
@@ -200,7 +205,7 @@ class DriverController extends Controller
                     'phone:MM',
                     Rule::unique('users')->ignore($driver->id),
                 ],
-
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
             ],
             [
                 'phone_number.phone' => 'Invalid phone number.',
@@ -215,6 +220,9 @@ class DriverController extends Controller
         $driver->roles()->detach();
         $driver->roles()->attach($driverRoleId);
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $driver->slug);
+        }
         return response()->json($driver->refresh()->load('roles'), 200);
     }
 
@@ -249,6 +257,10 @@ class DriverController extends Controller
 
         if ($driver->id === Auth::guard('users')->user()->id) {
             return response()->json(['message' => 'You cannot delete yourself.'], 406);
+        }
+
+        foreach ($driver->images as $image) {
+            $this->deleteFile($image->slug);
         }
 
         $driver->delete();
