@@ -120,23 +120,26 @@ class ShopOrderController extends Controller
         // validate and prepare variation
         $validatedData = OrderHelper::prepareProductVariations($validatedData);
 
+        // validate promocode
+        if ($validatedData['promo_code_slug']) {
+            // may require amount validation.
+            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
+            PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
+            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer);
+            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal']);
+
+            $validatedData['promocode_id'] = $promocode->id;
+            $validatedData['promocode'] = $promocode->code;
+            $validatedData['promocode_amount'] = $promocodeAmount;
+        }
+
         // TODO:: try catch and rollback if failed.
         $order = ShopOrder::create($validatedData);
         $orderId = $order->id;
 
         OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items'], $validatedData, $customer);
+        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
         OrderHelper::createOrderStatus($orderId);
-
-        foreach ($validatedData['order_items'] as $item) {
-            $this->notify(
-                OrderHelper::getShopByProduct($item['slug'])->id,
-                [
-                    'title' => 'New Order',
-                    'body' => "You've just recevied new order. Check now!",
-                ]
-            );
-        }
 
         $this->notifyAdmin(
             [

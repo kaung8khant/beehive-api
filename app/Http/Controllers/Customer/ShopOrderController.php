@@ -11,6 +11,7 @@ use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Customer;
+use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,18 +45,31 @@ class ShopOrderController extends Controller
         // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
         // get Customer Info
-        $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
+        $customer = Auth::guard('customers')->user();
         // append customer data
-        $validatedData['customer_id'] = $customer['id'];
+        $validatedData['customer_id'] = $this->customerId;
         // validate and prepare variation
         $validatedData = OrderHelper::prepareProductVariations($validatedData);
+
+        // validate promocode
+        if ($validatedData['promo_code_slug']) {
+            // may require amount validation.
+            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
+            PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
+            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer);
+            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal']);
+
+            $validatedData['promocode_id'] = $promocode->id;
+            $validatedData['promocode'] = $promocode->code;
+            $validatedData['promocode_amount'] = $promocodeAmount;
+        }
 
         // TODO:: try catch and rollback if failed.
         $order = ShopOrder::create($validatedData);
         $orderId = $order->id;
 
         OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items'], $validatedData, $customer);
+        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
         OrderHelper::createOrderStatus($orderId);
 
         foreach ($validatedData['order_items'] as $item) {

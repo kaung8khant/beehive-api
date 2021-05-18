@@ -16,35 +16,54 @@ trait PromocodeHelper
         // }
     }
 
-    public static function validatePromocodeRules($promocode, $orderItem, $subTotal, $customer)
+    public static function validatePromocodeRules($promocode, $orderItems, $subTotal, $customer)
     {
         foreach ($promocode['rules'] as $data) {
             $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
             $rule = new $_class($promocode);
-            $value = $rule->validate($orderItem, $subTotal, $customer, $data['value']);
+            $value = $rule->validate($orderItems, $subTotal, $customer, $data['value']);
             if (!$value) {
                 throw new BadRequestException("Invalid promocode.", 400);
             }
         }
     }
 
-    public static function calculatePromocodeAmount($promocode, $orderItem, $subTotal)
+    public static function calculatePromocodeAmount($promocode, $orderItems, $subTotal)
     {
 
         $isItemRule = false;
-        foreach ($promocode->rules as $rule) {
-            if ($rule === "shop" || $rule === "brand" || $rule === "menu" || $rule === "category") {
+        $total = 0;
+        foreach ($promocode->rules as $data) {
+
+            if (in_array($data['data_type'], array("shop", "brand", "menu", "category"))) {
                 $isItemRule = true;
+
+                foreach ($orderItems as $item) {
+                    $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
+                    $rule = new $_class($promocode);
+                    if ($rule->validateItem($item, $data['value'])) {
+                        if ($promocode->type === 'fix') {
+                            $total += $promocode->amount;
+                        } else {
+                            $total += $item['price'] * $promocode->amount * 0.01;
+                        }
+                    }
+
+                }
+
             }
         }
 
-        $total = $isItemRule ? ($orderItem->price - $orderItem->discount * $orderItem->quantity) : $subTotal;
-
-        if ($promocode->type === 'fix') {
-            return $promocode->amount;
+        if ($isItemRule) {
+            return $total;
         } else {
-            return $total * $promocode->amount * 0.01;
+            if ($promocode->type === 'fix') {
+                return $promocode->amount;
+            } else {
+                return $subTotal * $promocode->amount * 0.01;
+            }
         }
+
     }
 
     public static function validatePromocodeUsage($promocode, $usage)
