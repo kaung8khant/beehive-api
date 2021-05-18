@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantBranch;
@@ -18,7 +19,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserController extends Controller
 {
-    use StringHelper, ResponseHelper;
+    use FileHelper, StringHelper, ResponseHelper;
 
     /**
      * @OA\Get(
