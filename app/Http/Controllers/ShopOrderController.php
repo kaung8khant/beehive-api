@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -53,22 +54,23 @@ class ShopOrderController extends Controller
      *      }
      *)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $shopOrders = ShopOrder::with('contact')
-            ->with('contact.township')
-            ->latest()
+        $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        $shopOrders = ShopOrder::with('contact', 'contact.township')
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10)
             ->items();
 
         return $this->generateResponse($shopOrders, 200);
     }
 
-    public function getShopOrders(Request $request, $slug)
+    public function getShopOrders(Request $request, Shop $shop)
     {
-        $shopId = $this->getShop($slug)->id;
+        $sorting = CollectionHelper::getSorting('shop_order_vendors', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $vendorOrders = ShopOrderVendor::where('shop_id', $shopId)
+        $vendorOrders = ShopOrderVendor::where('shop_id', $shop->id)
             ->where(function ($query) use ($request) {
                 $query->whereHas('shopOrder', function ($q) use ($request) {
                     $q->where('slug', $request->filter);
@@ -78,7 +80,7 @@ class ShopOrderController extends Controller
                             ->orWhere('phone_number', $request->filter);
                     });
             })
-            ->latest()
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10)
             ->items();
 
@@ -97,15 +99,9 @@ class ShopOrderController extends Controller
         return $this->generateResponse($result, 200);
     }
 
-    public function show($slug)
+    public function show(ShopOrder $shopOrder)
     {
-        $shopOrder = ShopOrder::with('contact')
-            ->with('contact.township')
-            ->with('vendors')
-            ->where('slug', $slug)
-            ->firstOrFail();
-
-        return $this->generateResponse($shopOrder, 200);
+        return $this->generateResponse($shopOrder->load('contact', 'contact.township', 'vendors'), 200);
     }
 
     public function store(Request $request)
@@ -159,28 +155,26 @@ class ShopOrderController extends Controller
 
     }
 
-    public function changeStatus(Request $request, $slug)
+    public function changeStatus(Request $request, ShopOrder $shopOrder)
     {
-        $order = ShopOrder::where('slug', $slug)->firstOrFail();
-
-        if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
+        if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
         }
 
-        OrderHelper::createOrderStatus($order->id, $request->status);
+        OrderHelper::createOrderStatus($shopOrder->id, $request->status);
 
         $notificaitonData = $this->notificationData([
             'title' => 'Shop order updated',
             'body' => 'Shop order just has been updated',
             'status' => $request->status,
-            'slug' => $slug,
+            'slug' => $shopOrder->slug,
         ]);
 
         $this->notifyAdmin(
             $notificaitonData
         );
 
-        foreach ($order->vendors as $vendor) {
+        foreach ($shopOrder->vendors as $vendor) {
             $this->notifyShop(
                 $vendor->shop->slug,
                 $notificaitonData
@@ -190,7 +184,7 @@ class ShopOrderController extends Controller
         $message = 'Your order has successfully been ' . $request->status . '.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
+        $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);

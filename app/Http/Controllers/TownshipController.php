@@ -49,7 +49,7 @@ class TownshipController extends Controller
      */
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('cities', 'name', $request->by, $request->order);
+        $sorting = CollectionHelper::getSorting('townships', 'name', $request->by, $request->order);
 
         return Township::with('city')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
@@ -249,7 +249,7 @@ class TownshipController extends Controller
      */
     public function getTownshipsByCity(Request $request, City $city)
     {
-        $sorting = CollectionHelper::getSorting('cities', 'name', $request->by, $request->order);
+        $sorting = CollectionHelper::getSorting('townships', 'name', $request->by, $request->order);
 
         return Township::where('city_id', $city->id)
             ->where(function ($query) use ($request) {

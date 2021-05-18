@@ -54,10 +54,13 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('customers', 'name', $request->by, $request->order);
+
         return Customer::where('email', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -146,9 +149,9 @@ class CustomerController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(Customer $customer)
     {
-        return Customer::with('addresses')->with('customerGroups')->where('slug', $slug)->firstOrFail();
+        return $customer->load(['addresses', 'customerGroups']);
     }
 
     /**
@@ -184,10 +187,8 @@ class CustomerController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, Customer $customer)
     {
-        $customer = Customer::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate(
             [
                 'name' => 'required',
@@ -204,9 +205,11 @@ class CustomerController extends Controller
                 'phone_number.phone' => 'Invalid phone number.',
             ]
         );
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
 
-        $customerGroups = CustomerGroup::whereIn('slug', $request->customer_groups)->pluck('id');
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
+        $validatedData['customer_groups'] = isset($validatedData['customer_groups']) ? $validatedData['customer_groups'] : [];
+
+        $customerGroups = CustomerGroup::whereIn('slug', $validatedData['customer_groups'])->pluck('id');
         $customer->customerGroups()->detach();
         $customer->customerGroups()->attach($customerGroups);
 
@@ -239,9 +242,9 @@ class CustomerController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(Customer $customer)
     {
-        Customer::where('slug', $slug)->firstOrFail()->delete();
+        $customer->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -270,18 +273,14 @@ class CustomerController extends Controller
      *      }
      *)
      */
-    public function toggleEnable($slug)
+    public function toggleEnable(Customer $customer)
     {
-        $customer = Customer::where('slug', $slug)->firstOrFail();
-        $customer->is_enable = !$customer->is_enable;
-        $customer->save();
+        $customer->update(['is_enable' => !$customer->is_enable]);
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function getPromocodeUsedCustomers(Request $request, $slug)
+    public function getPromocodeUsedCustomers(Request $request, Promocode $promocode)
     {
-        $promocode = Promocode::where('slug', $slug)->firstOrFail();
-
         $shopOrder = ShopOrder::where('promocode_id', $promocode->id)->get();
         $restaurantOrder = RestaurantOrder::where('promocode_id', $promocode->id)->get();
 

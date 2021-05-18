@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\ShopTag;
 use Illuminate\Http\Request;
@@ -47,8 +48,11 @@ class ShopTagController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('shop_tags', 'name', $request->by, $request->order);
+
         return ShopTag::where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -86,6 +90,7 @@ class ShopTagController extends Controller
                 'slug' => 'required|unique:shop_tags',
             ]
         ));
+
         return response()->json($tag, 201);
     }
 
@@ -114,9 +119,9 @@ class ShopTagController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(ShopTag $shopTag)
     {
-        return response()->json(ShopTag::where('slug', $slug)->firstOrFail(), 200);
+        return response()->json($shopTag, 200);
     }
 
     /**
@@ -152,19 +157,17 @@ class ShopTagController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, ShopTag $shopTag)
     {
-        $tag = ShopTag::where('slug', $slug)->firstOrFail();
-
-        $tag->update($request->validate([
+        $shopTag->update($request->validate([
             'name' => [
                 'required',
-                Rule::unique('shop_tags')->ignore($tag->id),
+                Rule::unique('shop_tags')->ignore($shopTag->id),
             ],
 
         ]));
 
-        return response()->json($tag, 200);
+        return response()->json($shopTag, 200);
     }
 
     /**
@@ -192,9 +195,9 @@ class ShopTagController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(ShopTag $shopTag)
     {
-        ShopTag::where('slug', $slug)->firstOrFail()->delete();
+        $shopTag->delete();
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
@@ -236,10 +239,12 @@ class ShopTagController extends Controller
     {
         return ShopTag::whereHas('shops', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        })
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->paginate(10);
     }
 
     public function import(Request $request)

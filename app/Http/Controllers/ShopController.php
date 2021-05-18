@@ -5,11 +5,10 @@ namespace App\Http\Controllers;
 use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
+use App\Models\Brand;
 use App\Models\Customer;
 use App\Models\Shop;
-use App\Models\ShopCategory;
 use App\Models\ShopOrder;
-use App\Models\ShopOrderVendor;
 use App\Models\ShopTag;
 use App\Models\Township;
 use Illuminate\Http\Request;
@@ -56,9 +55,12 @@ class ShopController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
+
         return Shop::with('availableCategories', 'availableTags')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -118,7 +120,6 @@ class ShopController extends Controller
         $townshipId = $this->getTownshipIdBySlug($request->township_slug);
         $validatedData['township_id'] = $townshipId;
         $shop = Shop::create($validatedData, $townshipId);
-        $shopId = $shop->id;
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'shops', $shop->slug);
@@ -157,10 +158,9 @@ class ShopController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(Shop $shop)
     {
-        $shop = Shop::with('availableTags', 'township', 'township.city')->where('slug', $slug)->firstOrFail();
-        return response()->json($shop, 200);
+        return response()->json($shop->load('availableTags', 'township', 'township.city'), 200);
     }
 
     /**
@@ -196,10 +196,8 @@ class ShopController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, Shop $shop)
     {
-        $shop = Shop::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate(
             [
                 'name' => [
@@ -264,10 +262,8 @@ class ShopController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(Shop $shop)
     {
-        $shop = Shop::where('slug', $slug)->firstOrFail();
-
         foreach ($shop->images as $image) {
             $this->deleteFile($image->slug);
         }
@@ -301,11 +297,9 @@ class ShopController extends Controller
      *      }
      *)
      */
-    public function toggleEnable($slug)
+    public function toggleEnable(Shop $shop)
     {
-        $shop = Shop::where('slug', $slug)->firstOrFail();
-        $shop->is_enable = !$shop->is_enable;
-        $shop->save();
+        $shop->update(['is_enable' => !$shop->is_enable]);
         return response()->json(['message' => 'Success.'], 200);
     }
 
@@ -318,8 +312,7 @@ class ShopController extends Controller
 
         foreach ($validatedData['slugs'] as $slug) {
             $shop = Shop::where('slug', $slug)->firstOrFail();
-            $shop->is_enable = $request->is_enable;
-            $shop->save();
+            $shop->update(['is_enable' => $request->is_enable]);
         }
 
         return response()->json(['message' => 'Success.'], 200);
@@ -350,11 +343,9 @@ class ShopController extends Controller
      *      }
      *)
      */
-    public function toggleOfficial($slug)
+    public function toggleOfficial(Shop $shop)
     {
-        $shop = Shop::where('slug', $slug)->firstOrFail();
-        $shop->is_official = !$shop->is_official;
-        $shop->save();
+        $shop->update(['is_official' => !$shop->is_official]);
         return response()->json(['message' => 'Success.'], 200);
     }
 
@@ -394,16 +385,19 @@ class ShopController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function getShopsByBrand(Request $request, $slug)
+    public function getShopsByBrand(Request $request, Brand $brand)
     {
+        $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
+
         return Shop::with('availableCategories', 'availableTags')
-            ->whereHas('products', function ($q) use ($slug) {
-                $q->whereHas('brand', function ($q) use ($slug) {
-                    $q->where('slug', $slug);
-                });
+            ->whereHas('products', function ($q) use ($brand) {
+                $q->where('brand_id', $brand->id);
             })
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -420,9 +414,9 @@ class ShopController extends Controller
         foreach ($orderList as $order) {
             $customer = Customer::where('id', $order->customer_id)->where(function ($query) use ($request) {
                 $query->where('email', 'LIKE', '%' . $request->filter . '%')
-                        ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-                        ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-                        ->orWhere('slug', $request->filter);
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
             })->first();
             $customer && array_push($customerlist, $customer);
         }

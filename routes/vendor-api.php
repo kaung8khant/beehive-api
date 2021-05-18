@@ -29,7 +29,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
         Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
         Route::post('restaurants/remove-restaurant-categories/{slug}', 'RestaurantController@removeRestaurantCategories');
-        Route::put('restaurant-branches/{slug}/update', 'RestaurantBranchController@updateWithTagsAndCategories');
+        Route::put('restaurant-branches/{restaurantBranch}/update', 'RestaurantBranchController@updateWithTagsAndCategories');
         Route::get('restaurant-categories', 'RestaurantCategoryController@index');
         Route::get('restaurant-tags', 'RestaurantTagController@index');
 
@@ -46,7 +46,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::post('menus/multiple-delete', 'MenuController@multipleDelete');
         Route::delete('menus/{slug}', 'MenuController@destroy');
 
-        Route::post('restaurant-branches/{restaurantBranchSlug}/menus/{slug}', 'RestaurantBranchController@toggleAvailable');
+        Route::post('restaurant-branches/{restaurantBranch}/menus/{menu}', 'RestaurantBranchController@toggleAvailable');
 
         Route::get('menu-variations/{slug}', 'MenuVariationController@show');
         Route::post('menu-variations', 'MenuVariationController@store');
@@ -63,14 +63,10 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::put('menu-toppings/{slug}', 'MenuToppingController@update');
         Route::delete('menu-toppings/{slug}', 'MenuToppingController@destroy');
 
-        Route::get('restaurant-branches/{slug}/orders', 'RestaurantOrderController@getBranchOrders');
-        Route::get('restaurant-orders/{slug}', 'RestaurantOrderController@show');
-        Route::post('restaurant-orders/{slug}/change-status', 'RestaurantOrderController@changeStatus');
-        Route::delete('restaurant-orders/{slug}', 'RestaurantOrderController@destroy');
-
-
+        Route::get('restaurant-branches/{restaurantBranch}/orders', 'RestaurantOrderController@getBranchOrders');
+        Route::post('restaurant-orders/{restaurantOrder}/change-status', 'RestaurantOrderController@changeStatus');
         Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
-        Route::get('restaurant-branches/{slug}/customers', 'RestaurantBranchController@getRestaurantBranchByCustomers');
+        Route::get('restaurant-branches/{restaurantBranch}/customers', 'RestaurantBranchController@getRestaurantBranchByCustomers');
         /* restaurant */
 
         /* shop */
@@ -84,10 +80,9 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('shop-categories/{slug}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
 
         Route::resource('shop-orders', 'ShopOrderController', ['as' => 'vendor']);
-        Route::get('shops/{slug}/shop-orders', 'ShopOrderController@getShopOrders');
-        Route::post('shop-orders/{slug}/change-status', 'ShopOrderController@changeStatus');
+        Route::get('shops/{shop}/shop-orders', 'ShopOrderController@getShopOrders');
+        Route::post('shop-orders/{shopOrder}/change-status', 'ShopOrderController@changeStatus');
         Route::get('shops/{slug}/customers', 'ShopController@getShopByCustomers');
-
 
         /* products */
         Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');

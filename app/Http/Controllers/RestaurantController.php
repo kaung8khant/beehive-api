@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
-use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
 use App\Models\Township;
 use Illuminate\Http\Request;
@@ -53,9 +53,12 @@ class RestaurantController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('restaurants', 'id', $request->by ? $request->by : 'desc', $request->order);
+
         return Restaurant::with('availableTags')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -113,11 +116,7 @@ class RestaurantController extends Controller
         );
 
         $validatedData['restaurant_branch']['contact_number'] = PhoneNumber::make($validatedData['restaurant_branch']['contact_number'], 'MM');
-        // $townshipId = $this->getTownshipIdBySlug($request->restaurant_branch['township_slug']);
-
         $restaurant = Restaurant::create($validatedData);
-
-        $restaurantId = $restaurant->id;
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'restaurants', $restaurant->slug);
@@ -129,7 +128,7 @@ class RestaurantController extends Controller
             }
         }
 
-        $this->createRestaurantBranch($restaurantId, $validatedData['restaurant_branch']);
+        $this->createRestaurantBranch($restaurant->id, $validatedData['restaurant_branch']);
 
         if ($request->restaurant_tags) {
             $restaurantTags = RestaurantTag::whereIn('slug', $request->restaurant_tags)->pluck('id');
@@ -164,10 +163,9 @@ class RestaurantController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(Restaurant $restaurant)
     {
-        $restaurant = Restaurant::with('availableTags')->where('slug', $slug)->firstOrFail();
-        return response()->json($restaurant, 200);
+        return response()->json($restaurant->load('availableTags'), 200);
     }
 
     /**
@@ -203,10 +201,8 @@ class RestaurantController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, Restaurant $restaurant)
     {
-        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate([
             'name' => [
                 'required',
@@ -264,10 +260,8 @@ class RestaurantController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(Restaurant $restaurant)
     {
-        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-
         foreach ($restaurant->images as $image) {
             $this->deleteFile($image->slug);
         }
@@ -301,11 +295,9 @@ class RestaurantController extends Controller
      *      }
      *)
      */
-    public function toggleEnable($slug)
+    public function toggleEnable(Restaurant $restaurant)
     {
-        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-        $restaurant->is_enable = !$restaurant->is_enable;
-        $restaurant->save();
+        $restaurant->update(['is_enable' => !$restaurant->is_enable]);
         return response()->json(['message' => 'Success.'], 200);
     }
 
@@ -318,30 +310,11 @@ class RestaurantController extends Controller
 
         foreach ($validatedData['slugs'] as $slug) {
             $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-            $restaurant->is_enable = $request->is_enable;
-            $restaurant->save();
+            $restaurant->update(['is_enable' => $request->is_enable]);
         }
 
         return response()->json(['message' => 'Success.'], 200);
     }
-
-    // public function multipleStatusUpdate(Request $request)
-    // {
-    //     $validatedData = $request->validate([
-    //         'restaurants' => 'required|array',
-    //         'restaurants.*.slug' => 'required|exists:App\Models\Restaurant,slug',
-    //         'restaurants.*.is_enable' => 'required|boolean',
-    //     ]);
-
-    //     foreach ($validatedData['restaurants'] as $data) {
-
-    //         $restaurant = Restaurant::where('slug', $data['slug'])->firstOrFail();
-    //         $restaurant->is_enable = $data['is_enable'];
-    //         $restaurant->save();
-    //     }
-
-    //     return response()->json($validatedData, 200);
-    // }
 
     private function createRestaurantBranch($restaurantId, $restaurantBranch)
     {

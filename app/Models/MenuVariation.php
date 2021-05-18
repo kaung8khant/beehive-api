@@ -26,6 +26,11 @@ class MenuVariation extends Model
         'updated_at',
     ];
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
     public function menu()
     {
         return $this->belongsTo(Menu::class);
