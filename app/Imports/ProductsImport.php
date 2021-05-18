@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Helpers\StringHelper;
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
@@ -37,6 +38,7 @@ class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading, WithU
             'shop_id' => Shop::where('slug', $row['shop_slug'])->value('id'),
             'shop_category_id' => ShopCategory::where('slug', $row['shop_category_slug'])->value('id'),
             'shop_sub_category_id' => ShopSubCategory::where('slug', $row['shop_sub_category_slug'])->value('id'),
+            'brand_id' => Brand::where('slug', $row['brand_slug'])->value('id'),
         ]);
     }
 
@@ -51,5 +53,21 @@ class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading, WithU
     public function uniqueBy()
     {
         return 'slug';
+    }
+
+    public function rules(): array
+    {
+        return [
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+            'price' => 'required|max:99999999',
+            'tax' => 'required|numeric',
+            'discount' => 'required|numeric',
+            'is_enable' => 'required|boolean',
+            'shop_slug' => 'required|exists:App\Models\Shop,slug',
+            'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
+            'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
+            'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
+        ];
     }
 }

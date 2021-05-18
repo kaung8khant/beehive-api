@@ -86,8 +86,9 @@ class PromocodeController extends Controller
 
         $promocode = Promocode::create($validatedData);
         $promocodeId = $promocode->id;
-
-        $this->createRules($promocodeId, $validatedData['rules']);
+        if (isset($validatedData['rules'])) {
+            $this->createRules($promocodeId, $validatedData['rules']);
+        }
 
         return response()->json($promocode, 201);
     }
@@ -173,7 +174,7 @@ class PromocodeController extends Controller
             'usage' => 'required|in:restaurant,shop,both',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
-            'rules' => 'required|array',
+            'rules' => 'nullable|array',
             'rules.*.value' => 'required|string',
             'rules.*.data_type' => 'required|in:before_date,after_date,exact_date,total_usage,per_user_usage,matching',
         ];

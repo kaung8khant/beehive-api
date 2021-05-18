@@ -66,20 +66,22 @@ class SendSms implements ShouldQueue, ShouldBeUnique
 
             if (!$validator->fails()) {
                 $phoneNumber = PhoneNumber::make($number, 'MM');
+                if (env('APP_ENV') === 'production' || env('APP_ENV') === 'staging') {
+                    try {
+                        $smsResponse = SmsHelper::sendSms($phoneNumber, $this->message);
+                        $status = 'Success';
 
-                try {
-                    $smsResponse = SmsHelper::sendSms($phoneNumber, $this->message);
-                    $status = 'Success';
+                        if ($smsResponse['status'] !== 0) {
+                            $status = 'Failed';
+                        }
 
-                    if ($smsResponse['status'] !== 0) {
-                        $status = 'Failed';
+                        SmsHelper::storeSmsLog($this->smsData, $smsResponse, $phoneNumber, $this->type, $status);
+                    } catch (\Exception $e) {
+                        Log::critical($e);
+                        SmsHelper::storeSmsLog($this->smsData, null, $phoneNumber, $this->type, 'Error');
                     }
-
-                    SmsHelper::storeSmsLog($this->smsData, $smsResponse, $phoneNumber, $this->type, $status);
-
-                } catch (\Exception $e) {
-                    Log::critical($e);
-                    SmsHelper::storeSmsLog($this->smsData, null, $phoneNumber, $this->type, 'Error');
+                } else {
+                    Log::info('phoneNumber: ' . $phoneNumber . ', message: ' . $this->message);
                 }
             } else {
                 SmsHelper::storeSmsLog($this->smsData, null, $number, $this->type, 'Rejected');

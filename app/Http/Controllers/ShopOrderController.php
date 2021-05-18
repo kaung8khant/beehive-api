@@ -10,7 +10,6 @@ use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Jobs\SendSms;
 use App\Models\Customer;
-use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderVendor;
@@ -100,47 +99,38 @@ class ShopOrderController extends Controller
 
     public function show($slug)
     {
-        $shop = ShopOrder::with('contact')
+        $shopOrder = ShopOrder::with('contact')
             ->with('contact.township')
             ->with('vendors')
             ->where('slug', $slug)
             ->firstOrFail();
 
-        return $this->generateResponse($shop, 200);
+        return $this->generateResponse($shopOrder, 200);
     }
 
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
-
+        // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
+        // get Customer Info
+        $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
+        // append customer data
+        $validatedData['customer_id'] = $customer['id'];
+        // validate and prepare variation
+        $validatedData = OrderHelper::prepareProductVariations($validatedData);
 
-        $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
-        if ($checkVariations) {
-            return $this->generateResponse($checkVariations, 422, true);
-        }
-
-        $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
-        $validatedData['promocode_id'] = null;
-
-        if ($validatedData['promo_code_slug']) {
-            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'shop');
-            if (!$isPromoValid) {
-                return $this->generateResponse('Invalid promo code.', 406, true);
-            }
-
-            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
-        }
-
+        // TODO:: try catch and rollback if failed.
         $order = ShopOrder::create($validatedData);
         $orderId = $order->id;
 
         OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
+        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items'], $validatedData, $customer);
         OrderHelper::createOrderStatus($orderId);
 
         foreach ($validatedData['order_items'] as $item) {
-            $this->notify(OrderHelper::getShopByProduct($item['slug'])->id,
+            $this->notify(
+                OrderHelper::getShopByProduct($item['slug'])->id,
                 [
                     'title' => 'New Order',
                     'body' => "You've just recevied new order. Check now!",
@@ -166,6 +156,7 @@ class ShopOrderController extends Controller
         );
 
         return $this->generateShopOrderResponse($order->refresh(), 201);
+
     }
 
     public function changeStatus(Request $request, $slug)
@@ -245,6 +236,5 @@ class ShopOrderController extends Controller
                 ],
             ]
         );
-
     }
 }

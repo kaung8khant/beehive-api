@@ -55,9 +55,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('collectors', 'CollectorController');
             Route::patch('collectors/toggle-enable/{slug}', 'CollectorController@toggleEnable');
 
-            Route::resource('cities', 'CityController');
-            Route::resource('townships', 'TownshipController');
-            Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
+            Route::resource('cities', 'CityController', ['except' => ['create', 'edit']]);
+            Route::resource('townships', 'TownshipController', ['except' => ['create', 'edit']]);
+            Route::get('cities/{city}/townships', 'TownshipController@getTownshipsByCity');
 
             /* Shop */
             Route::resource('shop-categories', 'ShopCategoryController');
@@ -90,7 +90,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('product-variation-values', 'ProductVariationValueController');
             Route::get('product-variations/{slug}/product-variation-values', 'ProductVariationValueController@getProductVariationValuesByProductVariation');
 
-            Route::resource('brands', 'BrandController');
+            Route::resource('brands', 'BrandController', ['except' => ['create', 'edit']]);
             Route::get('brands/{slug}/products', 'ProductController@getProductsByBrand');
             Route::get('brands/{slug}/shops', 'ShopController@getShopsByBrand');
             Route::post('brands/import', 'BrandController@import');
@@ -194,7 +194,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
     Route::get('fix-slug/{table}', 'SlugFixController@fix');
 
     Route::get('contents', 'ContentController@index');
-
 
     /*
      * -----------
