@@ -255,12 +255,12 @@ class CollectorController extends Controller
     {
         $collector = User::where('slug', $slug)->firstOrFail();
 
-        foreach ($collector->images as $image) {
-            $this->deleteFile($image->slug);
-        }
-
         if ($collector->id === Auth::guard('users')->user()->id) {
             return response()->json(['message' => 'You cannot delete yourself.'], 406);
+        }
+
+        foreach ($collector->images as $image) {
+            $this->deleteFile($image->slug);
         }
 
         $collector->delete();

@@ -255,12 +255,12 @@ class DriverController extends Controller
     {
         $driver = User::where('slug', $slug)->firstOrFail();
 
-        foreach ($driver->images as $image) {
-            $this->deleteFile($image->slug);
-        }
-
         if ($driver->id === Auth::guard('users')->user()->id) {
             return response()->json(['message' => 'You cannot delete yourself.'], 406);
+        }
+
+        foreach ($driver->images as $image) {
+            $this->deleteFile($image->slug);
         }
 
         $driver->delete();
