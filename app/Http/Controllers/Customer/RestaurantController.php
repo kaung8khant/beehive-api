@@ -41,6 +41,7 @@ class RestaurantController extends Controller
 
     public function getFavoriteRestaurants(Request $request)
     {
+        // TODO:: check enable status of branch and main restaurant.
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
@@ -61,6 +62,7 @@ class RestaurantController extends Controller
 
     public function getRecommendations(Request $request)
     {
+        // TODO:: check enable status of branch and main restaurant.
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
@@ -76,6 +78,7 @@ class RestaurantController extends Controller
 
     public function getNewArrivals(Request $request)
     {
+        // TODO:: check enable status of branch and main restaurant.
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
@@ -91,6 +94,7 @@ class RestaurantController extends Controller
 
     public function getAllBranches(Request $request)
     {
+        // TODO:: check enable status of branch and main restaurant.
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
@@ -122,6 +126,7 @@ class RestaurantController extends Controller
             }])
             ->where('slug', $slug)
             ->where('is_enable', 1)
+            // TODO:: main restaurant enable check
             ->firstOrFail();
 
         $availableCategories = $restaurantBranch->availableMenus->map(function ($menu) {
@@ -157,6 +162,7 @@ class RestaurantController extends Controller
 
     public function getCategories(Request $request)
     {
+        // TODO:: check enable status of branch and main restaurant.
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
@@ -227,6 +233,7 @@ class RestaurantController extends Controller
 
     public function getByCategory(Request $request, RestaurantCategory $category)
     {
+        // TODO:: check enable status of branch and main restaurant.
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
@@ -244,6 +251,7 @@ class RestaurantController extends Controller
 
     public function getByTag(Request $request, $slug)
     {
+        // TODO:: check enable status of branch and main restaurant.
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
