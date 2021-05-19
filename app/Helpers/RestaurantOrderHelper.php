@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\BadRequestException;
 use App\Models\Menu;
 use App\Models\MenuTopping;
 use App\Models\MenuVariationValue;
@@ -12,7 +13,6 @@ use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use App\Models\Setting;
 use App\Models\Township;
-use Illuminate\Support\Facades\Validator;
 
 trait RestaurantOrderHelper
 {
@@ -52,19 +52,7 @@ trait RestaurantOrderHelper
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
 
-        return Validator::make($request->all(), $rules);
-    }
-
-    public static function validateProductVariations($key, $value)
-    {
-        $product = Product::where('slug', $value['slug'])
-            ->with('productVariations')
-            ->with('productVariations.productVariationValues')
-            ->first();
-        if ($product->productVariations()->count() > 0 && empty($value['variation_value_slugs'])) {
-            throw new BadRequestException('The order_items.' . $key . '.variation_value_slugs is required.', 400);
-        }
-        return $product;
+        return $request->validate($rules);
     }
 
     public static function prepareRestaurantVariations($validatedData)
@@ -83,7 +71,7 @@ trait RestaurantOrderHelper
             $subTotal += ($amount - $menu->discount) * $value['quantity'];
 
             $tax += ($amount - $menu->discount) * $menu->tax * 0.01 * $value['quantity'];
-            $menu['price'] = $amount;
+            $menu['amount'] = $amount;
             $menu['variations'] = $variations;
             $menu['quantity'] = $value['quantity'];
             $menu['variations'] = $variations;
@@ -91,10 +79,19 @@ trait RestaurantOrderHelper
             $menu['tax'] = ($amount - $menu->discount) * $menu->tax * 0.01;
             array_push($orderItems, $menu->toArray());
         }
+
         $validatedData['product_id'] = $menu['id'];
         $validatedData['order_items'] = $orderItems;
         $validatedData['subTotal'] = $subTotal;
         $validatedData['tax'] = $tax;
+
+        //prepare restuarantbranch info
+        $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
+
+        $validatedData['restaurant_branch_info'] = $restaurantBranch;
+        $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
+        $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
+
         // Log::debug('validatedData => ' . json_encode($validatedData));
         return $validatedData;
     }
@@ -105,11 +102,10 @@ trait RestaurantOrderHelper
             $variationsCount = Menu::where('slug', $value['slug'])->first()->menuVariations()->count();
 
             if ($variationsCount > 0 && empty($value['variation_value_slugs'])) {
-                return 'The order_items.' . $key . '.variation_value_slugs is required.';
+                throw new BadRequestException('The order_items.' . $key . '.variation_value_slugs is required.', 400);
             }
         }
 
-        return false;
     }
 
     public static function getRestaurantBranch($slug)
@@ -140,7 +136,7 @@ trait RestaurantOrderHelper
         RestaurantOrderContact::create($customerInfo);
     }
 
-    public static function createOrderItems($orderId, $orderItems, $promoCodeId)
+    public static function createOrderItems($orderId, $orderItems)
     {
 
         foreach ($orderItems as $item) {
