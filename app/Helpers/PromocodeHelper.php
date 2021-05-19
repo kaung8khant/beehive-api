@@ -48,7 +48,11 @@ trait PromocodeHelper
                         if ($promocode->type === 'fix') {
                             $total += $promocode->amount;
                         } else {
-                            $total += ($item['price'] + $item['variations']->sum('price') + ($item['toppings'] ? $item['toppings']->sum('price') : 0)) * $promocode->amount * 0.01;
+                            $variation = $item['variations']->sum('price');
+                            if (isset($item['toppings'])) {
+                                $variation += $item['variations']->sum('price');
+                            }
+                            $total += ($item['price'] + $variation) * $promocode->amount * 0.01;
                         }
                     }
 
