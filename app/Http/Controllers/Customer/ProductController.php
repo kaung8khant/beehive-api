@@ -24,6 +24,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
+        // TODO:: check shop disable
         $product = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
             ->with('productVariations')
             ->with('productVariations.productVariationValues')
