@@ -25,7 +25,7 @@ class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
      */
     public function model(array $row)
     {
-        return new Menu([
+        return Menu::create([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'description' => $row['description'],

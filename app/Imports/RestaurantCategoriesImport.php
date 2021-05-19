@@ -23,7 +23,7 @@ class RestaurantCategoriesImport implements ToModel, WithHeadingRow, WithChunkRe
      */
     public function model(array $row)
     {
-        return new RestaurantCategory([
+        return RestaurantCategory::create([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
         ]);

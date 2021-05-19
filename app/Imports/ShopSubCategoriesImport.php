@@ -2,14 +2,15 @@
 
 namespace App\Imports;
 
-use App\Models\ShopCategory;
+use App\Models\ShopSubCategory;
 use Maatwebsite\Excel\Concerns\ToModel;
 use App\Helpers\StringHelper;
+use App\Models\ShopCategory;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
 
-class ShopCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
+class ShopSubCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
 {
     public function __construct()
     {
@@ -23,9 +24,10 @@ class ShopCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading,
      */
     public function model(array $row)
     {
-        return ShopCategory::create([
+        return ShopSubCategory::create([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
+            'shop_category_id' =>ShopCategory::where('slug', $row['shop_category_slug'])->value('id'),
         ]);
     }
 
@@ -45,7 +47,8 @@ class ShopCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading,
     public function rules(): array
     {
         return [
-            'name' => 'required|unique:shop_categories',
+            'name' => 'required|unique:shop_sub_categories',
+            'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ];
     }
 }

@@ -27,7 +27,7 @@ class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading, WithU
      */
     public function model(array $row)
     {
-        return new Product([
+        return Product::create([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'description' => $row['description'],
