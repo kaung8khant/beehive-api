@@ -14,7 +14,10 @@ class UpdateHouseNumberAndFloorAndStreetNameToAddressesTable extends Migration
     public function up()
     {
         Schema::table('addresses', function (Blueprint $table) {
-            $table->integer('floor')->nullable()->change();
+            $table->dropColumn('floor');
+        });
+        Schema::table('addresses', function (Blueprint $table) {
+            $table->integer('floor')->nullable();
             $table->string('street_name')->nullable()->change();
             $table->string('house_number')->nullable()->change();
         });
@@ -28,7 +31,10 @@ class UpdateHouseNumberAndFloorAndStreetNameToAddressesTable extends Migration
     public function down()
     {
         Schema::table('addresses', function (Blueprint $table) {
-            $table->string('floor')->nullable(false)->change();
+            $table->dropColumn('floor');
+        });
+        Schema::table('addresses', function (Blueprint $table) {
+            $table->string('floor')->nullable(false);
             $table->string('street_name')->nullable(false)->change();
             $table->string('house_number')->nullable(false)->change();
         });
