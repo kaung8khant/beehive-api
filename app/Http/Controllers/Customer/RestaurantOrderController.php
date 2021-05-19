@@ -52,6 +52,8 @@ class RestaurantOrderController extends Controller
     {
 
         $request['slug'] = $this->generateUniqueSlug();
+        
+        $request['customer_slug'] = Auth::guard('customers')->user()->slug;
         // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
 

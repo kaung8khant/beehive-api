@@ -43,12 +43,15 @@ class ShopOrderController extends Controller
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
+
+        $request['customer_slug'] = Auth::guard('customers')->user()->slug;
         // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
         // get Customer Info
         $customer = Auth::guard('customers')->user();
         // append customer data
         $validatedData['customer_id'] = $this->customerId;
+
         // validate and prepare variation
         $validatedData = OrderHelper::prepareProductVariations($validatedData);
 
