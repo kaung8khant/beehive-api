@@ -15,7 +15,7 @@ class Matching
 
                 return Carbon::parse($result)->startOfDay() == Carbon::now()->startOfDay();
                 break;
-            case 'dob':
+            case 'new_customer':
                 $result = $this->getValueFromModel('new_customer_shop');
                 $result2 = $this->getValueFromModel('new_customer_restaurant');
                 return count($result) + count($result2) == 0;

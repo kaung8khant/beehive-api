@@ -16,11 +16,11 @@ trait PromocodeHelper
         // }
     }
 
-    public static function validatePromocodeRules($promocode, $orderItems, $subTotal, $customer)
+    public static function validatePromocodeRules($promocode, $orderItems, $subTotal, $customer, $usage)
     {
         foreach ($promocode['rules'] as $data) {
             $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
-            $rule = new $_class($promocode);
+            $rule = new $_class($promocode, $usage);
             $value = $rule->validate($orderItems, $subTotal, $customer, $data['value']);
             if (!$value) {
                 throw new BadRequestException("Invalid promocode.", 400);
@@ -28,7 +28,7 @@ trait PromocodeHelper
         }
     }
 
-    public static function calculatePromocodeAmount($promocode, $orderItems, $subTotal)
+    public static function calculatePromocodeAmount($promocode, $orderItems, $subTotal, $usage)
     {
 
         $isItemRule = false;
@@ -39,13 +39,16 @@ trait PromocodeHelper
                 $isItemRule = true;
 
                 foreach ($orderItems as $item) {
+
                     $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
-                    $rule = new $_class($promocode);
+                    $rule = new $_class($promocode, $usage);
+
                     if ($rule->validateItem($item, $data['value'])) {
+
                         if ($promocode->type === 'fix') {
                             $total += $promocode->amount;
                         } else {
-                            $total += $item['price'] * $promocode->amount * 0.01;
+                            $total += ($item['price'] + $item['variations']->sum('price') + ($item['toppings'] ? $item['toppings']->sum('price') : 0)) * $promocode->amount * 0.01;
                         }
                     }
 

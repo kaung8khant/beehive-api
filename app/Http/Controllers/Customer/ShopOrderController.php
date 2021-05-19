@@ -57,8 +57,8 @@ class ShopOrderController extends Controller
             // may require amount validation.
             $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
             PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
-            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer);
-            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal']);
+            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'shop');
+            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
 
             $validatedData['promocode_id'] = $promocode->id;
             $validatedData['promocode'] = $promocode->code;
@@ -66,57 +66,58 @@ class ShopOrderController extends Controller
         }
 
         // (transaction) try catch and rollback if failed.
-        DB::transaction(function () use ($validatedData) {
+        $order = DB::transaction(function () use ($validatedData) {
             $order = ShopOrder::create($validatedData);
             $orderId = $order->id;
             OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
             OrderHelper::createOrderStatus($orderId);
-            foreach ($validatedData['order_items'] as $item) {
-                $this->notify(
-                    OrderHelper::getShopByProduct($item['slug'])->slug,
-                    [
-                        'title' => 'New Order',
-                        'body' => "You've just recevied new order. Check now!",
-                        'action' => 'create',
-                        'status' => 'pending',
-                        'shopOrder' => [
-                            'slug' => OrderHelper::getShopByProduct($item['slug'])->slug,
-                            'order_status' => 'pending',
-                            'total_amount' => ShopOrder::with('contact')
-                                ->with('contact.township')
-                                ->with('vendors')
-                                ->where('slug', $order->slug)
-                                ->firstOrFail()->total_amount,
-                            'shop_order' => ShopOrder::with('contact')
-                                ->with('contact.township')
-                                ->with('vendors')
-                                ->where('slug', $order->slug)
-                                ->firstOrFail(),
-                        ],
-                    ]);
-            }
+            return $order;
 
-            $this->notifyAdmin(
+        });
+
+        foreach ($validatedData['order_items'] as $item) {
+            $this->notify(
+                OrderHelper::getShopByProduct($item['slug'])->slug,
                 [
-                    'title' => "New Order",
-                    'body' => "New Order has been received. Check now!",
-                    'data' => [
-                        'action' => 'create',
-                        'type' => 'shopOrder',
-                        'status' => 'pending',
-                        'shopOrder' => ShopOrder::with('contact')
+                    'title' => 'New Order',
+                    'body' => "You've just recevied new order. Check now!",
+                    'action' => 'create',
+                    'status' => 'pending',
+                    'shopOrder' => [
+                        'slug' => OrderHelper::getShopByProduct($item['slug'])->slug,
+                        'order_status' => 'pending',
+                        'total_amount' => ShopOrder::with('contact')
+                            ->with('contact.township')
+                            ->with('vendors')
+                            ->where('slug', $order->slug)
+                            ->firstOrFail()->total_amount,
+                        'shop_order' => ShopOrder::with('contact')
                             ->with('contact.township')
                             ->with('vendors')
                             ->where('slug', $order->slug)
                             ->firstOrFail(),
                     ],
-                ]
-            );
+                ]);
+        }
 
-            return $this->generateShopOrderResponse($order->refresh(), 201);
-        });
-
+        $this->notifyAdmin(
+            [
+                'title' => "New Order",
+                'body' => "New Order has been received. Check now!",
+                'data' => [
+                    'action' => 'create',
+                    'type' => 'shopOrder',
+                    'status' => 'pending',
+                    'shopOrder' => ShopOrder::with('contact')
+                        ->with('contact.township')
+                        ->with('vendors')
+                        ->where('slug', $order->slug)
+                        ->firstOrFail(),
+                ],
+            ]
+        );
+        return $this->generateShopOrderResponse($order->refresh(), 201);
     }
 
     public function show($slug)
