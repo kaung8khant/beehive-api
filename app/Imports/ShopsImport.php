@@ -10,8 +10,9 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
 use Propaganistas\LaravelPhone\PhoneNumber;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class ShopsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
+class ShopsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
     public function __construct()
     {
@@ -25,7 +26,7 @@ class ShopsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
      */
     public function model(array $row)
     {
-        return Shop::create([
+        return new Shop([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'contact_number' => PhoneNumber::make($row['contact_number'], 'MM'),

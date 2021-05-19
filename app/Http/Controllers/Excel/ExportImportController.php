@@ -22,20 +22,10 @@ class ExportImportController extends Controller
                 Excel::import(new $_class, $file);
 
                 return response()->json(['message' => 'success'], 200);
-            } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-                $failures = $e->failures();
-
-                foreach ($failures as $failure) {
-                    $failure->row();
-                    $failure->attribute();
-                    $failure->errors();
-                    $failure->values();
-                }
+            } catch (\Exception $e) {
+                return $e;
+                return response()->json(['message' => 'failed'], 400);
             }
-            // catch (\Exception $e) {
-            //     return $e;
-            //     return response()->json(['message' => 'failed'], 400);
-            // }
         }
 
         return response()->json(['message' => 'failed'], 406);

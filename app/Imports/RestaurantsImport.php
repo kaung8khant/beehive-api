@@ -11,8 +11,9 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class RestaurantsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
+class RestaurantsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
     public function __construct()
     {
@@ -25,7 +26,7 @@ class RestaurantsImport implements ToModel, WithHeadingRow, WithChunkReading, Wi
      */
     public function model(array $row)
     {
-        $restaurant =Restaurant::create([
+        $restaurant =new Restaurant([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'is_enable' => $row['is_enable'],

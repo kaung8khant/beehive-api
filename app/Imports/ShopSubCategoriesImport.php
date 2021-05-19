@@ -9,8 +9,9 @@ use App\Models\ShopCategory;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class ShopSubCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
+class ShopSubCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
     public function __construct()
     {
@@ -24,7 +25,7 @@ class ShopSubCategoriesImport implements ToModel, WithHeadingRow, WithChunkReadi
      */
     public function model(array $row)
     {
-        return ShopSubCategory::create([
+        return new ShopSubCategory([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'shop_category_id' =>ShopCategory::where('slug', $row['shop_category_slug'])->value('id'),

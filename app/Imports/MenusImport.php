@@ -10,8 +10,9 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
+class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
     public function __construct()
     {
@@ -25,7 +26,7 @@ class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
      */
     public function model(array $row)
     {
-        return Menu::create([
+        return new Menu([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'description' => $row['description'],

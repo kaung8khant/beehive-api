@@ -10,8 +10,9 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
 use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
+class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
     public function __construct()
     {
@@ -24,7 +25,7 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
     */
     public function model(array $row)
     {
-        return Customer::create([
+        return new Customer([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'email' => $row['email'],
@@ -55,7 +56,6 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
             'name' => 'required|max:255',
             'phone_number' => 'required|phone:MM|unique:customers',
             'password' => 'nullable|string|min:6',
-            'phone_number.phone' => 'Invalid phone number.',
         ];
     }
 }

@@ -8,8 +8,9 @@ use App\Helpers\StringHelper;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class ShopCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
+class ShopCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
     public function __construct()
     {
@@ -23,7 +24,7 @@ class ShopCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading,
      */
     public function model(array $row)
     {
-        return ShopCategory::create([
+        return new ShopCategory([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
         ]);

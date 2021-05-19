@@ -8,8 +8,9 @@ use App\Helpers\StringHelper;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class RestaurantTagsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
+class RestaurantTagsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
     public function __construct()
     {
@@ -22,7 +23,7 @@ class RestaurantTagsImport implements ToModel, WithHeadingRow, WithChunkReading,
     */
     public function model(array $row)
     {
-        return RestaurantTag::create([
+        return new RestaurantTag([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
         ]);
