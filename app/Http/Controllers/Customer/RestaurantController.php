@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Helpers\ResponseHelper;
 use App\Helpers\CacheHelper;
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\Restaurant;
@@ -115,6 +115,7 @@ class RestaurantController extends Controller
 
     public function getAvailableMenusByBranch($slug)
     {
+        // TODO:: main restaurant enable check
         $restaurantBranch = RestaurantBranch::with('restaurant')
             ->with(['availableMenus' => function ($query) {
                 $query->with('restaurantCategory')
@@ -126,8 +127,9 @@ class RestaurantController extends Controller
             }])
             ->where('slug', $slug)
             ->where('is_enable', 1)
-            // TODO:: main restaurant enable check
             ->firstOrFail();
+
+        $restaurantBranch->restaurant->is_favorite = $this->checkFavoriteRestaurant($restaurantBranch->restaurant->id);
 
         $availableCategories = $restaurantBranch->availableMenus->map(function ($menu) {
             $menu->setAppends(['is_available', 'images']);
