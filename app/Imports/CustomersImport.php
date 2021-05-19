@@ -5,14 +5,14 @@ namespace App\Imports;
 use App\Models\Customer;
 use Maatwebsite\Excel\Concerns\ToModel;
 use App\Helpers\StringHelper;
-use Illuminate\Support\Facades\Validator;
 use Propaganistas\LaravelPhone\PhoneNumber;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
 use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts
+class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
     public function __construct()
     {
@@ -56,8 +56,6 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
             'name' => 'required|max:255',
             'phone_number' => 'required|phone:MM|unique:customers',
             'password' => 'nullable|string|min:6',
-            'gender' => 'nullable|in:Male,Female',
-            'phone_number.phone' => 'Invalid phone number.',
         ];
     }
 }

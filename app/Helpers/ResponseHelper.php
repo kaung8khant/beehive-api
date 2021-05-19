@@ -88,9 +88,11 @@ trait ResponseHelper
 
         return $this->generateResponse($data, $status);
     }
+
     public function generateShopOrderResponse($data, $status, $type = 'obj')
     {
         $items = collect([]);
+
         if ($type === "obj") {
             foreach ($data->vendors as $vendor) {
                 $list = $vendor->items;
@@ -121,7 +123,7 @@ trait ResponseHelper
         return $this->generateResponse($data, $status);
     }
 
-    private function checkFavoriteRestaurant($restaurantId)
+    public function checkFavoriteRestaurant($restaurantId)
     {
         if ($customer = Auth::guard('customers')->user()) {
             return $customer->favoriteRestaurants->pluck('id')->contains($restaurantId);
