@@ -13,9 +13,11 @@ use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use App\Models\Setting;
 use App\Models\Township;
+use Illuminate\Support\Facades\Validator;
 
 trait RestaurantOrderHelper
 {
+
     public static function validateOrder($request, $customerSlug = false)
     {
         $rules = [
@@ -52,7 +54,11 @@ trait RestaurantOrderHelper
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
 
-        return $request->validate($rules);
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            throw new BadRequestException($validator->errors()->first(), 400);
+        }
+        return $validator->validated();
     }
 
     public static function prepareRestaurantVariations($validatedData)
