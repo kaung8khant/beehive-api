@@ -16,6 +16,7 @@ return [
         'restaurant-tag' => 'RestaurantTagsImport',
         'restaurant-order' => 'RestaurantOrdersImport',
         'menu' => 'MenusImport',
+        'customer-group' => 'CustomerGroupsImport',
     ],
     'export' => [
         'customer' => 'CustomersExport',
@@ -32,5 +33,8 @@ return [
         'restaurant-tag' => 'RestaurantTagsExport',
         'restaurant-order' => 'RestaurantOrdersExport',
         'menu' => 'MenusExport',
+        'promocode' => 'PromocodesExport',
+        'sms-log' => 'SmsLogsExport',
+        'customer-group' => 'CustomerGroupsExport',
     ],
 ];
