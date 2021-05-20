@@ -56,10 +56,20 @@ class ProductController extends Controller
     {
         $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        return Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariations.productVariationValues')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        $products = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariations.productVariationValues')
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            });
+
+        if (isset($request->is_enable)) {
+            $products = $products->where('is_enable', $request->is_enable)
+                ->whereHas('shop', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -394,13 +404,21 @@ class ProductController extends Controller
     {
         $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        return Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues')
+        $products = Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues')
             ->where('shop_id', $shop->id)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            });
+
+        if (isset($request->is_enable)) {
+            $products = $products->where('is_enable', $request->is_enable)
+                ->whereHas('shop', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -536,13 +554,21 @@ class ProductController extends Controller
     {
         $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        return Product::with('shop', 'shopCategory')
+        $products = Product::with('shop', 'shopCategory')
             ->where('brand_id', $brand->id)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            });
+
+        if (isset($request->is_enable)) {
+            $products = $products->where('is_enable', $request->is_enable)
+                ->whereHas('shop', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -550,13 +576,21 @@ class ProductController extends Controller
     {
         $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        return Product::with('shop', 'shopCategory')
+        $products = Product::with('shop', 'shopCategory')
             ->where('shop_category_id', $shopCategory->id)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            });
+
+        if (isset($request->is_enable)) {
+            $products = $products->where('is_enable', $request->is_enable)
+                ->whereHas('shop', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 

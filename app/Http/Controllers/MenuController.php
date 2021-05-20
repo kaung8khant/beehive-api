@@ -58,10 +58,20 @@ class MenuController extends Controller
     {
         $sorting = CollectionHelper::getSorting('menus', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        return Menu::with(['restaurant', 'restaurantCategory'])
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        $menus = Menu::with(['restaurant', 'restaurantCategory'])
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            });
+
+        if (isset($request->is_enable)) {
+            $menus = $menus->where('is_enable', $request->is_enable)
+                ->whereHas('restaurant', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -279,13 +289,21 @@ class MenuController extends Controller
     {
         $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
 
-        return Menu::with('restaurantCategory')
+        $menus = Menu::with('restaurantCategory')
             ->where('restaurant_id', $restaurant->id)
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            });
+
+        if (isset($request->is_enable)) {
+            $menus = $menus->where('is_enable', $request->is_enable)
+                ->whereHas('restaurant', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -332,8 +350,16 @@ class MenuController extends Controller
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            });
+
+        if (isset($request->is_enable)) {
+            $menus = $menus->where('is_enable', $request->is_enable)
+                ->whereHas('restaurant', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        $menus = $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
 
         foreach ($menus as $menu) {
@@ -347,13 +373,21 @@ class MenuController extends Controller
     {
         $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
 
-        return Menu::with('restaurant', 'restaurantCategory')
+        $menus = Menu::with('restaurant', 'restaurantCategory')
             ->where('restaurant_category_id', $restaurantCategory->id)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            });
+
+        if (isset($request->is_enable)) {
+            $menus = $menus->where('is_enable', $request->is_enable)
+                ->whereHas('restaurant', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -367,11 +401,17 @@ class MenuController extends Controller
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+            });
 
-        return $menus;
+        if (isset($request->is_enable)) {
+            $menus = $menus->where('is_enable', $request->is_enable)
+                ->whereHas('restaurant', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
     private function getParamsToValidate($slug = false)
