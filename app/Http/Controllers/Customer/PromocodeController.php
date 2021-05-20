@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Exceptions\BadRequestException;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
+use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Promocode;
 use Illuminate\Http\Request;
@@ -11,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 class PromocodeController extends Controller
 {
-    use ResponseHelper, PromocodeHelper;
+    use ResponseHelper, PromocodeHelper, StringHelper;
 
     public function index(Request $request)
     {
@@ -31,9 +33,43 @@ class PromocodeController extends Controller
         return $this->generateResponse($result, 200);
     }
 
-    public function validatePromoCode($slug)
+    public function validatePromoCode(Request $request)
     {
-        $promo = $this->validatePromo($slug, Auth::guard('customers')->user()->id);
-        return $this->generateResponse($promo, 200);
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $request['customer_slug'] = Auth::guard('customers')->user()->slug;
+        // validate order
+        $validatedData = [];
+        if (isset($request['restaurant_branch_slug'])) {
+            $validatedData = \App\Helpers\RestaurantOrderHelper::validateOrder($request, true);
+        } else {
+            $validatedData = \App\Helpers\ShopOrderHelper::validateOrder($request, true);
+        }
+        // get Customer Info
+        $customer = Auth::guard('customers')->user();
+        // append customer data
+        $validatedData['customer_id'] = Auth::guard('customers')->user()->id;
+
+        if (isset($request['restaurant_branch_slug'])) {
+            $validatedData = \App\Helpers\RestaurantOrderHelper::prepareRestaurantVariations($validatedData);
+        } else {
+            $validatedData = \App\Helpers\ShopOrderHelper::prepareProductVariations($validatedData);
+        }
+
+        $usage = isset($request['restaurant_branch_slug']) ? 'restaurant' : 'shop';
+
+        // validate promocode
+        if (isset($validatedData['promo_code_slug'])) {
+            // may require amount validation.
+            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
+
+            PromocodeHelper::validatePromocodeUsage($promocode, $usage);
+            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, $usage);
+
+            return $this->generateResponse('Valid promocode', 200, true);
+        } else {
+            throw new BadRequestException("Promocode not found.", 400);
+        }
+
     }
 }
