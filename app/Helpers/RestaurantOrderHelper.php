@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-use App\Helpers\PromocodeHelper;
+use App\Exceptions\BadRequestException;
 use App\Models\Menu;
 use App\Models\MenuTopping;
 use App\Models\MenuVariationValue;
@@ -13,7 +13,6 @@ use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use App\Models\Setting;
 use App\Models\Township;
-use Illuminate\Support\Facades\Validator;
 
 trait RestaurantOrderHelper
 {
@@ -32,7 +31,7 @@ trait RestaurantOrderHelper
             'customer_info.phone_number' => 'required|string',
             'address' => 'required',
             'address.house_number' => 'required|string',
-            'address.floor' => 'nullable|string',
+            'address.floor' => 'nullable|numeric',
             'address.street_name' => 'required|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
@@ -53,7 +52,48 @@ trait RestaurantOrderHelper
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
 
-        return Validator::make($request->all(), $rules);
+        return $request->validate($rules);
+    }
+
+    public static function prepareRestaurantVariations($validatedData)
+    {
+        $orderItems = [];
+        $subTotal = 0;
+        $tax = 0;
+
+        foreach ($validatedData['order_items'] as $key => $value) {
+
+            $menu = self::getMenu($value['slug']);
+            $variations = collect(self::prepareVariations($value['variation_value_slugs']));
+            $toppings = collect(self::prepareToppings($value['topping_slugs']));
+            $amount = $menu->price + $variations->sum('price') + $toppings->sum('price');
+
+            $subTotal += ($amount - $menu->discount) * $value['quantity'];
+
+            $tax += ($amount - $menu->discount) * $menu->tax * 0.01 * $value['quantity'];
+            $menu['amount'] = $amount;
+            $menu['variations'] = $variations;
+            $menu['quantity'] = $value['quantity'];
+            $menu['variations'] = $variations;
+            $menu['toppings'] = $toppings;
+            $menu['tax'] = ($amount - $menu->discount) * $menu->tax * 0.01;
+            array_push($orderItems, $menu->toArray());
+        }
+
+        $validatedData['product_id'] = $menu['id'];
+        $validatedData['order_items'] = $orderItems;
+        $validatedData['subTotal'] = $subTotal;
+        $validatedData['tax'] = $tax;
+
+        //prepare restuarantbranch info
+        $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
+
+        $validatedData['restaurant_branch_info'] = $restaurantBranch;
+        $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
+        $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
+
+        // Log::debug('validatedData => ' . json_encode($validatedData));
+        return $validatedData;
     }
 
     public static function checkVariationsExist($menus)
@@ -62,11 +102,10 @@ trait RestaurantOrderHelper
             $variationsCount = Menu::where('slug', $value['slug'])->first()->menuVariations()->count();
 
             if ($variationsCount > 0 && empty($value['variation_value_slugs'])) {
-                return 'The order_items.' . $key . '.variation_value_slugs is required.';
+                throw new BadRequestException('The order_items.' . $key . '.variation_value_slugs is required.', 400);
             }
         }
 
-        return false;
     }
 
     public static function getRestaurantBranch($slug)
@@ -97,41 +136,17 @@ trait RestaurantOrderHelper
         RestaurantOrderContact::create($customerInfo);
     }
 
-    public static function createOrderItems($orderId, $orderItems, $promoCodeId)
+    public static function createOrderItems($orderId, $orderItems)
     {
-        $total = 0;
 
         foreach ($orderItems as $item) {
             $menu = self::getMenu($item['slug']);
-            $variations = collect(self::prepareVariations($item['variation_value_slugs']));
-            $toppings = collect(self::prepareToppings($item['topping_slugs']));
-
-            $total += ($menu->price - $menu->discount + $variations->sum('price') + $toppings->sum('price')) * $item['quantity'];
-        }
-
-        $promoPercentage = 0;
-
-        if ($promoCodeId) {
-            $promoPercentage = PromocodeHelper::getPercentage($total, $promoCodeId);
-        }
-
-        foreach ($orderItems as $item) {
-            $menu = self::getMenu($item['slug']);
-            $variations = collect(self::prepareVariations($item['variation_value_slugs']));
-            $toppings = collect(self::prepareToppings($item['topping_slugs']));
-
-            $amount = ($menu->price - $menu->discount + $variations->sum('price') + $toppings->sum('price')) * $item['quantity'];
-            $discount = $amount * $promoPercentage / 100;
 
             $item['menu_name'] = $menu->name;
-            $item['amount'] = $amount;
-            $item['discount'] = $discount;
-            $item['tax'] = ($amount - $discount) * $menu->tax / 100;
+
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
             $item['restaurant_id'] = $menu->restaurant_id;
-            $item['variations'] = $variations;
-            $item['toppings'] = $toppings;
 
             RestaurantOrderItem::create($item);
         }
@@ -193,5 +208,29 @@ trait RestaurantOrderHelper
     private static function getMenuTopping($slug)
     {
         return MenuTopping::where('slug', $slug)->first();
+    }
+
+    public static function getBranches($request)
+    {
+        $query = RestaurantBranch::with('restaurant');
+        return self::getBranchQuery($query, $request);
+    }
+
+    public static function getBranchQuery($query, $request)
+    {
+        $radius = CacheHelper::getRestaurantSearchRadius();
+
+        return $query->with('restaurant')
+            ->with('restaurant.availableTags')
+            ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
+            ( 6371 * acos( cos(radians(?)) *
+                cos(radians(latitude)) * cos(radians(longitude) - radians(?))
+                + sin(radians(?)) * sin(radians(latitude)) )
+            ) AS distance', [$request->lat, $request->lng, $request->lat])
+            ->whereHas('restaurant', function ($q) {
+                $q->where('is_enable', 1);
+            })
+            ->where('is_enable', 1)
+            ->having('distance', '<', $radius);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
@@ -38,8 +39,11 @@ class RestaurantTagController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('restaurant_tags', 'name', $request->by, $request->order);
+
         return RestaurantTag::where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -77,6 +81,7 @@ class RestaurantTagController extends Controller
                 'slug' => 'required|unique:restaurant_tags',
             ]
         ));
+
         return response()->json($tag, 201);
     }
 
@@ -105,9 +110,9 @@ class RestaurantTagController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(RestaurantTag $restaurantTag)
     {
-        return response()->json(RestaurantTag::where('slug', $slug)->firstOrFail(), 200);
+        return response()->json($restaurantTag, 200);
     }
 
     /**
@@ -143,18 +148,16 @@ class RestaurantTagController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, RestaurantTag $restaurantTag)
     {
-        $tag = RestaurantTag::where('slug', $slug)->firstOrFail();
-
-        $tag->update($request->validate([
+        $restaurantTag->update($request->validate([
             'name' => [
                 'required',
-                Rule::unique('restaurant_tags')->ignore($tag->id),
+                Rule::unique('restaurant_tags')->ignore($restaurantTag->id),
             ],
         ]));
 
-        return response()->json($tag, 200);
+        return response()->json($restaurantTag, 200);
     }
 
     /**
@@ -182,9 +185,9 @@ class RestaurantTagController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(RestaurantTag $restaurantTag)
     {
-        RestaurantTag::where('slug', $slug)->firstOrFail()->delete();
+        $restaurantTag->delete();
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
@@ -215,12 +218,17 @@ class RestaurantTagController extends Controller
      */
     public function getTagsByRestaurant(Request $request, $slug)
     {
+        $sorting = CollectionHelper::getSorting('restaurant_tags', 'name', $request->by, $request->order);
+
         return RestaurantTag::whereHas('restaurants', function ($q) use ($slug) {
             $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        })
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
     public function import(Request $request)
@@ -230,7 +238,6 @@ class RestaurantTagController extends Controller
             'restaurant_tags.*.name' => 'required|unique:restaurant_tags',
         ]);
 
-        $restaurantTags = array();
         foreach ($validatedData['restaurant_tags'] as $data) {
             $data['slug'] = $this->generateUniqueSlug();
             RestaurantTag::create($data);

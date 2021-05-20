@@ -6,6 +6,7 @@ use Illuminate\Container\Container;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 
 trait CollectionHelper
 {
@@ -28,5 +29,14 @@ trait CollectionHelper
         return Container::getInstance()->makeWith(LengthAwarePaginator::class, compact(
             'items', 'total', 'perPage', 'currentPage', 'options'
         ));
+    }
+
+    public static function getSorting($table, $defaultColumn, $sort = null, $order = null)
+    {
+        $columns = Schema::getColumnListing($table);
+        $orderBy = $order && in_array($order, $columns) ? $order : $defaultColumn;
+        $sortBy = $sort && in_array($sort, ['asc', 'desc']) ? $sort : 'asc';
+
+        return compact('orderBy', 'sortBy');
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\City;
 use App\Models\Township;
@@ -48,9 +49,12 @@ class TownshipController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('townships', 'name', $request->by, $request->order);
+
         return Township::with('city')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -89,9 +93,9 @@ class TownshipController extends Controller
         ]);
 
         $validatedData['city_id'] = $this->getCityIdBySlug($request->city_slug);
-
         $township = Township::create($validatedData);
-        return response()->json($township, 201);
+
+        return response()->json($township->load('city'), 201);
     }
 
     /**
@@ -119,10 +123,9 @@ class TownshipController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(Township $township)
     {
-        $township = Township::with('city')->where('slug', $slug)->firstOrFail();
-        return response()->json($township, 200);
+        return response()->json($township->load('city'), 200);
     }
 
     /**
@@ -158,10 +161,8 @@ class TownshipController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, Township $township)
     {
-        $township = Township::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate([
             'name' => [
                 'required',
@@ -173,7 +174,7 @@ class TownshipController extends Controller
         $validatedData['city_id'] = $this->getCityIdBySlug($request->city_slug);
         $township->update($validatedData);
 
-        return response()->json($township, 200);
+        return response()->json($township->load('city'), 200);
     }
 
     /**
@@ -201,9 +202,9 @@ class TownshipController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(Township $township)
     {
-        Township::where('slug', $slug)->firstOrFail()->delete();
+        $township->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -246,13 +247,16 @@ class TownshipController extends Controller
      *      }
      *)
      */
-    public function getTownshipsByCity(Request $request, $slug)
+    public function getTownshipsByCity(Request $request, City $city)
     {
-        return Township::whereHas('city', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        $sorting = CollectionHelper::getSorting('townships', 'name', $request->by, $request->order);
+
+        return Township::where('city_id', $city->id)
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 }

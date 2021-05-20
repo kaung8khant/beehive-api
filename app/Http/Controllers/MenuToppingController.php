@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Models\Menu;
@@ -48,9 +49,12 @@ class MenuToppingController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('menu_toppings', 'name', $request->by, $request->order);
+
         return MenuTopping::with('menu')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -100,10 +104,11 @@ class MenuToppingController extends Controller
         $menuId = $this->getMenuId($validatedData['menu_slug']);
 
         foreach ($validatedData['menu_toppings'] as $menuTopping) {
-
             $menuTopping['slug'] = $this->generateUniqueSlug();
             $menuTopping['menu_id'] = $menuId;
-            MenuTopping::create($menuTopping)->id;
+
+            MenuTopping::create($menuTopping);
+
             if (!empty($menuTopping['image_slug'])) {
                 $this->updateFile($menuTopping['image_slug'], 'menu_toppings', $menuTopping['slug']);
             }
@@ -137,10 +142,9 @@ class MenuToppingController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(MenuTopping $menuTopping)
     {
-        $menuTopping = MenuTopping::with('menu')->where('slug', $slug)->firstOrFail();
-        return response()->json($menuTopping, 200);
+        return response()->json($menuTopping->load('menu'), 200);
     }
 
     /**
@@ -176,14 +180,10 @@ class MenuToppingController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, MenuTopping $menuTopping)
     {
-        $menuTopping = MenuTopping::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate($this->getParamsToValidate());
-
-        $validatedData['menu_id'] = $this->getMenuId($request->menu_slug);
-
+        $validatedData['menu_id'] = $this->getMenuId($validatedData['menu_slug']);
         $menuTopping->update($validatedData);
 
         if ($request->image_slug) {
@@ -218,16 +218,13 @@ class MenuToppingController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(MenuTopping $menuTopping)
     {
-        $menuTopping = MenuTopping::where('slug', $slug)->firstOrFail();
-
         foreach ($menuTopping->images as $image) {
             $this->deleteFile($image->slug);
         }
 
         $menuTopping->delete();
-
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -265,14 +262,17 @@ class MenuToppingController extends Controller
      *      }
      *)
      */
-    public function getToppingsByMenu(Request $request, $slug)
+    public function getToppingsByMenu(Request $request, Menu $menu)
     {
-        return MenuTopping::whereHas('menu', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        $sorting = CollectionHelper::getSorting('menu_toppings', 'name', $request->by, $request->order);
+
+        return MenuTopping::where('menu_id', $menu->id)
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
     private function getParamsToValidate($slug = false)

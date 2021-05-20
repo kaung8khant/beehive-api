@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -11,8 +12,10 @@ use App\Helpers\StringHelper;
 use App\Jobs\SendSms;
 use App\Models\Customer;
 use App\Models\Promocode;
+use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RestaurantOrderController extends Controller
 {
@@ -54,28 +57,27 @@ class RestaurantOrderController extends Controller
      */
     public function index(Request $request)
     {
-        $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact')
-            ->with('restaurantOrderContact.township')
-            ->with('RestaurantOrderItems')
+        $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'restaurantOrderContact.township', 'RestaurantOrderItems')
             ->whereHas('restaurantOrderContact', function ($q) use ($request) {
                 $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('phone_number', $request->filter);
             })
             ->orWhere('slug', $request->filter)
-            ->latest()
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate($request->size)
             ->items();
 
         return $this->generateResponse($restaurantOrders, 200);
     }
 
-    public function getBranchOrders(Request $request, $slug)
+    public function getBranchOrders(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $branchId = OrderHelper::getRestaurantBranch($slug)->id;
+        $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
-            ->with('RestaurantOrderItems')
-            ->where('restaurant_branch_id', $branchId)
+        $restaurantOrders = RestaurantOrder::with('restaurantOrderContact', 'RestaurantOrderItems')
+            ->where('restaurant_branch_id', $restaurantBranch->id)
             ->where(function ($query) use ($request) {
                 return $query->whereHas('restaurantOrderContact', function ($q) use ($request) {
                     $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
@@ -83,7 +85,7 @@ class RestaurantOrderController extends Controller
                 })
                     ->orWhere('slug', $request->filter);
             })
-            ->latest()
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10)
             ->items();
 
@@ -115,15 +117,9 @@ class RestaurantOrderController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(RestaurantOrder $restaurantOrder)
     {
-        $order = RestaurantOrder::with('RestaurantOrderContact')
-            ->with('restaurantOrderContact.township')
-            ->with('RestaurantOrderItems')
-            ->where('slug', $slug)
-            ->firstOrFail();
-
-        return $this->generateResponse($order, 200);
+        return $this->generateResponse($restaurantOrder->load('RestaurantOrderContact', 'restaurantOrderContact.township', 'RestaurantOrderItems'), 200);
     }
 
     /**
@@ -183,43 +179,44 @@ class RestaurantOrderController extends Controller
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
+        // validate order
+        $validatedData = OrderHelper::validateOrder($request, true);
 
-        $validator = OrderHelper::validateOrder($request, true);
-        if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, true);
-        }
+        //validate variation
+        OrderHelper::checkVariationsExist($validatedData['order_items']);
 
-        $validatedData = $validator->validated();
+        // get Customer Info
+        $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
 
-        $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
-        if ($checkVariations) {
-            return $this->generateResponse($checkVariations, 422, true);
-        }
-
+        // append customer data
         $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
 
-        $restaurantBranch = OrderHelper::getRestaurantBranch($validatedData['restaurant_branch_slug']);
-
-        $validatedData['restaurant_branch_info'] = $restaurantBranch;
-        $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
-        $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
-        $validatedData['promocode_id'] = null;
+        // validate and prepare variation
+        $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
 
         if ($validatedData['promo_code_slug']) {
-            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'restaurant');
-            if (!$isPromoValid) {
-                return $this->generateResponse('Invalid promo code.', 406, true);
-            }
+            // may require amount validation.
+            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
+            PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
+            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
+            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
 
-            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
+            $validatedData['promocode_id'] = $promocode->id;
+            $validatedData['promocode'] = $promocode->code;
+            $validatedData['promocode_amount'] = $promocodeAmount;
         }
 
-        $order = RestaurantOrder::create($validatedData);
-        $orderId = $order->id;
+        // try catch and rollback if failed.
+        $order = DB::transaction(function () use ($validatedData) {
+            $order = RestaurantOrder::create($validatedData);
+            $orderId = $order->id;
 
-        OrderHelper::createOrderStatus($orderId);
-        OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        OrderHelper::createOrderItems($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
+            OrderHelper::createOrderStatus($orderId);
+
+            OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createOrderItems($orderId, $validatedData['order_items']);
+            return $order;
+        });
 
         $this->notify([
             'title' => 'Restaurant order updated',
@@ -262,46 +259,42 @@ class RestaurantOrderController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(RestaurantOrder $restaurantOrder)
     {
-        $order = RestaurantOrder::where('slug', $slug)->firstOrFail();
-
-        if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
+        if ($restaurantOrder->order_status === 'delivered' || $restaurantOrder->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
         }
 
         $message = 'Your order has successfully been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
+        $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
-        OrderHelper::createOrderStatus($order->id, 'cancelled');
+        OrderHelper::createOrderStatus($restaurantOrder->id, 'cancelled');
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
 
-    public function changeStatus(Request $request, $slug)
+    public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
     {
-        $order = RestaurantOrder::where('slug', $slug)->firstOrFail();
-
-        if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
+        if ($restaurantOrder->order_status === 'delivered' || $restaurantOrder->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
         }
 
-        OrderHelper::createOrderStatus($order->id, $request->status);
+        OrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
 
         $this->notify([
             'title' => 'Restaurant order updated',
             'body' => 'Restaurant order just has been updated',
             'status' => $request->status,
-            'slug' => $slug,
+            'slug' => $restaurantOrder->slug,
             'action' => 'update',
         ]);
 
         $message = 'Your order has successfully been ' . $request->status . '.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
+        $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);

@@ -37,7 +37,9 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             $menu->tax ? $menu->tax : '0',
             $menu->discount ? $menu->discount : '0',
             $menu->is_enable ? '1' : '0',
+            Restaurant::where('id', $menu->restaurant_id)->value('name'),
             Restaurant::where('id', $menu->restaurant_id)->value('slug'),
+            RestaurantCategory::where('id', $menu->restaurant_category_id)->value('name'),
             RestaurantCategory::where('id', $menu->restaurant_category_id)->value('slug'),
         ];
     }
@@ -52,7 +54,9 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'tax',
             'discount',
             'is_enable',
+            'restaurant',
             'restaurant_slug',
+            'restaurant_category',
             'restaurant_category_slug',
         ];
     }
@@ -71,6 +75,8 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'G' => ['alignment' => ['horizontal' => 'center']],
             'H' => ['alignment' => ['horizontal' => 'center']],
             'I' => ['alignment' => ['horizontal' => 'center']],
+            'J' => ['alignment' => ['horizontal' => 'center']],
+            'K' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -84,8 +90,10 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'E' => 10,
             'F' => 10,
             'G' => 10,
-            'H' => 15,
-            'I' => 25,
+            'H' => 25,
+            'I' => 15,
+            'J' => 25,
+            'K' => 25,
         ];
     }
 }

@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Helpers\ResponseHelper;
 use App\Helpers\CacheHelper;
+use App\Helpers\ResponseHelper;
+use App\Helpers\RestaurantOrderHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\Restaurant;
@@ -12,7 +13,6 @@ use App\Models\RestaurantCategory;
 use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class RestaurantController extends Controller
@@ -50,7 +50,7 @@ class RestaurantController extends Controller
 
         $favoriteRestaurants = $customer->favoriteRestaurants()
             ->with(['restaurantBranches' => function ($query) use ($request) {
-                $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
+                RestaurantOrderHelper::getBranchQuery($query, $request)->orderBy('distance', 'asc');
             }])
             ->paginate($request->size)
             ->pluck('restaurantBranches')
@@ -66,7 +66,7 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $recommendedBranches = $this->getBranches($request)
+        $recommendedBranches = RestaurantOrderHelper::getBranches($request)
             ->orderBy('distance', 'asc')
             ->paginate($request->size)
             ->items();
@@ -81,8 +81,8 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $newArrivals = $this->getBranches($request)
-            ->latest()
+        $newArrivals = RestaurantOrderHelper::getBranches($request)
+            ->orderBy('id', 'desc')
             ->paginate($request->size)
             ->items();
 
@@ -96,7 +96,7 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantBranches = $this->getBranches($request)
+        $restaurantBranches = RestaurantOrderHelper::getBranches($request)
             ->orderBy('distance', 'asc')
             ->paginate($request->size)
             ->items();
@@ -104,25 +104,32 @@ class RestaurantController extends Controller
         return $this->generateBranchResponse($restaurantBranches, 200);
     }
 
-    public function getOneBranch(RestaurantBranch $branch)
+    public function getOneBranch(RestaurantBranch $restaurantBranch)
     {
-        return $this->generateBranchResponse($branch->load('restaurant', 'restaurant.availableTags', 'township'), 200, 'obj');
+        if (!$restaurantBranch->is_enable || !$restaurantBranch->restaurant->is_enable) {
+            abort(404);
+        }
+
+        return $this->generateBranchResponse($restaurantBranch->load('restaurant', 'restaurant.availableTags', 'township'), 200, 'obj');
     }
 
-    public function getAvailableMenusByBranch($slug)
+    public function getAvailableMenusByBranch(RestaurantBranch $restaurantBranch)
     {
-        $restaurantBranch = RestaurantBranch::with('restaurant')
-            ->with(['availableMenus' => function ($query) {
-                $query->with('restaurantCategory')
-                    ->with('menuVariations')
-                    ->with('menuVariations.menuVariationValues')
-                    ->with('menuToppings')
+        if (!$restaurantBranch->is_enable || !$restaurantBranch->restaurant->is_enable) {
+            abort(404);
+        }
+
+        $restaurantBranch->load([
+            'restaurant',
+            'availableMenus' => function ($query) {
+                $query->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuToppings')
                     ->where('is_enable', 1)
-                    ->where('is_available', 1);
-            }])
-            ->where('slug', $slug)
-            ->where('is_enable', 1)
-            ->firstOrFail();
+                    ->where('is_available', 1)
+                    ->orderBy('id', 'desc');
+            },
+        ]);
+
+        $restaurantBranch->restaurant->is_favorite = $this->checkFavoriteRestaurant($restaurantBranch->restaurant->id);
 
         $availableCategories = $restaurantBranch->availableMenus->map(function ($menu) {
             $menu->setAppends(['is_available', 'images']);
@@ -162,36 +169,28 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $radius = CacheHelper::getRestaurantSearchRadius();
         $size = $request->size ? $request->size : 10;
         $page = $request->page ? $request->page : 1;
 
-        $branchIds = DB::table('restaurant_branches')
-            ->selectRaw('id,
-            ( 6371 * acos( cos(radians(?)) *
-                cos(radians(latitude)) * cos(radians(longitude) - radians(?))
-                + sin(radians(?)) * sin(radians(latitude)) )
-            ) AS distance', [$request->lat, $request->lng, $request->lat])
-            ->where('is_enable', 1)
-            ->having('distance', '<', $radius)
-            ->orderBy('distance', 'asc')
-            ->pluck('id');
+        $branchIds = RestaurantOrderHelper::getBranches($request)->orderBy('distance', 'asc')->pluck('id');
 
         $categoryIds = $branchIds->map(function ($branchId) {
-            return DB::table('menus as m')
-                ->join('restaurant_branch_menu_map as rbmm', 'rbmm.menu_id', '=', 'm.id')
-                ->where('rbmm.restaurant_branch_id', $branchId)
-                ->where('m.is_enable', 1)
-                ->where('rbmm.is_available', 1)
-                ->pluck('restaurant_category_id');
+            return CacheHelper::getCategoryIdsByBranch($branchId);
         })->collapse()->unique()->values();
 
         $categorizedBranches = $categoryIds->map(function ($categoryId) use ($request) {
-            $category = RestaurantCategory::find($categoryId);
-            $restaurantIds = Menu::where('restaurant_category_id', $categoryId)->where('is_enable', 1)->groupBy('restaurant_id')->pluck('restaurant_id');
+            $category = CacheHelper::getRestaurantCategory($categoryId);
+
+            $restaurantIds = Menu::where('restaurant_category_id', $categoryId)
+                ->where('is_enable', 1)
+                ->whereHas('restaurant', function ($query) {
+                    $query->where('is_enable', 1);
+                })
+                ->groupBy('restaurant_id')
+                ->pluck('restaurant_id');
 
             $category->restaurant_branches = $restaurantIds->map(function ($restaurantId) use ($request) {
-                return $this->getBranches($request)
+                return RestaurantOrderHelper::getBranches($request)
                     ->where('restaurant_id', $restaurantId)
                     ->orderBy('distance', 'asc')
                     ->get();
@@ -214,14 +213,18 @@ class RestaurantController extends Controller
 
         $restaurantTags = RestaurantTag::with('restaurants')
             ->with(['restaurants.restaurantBranches' => function ($query) use ($request) {
-                $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
+                RestaurantOrderHelper::getBranchQuery($query, $request)->orderBy('distance', 'asc');
             }])
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate($request->size)
             ->items();
 
-        $restaurantTags = $this->getBranchesFromRestaurants($restaurantTags);
+        $restaurantTags = $this->getBranchesFromRestaurants($restaurantTags)
+            ->filter(function ($value) {
+                return count($value['restaurant_branches']) > 0;
+            })->values();
+
         return $this->generateBranchResponse($restaurantTags, 200, 'arrobj');
     }
 
@@ -232,10 +235,16 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantIds = Menu::where('restaurant_category_id', $category->id)->where('is_enable', 1)->groupBy('restaurant_id')->pluck('restaurant_id');
+        $restaurantIds = Menu::where('restaurant_category_id', $category->id)
+            ->where('is_enable', 1)
+            ->whereHas('restaurant', function ($query) {
+                $query->where('is_enable', 1);
+            })
+            ->groupBy('restaurant_id')
+            ->pluck('restaurant_id');
 
         $categorizedBranches = $restaurantIds->map(function ($restaurantId) use ($request) {
-            return $this->getBranches($request)->where('restaurant_id', $restaurantId)->get();
+            return RestaurantOrderHelper::getBranches($request)->where('restaurant_id', $restaurantId)->get();
         });
 
         $category->restaurant_branches = $categorizedBranches->collapse()->sortBy('distance')->values();
@@ -249,10 +258,11 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantTag = RestaurantTag::with('restaurants')
-            ->with(['restaurants.restaurantBranches' => function ($query) use ($request) {
-                $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
-            }])
+        $restaurantTag = RestaurantTag::with(['restaurants' => function ($query) use ($request) {
+            $query->with(['restaurantBranches' => function ($q) use ($request) {
+                RestaurantOrderHelper::getBranchQuery($q, $request)->orderBy('distance', 'asc');
+            }]);
+        }])
             ->where('slug', $slug)
             ->firstOrFail();
 
@@ -268,37 +278,13 @@ class RestaurantController extends Controller
         ]);
     }
 
-    private function getBranches($request)
-    {
-        $query = RestaurantBranch::with('restaurant');
-        return $this->getBranchQuery($query, $request);
-    }
-
-    private function getBranchQuery($query, $request)
-    {
-        $radius = CacheHelper::getRestaurantSearchRadius();
-
-        return $query->with('restaurant')
-            ->with('restaurant.availableTags')
-            ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
-            ( 6371 * acos( cos(radians(?)) *
-                cos(radians(latitude)) * cos(radians(longitude) - radians(?))
-                + sin(radians(?)) * sin(radians(latitude)) )
-            ) AS distance', [$request->lat, $request->lng, $request->lat])
-            ->whereHas('restaurant', function ($q) {
-                $q->where('is_enable', 1);
-            })
-            ->where('is_enable', 1)
-            ->having('distance', '<', $radius);
-    }
-
     private function getBranchesFromRestaurants($items)
     {
         foreach ($items as $item) {
             $item = $this->replaceRestaurantsWtihBranches($item);
         }
 
-        return $items;
+        return collect($items);
     }
 
     private function replaceRestaurantsWtihBranches($data)

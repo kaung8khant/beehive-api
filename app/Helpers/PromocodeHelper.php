@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\BadRequestException;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Support\Carbon;
@@ -15,13 +16,78 @@ trait PromocodeHelper
         // }
     }
 
+    public static function validatePromocodeRules($promocode, $orderItems, $subTotal, $customer, $usage)
+    {
+        foreach ($promocode['rules'] as $data) {
+            $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
+
+            $rule = new $_class($promocode, $usage);
+            $value = $rule->validate($orderItems, $subTotal, $customer, $data['value']);
+            if (!$value) {
+                throw new BadRequestException("Invalid promocode.", 400);
+            }
+        }
+    }
+
+    public static function calculatePromocodeAmount($promocode, $orderItems, $subTotal, $usage)
+    {
+
+        $isItemRule = false;
+        $total = 0;
+        foreach ($promocode->rules as $data) {
+
+            if (in_array($data['data_type'], array("shop", "brand", "menu", "category"))) {
+                $isItemRule = true;
+
+                foreach ($orderItems as $item) {
+
+                    $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
+                    $rule = new $_class($promocode, $usage);
+
+                    if ($rule->validateItem($item, $data['value'])) {
+
+                        if ($promocode->type === 'fix') {
+                            $total += $promocode->amount;
+                        } else {
+                            $variation = $item['variations']->sum('price');
+                            if (isset($item['toppings'])) {
+                                $variation += $item['variations']->sum('price');
+                            }
+                            $total += ($item['price'] + $variation) * $promocode->amount * 0.01;
+                        }
+                    }
+
+                }
+
+            }
+        }
+
+        if ($isItemRule) {
+            return $total;
+        } else {
+            if ($promocode->type === 'fix') {
+                return $promocode->amount;
+            } else {
+                return $subTotal * $promocode->amount * 0.01;
+            }
+        }
+
+    }
+
+    public static function validatePromocodeUsage($promocode, $usage)
+    {
+        if ($promocode->usage === 'both' || $usage == $promocode->usage) {
+            return true;
+        }
+        throw new BadRequestException("Invalid promocode usage.", 400);
+    }
+
     public function validatePromo($slug, $customerId, $usage)
     {
         $promo = $this->getPromo($slug);
-        if ($usage == $promo->usage) {
+        if ($promo->usage === 'both' || $usage == $promo->usage) {
             $this->customerId = $customerId;
             $this->promoId = $promo->id;
-
             return $this->validateRule($promo->rules);
         }
         return false;
@@ -29,6 +95,9 @@ trait PromocodeHelper
 
     public function validateRule($rules)
     {
+        if (sizeof($rules) == 0) {
+            return true;
+        }
         $returnValue = false;
 
         foreach ($rules as $rule) {
@@ -84,39 +153,26 @@ trait PromocodeHelper
     private function compareValue($rule, $value, $compareValue = null)
     {
         if ($rule === 'exact_date') {
-
             return $value->startOfDay() == $compareValue->startOfDay();
-
-        } else if ($rule === 'after_date') {
-
+        } elseif ($rule === 'after_date') {
             return $compareValue >= $value; //current date greater than value (after value date)
-
-        } else if ($rule === 'before_date') {
-
+        } elseif ($rule === 'before_date') {
             return $compareValue <= $value; //current date less than value (before value date)
-
-        } else if ($rule === 'total_usage') {
-
+        } elseif ($rule === 'total_usage') {
             $promo = Promocode::with('rules')->where('id', $this->promoId)->firstOrFail();
             $shopOrder = ShopOrder::where('promocode', $promo->id)->get();
             return count($shopOrder) < $value;
-
-        } else if ($rule === 'per_user_usage') {
-
+        } elseif ($rule === 'per_user_usage') {
             $promo = Promocode::with('rules')->where('id', $this->promoId)->firstOrFail();
             $shopOrder = ShopOrder::where('promocode', $promo->id)->where('customer_id', $this->customerId)->get();
             return count($shopOrder) < $value;
-
-        } else if ($rule === 'matching') {
-
+        } elseif ($rule === 'matching') {
             if ($value === 'dob') {
-
                 $result = $this->getValueFromModel('dob');
                 $result = $result[0]->datae_of_birth;
 
                 return Carbon::parse($result)->startOfDay() == Carbon::now()->startOfDay();
-            } else if ($value === 'new_customer') {
-
+            } elseif ($value === 'new_customer') {
                 $result = $this->getValueFromModel('new_customer_shop');
                 $result2 = $this->getValueFromModel('new_customer_restaurant');
                 return count($result) + count($result2) == 0;

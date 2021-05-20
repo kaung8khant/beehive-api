@@ -110,10 +110,9 @@ class ProductVariationValueController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(ProductVariationValue $productVariationValue)
     {
-        $productVariationValue = ProductVariationValue::with('productVariation')->where('slug', $slug)->firstOrFail();
-        return response()->json($productVariationValue, 200);
+        return response()->json($productVariationValue->with('productVariation'), 200);
     }
 
     /**
@@ -149,10 +148,8 @@ class ProductVariationValueController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, ProductVariationValue $productVariationValue)
     {
-        $productVariationValue = ProductVariationValue::where("slug", $slug)->firstOrFail();
-
         $validatedData = $request->validate($this->getParamsToValidate());
         $validatedData['product_variation_id'] = $this->getProductVariationId($request->product_variation_slug);
 
@@ -190,16 +187,13 @@ class ProductVariationValueController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(ProductVariationValue $productVariationValue)
     {
-        $productVariationValue = ProductVariationValue::where('slug', $slug)->firstOrFail();
-
         foreach ($productVariationValue->images as $image) {
             $this->deleteFile($image->slug);
         }
 
         $productVariationValue->delete();
-
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -226,8 +220,8 @@ class ProductVariationValueController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v2/admin/product-variations/{slug}/product-variation-values",
-     *      operationId="getProductVariationValuesByProductVariation",
+     *      path="/api/v2/admin/product-variations/{productVariation}/product-variation-values",
+     *      operationId="getVariationValuesByVariation",
      *      tags={"Product Variation Values"},
      *      summary="Get Product Variation Values By Product variation",
      *      description="Returns requested list of product variation values",
@@ -249,12 +243,13 @@ class ProductVariationValueController extends Controller
      *      }
      *)
      */
-    public function getProductVariationValuesByProductVariation($slug, Request $request)
+    public function getVariationValuesByVariation(Request $request, ProductVariation $productVariation)
     {
-        return ProductVariationValue::whereHas('productVariation', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where('value', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
+        return ProductVariationValue::where('product_variation_id', $productVariation->id)
+            ->where(function ($query) use ($request) {
+                return $query->where('value', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
             ->paginate(10);
     }
 }

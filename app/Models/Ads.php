@@ -26,17 +26,4 @@ class Ads extends BaseModel
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }
-
-    public function getCreatedByAttribute($value)
-    {
-        $user = User::find($value);
-        if ($user) {
-            return [
-                'slug' => $user->slug,
-                'name' => $user->name,
-                'phone_number' => $user->phone_number,
-            ];
-        }
-        return null;
-    }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FileHelper;
+use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\Role;
 use App\Models\User;
@@ -13,7 +15,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class CollectorController extends Controller
 {
-    use StringHelper;
+    use FileHelper, StringHelper;
 
     /**
      * @OA\Get(
@@ -51,6 +53,8 @@ class CollectorController extends Controller
      */
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
+
         return User::with('roles')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Collector');
@@ -61,6 +65,7 @@ class CollectorController extends Controller
                     ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -99,6 +104,7 @@ class CollectorController extends Controller
                 'name' => 'required|string',
                 'phone_number' => 'required|phone:MM|unique:users',
                 'password' => 'required|min:6',
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
             ],
             [
                 'phone_number.phone' => 'Invalid phone number.',
@@ -114,6 +120,9 @@ class CollectorController extends Controller
         $collectorRoleId = Role::where('name', 'Collector')->first()->id;
         $collector->roles()->attach($collectorRoleId);
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $collector->slug);
+        }
         return response()->json($collector->refresh()->load('roles'), 201);
     }
 
@@ -196,7 +205,7 @@ class CollectorController extends Controller
                     'phone:MM',
                     Rule::unique('users')->ignore($collector->id),
                 ],
-
+                'image_slug' => 'nullable|exists:App\Models\File,slug',
             ],
             [
                 'phone_number.phone' => 'Invalid phone number.',
@@ -211,6 +220,9 @@ class CollectorController extends Controller
         $collector->roles()->detach();
         $collector->roles()->attach($collectorRoleId);
 
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $collector->slug);
+        }
         return response()->json($collector->refresh()->load('roles'), 200);
     }
 
@@ -247,6 +259,10 @@ class CollectorController extends Controller
             return response()->json(['message' => 'You cannot delete yourself.'], 406);
         }
 
+        foreach ($collector->images as $image) {
+            $this->deleteFile($image->slug);
+        }
+
         $collector->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
@@ -276,16 +292,13 @@ class CollectorController extends Controller
      *      }
      *)
      */
-    public function toggleEnable($slug)
+    public function toggleEnable(User $user)
     {
-        $collector = User::where('slug', $slug)->firstOrFail();
-
-        if ($collector->id === Auth::guard('users')->user()->id) {
+        if ($user->id === Auth::guard('users')->user()->id) {
             return response()->json(['message' => 'You cannot change your own status.'], 406);
         }
 
-        $collector->is_enable = !$collector->is_enable;
-        $collector->save();
+        $user->update(['is_enable' => !$user->is_enable]);
         return response()->json(['message' => 'Success.'], 200);
     }
 }

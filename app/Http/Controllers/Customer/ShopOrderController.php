@@ -10,10 +10,12 @@ use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
+use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
@@ -23,6 +25,7 @@ class ShopOrderController extends Controller
 
     public function __construct()
     {
+
         if (Auth::guard('customers')->check()) {
             $this->customerId = Auth::guard('customers')->user()->id;
         }
@@ -41,31 +44,40 @@ class ShopOrderController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = OrderHelper::validateOrder($request);
-
-        $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
-        if ($checkVariations) {
-            return $this->generateResponse($checkVariations, 422, true);
-        }
-
+        $request['customer_slug'] = Auth::guard('customers')->user()->slug;
+        // validate order
+        $validatedData = OrderHelper::validateOrder($request, true);
+        // get Customer Info
+        $customer = Auth::guard('customers')->user();
+        // append customer data
         $validatedData['customer_id'] = $this->customerId;
-        $validatedData['promocode_id'] = null;
 
+        // validate and prepare variation
+        $validatedData = OrderHelper::prepareProductVariations($validatedData);
+
+        // validate promocode
         if ($validatedData['promo_code_slug']) {
-            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'shop');
-            if (!$isPromoValid) {
-                return $this->generateResponse('Invalid promo code.', 406, true);
-            }
+            // may require amount validation.
+            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
+            PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
+            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'shop');
+            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
 
-            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
+            $validatedData['promocode_id'] = $promocode->id;
+            $validatedData['promocode'] = $promocode->code;
+            $validatedData['promocode_amount'] = $promocodeAmount;
         }
 
-        $order = ShopOrder::create($validatedData);
-        $orderId = $order->id;
+        // (transaction) try catch and rollback if failed.
+        $order = DB::transaction(function () use ($validatedData) {
+            $order = ShopOrder::create($validatedData);
+            $orderId = $order->id;
+            OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
+            OrderHelper::createOrderStatus($orderId);
+            return $order;
 
-        OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
-        OrderHelper::createOrderStatus($orderId);
+        });
 
         foreach ($validatedData['order_items'] as $item) {
             $this->notify(
@@ -108,7 +120,6 @@ class ShopOrderController extends Controller
                 ],
             ]
         );
-
         return $this->generateShopOrderResponse($order->refresh(), 201);
     }
 

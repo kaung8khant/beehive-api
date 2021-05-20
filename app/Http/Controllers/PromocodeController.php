@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\StringHelper;
 use App\Models\Customer;
@@ -49,8 +50,12 @@ class PromocodeController extends Controller
      */
     public function index(Request $request)
     {
-        return Promocode::with('rules')->where('code', 'LIKE', '%' . $request->filter . '%')
+        $sorting = CollectionHelper::getSorting('promocodes', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        return Promocode::with('rules')
+            ->where('code', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -85,9 +90,10 @@ class PromocodeController extends Controller
         $validatedData = $request->validate($this->getParamsToValidate(true));
 
         $promocode = Promocode::create($validatedData);
-        $promocodeId = $promocode->id;
 
-        $this->createRules($promocodeId, $validatedData['rules']);
+        if (isset($validatedData['rules'])) {
+            $this->createRules($promocode->id, $validatedData['rules']);
+        }
 
         return response()->json($promocode, 201);
     }
@@ -117,9 +123,9 @@ class PromocodeController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(Promocode $promocode)
     {
-        return response()->json(Promocode::with('rules')->where('slug', $slug)->firstOrFail(), 200);
+        return response()->json($promocode->load('rules'), 200);
     }
 
     /**
@@ -155,13 +161,12 @@ class PromocodeController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, Promocode $promocode)
     {
-        $promocode = Promocode::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate($this->getParamsToValidate());
         $promocode->update($validatedData);
         $this->createAndUpdateRules($promocode, $validatedData['rules']);
+
         return response()->json($promocode, 200);
     }
 
@@ -173,7 +178,7 @@ class PromocodeController extends Controller
             'usage' => 'required|in:restaurant,shop,both',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
-            'rules' => 'required|array',
+            'rules' => 'nullable|array',
             'rules.*.value' => 'required|string',
             'rules.*.data_type' => 'required|in:before_date,after_date,exact_date,total_usage,per_user_usage,matching',
         ];
@@ -196,6 +201,7 @@ class PromocodeController extends Controller
     private function createAndUpdateRules($promocode, $rules)
     {
         $promocode->rules()->delete();
+
         foreach ($rules as $rule) {
             $rule['promocode_id'] = $promocode->id;
             PromocodeRule::create($rule);
@@ -242,7 +248,7 @@ class PromocodeController extends Controller
      *      }
      *)
      */
-    public function addRules(Request $request, $slug)
+    public function addRules(Request $request, Promocode $promocode)
     {
         $validatedData = $request->validate([
             'rules' => 'required|array',
@@ -250,8 +256,8 @@ class PromocodeController extends Controller
             'rules.*.data_type' => 'required|in:before_date,after_date,exact_date,total_usage,per_user_usage,matching',
         ]);
 
-        $promocode = Promocode::where('slug', $slug)->firstOrFail();
         $promocode->rules()->delete();
+
         foreach ($validatedData['rules'] as $rule) {
             $rule['promocode_id'] = $promocode->id;
             PromocodeRule::create($rule);
@@ -285,9 +291,9 @@ class PromocodeController extends Controller
      *      }
      *)
      */
-    public function removeRule($id)
+    public function removeRule(PromocodeRule $promocodeRule)
     {
-        PromocodeRule::where('id', $id)->firstOrFail()->delete();
+        $promocodeRule->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -316,9 +322,9 @@ class PromocodeController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(Promocode $promocode)
     {
-        Promocode::where('slug', $slug)->firstOrFail()->delete();
+        $promocode->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -328,11 +334,14 @@ class PromocodeController extends Controller
             'customer_slug' => 'required|string',
             'usage' => 'required|string',
         ]);
-        $customer = Customer::where("slug", $validatedData['customer_slug'])->firstOrFail();
+
+        $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
         $isPromoValid = $this->validatePromo($slug, $customer->id, $validatedData['usage']);
+
         if (!$isPromoValid) {
             return $this->generateResponse('Invalid promo code.', 406, true);
         }
+
         return $this->generateResponse('Promo code is valid', 200, true);
     }
 }

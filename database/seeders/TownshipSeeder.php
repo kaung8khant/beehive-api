@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\Township;
+use Illuminate\Database\Seeder;
 
 class TownshipSeeder extends Seeder
 {
@@ -1081,6 +1081,41 @@ class TownshipSeeder extends Seeder
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
+                'name' => 'Amarapura',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Aungmyaythazan',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Chanayethazan',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Chanmyathazi',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Mahaaungmyay',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Patheingyi',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
+                'name' => 'Pyigyitagon',
+                'city_id' => 16,
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
                 'name' => 'Mawlamyine',
                 'city_id' => 5,
             ],
@@ -1806,11 +1841,6 @@ class TownshipSeeder extends Seeder
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
-                'name' => 'ááá¯áá±á¬',
-                'city_id' => 18,
-            ],
-            [
-                'slug' => $this->generateUniqueSlug(),
                 'name' => 'Kyaunggon',
                 'city_id' => 18,
             ],
@@ -1837,11 +1867,6 @@ class TownshipSeeder extends Seeder
             [
                 'slug' => $this->generateUniqueSlug(),
                 'name' => 'laymyatnar',
-                'city_id' => 18,
-            ],
-            [
-                'slug' => $this->generateUniqueSlug(),
-                'name' => 'Mazaligone',
                 'city_id' => 18,
             ],
             [

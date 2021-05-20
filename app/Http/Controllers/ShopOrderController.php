@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -15,6 +16,7 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderVendor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
@@ -54,22 +56,23 @@ class ShopOrderController extends Controller
      *      }
      *)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $shopOrders = ShopOrder::with('contact')
-            ->with('contact.township')
-            ->latest()
+        $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        $shopOrders = ShopOrder::with('contact', 'contact.township')
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10)
             ->items();
 
         return $this->generateResponse($shopOrders, 200);
     }
 
-    public function getShopOrders(Request $request, $slug)
+    public function getShopOrders(Request $request, Shop $shop)
     {
-        $shopId = $this->getShop($slug)->id;
+        $sorting = CollectionHelper::getSorting('shop_order_vendors', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $vendorOrders = ShopOrderVendor::where('shop_id', $shopId)
+        $vendorOrders = ShopOrderVendor::where('shop_id', $shop->id)
             ->where(function ($query) use ($request) {
                 $query->whereHas('shopOrder', function ($q) use ($request) {
                     $q->where('slug', $request->filter);
@@ -79,7 +82,7 @@ class ShopOrderController extends Controller
                             ->orWhere('phone_number', $request->filter);
                     });
             })
-            ->latest()
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10)
             ->items();
 
@@ -98,55 +101,44 @@ class ShopOrderController extends Controller
         return $this->generateResponse($result, 200);
     }
 
-    public function show($slug)
+    public function show(ShopOrder $shopOrder)
     {
-        $shop = ShopOrder::with('contact')
-            ->with('contact.township')
-            ->with('vendors')
-            ->where('slug', $slug)
-            ->firstOrFail();
-
-        return $this->generateResponse($shop, 200);
+        return $this->generateResponse($shopOrder->load('contact', 'contact.township', 'vendors'), 200);
     }
 
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
-
+        // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
+        // get Customer Info
+        $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
+        // append customer data
+        $validatedData['customer_id'] = $customer['id'];
+        // validate and prepare variation
+        $validatedData = OrderHelper::prepareProductVariations($validatedData);
 
-        $checkVariations = OrderHelper::checkVariationsExist($validatedData['order_items']);
-        if ($checkVariations) {
-            return $this->generateResponse($checkVariations, 422, true);
-        }
-
-        $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
-        $validatedData['promocode_id'] = null;
-
+        // validate promocode
         if ($validatedData['promo_code_slug']) {
-            $isPromoValid = $this->validatePromo($validatedData['promo_code_slug'], $validatedData['customer_id'], 'shop');
-            if (!$isPromoValid) {
-                return $this->generateResponse('Invalid promo code.', 406, true);
-            }
+            // may require amount validation.
+            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
+            PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
+            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'usage');
+            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'usage');
 
-            $validatedData['promocode_id'] = Promocode::where('slug', $validatedData['promo_code_slug'])->first()->id;
+            $validatedData['promocode_id'] = $promocode->id;
+            $validatedData['promocode'] = $promocode->code;
+            $validatedData['promocode_amount'] = $promocodeAmount;
         }
 
-        $order = ShopOrder::create($validatedData);
-        $orderId = $order->id;
-
-        OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-        OrderHelper::createShopOrderItem($orderId, $validatedData['order_items'], $validatedData['promocode_id']);
-        OrderHelper::createOrderStatus($orderId);
-
-        foreach ($validatedData['order_items'] as $item) {
-            $this->notify(OrderHelper::getShopByProduct($item['slug'])->id,
-                [
-                    'title' => 'New Order',
-                    'body' => "You've just recevied new order. Check now!",
-                ]
-            );
-        }
+        $order = DB::transaction(function () use ($validatedData) {
+            $order = ShopOrder::create($validatedData);
+            $orderId = $order->id;
+            OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
+            OrderHelper::createOrderStatus($orderId);
+            return $order;
+        });
 
         $this->notifyAdmin(
             [
@@ -166,30 +158,29 @@ class ShopOrderController extends Controller
         );
 
         return $this->generateShopOrderResponse($order->refresh(), 201);
+
     }
 
-    public function changeStatus(Request $request, $slug)
+    public function changeStatus(Request $request, ShopOrder $shopOrder)
     {
-        $order = ShopOrder::where('slug', $slug)->firstOrFail();
-
-        if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
+        if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
         }
 
-        OrderHelper::createOrderStatus($order->id, $request->status);
+        OrderHelper::createOrderStatus($shopOrder->id, $request->status);
 
         $notificaitonData = $this->notificationData([
             'title' => 'Shop order updated',
             'body' => 'Shop order just has been updated',
             'status' => $request->status,
-            'slug' => $slug,
+            'slug' => $shopOrder->slug,
         ]);
 
         $this->notifyAdmin(
             $notificaitonData
         );
 
-        foreach ($order->vendors as $vendor) {
+        foreach ($shopOrder->vendors as $vendor) {
             $this->notifyShop(
                 $vendor->shop->slug,
                 $notificaitonData
@@ -199,7 +190,7 @@ class ShopOrderController extends Controller
         $message = 'Your order has successfully been ' . $request->status . '.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
+        $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
@@ -245,6 +236,5 @@ class ShopOrderController extends Controller
                 ],
             ]
         );
-
     }
 }

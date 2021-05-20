@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CacheHelper;
+use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
@@ -54,10 +56,22 @@ class MenuController extends Controller
      */
     public function index(Request $request)
     {
-        return Menu::with('restaurant')
-            ->with('restaurantCategory')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
+        $sorting = CollectionHelper::getSorting('menus', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        $menus = Menu::with(['restaurant', 'restaurantCategory'])
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            });
+
+        if (isset($request->is_enable)) {
+            $menus = $menus->where('is_enable', $request->is_enable)
+                ->whereHas('restaurant', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -102,13 +116,13 @@ class MenuController extends Controller
         }
 
         $this->createVariations($menuId, $validatedData['menu_variations']);
-
         $this->createToppings($menuId, $validatedData['menu_toppings']);
 
         foreach ($restaurant->restaurantBranches as $branch) {
             $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
             $branch->availableMenus()->attach($availableMenus);
         }
+
         return response()->json($menu->load('restaurant'), 200);
     }
 
@@ -137,13 +151,9 @@ class MenuController extends Controller
      *      }
      *)
      */
-    public function show($slug)
+    public function show(Menu $menu)
     {
-        $menu = Menu::with('restaurant')->with('restaurantCategory')
-            ->with('menuVariations')->with('menuVariations.menuVariationValues')
-            ->with('menuToppings')
-            ->where('slug', $slug)->firstOrFail();
-        return response()->json($menu, 200);
+        return response()->json($menu->load(['restaurant', 'restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuToppings']), 200);
     }
 
     /**
@@ -179,32 +189,29 @@ class MenuController extends Controller
      *      }
      *)
      */
-    public function update(Request $request, $slug)
+    public function update(Request $request, Menu $menu)
     {
-        $menu = Menu::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate($this->getParamsToValidate());
-
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
         $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
 
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         $menu->update($validatedData);
 
-        $menuId = $menu->id;
-
         if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'menus', $slug);
+            $this->updateFile($request->image_slug, 'menus', $menu->slug);
         }
 
         if ($request->menu_variations) {
             $menu->menuVariations()->delete();
-            $this->createVariations($menuId, $validatedData['menu_variations']);
+            $this->createVariations($menu->id, $validatedData['menu_variations']);
         }
 
         if ($request->menu_toppings) {
             $menu->menuToppings()->delete();
-            $this->createToppings($menuId, $validatedData['menu_toppings']);
+            $this->createToppings($menu->id, $validatedData['menu_toppings']);
         }
+
         return response()->json($menu->load('restaurant'), 200);
     }
 
@@ -233,14 +240,13 @@ class MenuController extends Controller
      *      }
      *)
      */
-    public function destroy($slug)
+    public function destroy(Menu $menu)
     {
-        $menu = Menu::where('slug', $slug)->firstOrFail();
-
         foreach ($menu->images as $image) {
             $this->deleteFile($image->slug);
         }
 
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         $menu->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
@@ -279,14 +285,26 @@ class MenuController extends Controller
      *      }
      *)
      */
-    public function getMenusByRestaurant(Request $request, $slug)
+    public function getMenusByRestaurant(Request $request, Restaurant $restaurant)
     {
-        return Menu::with('restaurantCategory')->whereHas('restaurant', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
+
+        $menus = Menu::with('restaurantCategory')
+            ->where('restaurant_id', $restaurant->id)
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            });
+
+        if (isset($request->is_enable)) {
+            $menus = $menus->where('is_enable', $request->is_enable)
+                ->whereHas('restaurant', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
     /**
@@ -323,54 +341,77 @@ class MenuController extends Controller
      *      }
      *)
      */
-    public function getMenusByBranch(Request $request, $slug)
+    public function getMenusByBranch(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $branch = RestaurantBranch::with('availableMenus')
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
 
-        $menus = $branch->availableMenus()
+        $menus = $restaurantBranch->availableMenus()
             ->with('restaurantCategory')
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
-            })
+            });
+
+        if (isset($request->is_enable)) {
+            $menus = $menus->where('is_enable', $request->is_enable)
+                ->whereHas('restaurant', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        $menus = $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
 
         foreach ($menus as $menu) {
             $menu->setAppends(['is_available', 'images']);
         }
+
         return $menus;
     }
 
-    public function getMenusByCategory(Request $request, $slug)
+    public function getMenusByCategory(Request $request, RestaurantCategory $restaurantCategory)
     {
-        return Menu::with('restaurant', 'restaurantCategory')->whereHas('restaurantCategory', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
+        $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
+
+        $menus = Menu::with('restaurant', 'restaurantCategory')
+            ->where('restaurant_category_id', $restaurantCategory->id)
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            });
+
+        if (isset($request->is_enable)) {
+            $menus = $menus->where('is_enable', $request->is_enable)
+                ->whereHas('restaurant', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
-    public function getMenusByBranchWithAdditionals(Request $request, $slug)
+    public function getMenusByBranchWithAdditionals(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $branch = RestaurantBranch::with('availableMenus')
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
 
-        $availableMenus = $branch->availableMenus()
-            ->with('restaurantCategory')
-            ->with('menuVariations')
-            ->with('menuVariations.menuVariationValues')
-            ->with('menuToppings')
+        $menus = $restaurantBranch->availableMenus()
+            ->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuToppings')
             ->where('is_available', true)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
-            })
+            });
+
+        if (isset($request->is_enable)) {
+            $menus = $menus->where('is_enable', $request->is_enable)
+                ->whereHas('restaurant', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
-        return $availableMenus;
     }
 
     private function getParamsToValidate($slug = false)
@@ -476,11 +517,10 @@ class MenuController extends Controller
      *      }
      *)
      */
-    public function toggleEnable($slug)
+    public function toggleEnable(Menu $menu)
     {
-        $menu = Menu::where('slug', $slug)->firstOrFail();
-        $menu->is_enable = !$menu->is_enable;
-        $menu->save();
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
+        $menu->update(['is_enable' => !$menu->is_enable]);
         return response()->json(['message' => 'Success.'], 200);
     }
 
@@ -493,8 +533,9 @@ class MenuController extends Controller
 
         foreach ($validatedData['slugs'] as $slug) {
             $menu = Menu::where('slug', $slug)->firstOrFail();
-            $menu->is_enable = $request->is_enable;
-            $menu->save();
+
+            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
+            $menu->update(['is_enable' => $request->is_enable]);
         }
 
         return response()->json(['message' => 'Success.'], 200);
@@ -507,17 +548,16 @@ class MenuController extends Controller
             'slugs.*' => 'required|exists:App\Models\Menu,slug',
         ]);
 
-        $menuIdList = Menu::whereIn('slug', $validatedData['slugs'])->pluck('id');
-
         foreach ($validatedData['slugs'] as $slug) {
             $menu = Menu::where('slug', $slug)->firstOrFail();
 
             foreach ($menu->images as $image) {
                 $this->deleteFile($image->slug);
             }
-        }
 
-        Menu::whereIn('id', $menuIdList)->delete();
+            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
+            $menu->delete();
+        }
 
         return response()->json(['message' => 'Success.'], 200);
     }
