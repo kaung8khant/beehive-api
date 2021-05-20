@@ -31,7 +31,7 @@ trait RestaurantOrderHelper
             'customer_info.phone_number' => 'required|string',
             'address' => 'required',
             'address.house_number' => 'required|string',
-            'address.floor' => 'nullable|string',
+            'address.floor' => 'nullable|numeric',
             'address.street_name' => 'required|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
