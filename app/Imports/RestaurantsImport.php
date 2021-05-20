@@ -29,12 +29,12 @@ class RestaurantsImport implements ToModel, WithHeadingRow, WithChunkReading, Wi
      */
     public function model(array $row)
     {
-        $restaurant = new Restaurant([
+        $newRestaurant =[
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'is_enable' => $row['is_enable'],
-        ]);
-
+        ];
+        $restaurant=Restaurant::create($newRestaurant);
         RestaurantBranch::create([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['branch_name'],
@@ -47,7 +47,7 @@ class RestaurantsImport implements ToModel, WithHeadingRow, WithChunkReading, Wi
             'township_id' => Township::where('slug', $row['branch_township_slug'])->value('id'),
             'restaurant_id' => $restaurant->id,
         ]);
-        return $restaurant;
+        return new Restaurant($newRestaurant);
     }
 
     public function chunkSize(): int
