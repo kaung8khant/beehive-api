@@ -15,6 +15,7 @@ use App\Models\Promocode;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RestaurantOrderController extends Controller
 {
@@ -177,7 +178,6 @@ class RestaurantOrderController extends Controller
      */
     public function store(Request $request)
     {
-
         $request['slug'] = $this->generateUniqueSlug();
         // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
