@@ -59,13 +59,15 @@ class PromocodeController extends Controller
         $usage = isset($request['restaurant_branch_slug']) ? 'restaurant' : 'shop';
 
         // validate promocode
-        if (isset($validatedData['promo_code_slug'])) {
+        if (isset($validatedData['promo_code'])) {
             // may require amount validation.
-            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
-
+            $promocode = Promocode::where('code', $validatedData['promo_code'])->with('rules')->latest('created_at')->first();
+            if (!isset($promocode) && empty($promocode)) {
+                throw new BadRequestException("Promocode not found.", 400);
+            }
             PromocodeHelper::validatePromocodeUsage($promocode, $usage);
             PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, $usage);
-            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'],$usage);
+            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], $usage);
 
             $response['promocode_id'] = $promocode->id;
             $response['promocode'] = $promocode->code;
