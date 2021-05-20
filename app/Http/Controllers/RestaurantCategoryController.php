@@ -7,6 +7,7 @@ use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class RestaurantCategoryController extends Controller
@@ -161,6 +162,8 @@ class RestaurantCategoryController extends Controller
             ],
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
+
+        Cache::forget('category_id_' . $restaurantCategory->id);
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);
