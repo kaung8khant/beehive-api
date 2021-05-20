@@ -40,6 +40,6 @@ class Brand implements Rule
             $brand_id = $product->brand->id;
             return intval($value) == intval($brand_id);
         }
-
+        return false;
     }
 }

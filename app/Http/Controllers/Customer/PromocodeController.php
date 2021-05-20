@@ -65,8 +65,12 @@ class PromocodeController extends Controller
 
             PromocodeHelper::validatePromocodeUsage($promocode, $usage);
             PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, $usage);
+            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'],$usage);
 
-            return $this->generateResponse('Valid promocode', 200, true);
+            $response['promocode_id'] = $promocode->id;
+            $response['promocode'] = $promocode->code;
+            $response['promocode_amount'] = $promocodeAmount;
+            return $this->generateResponse($response, 200);
         } else {
             throw new BadRequestException("Promocode not found.", 400);
         }
