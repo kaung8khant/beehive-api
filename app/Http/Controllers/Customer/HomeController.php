@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Helpers\ResponseHelper;
-use App\Helpers\CacheHelper;
+use App\Helpers\RestaurantOrderHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Ads;
 use App\Models\Customer;
 use App\Models\Product;
-use App\Models\RestaurantBranch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -33,7 +32,7 @@ class HomeController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantBranches = $this->getRestaurantBranches($request)->inRandomOrder()->limit(10)->get();
+        $restaurantBranches = RestaurantOrderHelper::getBranches($request)->inRandomOrder()->limit(10)->get();
 
         $result = [
             'restaurant_branches' => $this->generateBranchResponse($restaurantBranches, 200, 'home'),
@@ -50,7 +49,7 @@ class HomeController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantBranches = $this->getRestaurantBranches($request)->latest()->limit(10)->get();
+        $restaurantBranches = RestaurantOrderHelper::getBranches($request)->orderBy('id', 'desc')->limit(10)->get();
 
         $result = [
             'restaurant_branches' => $this->generateBranchResponse($restaurantBranches, 200, 'home'),
@@ -66,17 +65,17 @@ class HomeController extends Controller
         $restaurant = [];
 
         if ($this->customer) {
-
             $product = $this->customer->favoriteProducts()->with('shopCategory', 'shopSubCategory', 'brand')->paginate($request->size)->items();
 
             $restaurant = $this->customer->favoriteRestaurants()
                 ->with(['restaurantBranches' => function ($query) use ($request) {
-                    $this->getBranchQuery($query, $request)->orderBy('distance', 'asc');
+                    RestaurantOrderHelper::getBranchQuery($query, $request)->orderBy('distance', 'asc');
                 }])
                 ->paginate($request->size)
                 ->pluck('restaurantBranches')
                 ->collapse();
         }
+
         $result = [
             'restaurant_branches' => $this->generateBranchResponse($restaurant, 200, 'home'),
             'products' => $this->generateProductResponse($product, 200, 'home'),
@@ -85,43 +84,12 @@ class HomeController extends Controller
         return $this->generateResponse($result, 200);
     }
 
-    // duplicate from restaurant controller
-    private function getBranchQuery($query, $request)
-    {
-        $radius = CacheHelper::getRestaurantSearchRadius();
-
-        return $query->with('restaurant')
-            ->with('restaurant.availableTags')
-            ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
-            ( 6371 * acos( cos(radians(?)) *
-                cos(radians(latitude)) * cos(radians(longitude) - radians(?))
-                + sin(radians(?)) * sin(radians(latitude)) )
-            ) AS distance', [$request->lat, $request->lng, $request->lat])
-            ->where('is_enable', 1)
-            ->having('distance', '<', $radius);
-    }
-
     private function validateLocation($request)
     {
         return Validator::make($request->all(), [
             'lat' => 'required|numeric',
             'lng' => 'required|numeric',
         ]);
-    }
-
-    private function getRestaurantBranches($request, $suggestion = false)
-    {
-        $radius = CacheHelper::getRestaurantSearchRadius();
-
-        return RestaurantBranch::with('restaurant')
-            ->with('restaurant.availableTags')
-            ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
-            ( 6371 * acos( cos(radians(?)) *
-                cos(radians(latitude)) * cos(radians(longitude) - radians(?))
-                + sin(radians(?)) * sin(radians(latitude)) )
-            ) AS distance', [$request->lat, $request->lng, $request->lat])
-            ->where('is_enable', 1)
-            ->having('distance', '<', $radius);
     }
 
     private function getRandomProducts()
@@ -137,7 +105,7 @@ class HomeController extends Controller
     {
         return Product::with('shop')
             ->where('is_enable', 1)
-            ->latest()
+            ->orderBy('id', 'desc')
             ->limit(10)
             ->get();
     }
@@ -164,7 +132,7 @@ class HomeController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantBranches = $this->getRestaurantBranches($request)
+        $restaurantBranches = RestaurantOrderHelper::getBranches($request)
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->keyword . '%')
                     ->orWhereHas('restaurant', function ($q) use ($request) {
@@ -249,7 +217,7 @@ class HomeController extends Controller
     {
         if ($request->source) {
             $ads = Ads::where('source', $request->source)
-                ->where('type',  $request->type)
+                ->where('type', $request->type)
                 ->get();
         } else {
             $ads = Ads::where('type', $request->type)->get();

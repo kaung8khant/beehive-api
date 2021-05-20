@@ -23,8 +23,8 @@ Route::group(['prefix' => 'user'], function () {
 
     Route::get('restaurants/branches', 'Customer\RestaurantController@getAllBranches');
     Route::get('restaurants/branches/search', 'Customer\HomeController@searchRestaurantBranches');
-    Route::get('restaurants/branches/{branch}', 'Customer\RestaurantController@getOneBranch');
-    Route::get('restaurants/branches/{slug}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
+    Route::get('restaurants/branches/{restaurantBranch}', 'Customer\RestaurantController@getOneBranch');
+    Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
 
     Route::get('restaurant-categories', 'Customer\RestaurantController@getCategories');
     Route::get('restaurant-categories/{category}/restaurants', 'Customer\RestaurantController@getByCategory');
@@ -87,7 +87,7 @@ Route::group(['prefix' => 'user'], function () {
         /* Product */
 
         Route::get('promocode', 'Customer\PromocodeController@index');
-        Route::get('promocode/validate/{slug}', 'Customer\PromocodeController@validatePromoCode');
+        Route::post('promocode/validate', 'Customer\PromocodeController@validatePromoCode');
     });
 
     /* Product */

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CacheHelper;
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\Customer;
@@ -434,6 +435,11 @@ class RestaurantBranchController extends Controller
         ]);
 
         $availableMenus = Menu::whereIn('slug', $request->available_menus)->pluck('id');
+
+        foreach ($availableMenus as $menuId) {
+            CacheHelper::forgetCategoryIdsByBranchCache($menuId);
+        }
+
         $restaurantBranch->availableMenus()->detach();
         $restaurantBranch->availableMenus()->attach($availableMenus);
 
@@ -480,6 +486,11 @@ class RestaurantBranchController extends Controller
         ]);
 
         $availableMenus = Menu::whereIn('slug', $request->available_menus)->pluck('id');
+
+        foreach ($availableMenus as $menuId) {
+            CacheHelper::forgetCategoryIdsByBranchCache($menuId);
+        }
+
         $restaurantBranch->availableMenus()->detach($availableMenus);
 
         return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
@@ -531,6 +542,8 @@ class RestaurantBranchController extends Controller
         $validatedData = $request->validate([
             'is_available' => 'required|boolean',
         ]);
+
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
 
         $restaurantBranch->availableMenus()->sync([
             $menu->id => ['is_available' => $validatedData['is_available']],

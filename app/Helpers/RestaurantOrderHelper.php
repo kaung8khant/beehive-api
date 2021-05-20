@@ -31,7 +31,7 @@ trait RestaurantOrderHelper
             'customer_info.phone_number' => 'required|string',
             'address' => 'required',
             'address.house_number' => 'required|string',
-            'address.floor' => 'nullable|string',
+            'address.floor' => 'nullable|numeric',
             'address.street_name' => 'required|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
@@ -208,5 +208,29 @@ trait RestaurantOrderHelper
     private static function getMenuTopping($slug)
     {
         return MenuTopping::where('slug', $slug)->first();
+    }
+
+    public static function getBranches($request)
+    {
+        $query = RestaurantBranch::with('restaurant');
+        return self::getBranchQuery($query, $request);
+    }
+
+    public static function getBranchQuery($query, $request)
+    {
+        $radius = CacheHelper::getRestaurantSearchRadius();
+
+        return $query->with('restaurant')
+            ->with('restaurant.availableTags')
+            ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
+            ( 6371 * acos( cos(radians(?)) *
+                cos(radians(latitude)) * cos(radians(longitude) - radians(?))
+                + sin(radians(?)) * sin(radians(latitude)) )
+            ) AS distance', [$request->lat, $request->lng, $request->lat])
+            ->whereHas('restaurant', function ($q) {
+                $q->where('is_enable', 1);
+            })
+            ->where('is_enable', 1)
+            ->having('distance', '<', $radius);
     }
 }
