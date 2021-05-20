@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CacheHelper;
 use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
@@ -184,6 +185,7 @@ class MenuController extends Controller
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
         $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
 
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         $menu->update($validatedData);
 
         if ($request->image_slug) {
@@ -234,6 +236,7 @@ class MenuController extends Controller
             $this->deleteFile($image->slug);
         }
 
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         $menu->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
@@ -476,6 +479,7 @@ class MenuController extends Controller
      */
     public function toggleEnable(Menu $menu)
     {
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         $menu->update(['is_enable' => !$menu->is_enable]);
         return response()->json(['message' => 'Success.'], 200);
     }
@@ -489,6 +493,8 @@ class MenuController extends Controller
 
         foreach ($validatedData['slugs'] as $slug) {
             $menu = Menu::where('slug', $slug)->firstOrFail();
+
+            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
             $menu->update(['is_enable' => $request->is_enable]);
         }
 
@@ -509,6 +515,7 @@ class MenuController extends Controller
                 $this->deleteFile($image->slug);
             }
 
+            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
             $menu->delete();
         }
 
