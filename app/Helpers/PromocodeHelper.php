@@ -20,6 +20,7 @@ trait PromocodeHelper
     {
         foreach ($promocode['rules'] as $data) {
             $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
+
             $rule = new $_class($promocode, $usage);
             $value = $rule->validate($orderItems, $subTotal, $customer, $data['value']);
             if (!$value) {

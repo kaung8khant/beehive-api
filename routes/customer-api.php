@@ -87,7 +87,7 @@ Route::group(['prefix' => 'user'], function () {
         /* Product */
 
         Route::get('promocode', 'Customer\PromocodeController@index');
-        Route::get('promocode/validate/{slug}', 'Customer\PromocodeController@validatePromoCode');
+        Route::post('promocode/validate', 'Customer\PromocodeController@validatePromoCode');
     });
 
     /* Product */

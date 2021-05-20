@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Helpers\StringHelper;
 use App\Models\Township;
+use Illuminate\Database\Seeder;
 
 class TownshipSeeder extends Seeder
 {
@@ -1867,11 +1867,6 @@ class TownshipSeeder extends Seeder
             [
                 'slug' => $this->generateUniqueSlug(),
                 'name' => 'laymyatnar',
-                'city_id' => 18,
-            ],
-            [
-                'slug' => $this->generateUniqueSlug(),
-                'name' => 'Mazaligone',
                 'city_id' => 18,
             ],
             [
