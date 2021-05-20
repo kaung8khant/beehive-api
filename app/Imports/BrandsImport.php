@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Models\RestaurantCategory;
+use App\Models\Brand;
 use Maatwebsite\Excel\Concerns\ToModel;
 use App\Helpers\StringHelper;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
 use Maatwebsite\Excel\Concerns\WithValidation;
 
-class RestaurantCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
+class BrandsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
     public function __construct()
     {
@@ -24,7 +24,7 @@ class RestaurantCategoriesImport implements ToModel, WithHeadingRow, WithChunkRe
      */
     public function model(array $row)
     {
-        return new RestaurantCategory([
+        return new Brand([
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
         ]);
@@ -46,7 +46,7 @@ class RestaurantCategoriesImport implements ToModel, WithHeadingRow, WithChunkRe
     public function rules(): array
     {
         return [
-            'name' => 'required|unique:restaurant_categories',
+            'name' => 'required|unique:brands',
         ];
     }
 }

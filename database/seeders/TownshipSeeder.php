@@ -1841,11 +1841,6 @@ class TownshipSeeder extends Seeder
             ],
             [
                 'slug' => $this->generateUniqueSlug(),
-                'name' => 'Mazaligone',
-                'city_id' => 18,
-            ],
-            [
-                'slug' => $this->generateUniqueSlug(),
                 'name' => 'Kyaunggon',
                 'city_id' => 18,
             ],
