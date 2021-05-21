@@ -56,9 +56,12 @@ class ShopOrderController extends Controller
         $validatedData = OrderHelper::prepareProductVariations($validatedData);
 
         // validate promocode
-        if ($validatedData['promo_code_slug']) {
+        if ($validatedData['promo_code']) {
             // may require amount validation.
-            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
+            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
+            if (!isset($promocode) && empty($promocode)) {
+                throw new BadRequestException("Promocode not found.", 400);
+            }
             PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
             PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'shop');
             $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');

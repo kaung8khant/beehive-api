@@ -52,7 +52,7 @@ class RestaurantOrderController extends Controller
     {
 
         $request['slug'] = $this->generateUniqueSlug();
-        
+
         $request['customer_slug'] = Auth::guard('customers')->user()->slug;
         // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
@@ -67,9 +67,12 @@ class RestaurantOrderController extends Controller
         // validate and prepare variation
         $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
 
-        if ($validatedData['promo_code_slug']) {
+        if ($validatedData['promo_code']) {
             // may require amount validation.
-            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
+            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
+            if (!isset($promocode) && empty($promocode)) {
+                throw new BadRequestException("Promocode not found.", 400);
+            }
             PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
             PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
             $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
