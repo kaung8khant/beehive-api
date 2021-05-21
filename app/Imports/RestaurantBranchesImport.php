@@ -7,6 +7,7 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use App\Helpers\StringHelper;
 use App\Models\Restaurant;
 use App\Models\Township;
+use Maatwebsite\Excel\Concerns\Importable;
 use Propaganistas\LaravelPhone\PhoneNumber;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -15,15 +16,17 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 
 class RestaurantBranchesImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
+    use Importable;
+
     public function __construct()
     {
         ini_set('memory_limit', '256M');
     }
     /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
+     * @param array $row
+     *
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
     public function model(array $row)
     {
         return new RestaurantBranch([
@@ -67,6 +70,13 @@ class RestaurantBranchesImport implements ToModel, WithHeadingRow, WithChunkRead
             'longitude' => 'required|numeric',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'township_slug' => 'nullable|exists:App\Models\Township,slug',
+        ];
+    }
+
+    public function customValidationMessages()
+    {
+        return [
+            'contact_number.phone' => 'Invalid Phone Number',
         ];
     }
 }
