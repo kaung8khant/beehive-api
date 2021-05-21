@@ -401,7 +401,7 @@ class ShopController extends Controller
             ->paginate(10);
     }
 
-    public function getShopByCustomers(Request $request, $slug)
+    public function getCustomersByShop(Request $request, $slug)
     {
         $shop = Shop::where('slug', $slug)->firstOrFail();
 
