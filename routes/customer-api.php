@@ -38,9 +38,9 @@ Route::group(['prefix' => 'user'], function () {
     Route::get('shops/categories', 'Customer\ShopController@getCategories');
     Route::get('shop/categorized/products', 'Customer\ShopController@getCatgorizedProduct');
     Route::get('shops/tags', 'Customer\ShopController@getTags');
-    Route::get('shop-tags/{slug}', 'Customer\ShopController@getByTag');
-    Route::get('shop-categories/{slug}', 'Customer\ShopController@getByCategory');
-    Route::get('shop-subcategories/{slug}', 'Customer\ShopController@getBySubCategory');
+    Route::get('shop-tags/{shopTag}', 'Customer\ShopController@getByTag');
+    Route::get('shop-categories/{shopCategory}', 'Customer\ShopController@getByCategory');
+    Route::get('shop-subcategories/{shopSubCategory}', 'Customer\ShopController@getBySubCategory');
     Route::get('shops/{shop}', 'Customer\ShopController@show');
     /* Shop */
 

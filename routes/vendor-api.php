@@ -81,7 +81,7 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::resource('shop-orders', 'ShopOrderController', ['as' => 'vendor']);
         Route::get('shops/{shop}/shop-orders', 'ShopOrderController@getShopOrders');
         Route::post('shop-orders/{shopOrder}/change-status', 'ShopOrderController@changeStatus');
-        Route::get('shops/{slug}/customers', 'ShopController@getShopByCustomers');
+        Route::get('shops/{slug}/customers', 'ShopController@getCustomersByShop');
 
         /* products */
         Route::get('shops/{shop}/products', 'ProductController@getProductsByShop');
@@ -128,5 +128,6 @@ Route::group(['prefix' => 'vendor'], function () {
 
         Route::post('excels/import/{type}', 'Excel\ExportImportController@import');
         Route::get('excels/export/{type}', 'Excel\ExportImportController@export');
+        Route::get('excels/export/{type}/{params}', 'Excel\ExportImportController@exportWithParams');
     });
 });

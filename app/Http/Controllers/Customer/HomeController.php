@@ -65,7 +65,14 @@ class HomeController extends Controller
         $restaurant = [];
 
         if ($this->customer) {
-            $product = $this->customer->favoriteProducts()->with('shopCategory', 'shopSubCategory', 'brand')->paginate($request->size)->items();
+            $product = $this->customer->favoriteProducts()
+                ->with('shopCategory', 'shopSubCategory', 'brand')
+                ->whereHas('shop', function ($query) {
+                    $query->where('is_enable', 1);
+                })
+                ->where('is_enable', 1)
+                ->paginate($request->size)
+                ->items();
 
             $restaurant = $this->customer->favoriteRestaurants()
                 ->with(['restaurantBranches' => function ($query) use ($request) {
@@ -95,6 +102,9 @@ class HomeController extends Controller
     private function getRandomProducts()
     {
         return Product::with('shop')
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
             ->where('is_enable', 1)
             ->inRandomOrder()
             ->limit(10)
@@ -104,6 +114,9 @@ class HomeController extends Controller
     private function getNewProducts()
     {
         return Product::with('shop')
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
             ->where('is_enable', 1)
             ->orderBy('id', 'desc')
             ->limit(10)
@@ -140,7 +153,10 @@ class HomeController extends Controller
                     })
                     ->orWhereHas('availableMenus', function ($q) use ($request) {
                         $q->where('name', 'LIKE', '%' . $request->keyword . '%')
-                            ->orWhere('description', 'LIKE', '%' . $request->keyword . '%');
+                            ->orWhere('description', 'LIKE', '%' . $request->keyword . '%')
+                            ->orWhereHas('restaurantCategory', function ($p) use ($request) {
+                                $p->where('name', 'LIKE', '%' . $request->keyword . '%');
+                            });
                     });
             })
             ->orderBy('distance', 'asc')
@@ -165,6 +181,9 @@ class HomeController extends Controller
         }
 
         $product = Product::with('shop')
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
             ->where('is_enable', 1)
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->keyword . '%')
@@ -187,7 +206,6 @@ class HomeController extends Controller
             ->get();
 
         if ($homeSearch) {
-
             return $this->generateProductResponse($product, 200, 'home');
         }
 
@@ -233,6 +251,7 @@ class HomeController extends Controller
             ];
             array_push($result, $ad);
         }
+
         return $this->generateResponse($result, 200);
     }
 }

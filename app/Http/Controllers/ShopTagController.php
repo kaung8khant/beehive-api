@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\ShopTag;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -164,9 +165,9 @@ class ShopTagController extends Controller
                 'required',
                 Rule::unique('shop_tags')->ignore($shopTag->id),
             ],
-
         ]));
 
+        Cache::forget('shop_ids_tag_' . $shopTag->id);
         return response()->json($shopTag, 200);
     }
 
@@ -197,6 +198,7 @@ class ShopTagController extends Controller
      */
     public function destroy(ShopTag $shopTag)
     {
+        Cache::forget('shop_ids_tag_' . $shopTag->id);
         $shopTag->delete();
         return response()->json(['message' => 'successfully deleted'], 200);
     }

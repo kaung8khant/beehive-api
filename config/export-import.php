@@ -20,8 +20,11 @@ return [
     ],
     'export' => [
         'customer' => 'CustomersExport',
+        'shop-customer' => 'ShopCustomersExport',
+        'restaurant-customer' => 'RestaurantCustomersExport',
         'shop' => 'ShopsExport',
         'product' => 'ProductsExport',
+        'shop-product' => 'ShopProductsExport',
         'shop-category' => 'ShopCategoriesExport',
         'shop-sub-category' => 'ShopSubCategoriesExport',
         'shop-tag' => 'ShopTagsExport',
