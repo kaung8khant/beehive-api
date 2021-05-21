@@ -76,6 +76,7 @@ class ShopController extends Controller
                 })
                 ->where('is_enable', 1)
                 ->orderBy('id', 'desc')
+                ->limit(20)
                 ->get();
             return $category;
         })->filter(function ($value) {
