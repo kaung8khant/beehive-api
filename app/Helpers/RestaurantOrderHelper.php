@@ -13,6 +13,7 @@ use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use App\Models\Setting;
 use App\Models\Township;
+use Illuminate\Support\Facades\Validator;
 
 trait RestaurantOrderHelper
 {
@@ -30,7 +31,7 @@ trait RestaurantOrderHelper
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
             'address' => 'required',
-            'address.house_number' => 'required|string',
+            'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|numeric',
             'address.street_name' => 'required|string',
             'address.latitude' => 'nullable|numeric',
@@ -41,8 +42,7 @@ trait RestaurantOrderHelper
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',
             'order_items.*.variation_value_slugs' => 'nullable|array',
-            'order_items.*.topping_slugs' => 'nullable|array',
-
+            'order_items.*.topping_ slugs' => 'nullable|array',
             'order_items.*.variation_value_slugs.*' => 'required|exists:App\Models\MenuVariationValue,slug',
             'order_items.*.topping_slugs.*.slug' => 'required|exists:App\Models\MenuTopping,slug',
             'order_items.*.topping_slugs.*.value' => 'required|integer',
@@ -52,7 +52,11 @@ trait RestaurantOrderHelper
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
 
-        return $request->validate($rules);
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            throw new BadRequestException($validator->errors()->first(), 400);
+        }
+        return $validator->validated();
     }
 
     public static function prepareRestaurantVariations($validatedData)
@@ -62,7 +66,6 @@ trait RestaurantOrderHelper
         $tax = 0;
 
         foreach ($validatedData['order_items'] as $key => $value) {
-
             $menu = self::getMenu($value['slug']);
             $variations = collect(self::prepareVariations($value['variation_value_slugs']));
             $toppings = collect(self::prepareToppings($value['topping_slugs']));
@@ -105,7 +108,6 @@ trait RestaurantOrderHelper
                 throw new BadRequestException('The order_items.' . $key . '.variation_value_slugs is required.', 400);
             }
         }
-
     }
 
     public static function getRestaurantBranch($slug)
@@ -138,7 +140,6 @@ trait RestaurantOrderHelper
 
     public static function createOrderItems($orderId, $orderItems)
     {
-
         foreach ($orderItems as $item) {
             $menu = self::getMenu($item['slug']);
 

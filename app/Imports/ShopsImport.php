@@ -6,6 +6,7 @@ use App\Models\Shop;
 use App\Models\Township;
 use Maatwebsite\Excel\Concerns\ToModel;
 use App\Helpers\StringHelper;
+use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
@@ -14,6 +15,8 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 
 class ShopsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
+    use Importable;
+
     public function __construct()
     {
         ini_set('memory_limit', '256M');
@@ -67,6 +70,13 @@ class ShopsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'township_slug' => 'nullable|exists:App\Models\Township,slug',
+        ];
+    }
+
+    public function customValidationMessages()
+    {
+        return [
+            'contact_number.phone' => 'Invalid Phone Number',
         ];
     }
 }

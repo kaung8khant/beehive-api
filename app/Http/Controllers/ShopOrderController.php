@@ -123,8 +123,8 @@ class ShopOrderController extends Controller
             // may require amount validation.
             $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
             PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
-            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'usage');
-            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'usage');
+            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'shop');
+            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
 
             $validatedData['promocode_id'] = $promocode->id;
             $validatedData['promocode'] = $promocode->code;
@@ -158,7 +158,6 @@ class ShopOrderController extends Controller
         );
 
         return $this->generateShopOrderResponse($order->refresh(), 201);
-
     }
 
     public function changeStatus(Request $request, ShopOrder $shopOrder)
