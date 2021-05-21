@@ -53,7 +53,7 @@ class RestaurantOrder extends BaseModel
             $totalAmount += $amount;
         }
 
-        return $totalAmount;
+        return $totalAmount - $this->promocode_amount;
     }
 
     public function restaurant()
