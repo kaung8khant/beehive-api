@@ -76,6 +76,7 @@ class ShopController extends Controller
                 })
                 ->where('is_enable', 1)
                 ->orderBy('id', 'desc')
+                ->limit(20)
                 ->get();
             return $category;
         })->filter(function ($value) {
@@ -104,6 +105,7 @@ class ShopController extends Controller
                         $query->where('is_enable', 1);
                     })
                     ->where('is_enable', 1)
+                    ->limit(20)
                     ->get();
             })->collapse()->sortByDesc('id')->take(50)->values();
 
@@ -127,13 +129,14 @@ class ShopController extends Controller
                     $query->where('is_enable', 1);
                 })
                 ->where('is_enable', 1)
+                ->limit(20)
                 ->get();
         })->collapse()->sortByDesc('id')->slice(($page - 1) * $size, $size)->values();
 
         return $this->generateProductResponse($shopTag, 200, 'cattag');
     }
 
-    public function getByCategory(ShopCategory $shopCategory)
+    public function getByCategory(Request $request, ShopCategory $shopCategory)
     {
         $shopCategory->products = Product::with('shop')
             ->where('shop_category_id', $shopCategory->id)
@@ -142,7 +145,8 @@ class ShopController extends Controller
             })
             ->where('is_enable', 1)
             ->orderBy('id', 'desc')
-            ->get();
+            ->paginate($request->size)
+            ->items();
 
         return $this->generateProductResponse($shopCategory, 200, 'cattag');
     }
