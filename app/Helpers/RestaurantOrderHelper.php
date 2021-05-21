@@ -26,7 +26,7 @@ trait RestaurantOrderHelper
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
-            'promo_code_slug' => 'nullable|string|exists:App\Models\Promocode,slug',
+            'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
