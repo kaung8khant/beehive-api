@@ -51,7 +51,8 @@ class ProductController extends Controller
 
     public function getByCategory(Request $request, ShopCategory $category)
     {
-        $product = Product::where('shop_category_id', $category->id)
+        $product = Product::with('shop')
+            ->where('shop_category_id', $category->id)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
