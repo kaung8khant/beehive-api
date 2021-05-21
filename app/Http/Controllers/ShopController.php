@@ -11,7 +11,7 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopTag;
 use App\Models\Township;
-use Doctrine\Common\Cache\Cache;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;

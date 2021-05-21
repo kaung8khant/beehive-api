@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Models\ShopTag;
-use Doctrine\Common\Cache\Cache;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
