@@ -13,9 +13,11 @@ use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use App\Models\Setting;
 use App\Models\Township;
+use Illuminate\Support\Facades\Validator;
 
 trait RestaurantOrderHelper
 {
+
     public static function validateOrder($request, $customerSlug = false)
     {
         $rules = [
@@ -25,13 +27,13 @@ trait RestaurantOrderHelper
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
-            'promo_code_slug' => 'nullable|string|exists:App\Models\Promocode,slug',
+            'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
             'address' => 'required',
             'address.house_number' => 'required|string',
-            'address.floor' => 'nullable|string',
+            'address.floor' => 'nullable|numeric',
             'address.street_name' => 'required|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
@@ -52,7 +54,11 @@ trait RestaurantOrderHelper
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
 
-        return $request->validate($rules);
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            throw new BadRequestException($validator->errors()->first(), 400);
+        }
+        return $validator->validated();
     }
 
     public static function prepareRestaurantVariations($validatedData)
