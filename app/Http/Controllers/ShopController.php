@@ -11,6 +11,7 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopTag;
 use App\Models\Township;
+use Doctrine\Common\Cache\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
@@ -128,6 +129,10 @@ class ShopController extends Controller
         if ($request->shop_tags) {
             $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
             $shop->availableTags()->attach($shopTags);
+
+            foreach ($shopTags as $shopTag) {
+                Cache::forget('shop_ids_tag_' . $shopTag);
+            }
         }
 
         return response()->json($shop->refresh()->load(['availableTags', 'availableCategories']), 201);
@@ -229,6 +234,10 @@ class ShopController extends Controller
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
         $shop->availableTags()->detach();
         $shop->availableTags()->attach($shopTags);
+
+        foreach ($shopTags as $shopTag) {
+            Cache::forget('shop_ids_tag_' . $shopTag);
+        }
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'shops', $shop->slug);
