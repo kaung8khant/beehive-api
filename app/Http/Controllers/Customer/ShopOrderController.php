@@ -58,7 +58,7 @@ class ShopOrderController extends Controller
         // validate promocode
         if ($validatedData['promo_code']) {
             // may require amount validation.
-            $promocode = Promocode::where('code', $validatedData['promo_code'])->with('rules')->latest('created_at')->first();
+            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
             if (!isset($promocode) && empty($promocode)) {
                 throw new BadRequestException("Promocode not found.", 400);
             }
