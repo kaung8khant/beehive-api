@@ -26,7 +26,7 @@ class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
      */
     public function model(array $row)
     {
-        return new Menu([
+        $newMenu =[
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'description' => $row['description'],
@@ -36,7 +36,14 @@ class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
             'is_enable' => $row['is_enable'],
             'restaurant_id' => Restaurant::where('slug', $row['restaurant_slug'])->value('id'),
             'restaurant_category_id' => RestaurantCategory::where('slug', $row['restaurant_category_slug'])->value('id'),
-        ]);
+        ];
+        $menu=Menu::create($newMenu);
+        $restaurant = Restaurant::where('slug', $row['restaurant_slug'])->firstOrFail();
+        foreach ($restaurant->restaurantBranches as $branch) {
+            $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
+            $branch->availableMenus()->attach($availableMenus);
+        }
+        return new Menu($newMenu);
     }
 
     public function chunkSize(): int

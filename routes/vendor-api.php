@@ -34,9 +34,8 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('restaurant-tags', 'RestaurantTagController@index');
 
         /* menus */
-        Route::get('restaurant-branches/{slug}/menus', 'MenuController@getMenusByBranch');
-        Route::get('restaurant-branches/{slug}/available-menus', 'MenuController@getAvailableMenusByBranch');
-        Route::get('restaurant-branches/{slug}/menus-with-additionals', 'MenuController@getMenusByBranchWithAdditionals');
+        Route::get('restaurant-branches/{restaurantBranch}/menus', 'MenuController@getMenusByBranch');
+        Route::get('restaurant-branches/{restaurantBranch}/menus-with-additionals', 'MenuController@getMenusByBranchWithAdditionals');
         Route::get('menus/{slug}', 'MenuController@show');
         Route::post('menus', 'MenuController@store');
         Route::post('menus/import', 'MenuController@import');
@@ -85,23 +84,23 @@ Route::group(['prefix' => 'vendor'], function () {
         Route::get('shops/{slug}/customers', 'ShopController@getShopByCustomers');
 
         /* products */
-        Route::get('shops/{slug}/products', 'ProductController@getProductsByShop');
+        Route::get('shops/{shop}/products', 'ProductController@getProductsByShop');
         Route::get('products/{slug}', 'ProductController@show');
         Route::post('products', 'ProductController@store');
         Route::put('products/{slug}', 'ProductController@update');
         Route::delete('products/{slug}', 'ProductController@destroy');
-        Route::patch('products/toggle-enable/{slug}', 'ProductController@toggleEnable');
+        Route::patch('products/toggle-enable/{product}', 'ProductController@toggleEnable');
         Route::post('products/status', 'ProductController@multipleStatusUpdate');
         Route::post('products/import', 'ProductController@import');
         Route::post('products/multiple-delete', 'ProductController@multipleDelete');
 
-        Route::get('products/{slug}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
+        Route::get('products/{product}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
         Route::get('product-variations/{slug}', 'ProductVariationController@show');
         Route::post('product-variations', 'ProductVariationController@store');
         Route::put('product-variations/{slug}', 'ProductVariationController@update');
         Route::delete('product-variations/{slug}', 'ProductVariationController@destroy');
 
-        Route::get('product-variation/{slug}/product-variation-values', 'ProductVariationValueController@getProductVariationValuesByProductVariation');
+        Route::get('product-variations/{productVariation}/product-variation-values', 'ProductVariationValueController@getVariationValuesByVariation');
         Route::get('product-variation-values/{slug}', 'ProductVariationValueController@show');
         Route::post('product-variation-values', 'ProductVariationValueController@store');
         Route::put('product-variation-values/{slug}', 'ProductVariationValueController@update');
@@ -112,7 +111,7 @@ Route::group(['prefix' => 'vendor'], function () {
 
         Route::get('cities', 'CityController@index');
         Route::get('townships', 'TownshipController@index');
-        Route::get('cities/{slug}/townships', 'TownshipController@getTownshipsByCity');
+        Route::get('cities/{city}/townships', 'TownshipController@getTownshipsByCity');
 
         Route::get('customers', 'CustomerController@index');
         Route::post('customers', 'CustomerController@store');
@@ -126,5 +125,8 @@ Route::group(['prefix' => 'vendor'], function () {
         /* shop */
 
         Route::post('/register-device', 'UserController@registerToken');
+
+        Route::post('excels/import/{type}', 'Excel\ExportImportController@import');
+        Route::get('excels/export/{type}', 'Excel\ExportImportController@export');
     });
 });
