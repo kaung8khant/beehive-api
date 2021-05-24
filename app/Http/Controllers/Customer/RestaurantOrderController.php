@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Exceptions\BadRequestException;
 use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -22,7 +23,6 @@ class RestaurantOrderController extends Controller
 
     public function index(Request $request)
     {
-
         $customerId = Auth::guard('customers')->user()->id;
         $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact')
             ->with('restaurantOrderContact.township')
@@ -50,7 +50,6 @@ class RestaurantOrderController extends Controller
 
     public function store(Request $request)
     {
-
         $request['slug'] = $this->generateUniqueSlug();
 
         $request['customer_slug'] = Auth::guard('customers')->user()->slug;
@@ -106,7 +105,8 @@ class RestaurantOrderController extends Controller
                     ->where('slug', $order->slug)
                     ->firstOrFail(),
 
-            ]);
+            ]
+        );
 
         return $this->generateResponse(
             $order->refresh()->load('restaurantOrderContact', 'restaurantOrderContact.township', 'restaurantOrderItems'),
@@ -132,7 +132,8 @@ class RestaurantOrderController extends Controller
                 'type' => 'update',
                 'slug' => $order->slug,
                 'status' => 'cancelled',
-            ]);
+            ]
+        );
 
         $message = 'Your order has successfully been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
