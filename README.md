@@ -13,3 +13,5 @@ php artisan db:seed
 php artisan jwt:secret
 
 php artisan serve
+
+php artisan serve
