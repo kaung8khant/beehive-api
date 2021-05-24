@@ -28,8 +28,10 @@ class ShopCategory extends BaseModel
 
     public function getImagesAttribute()
     {
+        $productId = Product::where('shop_category_id', $this->id)->inRandomOrder()->first();
+
         return File::where('source', 'shop_categories')
-            ->where('source_id', $this->id)
+            ->where('source_id', $productId)
             ->where('type', 'image')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
