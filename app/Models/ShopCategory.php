@@ -4,13 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-/**
- * @OA\Schema(
- *      @OA\Xml(name="ShopCategory"),
- *      @OA\Property(property="name", type="string", example="ShopCategory Name"),
- *      @OA\Property(property="slug", type="string", readOnly=true)
- * )
- */
 class ShopCategory extends BaseModel
 {
     use HasFactory;

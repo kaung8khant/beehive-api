@@ -22,40 +22,6 @@ class RestaurantOrderController extends Controller
 {
     use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurant-orders",
-     *      operationId="getRestaurantOrderLists",
-     *      tags={"Restaurant Orders"},
-     *      summary="Get list of restaurant orders",
-     *      description="Returns list of restaurant orders",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          ),
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
@@ -93,90 +59,11 @@ class RestaurantOrderController extends Controller
         return $this->generateResponse($restaurantOrders, 200);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurant-orders/{slug}",
-     *      operationId="getOneRestaurantOrder",
-     *      tags={"Restaurant Orders"},
-     *      summary="Get One Restaurant Order",
-     *      description="Returns a requested restaurant order",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested restaurant Order",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function show(RestaurantOrder $restaurantOrder)
     {
         return $this->generateResponse($restaurantOrder->load('RestaurantOrderContact', 'restaurantOrderContact.township', 'RestaurantOrderItems'), 200);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/restaurant-orders",
-     *      operationId="storeRestaurantOrder",
-     *      tags={"Restaurant Orders"},
-     *      summary="Create Restaurant Order",
-     *      description="Returns newly created order",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created order",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(
-     *               @OA\Property(property="customer_slug", type="string", example=""),
-     *               @OA\Property(property="restaurant_branch_slug", type="string", example=""),
-     *               @OA\Property(property="order_date", type="string", example="2021-02-19"),
-     *               @OA\Property(property="special_instruction", type="string", example=""),
-     *               @OA\Property(property="payment_mode", type="string", example="COD"),
-     *               @OA\Property(property="delivery_mode", type="string", example="delivery"),
-     *               @OA\Property(property="customer_info", ref="#/components/schemas/RestaurantOrderContact"),
-     *               @OA\Property(property="order_items", type="array",
-     *               @OA\Items(type="object",
-     *                  @OA\Property(property="menu_slug", type="string", example=""),
-     *                  @OA\Property(property="menu_name", type="string",example=""),
-     *                  @OA\Property(property="amount", type="number",example=0.00),
-     *                  @OA\Property(property="quantity", type="number",example=0.00),
-     *                  @OA\Property(property="tax", type="number",example=0.00),
-     *                  @OA\Property(property="discount", type="number",example=0.00),
-     *                  @OA\Property(property="variations", type="array",
-     *                  @OA\Items(type="object",
-     *                  @OA\Property(property="name", type="string", example=""),
-     *                  @OA\Property(property="value", type="number",example=0.00),
-     *                      ),
-     *                      ),
-     *                  @OA\Property(property="toppings", type="array",
-     *                  @OA\Items(type="object",
-     *                  @OA\Property(property="name", type="string", example=""),
-     *                  @OA\Property(property="value", type="number",example=0.00),
-     *                      ),
-     *                      ),
-     *                  ),
-     *                  ),
-     *              )
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -235,31 +122,6 @@ class RestaurantOrderController extends Controller
         return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/restaurant-orders/{slug}",
-     *      operationId="deleteRestaurantOrder",
-     *      tags={"Restaurant Orders"},
-     *      summary="Delete One Restaurant Order",
-     *      description="Delete one specific restaurant order",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested restaurant order",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function destroy(RestaurantOrder $restaurantOrder)
     {
         if ($restaurantOrder->order_status === 'delivered' || $restaurantOrder->order_status === 'cancelled') {

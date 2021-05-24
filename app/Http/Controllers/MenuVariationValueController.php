@@ -12,40 +12,6 @@ class MenuVariationValueController extends Controller
 {
     use FileHelper, StringHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/menu-variation-values",
-     *      operationId="getMenuVariationValueLists",
-     *      tags={"Menu Variation values"},
-     *      summary="Get list of menu variation value",
-     *      description="Returns list of menu variation value",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          ),
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         return MenuVariationValue::with('menuVariation')
@@ -54,30 +20,6 @@ class MenuVariationValueController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/menu-variation-values",
-     *      operationId="storeMenuVariationValue",
-     *      tags={"Menu Variation values"},
-     *      summary="Create a Menu Variation Value",
-     *      description="Returns newly created menu variation value",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created menu variation value object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/MenuVariationValue")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -94,69 +36,11 @@ class MenuVariationValueController extends Controller
         return response()->json($menuVariationValue->load('menuVariation'), 201);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/menu-variation-values/{slug}",
-     *      operationId="showMenuVariationValue",
-     *      tags={"Menu Variation values"},
-     *      summary="Get One menu variation value",
-     *      description="Returns a requested menu variation value",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested menu variation value",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function show(MenuVariationValue $menuVariationValue)
     {
         return response()->json($menuVariationValue->load('menuVariation'), 200);
     }
 
-    /**
-     * @OA\Put(
-     *      path="/api/v2/admin/menu-variation-values/{slug}",
-     *      operationId="updateMenuVariationValue",
-     *      tags={"Menu Variation values"},
-     *      summary="Update a Menu Variation Value",
-     *      description="Update a requested menu variation value",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a menu variation value",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New menu variation value data to be updated.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/MenuVariationValue")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function update(Request $request, MenuVariationValue $menuVariationValue)
     {
         $validatedData = $request->validate($this->getParamsToValidate());
@@ -170,31 +54,6 @@ class MenuVariationValueController extends Controller
         return response()->json($menuVariationValue->load('menuVariation'), 200);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/menu-variation-values/{slug}",
-     *      operationId="deleteMenuVariationValue",
-     *      tags={"Menu Variation values"},
-     *      summary="Delete One Menu Variation Value",
-     *      description="Delete one specific menu variation value",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested menu variation value",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function destroy(MenuVariationValue $menuVariationValue)
     {
         foreach ($menuVariationValue->images as $image) {

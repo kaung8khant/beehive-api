@@ -17,40 +17,6 @@ class RestaurantController extends Controller
 {
     use FileHelper, StringHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurants",
-     *      operationId="getRestaurantLists",
-     *      tags={"Restaurants"},
-     *      summary="Get list of restaurants",
-     *      description="Returns list of restaurants",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *        name="filter",
-     *        description="Filter",
-     *        required=false,
-     *        in="query",
-     *        @OA\Schema(
-     *            type="string"
-     *        ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('restaurants', 'id', $request->by ? $request->by : 'desc', $request->order);
@@ -62,30 +28,6 @@ class RestaurantController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/restaurants",
-     *      operationId="storeRestaurant",
-     *      tags={"Restaurants"},
-     *      summary="Create a restaurant",
-     *      description="Returns newly created restaurant",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created restaurant object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Restaurant")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -138,69 +80,11 @@ class RestaurantController extends Controller
         return response()->json($restaurant->load('availableTags', 'availableCategories', 'restaurantBranches'), 201);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurants/{slug}",
-     *      operationId="showRestaurant",
-     *      tags={"Restaurants"},
-     *      summary="Get One Restaurant",
-     *      description="Returns a requested restaurant",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested restaurant",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function show(Restaurant $restaurant)
     {
         return response()->json($restaurant->load('availableTags'), 200);
     }
 
-    /**
-     * @OA\Put(
-     *      path="/api/v2/admin/restaurants/{slug}",
-     *      operationId="updateRestaurant",
-     *      tags={"Restaurants"},
-     *      summary="Update a restaurant",
-     *      description="Update a requested restaurant",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a restaurant",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New restaurant data to be updated.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Restaurant")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function update(Request $request, Restaurant $restaurant)
     {
         $validatedData = $request->validate([
@@ -235,31 +119,6 @@ class RestaurantController extends Controller
         return response()->json($restaurant->load(['availableCategories', 'availableTags']), 200);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/restaurants/{slug}",
-     *      operationId="deleteRestaurant",
-     *      tags={"Restaurants"},
-     *      summary="Delete One Restaurant",
-     *      description="Delete one specific restaurant",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested restaurant",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function destroy(Restaurant $restaurant)
     {
         foreach ($restaurant->images as $image) {
@@ -270,31 +129,6 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-     * @OA\Patch(
-     *      path="/api/v2/admin/restaurants/toggle-enable/{slug}",
-     *      operationId="enableRestaurant",
-     *      tags={"Restaurants"},
-     *      summary="Enable Restaurant",
-     *      description="Enable a restaurant",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the Restaurant",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function toggleEnable(Restaurant $restaurant)
     {
         $restaurant->update(['is_enable' => !$restaurant->is_enable]);

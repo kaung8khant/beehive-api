@@ -14,40 +14,6 @@ class PromocodeController extends Controller
 {
     use StringHelper, PromocodeHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/promocodes",
-     *      operationId="getPromocodeLists",
-     *      tags={"Promocodes"},
-     *      summary="Get list of promocodes",
-     *      description="Returns list of promocodes",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *        name="filter",
-     *        description="Filter",
-     *        required=false,
-     *        in="query",
-     *        @OA\Schema(
-     *            type="string"
-     *        ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('promocodes', 'id', $request->by ? $request->by : 'desc', $request->order);
@@ -59,30 +25,6 @@ class PromocodeController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/promocodes",
-     *      operationId="storePromocode",
-     *      tags={"Promocodes"},
-     *      summary="Create a promocode",
-     *      description="Returns newly created promocode",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created promocode object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Promocode")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -98,69 +40,11 @@ class PromocodeController extends Controller
         return response()->json($promocode, 201);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/promocodes/{slug}",
-     *      operationId="showPromocode",
-     *      tags={"Promocodes"},
-     *      summary="Get One Promocode",
-     *      description="Returns a requested promocode",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested promocode",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function show(Promocode $promocode)
     {
         return response()->json($promocode->load('rules'), 200);
     }
 
-    /**
-     * @OA\Put(
-     *      path="/api/v2/admin/promocodes/{slug}",
-     *      operationId="updatePromocode",
-     *      tags={"Promocodes"},
-     *      summary="Update a promocode",
-     *      description="Update a requested promocode",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a promocode",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New promocode data to be updated.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Promocode")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function update(Request $request, Promocode $promocode)
     {
         $validatedData = $request->validate($this->getParamsToValidate());
@@ -208,46 +92,6 @@ class PromocodeController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/promocodes/add-rules/{slug}",
-     *      operationId="addRules",
-     *      tags={"Promocodes"},
-     *      summary="Add Rules",
-     *      description="Returns newly add rules data",
-     *      @OA\Parameter(
-     *      name="slug",
-     *      description="Slug of a requested promocode",
-     *      required=true,
-     *      in="path",
-     *      @OA\Schema(
-     *         type="string"
-     *       )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="add  rules in promocode object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(
-     *                  @OA\Property(property="rules", type="array", @OA\Items(oneOf={
-     *                      @OA\Schema(
-     *                          @OA\Property(property="value", type="string", example="value"),
-     *                          @OA\Property(property="data_type", type="string", example="before date"),
-     *                          ),
-     *                      })),
-     *              )
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function addRules(Request $request, Promocode $promocode)
     {
         $validatedData = $request->validate([
@@ -266,62 +110,12 @@ class PromocodeController extends Controller
         return response()->json($promocode, 201);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/rules/{id}",
-     *      operationId="removeRule",
-     *      tags={"Promocodes"},
-     *      summary="Remove Rule",
-     *      description="Remove Rule",
-     *      @OA\Parameter(
-     *          name="id",
-     *          description="id of a requested rule",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function removeRule(PromocodeRule $promocodeRule)
     {
         $promocodeRule->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/promocodes/{slug}",
-     *      operationId="deletePromocode",
-     *      tags={"Promocodes"},
-     *      summary="Delete One Promocode",
-     *      description="Delete one specific promocode",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested promocode",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function destroy(Promocode $promocode)
     {
         $promocode->delete();

@@ -4,22 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-/**
- * @OA\Schema(
- *      @OA\Xml(name="RestaurantBranch"),
- *      @OA\Property(property="name", type="string", example="name"),
- *      @OA\Property(property="address", type="string", example="address"),
- *      @OA\Property(property="contact_number", type="string", example="string"),
- *      @OA\Property(property="opening_time", type="time", example="00:00"),
- *      @OA\Property(property="closing_time", type="time", example="00:00"),
- *      @OA\Property(property="latitude", type="double", example="0.00"),
- *      @OA\Property(property="longitude", type="double", example="0.00"),
- *      @OA\Property(property="restaurant_slug", type="string", example="restaurant_slug"),
- *      @OA\Property(property="township_slug", type="string", example="township_slug"),
- *      @OA\Property(property="is_enable", type="boolean", example="true"),
- *      @OA\Property(property="slug", type="string", readOnly=true)
- * )
- */
 class RestaurantBranch extends BaseModel
 {
     use HasFactory;
