@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
@@ -27,17 +29,22 @@ class ShopController extends Controller
     public function index(Request $request)
     {
         $shop = Shop::with('availableCategories', 'availableTags')
-            ->where('is_enable', 1)
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
+            ->where('is_enable', 1)
             ->paginate($request->size)->items();
+
         return $this->generateResponse($shop, 200);
     }
 
     public function show(Shop $shop)
     {
+        if (!$shop->is_enable) {
+            abort(404);
+        }
+
         return $this->generateResponse($shop->load('availableCategories', 'availableTags', 'township'), 200);
     }
 
@@ -53,75 +60,108 @@ class ShopController extends Controller
 
     public function getCatgorizedProduct(Request $request)
     {
-        $shopCategories = ShopCategory::with('shopSubCategories', 'shops.products')
+        $size = $request->size ? $request->size : 10;
+        $page = $request->page ? $request->page : 1;
+
+        $shopCategories = ShopCategory::with('shopSubCategories')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy('name', 'asc')
             ->get();
 
-        foreach ($shopCategories as $item) {
-            unset($item['shops']);
-        }
+        $categorizedProducts = $shopCategories->map(function ($category) {
+            $category->products = Product::where('shop_category_id', $category->id)
+                ->whereHas('shop', function ($query) {
+                    $query->where('is_enable', 1);
+                })
+                ->where('is_enable', 1)
+                ->orderBy('id', 'desc')
+                ->limit(20)
+                ->get();
+            return $category;
+        })->filter(function ($value) {
+            return count($value['products']) > 0;
+        })->values()->slice(($page - 1) * $size, $size);
 
-        return $this->generateProductResponse($shopCategories, 200, 'cattag');
+        return $this->generateProductResponse($categorizedProducts, 200, 'arrobj');
     }
 
     public function getTags(Request $request)
     {
-        $shopTags = ShopTag::with('shops.products')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
+        $size = $request->size ? $request->size : 10;
+        $page = $request->page ? $request->page : 1;
+
+        $shopTags = ShopTag::where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy('name', 'asc')
             ->get();
 
-        $shopTags = $this->getProductFromShop($shopTags);
-        return $this->generateProductResponse($shopTags, 200, 'cattag');
+        $shopTags = $shopTags->map(function ($shopTag) {
+            $shopIds = CacheHelper::getShopIdsByTag($shopTag->id);
+
+            $shopTag->products = $shopIds->map(function ($shopId) {
+                return Product::where('shop_id', $shopId)
+                    ->whereHas('shop', function ($query) {
+                        $query->where('is_enable', 1);
+                    })
+                    ->where('is_enable', 1)
+                    ->limit(20)
+                    ->get();
+            })->collapse()->sortByDesc('id')->take(50)->values();
+
+            return $shopTag;
+        })->slice(($page - 1) * $size, $size);
+
+        return $this->generateProductResponse($shopTags, 200, 'arrobj');
     }
 
-    public function getByTag($slug)
+    public function getByTag(Request $request, ShopTag $shopTag)
     {
-        $shopTag = ShopTag::with('shops', 'shops.products', 'shops.products.shop')->where('slug', $slug)->firstOrFail();
-        $shopTag = $this->replaceShopWithProduct($shopTag);
-        return $this->generateResponse($shopTag, 200);
+        $size = $request->size ? $request->size : 100;
+        $page = $request->page ? $request->page : 1;
+
+        $shopIds = CacheHelper::getShopIdsByTag($shopTag->id);
+
+        $shopTag->products = $shopIds->map(function ($shopId) {
+            return Product::with('shop')
+                ->where('shop_id', $shopId)
+                ->whereHas('shop', function ($query) {
+                    $query->where('is_enable', 1);
+                })
+                ->where('is_enable', 1)
+                ->limit(20)
+                ->get();
+        })->collapse()->sortByDesc('id')->slice(($page - 1) * $size, $size)->values();
+
+        return $this->generateProductResponse($shopTag, 200, 'cattag');
     }
 
-    public function getByCategory($slug)
+    public function getByCategory(Request $request, ShopCategory $shopCategory)
     {
-        $shopCategory = ShopCategory::with('shops', 'shops.products', 'shops.products.shop')->where('slug', $slug)->firstOrFail();
-        $shopCategory = $this->replaceShopWithProduct($shopCategory);
-        return $this->generateResponse($shopCategory, 200);
+        $shopCategory->products = Product::with('shop')
+            ->where('shop_category_id', $shopCategory->id)
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
+            ->where('is_enable', 1)
+            ->orderBy('id', 'desc')
+            ->paginate($request->size)
+            ->items();
+
+        return $this->generateProductResponse($shopCategory, 200, 'cattag');
     }
 
-    public function getBySubCategory(Request $request, $slug)
+    public function getBySubCategory(ShopSubCategory $shopSubCategory)
     {
-        $shop = ShopSubCategory::with('shopCategory')->with('shopCategory.shops')->where('slug', $slug)->paginate($request->size)->items();
-        return $this->generateResponse($shop, 200);
-    }
+        $shopSubCategory->products = Product::with('shop')
+            ->where('shop_sub_category_id', $shopSubCategory->id)
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
+            ->where('is_enable', 1)
+            ->orderBy('id', 'desc')
+            ->get();
 
-    private function getShopId($slug)
-    {
-        return Shop::where('slug', $slug)->firstOrFail()->id;
-    }
-
-    private function getProductFromShop($items)
-    {
-        foreach ($items as $item) {
-            $item = $this->replaceShopWithProduct($item);
-        }
-
-        return $items;
-    }
-
-    private function replaceShopWithProduct($data)
-    {
-        $products = [];
-
-        foreach ($data['shops'] as $shop) {
-            array_push($products, $shop['products']);
-        }
-
-        $data['products'] = collect($products)->collapse()->values();
-        $data['products'] = $data['products'];
-        unset($data['shops']);
-
-        return $data;
+        return $this->generateProductResponse($shopSubCategory->load('shopCategory'), 200, 'cattag');
     }
 }

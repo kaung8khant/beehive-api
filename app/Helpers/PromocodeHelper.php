@@ -23,6 +23,7 @@ trait PromocodeHelper
 
             $rule = new $_class($promocode, $usage);
             $value = $rule->validate($orderItems, $subTotal, $customer, $data['value']);
+
             if (!$value) {
                 throw new BadRequestException("Invalid promocode.", 400);
             }
@@ -76,7 +77,7 @@ trait PromocodeHelper
 
     public static function validatePromocodeUsage($promocode, $usage)
     {
-        if ($promocode->usage === 'both' || $usage == $promocode->usage) {
+        if ($promocode->usage == 'both' || $usage == $promocode->usage) {
             return true;
         }
         throw new BadRequestException("Invalid promocode usage.", 400);

@@ -18,6 +18,7 @@ class Menu implements Rule
     {
 
         if ($this->usage == 'restaurant') {
+
             foreach ($items as $item) {
 
                 $menu = MenuModel::where('slug', $item['slug'])->firstOrFail();

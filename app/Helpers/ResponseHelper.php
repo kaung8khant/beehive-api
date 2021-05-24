@@ -68,18 +68,15 @@ trait ResponseHelper
                 return $data;
             }
         } elseif ($type === 'arrobj') {
-            foreach ($data as $arrobj) {
-                foreach ($arrobj as $product) {
-                    $product['is_favorite'] = $this->checkFavoriteProduct($product->id);
-                    unset($product->customers);
-                }
-            }
-        } elseif ($type === 'cattag') {
             foreach ($data as $cat) {
                 foreach ($cat->products as $product) {
                     $product->is_favorite = $this->checkFavoriteProduct($product->id);
                     unset($product->customers);
                 }
+            }
+        } elseif ($type === 'cattag') {
+            foreach ($data->products as $product) {
+                $product->is_favorite = $this->checkFavoriteProduct($product->id);
             }
         } else {
             $data['is_favorite'] = $this->checkFavoriteProduct($data->id);

@@ -24,54 +24,92 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        // TODO:: check shop disable
-        $product = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory')
-            ->with('productVariations')
-            ->with('productVariations.productVariationValues')
-            ->where('is_enable', 1)
+        $products = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariations.productVariationValues')
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
+            ->where('is_enable', 1)
+            ->orderBy('id', 'desc')
+            ->paginate($request->size)
+            ->items();
+
+        return $this->generateProductResponse($products, 200);
+    }
+
+    public function show(Product $product)
+    {
+        if (!$product->is_enable || !$product->shop->is_enable) {
+            abort(404);
+        }
+
+        return $this->generateProductResponse($product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations'), 200, 'other');
+    }
+
+    public function getByCategory(Request $request, ShopCategory $category)
+    {
+        $product = Product::with('shop')
+            ->where('shop_category_id', $category->id)
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
+            ->where('is_enable', 1)
+            ->orderBy('id', 'desc')
             ->paginate($request->size)
             ->items();
 
         return $this->generateProductResponse($product, 200);
     }
 
-    public function show(Product $product)
-    {
-        return $this->generateProductResponse($product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations'), 200, 'other');
-    }
-
-    public function getByCategory(Request $request, ShopCategory $category)
-    {
-        $product = Product::where('shop_category_id', $category->id)->where('is_enable', 1)->paginate($request->size)->items();
-        return $this->generateProductResponse($product, 200);
-    }
-
     public function getByShop(Request $request, Shop $shop)
     {
-        $product = Product::where('shop_id', $shop->id)->where('is_enable', 1)->paginate($request->size)->items();
+        $product = Product::where('shop_id', $shop->id)
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
+            ->where('is_enable', 1)
+            ->orderBy('id', 'desc')
+            ->paginate($request->size)
+            ->items();
+
         return $this->generateProductResponse($product, 200);
     }
 
     public function getAllBrand()
     {
-        $brand = Brand::all();
+        $brand = Brand::orderBy('name', 'asc')->get();
         return $this->generateResponse($brand, 200);
     }
 
     public function getByBrand(Request $request, Brand $brand)
     {
-        $product = Product::where('brand_id', $brand->id)->where('is_enable', 1)->paginate($request->size)->items();
+        $product = Product::where('brand_id', $brand->id)
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
+            ->where('is_enable', 1)
+            ->orderBy('id', 'desc')
+            ->paginate($request->size)
+            ->items();
         return $this->generateProductResponse($product, 200);
     }
 
     // fav
     public function getFavorite(Request $request)
     {
-        $fav = $this->customer->favoriteProducts()->with('shopCategory', 'shopSubCategory', 'brand')->paginate($request->size)->items();
+        $fav = $this->customer->favoriteProducts()
+            ->with('shopCategory', 'shopSubCategory', 'brand')
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
+            ->where('is_enable', 1)
+            ->orderBy('id', 'desc')
+            ->paginate($request->size)
+            ->items();
+
         return $this->generateProductResponse($fav, 200);
     }
 
@@ -95,6 +133,9 @@ class ProductController extends Controller
     public function getRecommendations(Request $request)
     {
         $product = Product::with('shop')
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
             ->where('is_enable', 1)
             ->inRandomOrder()
             ->paginate($request->size)

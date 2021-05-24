@@ -50,4 +50,11 @@ trait CacheHelper
             return RestaurantCategory::select('slug', 'name')->find($categoryId);
         });
     }
+
+    public static function getShopIdsByTag($shopTagId)
+    {
+        return Cache::remember('shop_ids_tag_' . $shopTagId, 86400, function () use ($shopTagId) {
+            return DB::table('shop_shop_tag_map')->where('shop_tag_id', $shopTagId)->pluck('shop_id');
+        });
+    }
 }
