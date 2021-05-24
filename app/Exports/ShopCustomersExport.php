@@ -35,16 +35,16 @@ class ShopCustomersExport implements FromQuery, WithHeadings, WithMapping, WithS
         return $customers;
     }
     /**
-     * @var Customer $customer
+     * @var Customer $shopCustomer
      */
-    public function map($customer): array
+    public function map($shopCustomer): array
     {
         return [
-            $customer->slug,
-            $customer->name,
-            $customer->email,
-            $customer->phone_number,
-            $customer->gender,
+            $shopCustomer->slug,
+            $shopCustomer->name,
+            $shopCustomer->email,
+            $shopCustomer->phone_number,
+            $shopCustomer->gender,
         ];
     }
 

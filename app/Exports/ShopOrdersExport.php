@@ -35,7 +35,8 @@ class ShopOrdersExport implements FromQuery, WithHeadings, WithMapping, WithStyl
     public function map($shopOrder): array
     {
         $contact = ShopOrderContact::where('shop_order_id', $shopOrder->id);
-        $address='No.' . $contact->value('house_number') . $contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',' . $contact->value('street_name') . ',' . Township::where('id', $contact->value('township_id'))->value('name');
+        $floor=$contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
+        $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name') . ',' . Township::where('id', $contact->value('township_id'))->value('name');
         return [
             $shopOrder->slug,
             $shopOrder->invoice_id,

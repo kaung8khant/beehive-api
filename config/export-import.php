@@ -39,5 +39,8 @@ return [
         'promocode' => 'PromocodesExport',
         'sms-log' => 'SmsLogsExport',
         'customer-group' => 'CustomerGroupsExport',
+        'restaurant-branch-order' => 'RestaurantBranchOrdersExport',
+        'vendor-shop-order' => 'VendorShopOrdersExport',
+        'restaurant-branch-menu' => 'RestaurantBranchMenusExport',
     ],
 ];

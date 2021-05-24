@@ -14,41 +14,47 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Concerns\Exportable;
 
-class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class RestaurantBranchOrdersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    public function __construct()
+    use Exportable;
+
+    public function __construct(string $params)
     {
+        $this->params = $params;
         ini_set('memory_limit', '256M');
     }
 
     public function query()
     {
-        return RestaurantOrder::query();
+        $restaurantBranch = RestaurantBranch::where('slug', $this->params)->firstOrFail();
+
+        return RestaurantOrder::query()->where('restaurant_branch_id', $restaurantBranch->id);
     }
 
     /**
-     * @var RestaurantOrder $restaurantOrder
+     * @var RestaurantOrder $restaurantBranchOrder
      */
-    public function map($restaurantOrder): array
+    public function map($restaurantBranchOrder): array
     {
-        $contact = RestaurantOrderContact::where('restaurant_order_id', $restaurantOrder->id);
+        $contact = RestaurantOrderContact::where('restaurant_order_id', $restaurantBranchOrder->id);
         $floor=$contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
         $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name') . ',' . Township::where('id', $contact->value('township_id'))->value('name');
         return [
-            $restaurantOrder->slug,
-            $restaurantOrder->invoice_id,
-            Carbon::parse($restaurantOrder->order_date)->format('M d Y'),
-            Restaurant::where('id', $restaurantOrder->restaurant_id)->value('name'),
-            RestaurantBranch::where('id', $restaurantOrder->restaurant_branch_id)->value('name'),
-            RestaurantBranch::where('id', $restaurantOrder->restaurant_branch_id)->value('contact_number'),
+            $restaurantBranchOrder->slug,
+            $restaurantBranchOrder->invoice_id,
+            Carbon::parse($restaurantBranchOrder->order_date)->format('M d Y'),
+            Restaurant::where('id', $restaurantBranchOrder->restaurant_id)->value('name'),
+            RestaurantBranch::where('id', $restaurantBranchOrder->restaurant_branch_id)->value('name'),
+            RestaurantBranch::where('id', $restaurantBranchOrder->restaurant_branch_id)->value('contact_number'),
             $contact->value('customer_name'),
             $contact->value('phone_number'),
             $address,
-            $restaurantOrder->total_amount,
-            $restaurantOrder->payment_mode,
-            $restaurantOrder->delivery_mode,
-            $restaurantOrder->special_instruction,
+            $restaurantBranchOrder->total_amount,
+            $restaurantBranchOrder->payment_mode,
+            $restaurantBranchOrder->delivery_mode,
+            $restaurantBranchOrder->special_instruction,
         ];
     }
 
