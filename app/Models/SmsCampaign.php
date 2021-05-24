@@ -9,4 +9,6 @@ class SmsCampaign extends BaseModel
     use HasFactory;
 
     protected $guarded = ['id'];
+
+    protected $hidden = ['id'];
 }

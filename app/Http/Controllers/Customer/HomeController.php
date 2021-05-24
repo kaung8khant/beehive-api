@@ -203,7 +203,8 @@ class HomeController extends Controller
             })
             ->with('productVariations')
             ->with('productVariations.productVariationValues')
-            ->get();
+            ->paginate($request->size)
+            ->items();
 
         if ($homeSearch) {
             return $this->generateProductResponse($product, 200, 'home');
