@@ -6,6 +6,7 @@ use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
+use App\Models\SmsCampaign;
 use App\Models\SmsLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ class SmsController extends Controller
         $message = trim(SmsHelper::removeEmoji($request->message));
         $smsData = SmsHelper::prepareSmsData($message, $userId);
         $workerCount = $this->calculateWorkerCount($request->phone_numbers);
+        $this->createSmsCampaign($request, $smsData['batchId']);
 
         for ($i = 0; $i < $workerCount; $i++) {
             $uniqueKey = StringHelper::generateUniqueSlug();
@@ -43,6 +45,8 @@ class SmsController extends Controller
     private function validateRequest($request)
     {
         $request->validate([
+            'name' => 'required|string',
+            'description' => 'nullable',
             'phone_numbers' => 'required|array|max:10000',
             'message' => 'required',
             'type' => 'required|in:otp,marketing',
@@ -59,6 +63,17 @@ class SmsController extends Controller
         }
 
         return $workerCount;
+    }
+
+    private function createSmsCampaign($request, $batchId)
+    {
+        SmsCampaign::create([
+            'batch_id' => $batchId,
+            'name' => $request->name,
+            'description' => $request->description,
+            'type' => $request->type,
+            'sent_at' => Carbon::now(),
+        ]);
     }
 
     public function getLogs()
