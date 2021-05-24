@@ -22,40 +22,6 @@ class ShopOrderController extends Controller
 {
     use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/shop-orders",
-     *      operationId="getShopOrderLists",
-     *      tags={"Shop Orders"},
-     *      summary="Get list of shop orders",
-     *      description="Returns list of shop orders",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          ),
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);

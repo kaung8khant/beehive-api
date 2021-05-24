@@ -14,31 +14,6 @@ class RestaurantCategoryController extends Controller
 {
     use FileHelper, StringHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurant-categories",
-     *      operationId="getRestaurantCategoryLists",
-     *      tags={"Restaurant Categories"},
-     *      summary="Get list of restaurant categories",
-     *      description="Returns list of restaurant categories",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('restaurant_categories', 'name', $request->by, $request->order);
@@ -49,30 +24,6 @@ class RestaurantCategoryController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/restaurant-categories",
-     *      operationId="storeRestaurantCategory",
-     *      tags={"Restaurant Categories"},
-     *      summary="Create a restaurant category",
-     *      description="Returns newly created restaurant category",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created restaurant category object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/RestaurantCategory")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -90,69 +41,11 @@ class RestaurantCategoryController extends Controller
         return response()->json($restaurantCategory, 201);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurant-categories/{slug}",
-     *      operationId="showRestaurantCategory",
-     *      tags={"Restaurant Categories"},
-     *      summary="Get One Restaurant Category",
-     *      description="Returns a requested restaurant category",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a restaurant category",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function show(RestaurantCategory $restaurantCategory)
     {
         return response()->json($restaurantCategory, 200);
     }
 
-    /**
-     * @OA\Put(
-     *      path="/api/v2/admin/restaurant-categories/{slug}",
-     *      operationId="updateRestaurantCategory",
-     *      tags={"Restaurant Categories"},
-     *      summary="Update a Restaurant Category",
-     *      description="Update a requested restaurant category",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a restaurant category",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New restaurant category data to be updated.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/RestaurantCategory")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function update(Request $request, RestaurantCategory $restaurantCategory)
     {
         $restaurantCategory->update($request->validate([
@@ -172,31 +65,6 @@ class RestaurantCategoryController extends Controller
         return response()->json($restaurantCategory, 200);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/restaurant-categories/{slug}",
-     *      operationId="deleteRestaurantCategory",
-     *      tags={"Restaurant Categories"},
-     *      summary="Delete One restaurant category",
-     *      description="Delete one specific restaurant category",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested restaurant category",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function destroy(RestaurantCategory $restaurantCategory)
     {
         foreach ($restaurantCategory->images as $image) {
@@ -207,31 +75,6 @@ class RestaurantCategoryController extends Controller
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurants/{slug}/restaurant-categories",
-     *      operationId="getCategoriesByRestaurant",
-     *      tags={"Restaurant Categories"},
-     *      summary="Get Categories By Restaurant",
-     *      description="Returns requested list of restaurant categories",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the restaurant",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function getCategoriesByRestaurant(Request $request, $slug)
     {
         $sorting = CollectionHelper::getSorting('restaurant_categories', 'name', $request->by, $request->order);

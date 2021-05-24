@@ -18,40 +18,6 @@ class ProductController extends Controller
 {
     use FileHelper, StringHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/products",
-     *      operationId="getProductLists",
-     *      tags={"Products"},
-     *      summary="Get list of products",
-     *      description="Returns list of products",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *        name="filter",
-     *        description="Filter",
-     *        required=false,
-     *        in="query",
-     *        @OA\Schema(
-     *            type="string"
-     *        ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
@@ -73,41 +39,6 @@ class ProductController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/{path}/products",
-     *      operationId="storeProduct",
-     *      tags={"Products"},
-     *      summary="Create a product",
-     *      description="Returns newly created product",
-     *      @OA\Parameter(
-     *          name="path",
-     *          description="Key of a requested setting",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string",
-     *              enum= {"admin","vendor"},
-     *              default= "admin",
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created product object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Product")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -146,91 +77,11 @@ class ProductController extends Controller
         return response()->json($product->refresh()->load('shop', "productVariations"), 201);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/{path}/products/{slug}",
-     *      operationId="showProduct",
-     *      tags={"Products"},
-     *      summary="Get One Product",
-     *      description="Returns a requested product",
-     *      @OA\Parameter(
-     *          name="path",
-     *          description="Key of a requested setting",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string",
-     *              enum= {"admin","vendor"},
-     *              default= "admin",
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested product",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function show(Product $product)
     {
         return response()->json($product->load('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues'), 200);
     }
 
-    /**
-     * @OA\Put(
-     *      path="/api/v2/{path}/products/{slug}",
-     *      operationId="updateProduct",
-     *      tags={"Products"},
-     *      summary="Update a product",
-     *      description="Update a requested product",
-     *      @OA\Parameter(
-     *          name="path",
-     *          description="Key of a requested setting",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string",
-     *              enum= {"admin","vendor"},
-     *              default= "admin",
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a product",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New product data to be updated.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Product")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function update(Request $request, Product $product)
     {
         $validatedData = $request->validate($this->getParamsToValidate());
@@ -268,42 +119,6 @@ class ProductController extends Controller
         return response()->json($product, 200);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/{path}/products/{slug}",
-     *      operationId="deleteProduct",
-     *      tags={"Products"},
-     *      summary="Delete One Product",
-     *      description="Delete one specific product",
-     *      @OA\Parameter(
-     *          name="path",
-     *          description="Key of a requested setting",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string",
-     *              enum= {"admin","vendor"},
-     *              default= "admin",
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested product",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function destroy(Product $product)
     {
         foreach ($product->images as $image) {
@@ -363,43 +178,6 @@ class ProductController extends Controller
         return ShopSubCategory::where('slug', $slug)->first();
     }
 
-    /**
-     * Display a listing of the products by one shop.
-     */
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/shops/{slug}/products",
-     *      operationId="getProductsByShop",
-     *      tags={"Products"},
-     *      summary="Get Products By Shop",
-     *      description="Returns requested list of products",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the shop",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *        name="filter",
-     *        description="Filter",
-     *        required=false,
-     *        in="query",
-     *        @OA\Schema(
-     *            type="string"
-     *        ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function getProductsByShop(Request $request, Shop $shop)
     {
         $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
@@ -450,31 +228,6 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * @OA\Patch(
-     *      path="/api/v2/admin/products/toggle-enable/{slug}",
-     *      operationId="enableProduct",
-     *      tags={"Products"},
-     *      summary="Enable Product",
-     *      description="Enable a product",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the Product",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function toggleEnable(Product $product)
     {
         $product->update(['is_enable' => !$product->is_enable]);
@@ -516,40 +269,6 @@ class ProductController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/brands/{slug}/products",
-     *      operationId="getProductsByBrand",
-     *      tags={"Products"},
-     *      summary="Get Products By Brand",
-     *      description="Returns requested list of products",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the Brand",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *       @OA\Parameter(
-     *        name="filter",
-     *        description="Filter",
-     *        required=false,
-     *        in="query",
-     *        @OA\Schema(
-     *            type="string"
-     *        ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function getProductsByBrand(Request $request, Brand $brand)
     {
         $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);

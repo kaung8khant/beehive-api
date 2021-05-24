@@ -13,40 +13,6 @@ class BrandController extends Controller
 {
     use FileHelper, StringHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/brands",
-     *      operationId="getBrandLists",
-     *      tags={"Brands"},
-     *      summary="Get list of brands",
-     *      description="Returns list of brand",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('brands', 'name', $request->by, $request->order);
@@ -57,30 +23,6 @@ class BrandController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/brands",
-     *      operationId="storeBrand",
-     *      tags={"Brands"},
-     *      summary="Create a brand",
-     *      description="Returns newly created brand",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created brand object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Brand")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -100,69 +42,11 @@ class BrandController extends Controller
         return response()->json($brand, 201);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/brands/{slug}",
-     *      operationId="showBrands",
-     *      tags={"Brands"},
-     *      summary="Get One Brand",
-     *      description="Returns a requested brand",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested brand",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function show(Brand $brand)
     {
         return response()->json($brand->load('products'), 200);
     }
 
-    /**
-     * @OA\Put(
-     *      path="/api/v2/admin/brands/{slug}",
-     *      operationId="updateBrand",
-     *      tags={"Brands"},
-     *      summary="Update a brand",
-     *      description="Update a requested brands",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a brands",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New city data to be updated.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Brand")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function update(Request $request, Brand $brand)
     {
         $brand->update($request->validate([
@@ -180,31 +64,6 @@ class BrandController extends Controller
         return response()->json($brand, 200);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/brands/{slug}",
-     *      operationId="deleteBrand",
-     *      tags={"Brands"},
-     *      summary="Delete One Brand",
-     *      description="Delete one specific brand",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested brand",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function destroy(Brand $brand)
     {
         foreach ($brand->images as $image) {
