@@ -72,8 +72,14 @@ class SmsController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'type' => $request->type,
+            'total_numbers' => count($request->phone_numbers),
             'sent_at' => Carbon::now(),
         ]);
+    }
+
+    public function getSmsCampaigns()
+    {
+        return SmsCampaign::paginate(10);
     }
 
     public function getLogs()
