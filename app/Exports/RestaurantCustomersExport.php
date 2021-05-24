@@ -35,16 +35,16 @@ class RestaurantCustomersExport implements FromQuery, WithHeadings, WithMapping,
         return $customers;
     }
     /**
-     * @var Customer $customer
+     * @var Customer $restaurantCustomer
      */
-    public function map($customer): array
+    public function map($restaurantCustomer): array
     {
         return [
-            $customer->slug,
-            $customer->name,
-            $customer->email,
-            $customer->phone_number,
-            $customer->gender,
+            $restaurantCustomer->slug,
+            $restaurantCustomer->name,
+            $restaurantCustomer->email,
+            $restaurantCustomer->phone_number,
+            $restaurantCustomer->gender,
         ];
     }
 

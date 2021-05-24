@@ -2,10 +2,10 @@
 
 namespace App\Exports;
 
-use App\Models\Product;
-use App\Models\Shop;
-use App\Models\ShopCategory;
-use App\Models\ShopSubCategory;
+use App\Models\Menu;
+use App\Models\Restaurant;
+use App\Models\RestaurantBranch;
+use App\Models\RestaurantCategory;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
@@ -14,7 +14,7 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class RestaurantBranchMenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
     use Exportable;
 
@@ -26,30 +26,29 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
 
     public function query()
     {
-        $shop = Shop::where('slug', $this->params)->firstOrFail();
-        $products = Product::query()->where('shop_id', $shop->id);
-        return $products;
+        $menus =  Menu::query()->whereHas('restaurantBranches', function ($query) {
+            $query->where('slug', $this->params);
+        });
+        return $menus;
     }
 
     /**
-     * @var Product $shopProduct
+     * @var Menus $restaurantBranchMenus
      */
-    public function map($shopProduct): array
+    public function map($restaurantBranchMenus): array
     {
         return [
-            $shopProduct->slug,
-            $shopProduct->name,
-            $shopProduct->description,
-            $shopProduct->price ? $shopProduct->price : '0',
-            $shopProduct->tax ? $shopProduct->tax : '0',
-            $shopProduct->discount ? $shopProduct->discount : '0',
-            $shopProduct->is_enable ? '1' : '0',
-            Shop::where('id', $shopProduct->shop_id)->value('name'),
-            Shop::where('id', $shopProduct->shop_id)->value('slug'),
-            ShopCategory::where('id', $shopProduct->shop_category_id)->value('name'),
-            ShopCategory::where('id', $shopProduct->shop_category_id)->value('slug'),
-            ShopSubCategory::where('id', $shopProduct->shop_sub_category_id)->value('name'),
-            ShopSubCategory::where('id', $shopProduct->shop_sub_category_id)->value('slug'),
+            $restaurantBranchMenus->slug,
+            $restaurantBranchMenus->name,
+            $restaurantBranchMenus->description,
+            $restaurantBranchMenus->price ? $restaurantBranchMenus->price : '0',
+            $restaurantBranchMenus->tax ? $restaurantBranchMenus->tax : '0',
+            $restaurantBranchMenus->discount ? $restaurantBranchMenus->discount : '0',
+            $restaurantBranchMenus->is_enable ? '1' : '0',
+            Restaurant::where('id', $restaurantBranchMenus->restaurant_id)->value('name'),
+            Restaurant::where('id', $restaurantBranchMenus->restaurant_id)->value('slug'),
+            RestaurantCategory::where('id', $restaurantBranchMenus->restaurant_category_id)->value('name'),
+            RestaurantCategory::where('id', $restaurantBranchMenus->restaurant_category_id)->value('slug'),
         ];
     }
 
@@ -63,12 +62,10 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             'tax',
             'discount',
             'is_enable',
-            'shop',
-            'shop_slug',
-            'shop_category',
-            'shop_category_slug',
-            'shop_sub_category',
-            'shop_sub_category_slug',
+            'restaurant',
+            'restaurant_slug',
+            'restaurant_category',
+            'restaurant_category_slug',
         ];
     }
 
@@ -88,8 +85,6 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             'I' => ['alignment' => ['horizontal' => 'center']],
             'J' => ['alignment' => ['horizontal' => 'center']],
             'K' => ['alignment' => ['horizontal' => 'center']],
-            'L' => ['alignment' => ['horizontal' => 'center']],
-            'M' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -104,11 +99,9 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             'F' => 10,
             'G' => 10,
             'H' => 25,
-            'I' => 25,
+            'I' => 15,
             'J' => 25,
             'K' => 25,
-            'L' => 25,
-            'M' => 25,
         ];
     }
 }
