@@ -88,7 +88,6 @@ class RestaurantOrderController extends Controller
             PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
             PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
             $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
-            Log::debug('here => ' . $promocodeAmount);
             $validatedData['promocode_id'] = $promocode->id;
             $validatedData['promocode'] = $promocode->code;
             $validatedData['promocode_amount'] = $promocodeAmount;

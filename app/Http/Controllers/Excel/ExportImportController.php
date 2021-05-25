@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Excel;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
@@ -26,10 +27,10 @@ class ExportImportController extends Controller
                 return response()->json(['message' => 'success'], 200);
             } catch (ValidationException $e) {
                 $this->deleteTmpFilesWhenFailed();
-                return $e->failures();
+                return response()->json($e->failures(), 400);
             } catch (\Exception $e) {
                 $this->deleteTmpFilesWhenFailed();
-                return response()->json(['message' => 'failed'], 400);
+                return response()->json(['message' => $e->getMessage()], 400);
             }
         }
 
