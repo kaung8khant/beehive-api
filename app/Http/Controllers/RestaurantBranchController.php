@@ -21,40 +21,6 @@ class RestaurantBranchController extends Controller
 {
     use StringHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurant-branches",
-     *      operationId="getRestaurantBranchLists",
-     *      tags={"Restaurant Branches"},
-     *      summary="Get list of restaurant branches",
-     *      description="Returns list of restaurant branches",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *        name="filter",
-     *        description="Filter",
-     *        required=false,
-     *        in="query",
-     *        @OA\Schema(
-     *            type="string"
-     *        ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
@@ -67,30 +33,6 @@ class RestaurantBranchController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/restaurant-branches",
-     *      operationId="storeRestaurantBranch",
-     *      tags={"Restaurant Branches"},
-     *      summary="Create a restaurant branch",
-     *      description="Returns newly created restaurant branch",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created restaurant branch object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/RestaurantBranch")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -126,69 +68,11 @@ class RestaurantBranchController extends Controller
         return response()->json($restaurantBranch->load('restaurant', 'township'), 201);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurant-branches/{slug}",
-     *      operationId="showRestaurantBranch",
-     *      tags={"Restaurant Branches"},
-     *      summary="Get One Restaurant Branch",
-     *      description="Returns a requested restaurant branch",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested restaurant branch",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function show(RestaurantBranch $restaurantBranch)
     {
         return response()->json($restaurantBranch->load('restaurant', 'township', 'township.city'), 200);
     }
 
-    /**
-     * @OA\Put(
-     *      path="/api/v2/admin/restaurant-branches/{slug}",
-     *      operationId="updateRestaurantBranch",
-     *      tags={"Restaurant Branches"},
-     *      summary="Update a restaurant branch",
-     *      description="Update a requested restaurant branch",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a restaurant branch",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New restaurant branch data to be updated.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/RestaurantBranch")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function update(Request $request, RestaurantBranch $restaurantBranch)
     {
         $validatedData = $request->validate(
@@ -220,31 +104,6 @@ class RestaurantBranchController extends Controller
         return response()->json($restaurantBranch->load('restaurant', 'township'), 200);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/restaurant-branches/{slug}",
-     *      operationId="deleteRestaurantBranch",
-     *      tags={"Restaurants"},
-     *      summary="Delete One Restaurant Branch",
-     *      description="Delete one specific restaurant branch",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested restaurant branch",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function destroy(RestaurantBranch $restaurantBranch)
     {
         $restaurantBranch->delete();
@@ -261,40 +120,6 @@ class RestaurantBranchController extends Controller
         return Township::where('slug', $slug)->first()->id;
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurants/{slug}/restaurant-branches",
-     *      operationId="getBranchesByRestaurant",
-     *      tags={"Restaurant Branches"},
-     *      summary="Get Branches By Restaurant",
-     *      description="Returns requested list of restaurant branches",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the Restaurant",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *       @OA\Parameter(
-     *        name="filter",
-     *        description="Filter",
-     *        required=false,
-     *        in="query",
-     *        @OA\Schema(
-     *            type="string"
-     *        ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function getBranchesByRestaurant(Request $request, Restaurant $restaurant)
     {
         $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
@@ -305,40 +130,6 @@ class RestaurantBranchController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/townships/{slug}/restaurant-branches",
-     *      operationId="getBranchesByTownship",
-     *      tags={"Restaurant Branches"},
-     *      summary="Get Branches By Restaurant",
-     *      description="Returns requested list of restaurant branches",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the Township",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *        name="filter",
-     *        description="Filter",
-     *        required=false,
-     *        in="query",
-     *        @OA\Schema(
-     *            type="string"
-     *        ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function getBranchesByTownship(Request $request, Township $township)
     {
         $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
@@ -349,31 +140,6 @@ class RestaurantBranchController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Patch(
-     *      path="/api/v2/admin/restaurant-branches/toggle-enable/{slug}",
-     *      operationId="enableRestaurantBranch",
-     *      tags={"Restaurant Branches"},
-     *      summary="Enable Restaurant Branch",
-     *      description="Enable a restaurant branch",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the restaurant branch",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function toggleEnable(RestaurantBranch $restaurantBranch)
     {
         $restaurantBranch->update(['is_enable' => !$restaurantBranch->is_enable]);
@@ -395,39 +161,6 @@ class RestaurantBranchController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/restaurant-branches/add-available-menus/{slug}",
-     *      operationId="addAvailableMenus",
-     *      tags={"Restaurant Branches"},
-     *      summary="Add available menus",
-     *      description="Returns newly added available menus",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the menu",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Added available menus",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/RestaurantBranch")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function addAvailableMenus(Request $request, RestaurantBranch $restaurantBranch)
     {
         $request->validate([
@@ -446,39 +179,6 @@ class RestaurantBranchController extends Controller
         return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/restaurant-branches/remove-available-menus/{slug}",
-     *      operationId="removeAvailableMenus",
-     *      tags={"Restaurant Branches"},
-     *      summary="Remvoe available menus",
-     *      description="Returns newly removed available menus",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the menu",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Removed available menus",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/RestaurantBranch")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function removeAvailableMenus(Request $request, RestaurantBranch $restaurantBranch)
     {
         $request->validate([

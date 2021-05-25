@@ -13,40 +13,6 @@ class ShopSubCategoryController extends Controller
 {
     use StringHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/sub-categories",
-     *      operationId="getSubcategoryLists",
-     *      tags={"Subcategories"},
-     *      summary="Get list of subcategories",
-     *      description="Returns list of subcategories",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          ),
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('shop_sub_categories', 'name', $request->by, $request->order);
@@ -58,30 +24,6 @@ class ShopSubCategoryController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/sub-categories",
-     *      operationId="storeSubcategory",
-     *      tags={"Subcategories"},
-     *      summary="Create a Subcategory",
-     *      description="Returns newly created subcategory",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created subcategory object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/ShopSubCategory")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -98,69 +40,11 @@ class ShopSubCategoryController extends Controller
         return response()->json($subCategory->load('shopCategory'), 201);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/sub-categories/{slug}",
-     *      operationId="showSubcategory",
-     *      tags={"Subcategories"},
-     *      summary="Get One Subcategory",
-     *      description="Returns a requested subcategory",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested subcategory",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function show(ShopSubCategory $shopSubCategory)
     {
         return response()->json($shopSubCategory->load('shopCategory'), 200);
     }
 
-    /**
-     * @OA\Put(
-     *      path="/api/v2/admin/sub-categories/{slug}",
-     *      operationId="updateSubCategory",
-     *      tags={"Subcategories"},
-     *      summary="Update a Subcategory",
-     *      description="Update a requested subcategory",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a subcategory",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New subcategory data to be updated.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/ShopSubCategory")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function update(Request $request, ShopSubCategory $shopSubCategory)
     {
         $validatedData = $request->validate([
@@ -184,31 +68,6 @@ class ShopSubCategoryController extends Controller
         return response()->json($shopSubCategory->load('shopCategory')->unsetRelation('products'), 200);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/sub-categories/{slug}",
-     *      operationId="deleteSubcategory",
-     *      tags={"Subcategories"},
-     *      summary="Delete One Subcategory",
-     *      description="Delete one specific subcategory",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested subcategory",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function destroy(ShopSubCategory $shopSubCategory)
     {
         $shopSubCategory->delete();
@@ -220,40 +79,6 @@ class ShopSubCategoryController extends Controller
         return ShopCategory::where('slug', $slug)->first()->id;
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/shop-categories/{slug}/sub-categories",
-     *      operationId="getSubCategoriesByCategory",
-     *      tags={"Subcategories"},
-     *      summary="Get Subcategories By Shop Category",
-     *      description="Returns list of subcategories",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested shop category",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function getSubCategoriesByCategory(Request $request, ShopCategory $shopCategory)
     {
         $sorting = CollectionHelper::getSorting('shop_sub_categories', 'name', $request->by, $request->order);

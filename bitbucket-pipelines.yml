@@ -73,7 +73,6 @@ pipelines:
                 # install dependencies
                 - composer update
                 - composer install
-                - composer remove darkaonline/l5-swagger
                 - zip -r application.zip . -x "vendor/*" "dotenv" ".profile_env"
 
               caches:

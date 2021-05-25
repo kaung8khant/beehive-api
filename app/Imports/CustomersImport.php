@@ -29,21 +29,30 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
      */
     public function model(array $row)
     {
-        $customer = new Customer([
+        $newCustomer = [
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
-            'name' => $row['name'],
+            'name' => $row['name'] ? $row['name'] : 'Unknown Customer',
             'email' => $row['email'],
             'phone_number' => PhoneNumber::make($row['phone_number'], 'MM'),
-            'password' => $row['password'] ? $row['password'] : Hash::make(StringHelper::generateRandomPassword()),
+            'password' => Hash::make(StringHelper::generateRandomPassword()),
             'gender' => $row['gender'],
             'created_by' => 'admin',
-        ]);
+        ];
+        $customer = Customer::create($newCustomer);
 
-        if ($row['customer_groups']) {
-            $customerGroups = CustomerGroup::whereIn('slug', [$row['customer_groups']])->pluck('id');
-            $customer->customerGroups()->attach($customerGroups);
+        if (isset($row['customer_group_name'])) {
+            if (CustomerGroup::where('name', $row['customer_group_name'])->exists()) {
+                $customerGroupId = CustomerGroup::where('name', $row['customer_group_name'])->first()->id;
+                $customer->customerGroups()->attach($customerGroupId);
+            } else {
+                $group = CustomerGroup::create([
+                    'slug' => StringHelper::generateUniqueSlug(),
+                    'name' => $row['customer_group_name'],
+                ]);
+                $customer->customerGroups()->attach($group->id);
+            }
         }
-        return $customer;
+        return new Customer($newCustomer);
     }
 
     public function chunkSize(): int
@@ -63,10 +72,9 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
     {
         return [
             'email' => 'nullable|email|unique:customers',
-            'name' => 'required|max:255',
+            'name' => 'nullable|max:255',
             'phone_number' => 'required|phone:MM|unique:customers',
-            'password' => 'nullable|string|min:6',
-            'customer_groups' => 'nullable|string',
+            'customer_group_name' => 'nullable|string',
         ];
     }
 

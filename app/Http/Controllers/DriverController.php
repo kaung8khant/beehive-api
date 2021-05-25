@@ -17,40 +17,6 @@ class DriverController extends Controller
 {
     use FileHelper, StringHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/drivers",
-     *      operationId="getDriverLists",
-     *      tags={"Drivers"},
-     *      summary="Get list of drivers",
-     *      description="Returns list of drivers",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *        name="filter",
-     *        description="Filter",
-     *        required=false,
-     *        in="query",
-     *        @OA\Schema(
-     *            type="string"
-     *        ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
@@ -69,30 +35,6 @@ class DriverController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/drivers",
-     *      operationId="storeDriver",
-     *      tags={"Drivers"},
-     *      summary="Create a driver",
-     *      description="Returns newly created driver",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created driver object",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/User")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -126,69 +68,11 @@ class DriverController extends Controller
         return response()->json($driver->refresh()->load('roles'), 201);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/drivers/{slug}",
-     *      operationId="showDriver",
-     *      tags={"Drivers"},
-     *      summary="Get One driver",
-     *      description="Returns a requested driver",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested driver",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function show($slug)
     {
         return User::with('roles')->where('slug', $slug)->firstOrFail();
     }
 
-    /**
-     * @OA\Put(
-     *      path="/api/v2/admin/drivers/{slug}",
-     *      operationId="updateDriver",
-     *      tags={"Drivers"},
-     *      summary="Update a driver",
-     *      description="Update a requested driver",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a driver",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New driver data to be updated.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/User")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function update(Request $request, $slug)
     {
         $driver = User::where('slug', $slug)->firstOrFail();
@@ -226,31 +110,6 @@ class DriverController extends Controller
         return response()->json($driver->refresh()->load('roles'), 200);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/drivers/{slug}",
-     *      operationId="deleteDriver",
-     *      tags={"Drivers"},
-     *      summary="Delete One driver",
-     *      description="Delete one specific driver",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested driver",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function destroy($slug)
     {
         $driver = User::where('slug', $slug)->firstOrFail();
@@ -267,31 +126,6 @@ class DriverController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-     * @OA\Patch(
-     *      path="/api/v2/admin/drivers/toggle-enable/{slug}",
-     *      operationId="enableDriver",
-     *      tags={"Drivers"},
-     *      summary="Enable driver",
-     *      description="Enable a driver",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the driver",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function toggleEnable(User $user)
     {
         if ($user->id === Auth::guard('users')->user()->id) {

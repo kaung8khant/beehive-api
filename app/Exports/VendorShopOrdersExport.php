@@ -2,10 +2,12 @@
 
 namespace App\Exports;
 
-use App\Models\RestaurantOrder;
+use App\Models\ShopOrder;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrderContact;
+use App\Models\Shop;
+use App\Models\ShopOrderContact;
 use App\Models\Township;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
@@ -14,41 +16,46 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Concerns\Exportable;
 
-class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class VendorShopOrdersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    public function __construct()
+    use Exportable;
+
+    public function __construct(string $params)
     {
+        $this->params = $params;
         ini_set('memory_limit', '256M');
     }
 
     public function query()
     {
-        return RestaurantOrder::query();
+        $shop = Shop::where('slug', $this->params)->firstOrFail();
+
+        return ShopOrder::query()->whereHas('vendors', function ($query) use ($shop) {
+            $query->where('shop_id', $shop->id);
+        });
     }
 
     /**
-     * @var RestaurantOrder $restaurantOrder
+     * @var ShopOrder $vendorShopOrder
      */
-    public function map($restaurantOrder): array
+    public function map($vendorShopOrder): array
     {
-        $contact = RestaurantOrderContact::where('restaurant_order_id', $restaurantOrder->id);
+        $contact = ShopOrderContact::where('shop_order_id', $vendorShopOrder->id);
         $floor=$contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
         $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name') . ',' . Township::where('id', $contact->value('township_id'))->value('name');
         return [
-            $restaurantOrder->slug,
-            $restaurantOrder->invoice_id,
-            Carbon::parse($restaurantOrder->order_date)->format('M d Y'),
-            Restaurant::where('id', $restaurantOrder->restaurant_id)->value('name'),
-            RestaurantBranch::where('id', $restaurantOrder->restaurant_branch_id)->value('name'),
-            RestaurantBranch::where('id', $restaurantOrder->restaurant_branch_id)->value('contact_number'),
+            $vendorShopOrder->slug,
+            $vendorShopOrder->invoice_id,
+            Carbon::parse($vendorShopOrder->order_date)->format('M d Y'),
             $contact->value('customer_name'),
             $contact->value('phone_number'),
             $address,
-            $restaurantOrder->total_amount,
-            $restaurantOrder->payment_mode,
-            $restaurantOrder->delivery_mode,
-            $restaurantOrder->special_instruction,
+            $vendorShopOrder->total_amount,
+            $vendorShopOrder->payment_mode,
+            $vendorShopOrder->delivery_mode,
+            $vendorShopOrder->special_instruction,
         ];
     }
 
@@ -58,9 +65,6 @@ class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
             'id',
             'invoice_id',
             'order_date',
-            'restaurant',
-            'branch',
-            'branch_contact_number',
             'customer',
             'customer_phone_number',
             'address',
@@ -86,9 +90,6 @@ class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
             'H' => ['alignment' => ['horizontal' => 'center']],
             'I' => ['alignment' => ['horizontal' => 'center']],
             'J' => ['alignment' => ['horizontal' => 'center']],
-            'K' => ['alignment' => ['horizontal' => 'center']],
-            'L' => ['alignment' => ['horizontal' => 'center']],
-            'M' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -100,14 +101,11 @@ class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
             'C' => 20,
             'D' => 50,
             'E' => 20,
-            'F' => 10,
+            'F' => 70,
             'G' => 20,
             'H' => 15,
-            'I' => 70,
+            'I' => 20,
             'J' => 15,
-            'K' => 15,
-            'L' => 15,
-            'M' => 15,
         ];
     }
 }

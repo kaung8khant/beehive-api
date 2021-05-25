@@ -162,6 +162,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('customer-groups/{slug}/customers/import', 'Group\CustomerGroupController@importCustomerToGroup');
 
             Route::post('sms/send', 'Sms\SmsController@send');
+            Route::get('sms/campaigns', 'Sms\SmsController@getSmsCampaigns');
             Route::get('sms/logs', 'Sms\SmsController@getLogs');
             Route::get('sms/logs/batch/{batchId}', 'Sms\SmsController@getLogsByBatchId');
             Route::get('sms/logs/phone/{phone}', 'Sms\SmsController@getLogsByPhone');
