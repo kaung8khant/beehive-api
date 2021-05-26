@@ -34,7 +34,9 @@ class ShopController extends Controller
                     ->orWhere('slug', $request->filter);
             })
             ->where('is_enable', 1)
-            ->paginate($request->size)->items();
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->items();
 
         return $this->generateResponse($shop, 200);
     }
@@ -53,7 +55,9 @@ class ShopController extends Controller
         $shopCategories = ShopCategory::with('shopSubCategories')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
-            ->get();
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->items();
 
         return $this->generateResponse($shopCategories, 200);
     }
@@ -66,7 +70,7 @@ class ShopController extends Controller
         $shopCategories = ShopCategory::with('shopSubCategories')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
-            ->orderBy('name', 'asc')
+            ->orderBy('id', 'desc')
             ->get();
 
         $categorizedProducts = $shopCategories->map(function ($category) {
@@ -93,7 +97,7 @@ class ShopController extends Controller
 
         $shopTags = ShopTag::where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
-            ->orderBy('name', 'asc')
+            ->orderBy('id', 'desc')
             ->get();
 
         $shopTags = $shopTags->map(function ($shopTag) {
@@ -151,7 +155,7 @@ class ShopController extends Controller
         return $this->generateProductResponse($shopCategory, 200, 'cattag');
     }
 
-    public function getBySubCategory(ShopSubCategory $shopSubCategory)
+    public function getBySubCategory(Request $request, ShopSubCategory $shopSubCategory)
     {
         $shopSubCategory->products = Product::with('shop')
             ->where('shop_sub_category_id', $shopSubCategory->id)
@@ -160,7 +164,8 @@ class ShopController extends Controller
             })
             ->where('is_enable', 1)
             ->orderBy('id', 'desc')
-            ->get();
+            ->paginate($request->size)
+            ->items();
 
         return $this->generateProductResponse($shopSubCategory->load('shopCategory'), 200, 'cattag');
     }

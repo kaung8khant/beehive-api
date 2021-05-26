@@ -234,24 +234,19 @@ class HomeController extends Controller
 
     public function getAds(Request $request)
     {
+        $ads = Ads::where('type', $request->type);
+
         if ($request->source) {
-            $ads = Ads::where('source', $request->source)
-                ->where('type', $request->type)
-                ->get();
-        } else {
-            $ads = Ads::where('type', $request->type)->get();
+            $ads = $ads->where('source', $request->source);
         }
 
-        $result = [];
-
-        foreach ($ads as $data) {
-            $ad = [
+        $result = $ads->paginate(10)->map(function ($data) {
+            return [
                 'images' => $data->images,
                 'source' => $data->source,
                 'type' => $data->type,
             ];
-            array_push($result, $ad);
-        }
+        });
 
         return $this->generateResponse($result, 200);
     }

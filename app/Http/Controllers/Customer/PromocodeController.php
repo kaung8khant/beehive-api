@@ -17,18 +17,18 @@ class PromocodeController extends Controller
 
     public function index(Request $request)
     {
-        $promo_list = Promocode::with('rules');
+        $size = $request->size ? $request->size : 100;
+        $page = $request->page ? $request->page : 1;
+
+        $promoLists = Promocode::with('rules');
+
         if ($request->type) {
-            $promo_list = $promo_list->where('usage', $request->type);
+            $promoLists = $promoLists->where('usage', $request->type);
         }
 
-        $promo_list = $promo_list->get();
-        $result = [];
-        foreach ($promo_list as $promo) {
-            if ($this->validateRule($promo->rules, $promo->id)) {
-                array_push($result, $promo);
-            }
-        }
+        $result = $promoLists->orderBy('id', 'desc')->get()->filter(function ($promo) {
+            return $this->validateRule($promo->rules, $promo->id);
+        })->slice(($page - 1) * $size, $size)->values();
 
         return $this->generateResponse($result, 200);
     }
@@ -38,8 +38,8 @@ class PromocodeController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $request['customer_slug'] = Auth::guard('customers')->user()->slug;
+
         // validate order
-        $validatedData = [];
         if (isset($request['restaurant_branch_slug'])) {
             $validatedData = \App\Helpers\RestaurantOrderHelper::validateOrder($request, true);
         } else {
@@ -76,6 +76,5 @@ class PromocodeController extends Controller
         } else {
             throw new BadRequestException("Promocode not found.", 400);
         }
-
     }
 }
