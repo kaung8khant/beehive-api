@@ -162,7 +162,7 @@ class RestaurantController extends Controller
         return $this->generateResponse($restaurantBranch, 200);
     }
 
-    public function getCategories(Request $request)
+    public function getCategorizedRestaurants(Request $request)
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
@@ -187,12 +187,15 @@ class RestaurantController extends Controller
                     $query->where('is_enable', 1);
                 })
                 ->groupBy('restaurant_id')
+                ->limit(5)
                 ->pluck('restaurant_id');
 
             $category->restaurant_branches = $restaurantIds->map(function ($restaurantId) use ($request) {
                 return RestaurantOrderHelper::getBranches($request)
+                    ->without('restaurant.availableTags')
                     ->where('restaurant_id', $restaurantId)
                     ->orderBy('distance', 'asc')
+                    ->limit(3)
                     ->get();
             })->collapse()->sortBy('distance')->values();
 
@@ -241,14 +244,20 @@ class RestaurantController extends Controller
                 $query->where('is_enable', 1);
             })
             ->groupBy('restaurant_id')
+            ->limit(10)
             ->pluck('restaurant_id');
 
         $categorizedBranches = $restaurantIds->map(function ($restaurantId) use ($request) {
-            return RestaurantOrderHelper::getBranches($request)->where('restaurant_id', $restaurantId)->get();
+            return RestaurantOrderHelper::getBranches($request)
+                ->without('restaurant.availableTags')
+                ->where('restaurant_id', $restaurantId)
+                ->orderBy('distance', 'asc')
+                ->limit(5)
+                ->get();
         });
 
         $category->restaurant_branches = $categorizedBranches->collapse()->sortBy('distance')->values();
-        return $this->generateBranchResponse($category, 200, 'cattag');
+        return $this->generateBranchResponse($category->makeHidden(['created_by', 'updated_by']), 200, 'cattag');
     }
 
     public function getByTag(Request $request, $slug)
