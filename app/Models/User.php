@@ -9,22 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-/**
- * @OA\Schema(
- *      @OA\Xml(name="User"),
- *      @OA\Property(property="username", type="string", example="username"),
- *      @OA\Property(property="name", type="string", example="name"),
- *      @OA\Property(property="phone_number", type="string", example="phone_number"),
- *      @OA\Property(property="password", type="string",example="password"),
- *      @OA\Property(property="roles", type="array", @OA\Items(oneOf={
- *        @OA\Schema(
- *           type="string",example="role_slug"
- *           ),
- *     })),
- *      @OA\Property(property="is_enable", type="boolean",example="true"),
- *      @OA\Property(property="slug", type="string", readOnly=true)
- * )
- */
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;

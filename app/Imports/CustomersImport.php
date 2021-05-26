@@ -31,10 +31,10 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
     {
         $newCustomer = [
             'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
-            'name' => $row['name'],
+            'name' => $row['name'] ? $row['name'] : 'Unknown Customer',
             'email' => $row['email'],
             'phone_number' => PhoneNumber::make($row['phone_number'], 'MM'),
-            'password' => $row['password'] ? $row['password'] : Hash::make(StringHelper::generateRandomPassword()),
+            'password' => Hash::make(StringHelper::generateRandomPassword()),
             'gender' => $row['gender'],
             'created_by' => 'admin',
         ];
@@ -72,9 +72,8 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
     {
         return [
             'email' => 'nullable|email|unique:customers',
-            'name' => 'required|max:255',
+            'name' => 'nullable|max:255',
             'phone_number' => 'required|phone:MM|unique:customers',
-            'password' => 'nullable|string|min:6',
             'customer_group_name' => 'nullable|string',
         ];
     }

@@ -20,40 +20,6 @@ class MenuController extends Controller
 {
     use FileHelper, ResponseHelper, StringHelper;
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/menus",
-     *      operationId="getMenuLists",
-     *      tags={"Menus"},
-     *      summary="Get list of menus",
-     *      description="Returns list of menus",
-     *      @OA\Parameter(
-     *          name="page",
-     *          description="Current Page",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="integer"
-     *          ),
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('menus', 'id', $request->by ? $request->by : 'desc', $request->order);
@@ -75,30 +41,6 @@ class MenuController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Post(
-     *      path="/api/v2/admin/menus",
-     *      operationId="storeMenu",
-     *      tags={"Menus"},
-     *      summary="Create a menu",
-     *      description="Returns newly created menu variation",
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="Created menu",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Menu")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -126,69 +68,11 @@ class MenuController extends Controller
         return response()->json($menu->load('restaurant'), 200);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/menus/{slug}",
-     *      operationId="showMenu",
-     *      tags={"Menus"},
-     *      summary="Get One menu",
-     *      description="Returns a requested menu ",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested menu",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function show(Menu $menu)
     {
         return response()->json($menu->load(['restaurant', 'restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuToppings']), 200);
     }
 
-    /**
-     * @OA\Put(
-     *      path="/api/v2/admin/menus/{slug}",
-     *      operationId="updateMenu",
-     *      tags={"Menus"},
-     *      summary="Update a menu",
-     *      description="Update a requested menu ",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug to identify a menu ",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\RequestBody(
-     *          required=true,
-     *          description="New menu data to be updated.",
-     *          @OA\MediaType(
-     *              mediaType="applications/json",
-     *              @OA\Schema(ref="#/components/schemas/Menu"),
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function update(Request $request, Menu $menu)
     {
         $validatedData = $request->validate($this->getParamsToValidate());
@@ -215,31 +99,6 @@ class MenuController extends Controller
         return response()->json($menu->load('restaurant'), 200);
     }
 
-    /**
-     * @OA\Delete(
-     *      path="/api/v2/admin/menus/{slug}",
-     *      operationId="deleteMenu",
-     *      tags={"Menus"},
-     *      summary="Delete One Menu",
-     *      description="Delete one specific menu",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested menu",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function destroy(Menu $menu)
     {
         foreach ($menu->images as $image) {
@@ -251,40 +110,6 @@ class MenuController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurants/{slug}/menus",
-     *      operationId="getMenusByRestaurant",
-     *      tags={"Menus"},
-     *      summary="Get Menus By Restaurant",
-     *      description="Returns list of menus",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested restaurant",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function getMenusByRestaurant(Request $request, Restaurant $restaurant)
     {
         $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
@@ -307,40 +132,6 @@ class MenuController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * @OA\Get(
-     *      path="/api/v2/admin/restaurant-branches/{slug}/menus",
-     *      operationId="getAvailableMenusByRestaurantBranch",
-     *      tags={"Menus"},
-     *      summary="Get Available Menus By Restaurant Branch",
-     *      description="Returns list of menus",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of a requested restaurant branch",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          description="Filter",
-     *          required=false,
-     *          in="query",
-     *          @OA\Schema(
-     *              type="string"
-     *          ),
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function getMenusByBranch(Request $request, RestaurantBranch $restaurantBranch)
     {
         $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
@@ -492,31 +283,6 @@ class MenuController extends Controller
         return RestaurantCategory::where('slug', $slug)->first()->id;
     }
 
-    /**
-     * @OA\Patch(
-     *      path="/api/v2/admin/menus/toggle-enable/{slug}",
-     *      operationId="enableMenu",
-     *      tags={"Menus"},
-     *      summary="Enable Menu",
-     *      description="Enable a menu",
-     *      @OA\Parameter(
-     *          name="slug",
-     *          description="Slug of the Menu",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation"
-     *      ),
-     *      security={
-     *          {"bearerAuth": {}}
-     *      }
-     *)
-     */
     public function toggleEnable(Menu $menu)
     {
         CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
