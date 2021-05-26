@@ -80,7 +80,7 @@ class ProductController extends Controller
 
     public function getAllBrand()
     {
-        $brand = Brand::orderBy('name', 'asc')->get();
+        $brand = Brand::orderBy('id', 'desc')->paginate(10)->items();
         return $this->generateResponse($brand, 200);
     }
 
@@ -94,6 +94,7 @@ class ProductController extends Controller
             ->orderBy('id', 'desc')
             ->paginate($request->size)
             ->items();
+
         return $this->generateProductResponse($product, 200);
     }
 
@@ -137,7 +138,7 @@ class ProductController extends Controller
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
-            ->inRandomOrder()
+            ->orderBy('id', 'desc')
             ->paginate($request->size)
             ->items();
 
