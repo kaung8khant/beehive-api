@@ -26,7 +26,7 @@ Route::group(['prefix' => 'user'], function () {
     Route::get('restaurants/branches/{restaurantBranch}', 'Customer\RestaurantController@getOneBranch');
     Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
 
-    Route::get('restaurant-categories', 'Customer\RestaurantController@getCategories');
+    Route::get('restaurant-categories', 'Customer\RestaurantController@getCategorizedRestaurants');
     Route::get('restaurant-categories/{category}/restaurants', 'Customer\RestaurantController@getByCategory');
 
     Route::get('restaurant-tags', 'Customer\RestaurantController@getTags');

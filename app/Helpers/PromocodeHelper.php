@@ -6,14 +6,15 @@ use App\Exceptions\BadRequestException;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 trait PromocodeHelper
 {
     public function __construct()
     {
-        // if (Auth::guard('customers')->check()) {
-        //     $this->customer_id = Auth::guard('customers')->user()->id;
-        // }
+        if (Auth::guard('customers')->check()) {
+            $this->customerId = Auth::guard('customers')->user()->id;
+        }
     }
 
     public static function validatePromocodeRules($promocode, $orderItems, $subTotal, $customer, $usage)

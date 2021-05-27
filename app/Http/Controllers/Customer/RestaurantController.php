@@ -162,7 +162,7 @@ class RestaurantController extends Controller
         return $this->generateResponse($restaurantBranch, 200);
     }
 
-    public function getCategories(Request $request)
+    public function getCategorizedRestaurants(Request $request)
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
@@ -176,7 +176,7 @@ class RestaurantController extends Controller
 
         $categoryIds = $branchIds->map(function ($branchId) {
             return CacheHelper::getCategoryIdsByBranch($branchId);
-        })->collapse()->unique()->values();
+        })->collapse()->unique()->slice(($page - 1) * $size, $size)->values();
 
         $categorizedBranches = $categoryIds->map(function ($categoryId) use ($request) {
             $category = CacheHelper::getRestaurantCategory($categoryId);
@@ -191,15 +191,14 @@ class RestaurantController extends Controller
 
             $category->restaurant_branches = $restaurantIds->map(function ($restaurantId) use ($request) {
                 return RestaurantOrderHelper::getBranches($request)
+                    ->without('restaurant.availableTags')
                     ->where('restaurant_id', $restaurantId)
                     ->orderBy('distance', 'asc')
                     ->get();
             })->collapse()->sortBy('distance')->values();
 
             return $category;
-        })->filter(function ($value) {
-            return count($value['restaurant_branches']) > 0;
-        })->values()->slice(($page - 1) * $size, $size);
+        });
 
         return $this->generateBranchResponse($categorizedBranches, 200, 'arrobj');
     }
@@ -235,6 +234,9 @@ class RestaurantController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
+        $size = $request->size ? $request->size : 10;
+        $page = $request->page ? $request->page : 1;
+
         $restaurantIds = Menu::where('restaurant_category_id', $category->id)
             ->where('is_enable', 1)
             ->whereHas('restaurant', function ($query) {
@@ -243,12 +245,15 @@ class RestaurantController extends Controller
             ->groupBy('restaurant_id')
             ->pluck('restaurant_id');
 
-        $categorizedBranches = $restaurantIds->map(function ($restaurantId) use ($request) {
-            return RestaurantOrderHelper::getBranches($request)->where('restaurant_id', $restaurantId)->get();
-        });
+        $category->restaurant_branches = $restaurantIds->map(function ($restaurantId) use ($request) {
+            return RestaurantOrderHelper::getBranches($request)
+                ->without('restaurant.availableTags')
+                ->where('restaurant_id', $restaurantId)
+                ->orderBy('distance', 'asc')
+                ->get();
+        })->collapse()->sortBy('distance')->slice(($page - 1) * $size, $size)->values();
 
-        $category->restaurant_branches = $categorizedBranches->collapse()->sortBy('distance')->values();
-        return $this->generateBranchResponse($category, 200, 'cattag');
+        return $this->generateBranchResponse($category->makeHidden(['created_by', 'updated_by']), 200, 'cattag');
     }
 
     public function getByTag(Request $request, $slug)
