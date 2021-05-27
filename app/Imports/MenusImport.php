@@ -6,6 +6,7 @@ use App\Helpers\StringHelper;
 use App\Models\Menu;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
+use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -26,22 +27,38 @@ class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
      */
     public function model(array $row)
     {
+        $restaurantId = Restaurant::where('slug', $row['restaurant_slug'])->value('id');
+        $restaurant = Restaurant::where('slug', $row['restaurant_slug'])->firstOrFail();
         $newMenu =[
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' =>  isset($row['id']) && $this->transformSlugToId($row['id'])->id,
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'description' => $row['description'],
             'price' => $row['price'],
             'tax' => $row['tax'],
             'discount' => $row['discount'],
             'is_enable' => $row['is_enable'],
-            'restaurant_id' => Restaurant::where('slug', $row['restaurant_slug'])->value('id'),
+            'restaurant_id' => $restaurantId,
             'restaurant_category_id' => RestaurantCategory::where('slug', $row['restaurant_category_slug'])->value('id'),
         ];
-        $menu=Menu::create($newMenu);
-        $restaurant = Restaurant::where('slug', $row['restaurant_slug'])->firstOrFail();
-        foreach ($restaurant->restaurantBranches as $branch) {
-            $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
-            $branch->availableMenus()->attach($availableMenus);
+        if (!isset($row['id'])) {
+            $menu=Menu::create($newMenu);
+            foreach ($restaurant->restaurantBranches as $branch) {
+                $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
+                $branch->availableMenus()->attach($availableMenus);
+            }
+        } else {
+            $exitingMenu = $this->transformSlugToId($row['id']);
+            $oldRestaurantId = $exitingMenu->restaurant_id;
+            if ($oldRestaurantId !== $restaurantId) {
+                $oldRestaurant = Restaurant::where('id', $oldRestaurantId)->firstOrFail();
+                foreach ($oldRestaurant->restaurantBranches as $branch) {
+                    $branch->availableMenus()->detach($exitingMenu->id);
+                }
+                foreach ($restaurant->restaurantBranches as $branch) {
+                    $branch->availableMenus()->attach($exitingMenu->id);
+                }
+            }
         }
         return new Menu($newMenu);
     }
@@ -56,8 +73,9 @@ class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
      */
     public function uniqueBy()
     {
-        return 'slug';
+        return ['slug','id'];
     }
+
 
     public function rules(): array
     {
@@ -71,5 +89,16 @@ class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $menu = Menu::where('slug', $value)->first();
+
+        if (!$menu) {
+            return null;
+        }
+
+        return $menu;
     }
 }

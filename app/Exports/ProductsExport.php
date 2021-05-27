@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
@@ -44,13 +45,15 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             ShopCategory::where('id', $product->shop_category_id)->value('slug'),
             ShopSubCategory::where('id', $product->shop_sub_category_id)->value('name'),
             ShopSubCategory::where('id', $product->shop_sub_category_id)->value('slug'),
+            Brand::where('id', $product->brand_id)->value('name'),
+            Brand::where('id', $product->brand_id)->value('slug'),
         ];
     }
 
     public function headings(): array
     {
         return [
-            'slug',
+            'id',
             'name',
             'description',
             'price',
@@ -63,6 +66,8 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'shop_category_slug',
             'shop_sub_category',
             'shop_sub_category_slug',
+            'brand',
+            'brand_slug',
         ];
     }
 
@@ -84,6 +89,8 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'K' => ['alignment' => ['horizontal' => 'center']],
             'L' => ['alignment' => ['horizontal' => 'center']],
             'M' => ['alignment' => ['horizontal' => 'center']],
+            'N' => ['alignment' => ['horizontal' => 'center']],
+            'O' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -103,6 +110,8 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'K' => 25,
             'L' => 25,
             'M' => 25,
+            'N' => 25,
+            'O' => 25,
         ];
     }
 }
