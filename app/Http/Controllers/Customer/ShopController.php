@@ -53,8 +53,16 @@ class ShopController extends Controller
     public function getCategories(Request $request)
     {
         $shopCategories = ShopCategory::with('shopSubCategories')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
+            ->whereHas('products', function ($query) {
+                $query->where('is_enable', 1)
+                    ->whereHas('shop', function ($q) {
+                        $q->where('is_enable', 1);
+                    });
+            })
+            ->where(function ($query) use ($request) {
+                return $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
             ->orderBy('id', 'desc')
             ->paginate(10)
             ->items();
@@ -64,28 +72,30 @@ class ShopController extends Controller
 
     public function getCatgorizedProduct(Request $request)
     {
-        $size = $request->size ? $request->size : 10;
-        $page = $request->page ? $request->page : 1;
-
         $shopCategories = ShopCategory::with('shopSubCategories')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
+            ->whereHas('products', function ($query) {
+                $query->where('is_enable', 1)
+                    ->whereHas('shop', function ($q) {
+                        $q->where('is_enable', 1);
+                    });
+            })
+            ->where(function ($query) use ($request) {
+                return $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
             ->orderBy('id', 'desc')
-            ->get();
+            ->paginate(10);
 
         $categorizedProducts = $shopCategories->map(function ($category) {
             $category->products = Product::where('shop_category_id', $category->id)
+                ->where('is_enable', 1)
                 ->whereHas('shop', function ($query) {
                     $query->where('is_enable', 1);
                 })
-                ->where('is_enable', 1)
                 ->orderBy('id', 'desc')
-                ->limit(15)
                 ->get();
             return $category;
-        })->filter(function ($value) {
-            return count($value['products']) > 0;
-        })->values()->slice(($page - 1) * $size, $size);
+        });
 
         return $this->generateProductResponse($categorizedProducts, 200, 'arrobj');
     }
@@ -109,12 +119,11 @@ class ShopController extends Controller
                         $query->where('is_enable', 1);
                     })
                     ->where('is_enable', 1)
-                    ->limit(20)
                     ->get();
             })->collapse()->sortByDesc('id')->take(50)->values();
 
             return $shopTag;
-        })->slice(($page - 1) * $size, $size);
+        })->slice(($page - 1) * $size, $size)->values();
 
         return $this->generateProductResponse($shopTags, 200, 'arrobj');
     }
@@ -133,7 +142,6 @@ class ShopController extends Controller
                     $query->where('is_enable', 1);
                 })
                 ->where('is_enable', 1)
-                ->limit(20)
                 ->get();
         })->collapse()->sortByDesc('id')->slice(($page - 1) * $size, $size)->values();
 
