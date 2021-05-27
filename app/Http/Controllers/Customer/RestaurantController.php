@@ -97,6 +97,19 @@ class RestaurantController extends Controller
         }
 
         $restaurantBranches = RestaurantOrderHelper::getBranches($request)
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhereHas('restaurant', function ($q) use ($request) {
+                        $q->where('name', 'LIKE', '%' . $request->filter . '%');
+                    })
+                    ->orWhereHas('availableMenus', function ($q) use ($request) {
+                        $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                            ->orWhere('description', 'LIKE', '%' . $request->filter . '%')
+                            ->orWhereHas('restaurantCategory', function ($p) use ($request) {
+                                $p->where('name', 'LIKE', '%' . $request->filter . '%');
+                            });
+                    });
+            })
             ->orderBy('distance', 'asc')
             ->paginate($request->size)
             ->items();
