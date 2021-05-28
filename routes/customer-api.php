@@ -61,7 +61,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::get('townships', 'Customer\AddressController@getAllTownships');
         Route::get('addresses/get-primary', 'Customer\AddressController@getPrimaryAddress');
         Route::patch('addresses/{address}/set-primary', 'Customer\AddressController@setPrimaryAddress');
-        Route::resource('addresses', 'Customer\AddressController', ['as' => 'customer.addresses', 'except' => ['create', 'edit']]);
+        Route::resource('addresses', 'Customer\AddressController', ['as' => 'customer', 'except' => ['create', 'edit']]);
 
         Route::get('favorites-count', 'Auth\CustomerAuthController@getFavoritesCount');
 
@@ -70,7 +70,7 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('restaurants/{restaurant}/favorites', 'Customer\RestaurantController@setFavoriteRestaurant');
         Route::delete('restaurants/{restaurant}/favorites', 'Customer\RestaurantController@removeFavoriteRestaurant');
 
-        Route::resource('restaurants/orders', 'Customer\RestaurantOrderController', ['as' => 'customer.restaurants']);
+        Route::resource('restaurants/orders', 'Customer\RestaurantOrderController', ['as' => 'customer']);
         Route::post('restaurants/ratings', 'Customer\RestaurantRatingController@store');
         /* Restaurant */
 

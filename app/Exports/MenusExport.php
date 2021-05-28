@@ -47,7 +47,7 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
     public function headings(): array
     {
         return [
-            'slug',
+            'id',
             'name',
             'description',
             'price',

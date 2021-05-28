@@ -29,7 +29,8 @@ class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading, WithU
     public function model(array $row)
     {
         return new Product([
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'description' => $row['description'],
             'price' => $row['price'],
@@ -70,5 +71,16 @@ class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading, WithU
             'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $product = Product::where('slug', $value)->first();
+
+        if (!$product) {
+            return null;
+        }
+
+        return $product->id;
     }
 }

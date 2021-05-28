@@ -55,7 +55,7 @@ class RestaurantBranchMenusExport implements FromQuery, WithHeadings, WithMappin
     public function headings(): array
     {
         return [
-            'slug',
+            'id',
             'name',
             'description',
             'price',

@@ -56,7 +56,7 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
     public function headings(): array
     {
         return [
-            'slug',
+            'id',
             'name',
             'description',
             'price',
