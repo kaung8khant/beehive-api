@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Exceptions\BadRequestException;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
@@ -63,10 +62,16 @@ class PromocodeController extends Controller
             // may require amount validation.
             $promocode = Promocode::where('code', $validatedData['promo_code'])->with('rules')->latest('created_at')->first();
             if (!isset($promocode) && empty($promocode)) {
-                throw new BadRequestException("Promocode not found.", 400);
+                return $this->generateResponse("Promocode not found.", 400, true);
             }
-            PromocodeHelper::validatePromocodeUsage($promocode, $usage);
-            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, $usage);
+            $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, $usage);
+            if (!$validUsage) {
+                return $this->generateShopOrderResponse("Invalid promocode usage for shop.", 422, true);
+            }
+            $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, $usage);
+            if (!$validRule) {
+                return $this->generateShopOrderResponse("Invalid promocode rule.", 422, true);
+            }
             $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], $usage);
 
             $response['promocode_id'] = $promocode->id;
@@ -74,7 +79,7 @@ class PromocodeController extends Controller
             $response['promocode_amount'] = $promocodeAmount;
             return $this->generateResponse($response, 200);
         } else {
-            throw new BadRequestException("Promocode not found.", 400);
+            return $this->generateResponse("Promocode not found.", 400, true);
         }
     }
 }

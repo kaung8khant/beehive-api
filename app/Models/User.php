@@ -42,7 +42,6 @@ class User extends Authenticatable implements JWTSubject
             ->get();
     }
 
-
     public static function boot()
     {
         parent::boot();
@@ -91,9 +90,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(Role::class, 'user_role_map');
     }
 
-    public function driver()
+    public function driverOrder()
     {
-        return $this->hasOne(Driver::class);
+        return $this->hasMany(ShopOrderDriver::class);
     }
 
     public function shop()
