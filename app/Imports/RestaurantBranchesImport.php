@@ -30,7 +30,8 @@ class RestaurantBranchesImport implements ToModel, WithHeadingRow, WithChunkRead
     public function model(array $row)
     {
         return new RestaurantBranch([
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'contact_number' => PhoneNumber::make($row['contact_number'], 'MM'),
             'opening_time' => $row['opening_time'],
@@ -78,5 +79,16 @@ class RestaurantBranchesImport implements ToModel, WithHeadingRow, WithChunkRead
         return [
             'contact_number.phone' => 'Invalid Phone Number',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $branch = RestaurantBranch::where('slug', $value)->first();
+
+        if (!$branch) {
+            return null;
+        }
+
+        return $branch->id;
     }
 }
