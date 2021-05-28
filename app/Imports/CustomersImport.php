@@ -12,12 +12,13 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\Importable;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Tymon\JWTAuth\Claims\Custom;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 
-class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
+class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation, SkipsOnFailure
 {
-    use Importable;
+    use Importable, SkipsFailures;
 
     public function __construct()
     {
@@ -40,20 +41,28 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
             'gender' => $row['gender'],
             'created_by' => 'admin',
         ];
-        if (isset($row['customer_group_name'])) {
+
+
+        $customer = Customer::where('phone_number', $newCustomer['phone_number'])->first();
+
+        if (!$customer) {
             $customer = Customer::create($newCustomer);
+        }
+
+        if (isset($row['customer_group_name'])) {
             if (CustomerGroup::where('name', $row['customer_group_name'])->exists()) {
                 $customerGroupId = CustomerGroup::where('name', $row['customer_group_name'])->first()->id;
-                $customer->customerGroups()->attach($customerGroupId);
             } else {
-                $group = CustomerGroup::create([
+                $customerGroupId = CustomerGroup::create([
                     'slug' => StringHelper::generateUniqueSlug(),
                     'name' => $row['customer_group_name'],
-                ]);
-                $customer->customerGroups()->attach($group->id);
+                ])->id;
+            }
+            if (!$customer->customerGroups()->where('customer_group_id', $customerGroupId)->exists()) {
+                $customer->customerGroups()->attach($customerGroupId);
             }
         }
-        return new Customer($newCustomer);
+        return null;
     }
 
     public function chunkSize(): int
@@ -74,7 +83,7 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
         return [
             'email' => 'nullable|email|unique:customers',
             'name' => 'nullable|max:255',
-            'phone_number' => 'required|phone:MM|unique:customers',
+            'phone_number' => 'required|phone:MM',
             'customer_group_name' => 'nullable|string',
         ];
     }
@@ -96,4 +105,12 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
 
         return $customer->id;
     }
+
+    // /**
+    //  * @param Failure[] $failures
+    //  */
+    // public function onFailure(Failure ...$failures)
+    // {
+    //     // Handle the failures how you'd like.
+    // }
 }

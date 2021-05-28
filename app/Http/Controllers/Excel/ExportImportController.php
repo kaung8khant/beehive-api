@@ -4,13 +4,18 @@ namespace App\Http\Controllers\Excel;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 
 class ExportImportController extends Controller
 {
+    public function __construct()
+    {
+        ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', 300);
+    }
+
     public function import(Request $request, $type)
     {
         $request->validate([
@@ -22,8 +27,12 @@ class ExportImportController extends Controller
 
             try {
                 $_class = '\App\Imports\\' . config("export-import.import.{$type}");
-                Excel::import(new $_class, $file);
-
+                $import = new $_class();
+                $import->import($file);
+                // Excel::import(new $_class, $file);
+                if (count($import->failures()) > 0) {
+                    return response()->json($import->failures(), 400);
+                }
                 return response()->json(['message' => 'success'], 200);
             } catch (ValidationException $e) {
                 $this->deleteTmpFilesWhenFailed();
