@@ -73,19 +73,4 @@ class ShopTagController extends Controller
             })
             ->paginate(10);
     }
-
-    public function import(Request $request)
-    {
-        $validatedData = $request->validate([
-            'shop_tags' => 'nullable|array',
-            'shop_tags.*.name' => 'required|unique:shop_tags',
-        ]);
-
-        foreach ($validatedData['shop_tags'] as $data) {
-            $data['slug'] = $this->generateUniqueSlug();
-            ShopTag::create($data);
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
 }

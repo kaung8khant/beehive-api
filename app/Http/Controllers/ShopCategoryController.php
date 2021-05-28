@@ -86,19 +86,4 @@ class ShopCategoryController extends Controller
             })
             ->paginate(10);
     }
-
-    public function import(Request $request)
-    {
-        $validatedData = $request->validate([
-            'shop_categories' => 'nullable|array',
-            'shop_categories.*.name' => 'required|unique:shop_categories',
-        ]);
-
-        foreach ($validatedData['shop_categories'] as $data) {
-            $data['slug'] = $this->generateUniqueSlug();
-            ShopCategory::create($data);
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
 }

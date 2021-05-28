@@ -47,7 +47,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('customers', 'CustomerController', ['except' => ['create', 'edit']]);
             Route::patch('customers/toggle-enable/{customer}', 'CustomerController@toggleEnable');
-            Route::post('customers/import', 'CustomerController@import');
 
             Route::resource('drivers', 'DriverController', ['except' => ['create', 'edit']]);
             Route::patch('drivers/toggle-enable/{user}', 'DriverController@toggleEnable');
@@ -61,23 +60,18 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /* Shop */
             Route::resource('shop-categories', 'ShopCategoryController', ['except' => ['create', 'edit']]);
-            Route::post('shop-categories/import', 'ShopCategoryController@import');
             Route::resource('sub-categories', 'ShopSubCategoryController', ['except' => ['create', 'edit']]);
-            Route::post('sub-categories/import', 'ShopSubCategoryController@import');
             Route::resource('shop-tags', 'ShopTagController', ['except' => ['create', 'edit']]);
-            Route::post('shop-tags/import', 'ShopTagController@import');
             Route::resource('shops', 'ShopController', ['except' => ['create', 'edit']]);
             Route::patch('shops/toggle-enable/{shop}', 'ShopController@toggleEnable');
             Route::post('shops/status', 'ShopController@multipleStatusUpdate');
             Route::patch('shops/toggle-official/{slug}', 'ShopController@toggleOfficial');
-            Route::post('shops/import', 'ShopController@import');
             Route::get('shops/{slug}/customers', 'ShopController@getCustomersByShop');
             Route::get('shop-categories/{shopCategory}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
             Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
             Route::get('shops/{shop}/ratings', 'ShopRatingController@getShopRatings');
 
             Route::resource('products', 'ProductController', ['except' => ['create', 'edit']]);
-            Route::post('products/import', 'ProductController@import');
             Route::patch('products/toggle-enable/{product}', 'ProductController@toggleEnable');
             Route::post('products/status', 'ProductController@multipleStatusUpdate');
             Route::get('shops/{shop}/products', 'ProductController@getProductsByShop');
@@ -93,22 +87,17 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('brands', 'BrandController', ['except' => ['create', 'edit']]);
             Route::get('brands/{brand}/products', 'ProductController@getProductsByBrand');
             Route::get('brands/{slug}/shops', 'ShopController@getShopsByBrand');
-            Route::post('brands/import', 'BrandController@import');
             /* Shop */
 
             /* Restaurant */
             Route::resource('restaurant-categories', 'RestaurantCategoryController', ['except' => ['create', 'edit']]);
-            Route::post('restaurant-categories/import', 'RestaurantCategoryController@import');
             Route::resource('restaurant-tags', 'RestaurantTagController', ['except' => ['create', 'edit']]);
-            Route::post('restaurant-tags/import', 'RestaurantTagController@import');
             Route::resource('restaurants', 'RestaurantController', ['except' => ['create', 'edit']]);
-            Route::post('restaurants/import', 'RestaurantController@import');
             Route::patch('restaurants/toggle-enable/{restaurant}', 'RestaurantController@toggleEnable');
             Route::post('restaurants/status', 'RestaurantController@multipleStatusUpdate');
             Route::patch('restaurants/toggle-official/{slug}', 'RestaurantController@toggleOfficial');
             Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
             Route::resource('menus', 'MenuController', ['except' => ['create', 'edit']]);
-            Route::post('menus/import', 'MenuController@import');
             Route::resource('menu-variations', 'MenuVariationController', ['except' => ['create', 'edit']]);
             Route::resource('menu-variation-values', 'MenuVariationValueController', ['except' => ['create', 'edit']]);
             Route::resource('menu-toppings', 'MenuToppingController', ['except' => ['create', 'edit']]);
@@ -127,7 +116,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
             Route::patch('restaurant-branches/toggle-enable/{restaurantBranch}', 'RestaurantBranchController@toggleEnable');
             Route::post('restaurant-branches/status', 'RestaurantBranchController@multipleStatusUpdate');
-            Route::post('restaurant-branches/import', 'RestaurantBranchController@import');
             Route::get('restaurant-branches/{restaurantBranch}/customers', 'RestaurantBranchController@getRestaurantBranchByCustomers');
             Route::get('restaurants/{restaurant}/restaurant-branches', 'RestaurantBranchController@getBranchesByRestaurant');
             Route::get('townships/{township}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');
@@ -158,8 +146,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('customer-groups/add/{slug}', 'Group\CustomerGroupController@addCustomersToGroup');
             Route::delete('customer-groups/remove/{slug}', 'Group\CustomerGroupController@removeCustomersFromGroup');
             Route::get('customer-groups/{slug}/customers', 'Group\CustomerGroupController@getCustomersByGroup');
-            Route::post('customer-groups/import', 'Group\CustomerGroupController@import');
-            Route::post('customer-groups/{slug}/customers/import', 'Group\CustomerGroupController@importCustomerToGroup');
 
             Route::post('sms/send', 'Sms\SmsController@send');
             Route::get('sms/campaigns', 'Sms\SmsController@getSmsCampaigns');
