@@ -73,4 +73,9 @@ class RestaurantOrder extends BaseModel
     {
         return $this->hasMany(RestaurantRating::class);
     }
+
+    public function drivers()
+    {
+        return $this->hasMany(RestaurantOrderDriver::class);
+    }
 }

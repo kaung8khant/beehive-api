@@ -51,7 +51,7 @@ trait ShopOrderHelper
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
-            throw new BadRequestException($validator->errors()->first(), 400);
+            return $validator->errors()->first();
         }
 
         return $validator->validated();

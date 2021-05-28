@@ -2,7 +2,6 @@
 
 namespace App\Helpers;
 
-use App\Exceptions\BadRequestException;
 use App\Models\Menu;
 use App\Models\MenuTopping;
 use App\Models\MenuVariationValue;
@@ -55,7 +54,7 @@ trait RestaurantOrderHelper
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
-            throw new BadRequestException($validator->errors()->first(), 400);
+            return $validator->errors()->first();
         }
         return $validator->validated();
     }
@@ -106,7 +105,7 @@ trait RestaurantOrderHelper
             $variationsCount = Menu::where('slug', $value['slug'])->first()->menuVariations()->count();
 
             if ($variationsCount > 0 && empty($value['variation_value_slugs'])) {
-                throw new BadRequestException('The order_items.' . $key . '.variation_value_slugs is required.', 400);
+                return 'The order_items.' . $key . '.variation_value_slugs is required.';
             }
         }
     }

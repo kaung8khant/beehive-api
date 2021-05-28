@@ -52,4 +52,9 @@ class ShopOrder extends BaseModel
     {
         return $this->hasMany(ShopOrderVendor::class);
     }
+
+    public function drivers()
+    {
+        return $this->hasMany(ShopOrderDriver::class);
+    }
 }

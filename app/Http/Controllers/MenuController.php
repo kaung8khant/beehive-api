@@ -96,6 +96,17 @@ class MenuController extends Controller
             $this->createToppings($menu->id, $validatedData['menu_toppings']);
         }
 
+        if ($menu->restaurant_id!==$validatedData['restaurant_id']) {
+            $restaurant = Restaurant::where('slug', $request->restaurant_slug)->firstOrFail();
+            $oldRestaurant = Restaurant::where('id', $menu->restaurant_id)->firstOrFail();
+            foreach ($oldRestaurant->restaurantBranches as $branch) {
+                $branch->availableMenus()->detach($menu->id);
+            }
+            foreach ($restaurant->restaurantBranches as $branch) {
+                $branch->availableMenus()->attach($menu->id);
+            }
+        }
+
         return response()->json($menu->load('restaurant'), 200);
     }
 

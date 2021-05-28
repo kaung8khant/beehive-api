@@ -36,14 +36,10 @@ Route::group(['prefix' => 'vendor'], function () {
         /* menus */
         Route::get('restaurant-branches/{restaurantBranch}/menus', 'MenuController@getMenusByBranch');
         Route::get('restaurant-branches/{restaurantBranch}/menus-with-additionals', 'MenuController@getMenusByBranchWithAdditionals');
-        Route::get('menus/{slug}', 'MenuController@show');
-        Route::post('menus', 'MenuController@store');
-        Route::post('menus/import', 'MenuController@import');
-        Route::put('menus/{slug}', 'MenuController@update');
         Route::post('menus/status', 'MenuController@multipleStatusUpdate');
         Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
         Route::post('menus/multiple-delete', 'MenuController@multipleDelete');
-        Route::delete('menus/{slug}', 'MenuController@destroy');
+        Route::resource('menus', 'MenuController', ['except' => ['create', 'edit']]);
 
         Route::post('restaurant-branches/{restaurantBranch}/menus/{menu}', 'RestaurantBranchController@toggleAvailable');
 
@@ -85,13 +81,10 @@ Route::group(['prefix' => 'vendor'], function () {
 
         /* products */
         Route::get('shops/{shop}/products', 'ProductController@getProductsByShop');
-        Route::get('products/{slug}', 'ProductController@show');
-        Route::post('products', 'ProductController@store');
-        Route::put('products/{slug}', 'ProductController@update');
-        Route::delete('products/{slug}', 'ProductController@destroy');
+
+        Route::resource('products', 'ProductController', ['except' => ['create', 'edit']]);
         Route::patch('products/toggle-enable/{product}', 'ProductController@toggleEnable');
         Route::post('products/status', 'ProductController@multipleStatusUpdate');
-        Route::post('products/import', 'ProductController@import');
         Route::post('products/multiple-delete', 'ProductController@multipleDelete');
 
         Route::get('products/{product}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
