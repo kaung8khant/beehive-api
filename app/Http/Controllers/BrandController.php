@@ -73,19 +73,4 @@ class BrandController extends Controller
         $brand->delete();
         return response()->json(['message' => 'successfully deleted'], 200);
     }
-
-    public function import(Request $request)
-    {
-        $validatedData = $request->validate([
-            'brands' => 'nullable|array',
-            'brands.*.name' => 'required|unique:brands',
-        ]);
-
-        foreach ($validatedData['brands'] as $data) {
-            $data['slug'] = $this->generateUniqueSlug();
-            Brand::create($data);
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
 }

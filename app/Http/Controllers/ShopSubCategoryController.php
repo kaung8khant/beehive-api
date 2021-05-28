@@ -91,21 +91,4 @@ class ShopSubCategoryController extends Controller
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
-
-    public function import(Request $request)
-    {
-        $validatedData = $request->validate([
-            'shop_sub_categories' => 'nullable|array',
-            'shop_sub_categories.*.name' => 'required|unique:shop_sub_categories',
-            'shop_sub_categories.*.shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
-        ]);
-
-        foreach ($validatedData['shop_sub_categories'] as $data) {
-            $data['slug'] = $this->generateUniqueSlug();
-            $data['shop_category_id'] = $this->getShopCategoryId($data['shop_category_slug']);
-            ShopSubCategory::create($data);
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
 }

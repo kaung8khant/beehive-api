@@ -172,37 +172,6 @@ class ShopController extends Controller
         return Township::where('slug', $slug)->first()->id;
     }
 
-    public function import(Request $request)
-    {
-        $validatedData = $request->validate(
-            [
-                'shops' => 'nullable|array',
-                'shops.*.name' => 'required|unique:shops',
-                'shops.*.is_enable' => 'required|boolean',
-                'shops.*.is_official' => 'required|boolean',
-                'shops.*.address' => 'nullable',
-                'shops.*.contact_number' => 'required|phone:MM',
-                'shops.*.opening_time' => 'required|date_format:H:i',
-                'shops.*.closing_time' => 'required|date_format:H:i',
-                'shops.*.latitude' => 'required|numeric',
-                'shops.*.longitude' => 'required|numeric',
-                'shops.*.township_slug' => 'nullable|exists:App\Models\Township,slug',
-            ],
-            [
-                'shops*.contact_number.phone' => 'Invalid phone number.',
-            ]
-        );
-
-        foreach ($validatedData['shops'] as $data) {
-            $data['contact_number'] = PhoneNumber::make($data['contact_number'], 'MM');
-            $data['township_id'] = $this->getTownshipIdBySlug($data['township_slug']);
-            $data['slug'] = $this->generateUniqueSlug();
-            Shop::create($data);
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
-
     public function getShopsByBrand(Request $request, Brand $brand)
     {
         $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
