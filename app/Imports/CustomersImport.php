@@ -13,6 +13,7 @@ use Maatwebsite\Excel\Concerns\WithUpserts;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Tymon\JWTAuth\Claims\Custom;
 
 class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
 {
@@ -30,7 +31,8 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
     public function model(array $row)
     {
         $newCustomer = [
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'] ? $row['name'] : 'Unknown Customer',
             'email' => $row['email'],
             'phone_number' => PhoneNumber::make($row['phone_number'], 'MM'),
@@ -38,9 +40,8 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
             'gender' => $row['gender'],
             'created_by' => 'admin',
         ];
-        $customer = Customer::create($newCustomer);
-
         if (isset($row['customer_group_name'])) {
+            $customer = Customer::create($newCustomer);
             if (CustomerGroup::where('name', $row['customer_group_name'])->exists()) {
                 $customerGroupId = CustomerGroup::where('name', $row['customer_group_name'])->first()->id;
                 $customer->customerGroups()->attach($customerGroupId);
@@ -83,5 +84,16 @@ class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, With
         return [
             'phone_number.phone' => 'Invalid Phone Number',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $customer = Customer::where('slug', $value)->first();
+
+        if (!$customer) {
+            return null;
+        }
+
+        return $customer->id;
     }
 }

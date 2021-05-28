@@ -30,7 +30,8 @@ class ShopsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
     public function model(array $row)
     {
         return new Shop([
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'contact_number' => PhoneNumber::make($row['contact_number'], 'MM'),
             'opening_time' => $row['opening_time'],
@@ -78,5 +79,16 @@ class ShopsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpse
         return [
             'contact_number.phone' => 'Invalid Phone Number',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $shop = Shop::where('slug', $value)->first();
+
+        if (!$shop) {
+            return null;
+        }
+
+        return $shop->id;
     }
 }

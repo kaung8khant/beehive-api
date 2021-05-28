@@ -111,10 +111,9 @@ class RestaurantController extends Controller
                     });
             })
             ->orderBy('distance', 'asc')
-            ->paginate($request->size)
-            ->items();
+            ->paginate($request->size);
 
-        return $this->generateBranchResponse($restaurantBranches, 200);
+        return $this->generateBranchResponse($restaurantBranches, 200, 'array', $restaurantBranches->lastPage());
     }
 
     public function getOneBranch(RestaurantBranch $restaurantBranch)

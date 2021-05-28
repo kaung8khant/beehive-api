@@ -25,7 +25,8 @@ class ShopTagsImport implements ToModel, WithHeadingRow, WithChunkReading, WithU
     public function model(array $row)
     {
         return new ShopTag([
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
         ]);
     }
@@ -48,5 +49,16 @@ class ShopTagsImport implements ToModel, WithHeadingRow, WithChunkReading, WithU
         return [
             'name' => 'required|unique:shop_tags',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $shopTag = ShopTag::where('slug', $value)->first();
+
+        if (!$shopTag) {
+            return null;
+        }
+
+        return $shopTag->id;
     }
 }

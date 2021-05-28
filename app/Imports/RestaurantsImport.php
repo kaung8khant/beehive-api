@@ -30,23 +30,26 @@ class RestaurantsImport implements ToModel, WithHeadingRow, WithChunkReading, Wi
     public function model(array $row)
     {
         $newRestaurant =[
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'is_enable' => $row['is_enable'],
         ];
-        $restaurant=Restaurant::create($newRestaurant);
-        RestaurantBranch::create([
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
-            'name' => $row['branch_name'],
-            'contact_number' => PhoneNumber::make($row['branch_contact_number'], 'MM'),
-            'opening_time' => $row['branch_opening_time'],
-            'closing_time' => $row['branch_closing_time'],
-            'latitude' => $row['branch_latitude'],
-            'longitude' => $row['branch_longitude'],
-            'address' => $row['branch_address'],
-            'township_id' => Township::where('slug', $row['branch_township_slug'])->value('id'),
-            'restaurant_id' => $restaurant->id,
-        ]);
+        if (!isset($row['id'])) {
+            $restaurant=Restaurant::create($newRestaurant);
+            RestaurantBranch::create([
+                'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+                'name' => $row['branch_name'],
+                'contact_number' => PhoneNumber::make($row['branch_contact_number'], 'MM'),
+                'opening_time' => $row['branch_opening_time'],
+                'closing_time' => $row['branch_closing_time'],
+                'latitude' => $row['branch_latitude'],
+                'longitude' => $row['branch_longitude'],
+                'address' => $row['branch_address'],
+                'township_id' => Township::where('slug', $row['branch_township_slug'])->value('id'),
+                'restaurant_id' => $restaurant->id,
+            ]);
+        }
         return new Restaurant($newRestaurant);
     }
 
@@ -60,7 +63,7 @@ class RestaurantsImport implements ToModel, WithHeadingRow, WithChunkReading, Wi
      */
     public function uniqueBy()
     {
-        return 'slug';
+        return ['slug','id'];
     }
 
     public function rules(): array
@@ -84,5 +87,16 @@ class RestaurantsImport implements ToModel, WithHeadingRow, WithChunkReading, Wi
         return [
             'contact_number.phone' => 'Invalid Phone Number',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $restaurant = Restaurant::where('slug', $value)->first();
+
+        if (!$restaurant) {
+            return null;
+        }
+
+        return $restaurant->id;
     }
 }

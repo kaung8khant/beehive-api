@@ -24,8 +24,10 @@ class BrandsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUps
      */
     public function model(array $row)
     {
+        $brandId = isset($row['id']) && $this->transformSlugToId($row['id']);
         return new Brand([
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' => $brandId,
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
         ]);
     }
@@ -43,10 +45,22 @@ class BrandsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUps
         return 'slug';
     }
 
+
     public function rules(): array
     {
         return [
             'name' => 'required|unique:brands',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $brand = Brand::where('slug', $value)->first();
+
+        if (!$brand) {
+            return null;
+        }
+
+        return $brand->id;
     }
 }

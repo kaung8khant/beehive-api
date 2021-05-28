@@ -25,7 +25,8 @@ class CustomerGroupsImport implements ToModel, WithHeadingRow, WithChunkReading,
     public function model(array $row)
     {
         return new CustomerGroup([
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
             'description' => $row['description'],
         ]);
@@ -50,5 +51,16 @@ class CustomerGroupsImport implements ToModel, WithHeadingRow, WithChunkReading,
             'name' => 'required|max:255',
             'description' => 'nullable|string',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $customerGroup = CustomerGroup::where('slug', $value)->first();
+
+        if (!$customerGroup) {
+            return null;
+        }
+
+        return $customerGroup->id;
     }
 }

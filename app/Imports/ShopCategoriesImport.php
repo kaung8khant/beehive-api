@@ -25,7 +25,8 @@ class ShopCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading,
     public function model(array $row)
     {
         return new ShopCategory([
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
         ]);
     }
@@ -48,5 +49,16 @@ class ShopCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading,
         return [
             'name' => 'required|unique:shop_categories',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $shopCategory = ShopCategory::where('slug', $value)->first();
+
+        if (!$shopCategory) {
+            return null;
+        }
+
+        return $shopCategory->id;
     }
 }

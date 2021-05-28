@@ -25,7 +25,8 @@ class RestaurantCategoriesImport implements ToModel, WithHeadingRow, WithChunkRe
     public function model(array $row)
     {
         return new RestaurantCategory([
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
         ]);
     }
@@ -48,5 +49,16 @@ class RestaurantCategoriesImport implements ToModel, WithHeadingRow, WithChunkRe
         return [
             'name' => 'required|unique:restaurant_categories',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $restaurantCategory = RestaurantCategory::where('slug', $value)->first();
+
+        if (!$restaurantCategory) {
+            return null;
+        }
+
+        return $restaurantCategory->id;
     }
 }
