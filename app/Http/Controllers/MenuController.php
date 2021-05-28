@@ -89,11 +89,15 @@ class MenuController extends Controller
         if ($request->menu_variations) {
             $menu->menuVariations()->delete();
             $this->createVariations($menu->id, $validatedData['menu_variations']);
+        } else {
+            $menu->menuVariations()->delete();
         }
 
         if ($request->menu_toppings) {
             $menu->menuToppings()->delete();
             $this->createToppings($menu->id, $validatedData['menu_toppings']);
+        } else {
+            $menu->menuToppings()->delete();
         }
 
         if ($menu->restaurant_id!==$validatedData['restaurant_id']) {

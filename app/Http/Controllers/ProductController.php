@@ -114,6 +114,8 @@ class ProductController extends Controller
         if ($request->product_variations) {
             $product->productVariations()->delete();
             $this->createProductVariation($product->id, $validatedData['product_variations']);
+        } else {
+            $product->productVariations()->delete();
         }
 
         return response()->json($product, 200);
