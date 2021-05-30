@@ -52,16 +52,6 @@ class ImportCustomer implements ShouldQueue, ShouldBeUnique
     }
 
     /**
-     * Get the cache driver for the unique job lock.
-     *
-     * @return \Illuminate\Contracts\Cache\Repository
-     */
-    public function uniqueVia()
-    {
-        return Cache::driver('database');
-    }
-
-    /**
      * Execute the job.
      *
      * @return void
