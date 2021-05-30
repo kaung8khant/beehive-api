@@ -14,6 +14,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Propaganistas\LaravelPhone\PhoneNumber;
+use Illuminate\Database\QueryException;
 
 class ImportCustomer implements ShouldQueue, ShouldBeUnique
 {
@@ -36,6 +37,8 @@ class ImportCustomer implements ShouldQueue, ShouldBeUnique
      */
     public function __construct($uniqueKey, $rows)
     {
+        ini_set('max_execution_time', 300);
+
         $this->uniqueKey = $uniqueKey;
         $this->rows = $rows;
     }
@@ -90,7 +93,12 @@ class ImportCustomer implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$customer) {
-                    $customer = Customer::create($customerData);
+                    try {
+                        $customer = Customer::create($customerData);
+                    } catch (QueryException $e) {
+                        $customer = Customer::where('phone_number', $phoneNumber)->first();
+                        $customer->update($customerData);
+                    }
                 } else {
                     $customerData['slug'] = $customer->slug;
                     $customer->update($customerData);
@@ -107,7 +115,6 @@ class ImportCustomer implements ShouldQueue, ShouldBeUnique
                     }
 
                     if (!$customer->customerGroups()->where('customer_group_id', $customerGroup->id)->exists()) {
-                        // $customer->customerGroups()->detach($customerGroup->id);
                         $customer->customerGroups()->attach($customerGroup->id);
                     }
                 }
