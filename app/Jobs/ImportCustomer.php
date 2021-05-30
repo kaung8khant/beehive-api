@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Propaganistas\LaravelPhone\PhoneNumber;
@@ -48,6 +49,16 @@ class ImportCustomer implements ShouldQueue, ShouldBeUnique
     public function uniqueId()
     {
         return $this->uniqueKey;
+    }
+
+    /**
+     * Get the cache driver for the unique job lock.
+     *
+     * @return \Illuminate\Contracts\Cache\Repository
+     */
+    public function uniqueVia()
+    {
+        return Cache::driver('database');
     }
 
     /**
