@@ -21,7 +21,7 @@ class CustomersImport implements ToCollection, WithHeadingRow
 
     public function collection(Collection $rows)
     {
-        $this->validate($rows);
+        // $this->validate($rows);
 
         $rows = $rows->toArray();
         $workerCount = $this->calculateWorkerCount($rows);
