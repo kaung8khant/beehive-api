@@ -16,7 +16,7 @@ class CustomersImport implements ToCollection, WithHeadingRow
 
     public function __construct()
     {
-        $this->batchPerWorker = 500;
+        $this->batchPerWorker = 200;
     }
 
     public function collection(Collection $rows)
