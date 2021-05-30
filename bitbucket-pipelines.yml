@@ -71,6 +71,7 @@ pipelines:
                 # install composer
                 - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
                 # install dependencies
+                - composer update
                 - composer install
                 - zip -r application.zip . -x "vendor/*" "dotenv" ".profile_env"
 
