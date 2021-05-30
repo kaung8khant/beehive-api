@@ -73,19 +73,4 @@ class RestaurantTagController extends Controller
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
-
-    public function import(Request $request)
-    {
-        $validatedData = $request->validate([
-            'restaurant_tags' => 'nullable|array',
-            'restaurant_tags.*.name' => 'required|unique:restaurant_tags',
-        ]);
-
-        foreach ($validatedData['restaurant_tags'] as $data) {
-            $data['slug'] = $this->generateUniqueSlug();
-            RestaurantTag::create($data);
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
 }

@@ -89,11 +89,15 @@ class MenuController extends Controller
         if ($request->menu_variations) {
             $menu->menuVariations()->delete();
             $this->createVariations($menu->id, $validatedData['menu_variations']);
+        } else {
+            $menu->menuVariations()->delete();
         }
 
         if ($request->menu_toppings) {
             $menu->menuToppings()->delete();
             $this->createToppings($menu->id, $validatedData['menu_toppings']);
+        } else {
+            $menu->menuToppings()->delete();
         }
 
         if ($menu->restaurant_id!==$validatedData['restaurant_id']) {
@@ -334,35 +338,6 @@ class MenuController extends Controller
 
             CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
             $menu->delete();
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
-
-    public function import(Request $request)
-    {
-        $validatedData = $request->validate([
-            'menus' => 'nullable|array',
-            'menus.*.name' => 'required',
-            'menus.*.description' => 'nullable',
-            'menus.*.price' => 'required|numeric',
-            'menus.*.tax' => 'required|numeric',
-            'menus.*.discount' => 'required|numeric',
-            'menus.*.is_enable' => 'required|boolean',
-            'menus.*.restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-            'menus.*.restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
-        ]);
-
-        foreach ($validatedData['menus'] as $data) {
-            $data['slug'] = $this->generateUniqueSlug();
-            $restaurant = Restaurant::where('slug', $data['restaurant_slug'])->firstOrFail();
-            $data['restaurant_id'] = $restaurant->id;
-            $data['restaurant_category_id'] = $this->getRestaurantCategoryId($data['restaurant_category_slug']);
-            $menu = Menu::create($data);
-            foreach ($restaurant->restaurantBranches as $branch) {
-                $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
-                $branch->availableMenus()->attach($availableMenus);
-            }
         }
 
         return response()->json(['message' => 'Success.'], 200);

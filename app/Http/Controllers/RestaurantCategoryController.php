@@ -89,19 +89,4 @@ class RestaurantCategoryController extends Controller
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
-
-    public function import(Request $request)
-    {
-        $validatedData = $request->validate([
-            'restaurant_categories' => 'nullable|array',
-            'restaurant_categories.*.name' => 'required|unique:restaurant_categories',
-        ]);
-
-        foreach ($validatedData['restaurant_categories'] as $data) {
-            $data['slug'] = $this->generateUniqueSlug();
-            RestaurantCategory::create($data);
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
 }
