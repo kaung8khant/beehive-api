@@ -29,7 +29,7 @@ class CustomersImport implements ToCollection, WithHeadingRow
         for ($i = 0; $i < $workerCount; $i++) {
             $uniqueKey = StringHelper::generateUniqueSlug();
             $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
-            ImportCustomer::dispatch($uniqueKey, $rowsBatch)->onConnection('database');
+            ImportCustomer::dispatch($uniqueKey, $rowsBatch);
         }
     }
 
