@@ -2,86 +2,85 @@
 
 namespace App\Imports;
 
-use App\Models\Customer;
-use Maatwebsite\Excel\Concerns\ToModel;
+use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
-use App\Models\CustomerGroup;
-use Propaganistas\LaravelPhone\PhoneNumber;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+use App\Jobs\ImportCustomer;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithUpserts;
-use Illuminate\Support\Facades\Hash;
-use Maatwebsite\Excel\Concerns\Importable;
-use Maatwebsite\Excel\Concerns\WithValidation;
 
-class CustomersImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
+class CustomersImport implements ToCollection, WithHeadingRow
 {
-    use Importable;
+    protected $batchPerWorker;
 
     public function __construct()
     {
-        ini_set('memory_limit', '256M');
+        $this->batchPerWorker = 200;
     }
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
-    {
-        $newCustomer = [
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
-            'name' => $row['name'] ? $row['name'] : 'Unknown Customer',
-            'email' => $row['email'],
-            'phone_number' => PhoneNumber::make($row['phone_number'], 'MM'),
-            'password' => Hash::make(StringHelper::generateRandomPassword()),
-            'gender' => $row['gender'],
-            'created_by' => 'admin',
-        ];
-        $customer = Customer::create($newCustomer);
 
-        if (isset($row['customer_group_name'])) {
-            if (CustomerGroup::where('name', $row['customer_group_name'])->exists()) {
-                $customerGroupId = CustomerGroup::where('name', $row['customer_group_name'])->first()->id;
-                $customer->customerGroups()->attach($customerGroupId);
-            } else {
-                $group = CustomerGroup::create([
-                    'slug' => StringHelper::generateUniqueSlug(),
-                    'name' => $row['customer_group_name'],
-                ]);
-                $customer->customerGroups()->attach($group->id);
+    public function collection(Collection $rows)
+    {
+        // $this->validate($rows);
+
+        $rows = $rows->toArray();
+        $workerCount = $this->calculateWorkerCount($rows);
+
+        for ($i = 0; $i < $workerCount; $i++) {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
+            ImportCustomer::dispatch($uniqueKey, $rowsBatch);
+        }
+    }
+
+    private function validate($rows)
+    {
+        $validatorErrors = [];
+
+        foreach ($rows as $key => $row) {
+            $validateRow = $row->toArray();
+
+            if (isset($row['phone_number'])) {
+                $validateRow['phone_number'] = str_replace([' ', '-'], '', $row['phone_number']);
+            }
+
+            $validator = Validator::make(
+                $validateRow,
+                [
+                    'name' => 'nullable|max:255',
+                    'phone_number' => 'required|phone:MM',
+                    'email' => 'nullable|email|unique:customers',
+                    'customer_group_name' => 'nullable|string',
+                ],
+                [
+                    'phone_number.phone' => 'Invalid phone number.',
+                ]
+            );
+
+            if ($validator->fails()) {
+                $validatorErrors[] = [
+                    'row' => $key + 2,
+                    'name' => $row['name'],
+                    'phone_number' => $row['phone_number'],
+                    'errors' => $validator->errors(),
+                ];
             }
         }
-        return new Customer($newCustomer);
+
+        if (count($validatorErrors) > 0) {
+            throw new ImportException(json_encode($validatorErrors));
+        }
     }
 
-    public function chunkSize(): int
+    private function calculateWorkerCount($rows)
     {
-        return 1000;
-    }
+        $rowCount = count($rows);
+        $workerCount = intval($rowCount / $this->batchPerWorker);
 
-    /**
-     * @return string|array
-     */
-    public function uniqueBy()
-    {
-        return 'slug';
-    }
+        if ($rowCount % $this->batchPerWorker !== 0) {
+            $workerCount += 1;
+        }
 
-    public function rules(): array
-    {
-        return [
-            'email' => 'nullable|email|unique:customers',
-            'name' => 'nullable|max:255',
-            'phone_number' => 'required|phone:MM|unique:customers',
-            'customer_group_name' => 'nullable|string',
-        ];
-    }
-
-    public function customValidationMessages()
-    {
-        return [
-            'phone_number.phone' => 'Invalid Phone Number',
-        ];
+        return $workerCount;
     }
 }

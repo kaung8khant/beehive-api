@@ -21,10 +21,8 @@ class RestaurantCategory extends BaseModel
 
     public function getImagesAttribute()
     {
-        $menuId = Menu::where('restaurant_category_id', $this->id)->inRandomOrder()->first();
-
         return File::where('source', 'restaurant_categories')
-            ->where('source_id', $menuId)
+            ->where('source_id', $this->id)
             ->where('type', 'image')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();

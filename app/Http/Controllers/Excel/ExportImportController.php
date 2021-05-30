@@ -2,15 +2,20 @@
 
 namespace App\Http\Controllers\Excel;
 
+use App\Exceptions\ImportException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 
 class ExportImportController extends Controller
 {
+    public function __construct()
+    {
+        ini_set('memory_limit', '256M');
+    }
+
     public function import(Request $request, $type)
     {
         $request->validate([
@@ -21,16 +26,27 @@ class ExportImportController extends Controller
             $file = $request->file('file');
 
             try {
+
                 $_class = '\App\Imports\\' . config("export-import.import.{$type}");
                 Excel::import(new $_class, $file);
-
                 return response()->json(['message' => 'success'], 200);
+
             } catch (ValidationException $e) {
+
                 $this->deleteTmpFilesWhenFailed();
                 return response()->json($e->failures(), 400);
+
+            } catch (ImportException $e) {
+
+                $this->deleteTmpFilesWhenFailed();
+                $errors = json_decode($e->getMessage());
+                return response()->json(['total_errors' => count($errors), 'errors' => $errors]);
+
             } catch (\Exception $e) {
+
                 $this->deleteTmpFilesWhenFailed();
                 return response()->json(['message' => $e->getMessage()], 400);
+
             }
         }
 
@@ -40,11 +56,15 @@ class ExportImportController extends Controller
     public function export($type)
     {
         try {
+
             $_class = '\App\Exports\\' . config("export-import.export.{$type}");
             return Excel::download(new $_class, $type . '-export.xlsx');
+
         } catch (\Exception $e) {
+
             $this->deleteTmpFilesWhenFailed();
             return response()->json(['message' => 'failed'], 400);
+
         }
     }
 

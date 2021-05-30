@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 
 trait ResponseHelper
 {
-    protected function generateResponse($data, $status, $message = false)
+    protected function generateResponse($data, $status, $message = false, $paginate = false)
     {
         $response['status'] = $status;
 
@@ -16,13 +16,24 @@ trait ResponseHelper
             $response['data'] = $data;
         }
 
+        if ($paginate) {
+            $response['last_page'] = $paginate;
+        }
+
         return response()->json($response, $status);
     }
 
-    protected function generateBranchResponse($data, $status, $type = 'array')
+    protected function generateBranchResponse($data, $status, $type = 'array', $paginate = false)
     {
         if ($type === 'array' || $type === 'home') {
+            $data = $paginate ? $data->items() : $data;
+
             foreach ($data as $branch) {
+                // TODO:: remove these after mobile updates
+                if ($paginate) {
+                    $branch->name = $branch->restaurant->name . ' (' . $branch->name . ')';
+                }
+
                 $branch->restaurant->is_favorite = $this->checkFavoriteRestaurant($branch->restaurant->id);
                 unset($branch->restaurant->customers);
             }
@@ -47,7 +58,7 @@ trait ResponseHelper
             unset($data->restaurant->customers);
         }
 
-        return $this->generateResponse($data, $status);
+        return $this->generateResponse($data, $status, false, $paginate);
     }
 
     public function generateProductResponse($data, $status, $type = 'array')

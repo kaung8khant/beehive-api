@@ -17,14 +17,15 @@ class RestaurantTagsImport implements ToModel, WithHeadingRow, WithChunkReading,
         ini_set('memory_limit', '256M');
     }
     /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
+     * @param array $row
+     *
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
     public function model(array $row)
     {
         return new RestaurantTag([
-            'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
+            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
+            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
             'name' => $row['name'],
         ]);
     }
@@ -47,5 +48,16 @@ class RestaurantTagsImport implements ToModel, WithHeadingRow, WithChunkReading,
         return [
             'name' => 'required|unique:restaurant_tags',
         ];
+    }
+
+    public function transformSlugToId($value)
+    {
+        $restaurantTag = RestaurantTag::where('slug', $value)->first();
+
+        if (!$restaurantTag) {
+            return null;
+        }
+
+        return $restaurantTag->id;
     }
 }
