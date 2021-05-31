@@ -97,6 +97,7 @@ class ImportCustomer implements ShouldQueue, ShouldBeUnique
                         $customer = Customer::create($customerData);
                     } catch (QueryException $e) {
                         $customer = Customer::where('phone_number', $phoneNumber)->first();
+                        $customerData['slug'] = $customer->slug;
                         $customer->update($customerData);
                     }
                 } else {
