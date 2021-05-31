@@ -56,7 +56,7 @@ trait ResponseHelper
         return $this->generateResponse($data, $status, false, $paginate);
     }
 
-    public function generateProductResponse($data, $status, $type = 'array')
+    public function generateProductResponse($data, $status, $type = 'array', $paginate = false)
     {
         if (empty($data)) {
             if ($type === "home") {
@@ -66,6 +66,8 @@ trait ResponseHelper
         }
 
         if ($type === 'array' || $type === 'home') {
+            $data = $paginate ? $data->items() : $data;
+
             foreach ($data as $product) {
                 $product['is_favorite'] = $this->checkFavoriteProduct($product->id);
                 unset($product->customers);
@@ -89,7 +91,7 @@ trait ResponseHelper
             unset($data['customers']);
         }
 
-        return $this->generateResponse($data, $status);
+        return $this->generateResponse($data, $status, false, $paginate);
     }
 
     public function generateShopOrderResponse($data, $status, $type = 'obj')
