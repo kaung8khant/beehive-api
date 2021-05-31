@@ -64,7 +64,7 @@ class ShopController extends Controller
                     ->orWhere('slug', $request->filter);
             })
             ->orderBy('id', 'desc')
-            ->paginate(10);
+            ->paginate($request->size);
 
         return $this->generateResponse($shopCategories->items(), 200, false, $shopCategories->lastPage());
     }

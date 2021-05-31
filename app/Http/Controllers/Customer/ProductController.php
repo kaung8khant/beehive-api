@@ -58,10 +58,9 @@ class ProductController extends Controller
             })
             ->where('is_enable', 1)
             ->orderBy('id', 'desc')
-            ->paginate($request->size)
-            ->items();
+            ->paginate($request->size);
 
-        return $this->generateProductResponse($product, 200);
+        return $this->generateProductResponse($product, 200, 'array', $product->lastPage());
     }
 
     public function getByShop(Request $request, Shop $shop)
