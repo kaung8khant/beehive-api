@@ -3,62 +3,82 @@
 namespace App\Imports;
 
 use App\Models\ShopTag;
-use Maatwebsite\Excel\Concerns\ToModel;
+use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+use App\Jobs\ImportShopTag;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithUpserts;
-use Maatwebsite\Excel\Concerns\WithValidation;
 
-class ShopTagsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
+class ShopTagsImport implements ToCollection, WithHeadingRow
 {
+    protected $batchPerWorker;
+
     public function __construct()
     {
-        ini_set('memory_limit', '256M');
+        $this->batchPerWorker = 200;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
+    public function collection(Collection $rows)
     {
-        return new ShopTag([
-            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
-            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
-            'name' => $row['name'],
-        ]);
+        $this->validate($rows);
+
+        $rows = $rows->toArray();
+        $workerCount = $this->calculateWorkerCount($rows);
+
+        for ($i = 0; $i < $workerCount; $i++) {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
+            ImportShopTag::dispatch($uniqueKey, $rowsBatch);
+        }
     }
 
-    public function chunkSize(): int
+    private function validate($rows)
     {
-        return 1000;
-    }
+        $validatorErrors = [];
 
-    /**
-     * @return string|array
-     */
-    public function uniqueBy()
-    {
-        return 'slug';
-    }
+        foreach ($rows as $key => $row) {
+            $validateRow = $row->toArray();
 
-    public function rules(): array
-    {
-        return [
-            'name' => 'required|unique:shop_tags',
-        ];
-    }
+            $rules = [
+                'name' => ['required','unique:shop_tags'],
+            ];
 
-    public function transformSlugToId($value)
-    {
-        $shopTag = ShopTag::where('slug', $value)->first();
+            if (isset($row['id'])) {
+                $shopTag = ShopTag::where('slug', $row['id'])->first();
+                $rules['name'][1] = Rule::unique('shop_tags')->ignore($shopTag->id);
+            }
 
-        if (!$shopTag) {
-            return null;
+            $validator = Validator::make(
+                $validateRow,
+                $rules
+            );
+
+            if ($validator->fails()) {
+                $validatorErrors[] = [
+                    'row' => $key + 2,
+                    'name' => $row['name'],
+                    'errors' => $validator->errors(),
+                ];
+            }
         }
 
-        return $shopTag->id;
+        if (count($validatorErrors) > 0) {
+            throw new ImportException(json_encode($validatorErrors));
+        }
+    }
+
+    private function calculateWorkerCount($rows)
+    {
+        $rowCount = count($rows);
+        $workerCount = intval($rowCount / $this->batchPerWorker);
+
+        if ($rowCount % $this->batchPerWorker !== 0) {
+            $workerCount += 1;
+        }
+
+        return $workerCount;
     }
 }
