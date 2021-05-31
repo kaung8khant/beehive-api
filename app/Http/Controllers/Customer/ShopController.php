@@ -64,7 +64,7 @@ class ShopController extends Controller
                     ->orWhere('slug', $request->filter);
             })
             ->orderBy('id', 'desc')
-            ->paginate(20)      // TODO:: change to 10 after mobile updates
+            ->paginate(10)
             ->items();
 
         return $this->generateResponse($shopCategories, 200);
