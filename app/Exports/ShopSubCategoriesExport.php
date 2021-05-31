@@ -41,8 +41,8 @@ class ShopSubCategoriesExport implements FromQuery, WithHeadings, WithMapping, W
         return [
             'id',
             'name',
-            'category_slug',
-            'category',
+            'shop_category_slug',
+            'shop_category',
         ];
     }
 

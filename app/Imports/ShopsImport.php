@@ -3,92 +3,99 @@
 namespace App\Imports;
 
 use App\Models\Shop;
-use App\Models\Township;
-use Maatwebsite\Excel\Concerns\ToModel;
+use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
-use Maatwebsite\Excel\Concerns\Importable;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+use App\Jobs\ImportShop;
+use App\Jobs\ImportShopSubCategory;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithUpserts;
-use Propaganistas\LaravelPhone\PhoneNumber;
-use Maatwebsite\Excel\Concerns\WithValidation;
 
-class ShopsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
+class ShopsImport implements ToCollection, WithHeadingRow
 {
-    use Importable;
+    protected $batchPerWorker;
 
     public function __construct()
     {
-        ini_set('memory_limit', '256M');
+        $this->batchPerWorker = 200;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
+    public function collection(Collection $rows)
     {
-        return new Shop([
-            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
-            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
-            'name' => $row['name'],
-            'contact_number' => PhoneNumber::make($row['contact_number'], 'MM'),
-            'opening_time' => $row['opening_time'],
-            'closing_time' => $row['closing_time'],
-            'latitude' => $row['latitude'],
-            'longitude' => $row['longitude'],
-            'address' => $row['address'],
-            'is_enable' => $row['is_enable'],
-            'is_official' => $row['is_official'],
-            'township_id' => Township::where('slug', $row['township_slug'])->value('id'),
-        ]);
+        $this->validate($rows);
+
+        $rows = $rows->toArray();
+        $workerCount = $this->calculateWorkerCount($rows);
+
+        for ($i = 0; $i < $workerCount; $i++) {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
+            ImportShop::dispatch($uniqueKey, $rowsBatch);
+        }
     }
 
-    public function chunkSize(): int
+    private function validate($rows)
     {
-        return 1000;
-    }
+        $validatorErrors = [];
 
-    /**
-     * @return string|array
-     */
-    public function uniqueBy()
-    {
-        return 'slug';
-    }
+        foreach ($rows as $key => $row) {
+            $validateRow = $row->toArray();
 
-    public function rules(): array
-    {
-        return [
-            'name' => 'required|unique:shops',
-            'is_enable' => 'required|boolean',
-            'is_official' => 'required|boolean',
-            'address' => 'nullable',
-            'contact_number' => 'required|phone:MM',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'township_slug' => 'nullable|exists:App\Models\Township,slug',
-        ];
-    }
+            $rules = [
+                'name' => ['required', 'unique:shops'],
+                'is_enable' => ['required', 'boolean'],
+                'is_official' => ['required', 'boolean'],
+                'address' => ['nullable'],
+                'contact_number' => ['required', 'phone:MM'],
+                'opening_time' => ['required', 'date_format:H:i'],
+                'closing_time' => ['required', 'date_format:H:i'],
+                'latitude' => ['required', 'numeric'],
+                'longitude' => ['required', 'numeric'],
+                'township_slug' => ['nullable', 'exists:App\Models\Township,slug'],
+            ];
 
-    public function customValidationMessages()
-    {
-        return [
-            'contact_number.phone' => 'Invalid Phone Number',
-        ];
-    }
+            if (isset($row['id'])) {
+                $shop = Shop::where('slug', $row['id'])->first();
+                $rules['name'][1] = Rule::unique('shops')->ignore($shop->id);
+            }
 
-    public function transformSlugToId($value)
-    {
-        $shop = Shop::where('slug', $value)->first();
+            $validator = Validator::make(
+                $validateRow,
+                $rules
+            );
 
-        if (!$shop) {
-            return null;
+            if ($validator->fails()) {
+                $validatorErrors[] = [
+                    'row' => $key + 2,
+                    'name' => $row['name'],
+                    'is_enable' => $row['is_enable'],
+                    'is_official' => $row['is_official'],
+                    'contact_number' => $row['contact_number'],
+                    'opening_time' => $row['opening_time'],
+                    'closing_time' => $row['closing_time'],
+                    'latitude' => $row['latitude'],
+                    'township_slug' => $row['township_slug'],
+                    'errors' => $validator->errors(),
+                ];
+            }
         }
 
-        return $shop->id;
+        if (count($validatorErrors) > 0) {
+            throw new ImportException(json_encode($validatorErrors));
+        }
+    }
+
+    private function calculateWorkerCount($rows)
+    {
+        $rowCount = count($rows);
+        $workerCount = intval($rowCount / $this->batchPerWorker);
+
+        if ($rowCount % $this->batchPerWorker !== 0) {
+            $workerCount += 1;
+        }
+
+        return $workerCount;
     }
 }

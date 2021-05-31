@@ -35,8 +35,8 @@ class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             $shop->contact_number,
             Carbon::parse($shop->opening_time)->format('g:i A').' - '.Carbon::parse($shop->closing_time)->format('g:i A'),
             $shop->address,
-            $shop->is_enable ? '1' : '0',
-            $shop->is_official ? '1' : '0',
+            $shop->is_enable ? 'TRUE' : 'FALSE',
+            $shop->is_official ? 'TRUE' : 'FALSE',
             Township::where('id', $shop->township_id)->value('name'),
             Township::where('id', $shop->township_id)->value('slug'),
         ];
