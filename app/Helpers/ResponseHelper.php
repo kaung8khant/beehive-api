@@ -29,11 +29,6 @@ trait ResponseHelper
             $data = $paginate ? $data->items() : $data;
 
             foreach ($data as $branch) {
-                // TODO:: remove these after mobile updates
-                if ($paginate) {
-                    $branch->name = $branch->restaurant->name . ' (' . $branch->name . ')';
-                }
-
                 $branch->restaurant->is_favorite = $this->checkFavoriteRestaurant($branch->restaurant->id);
                 unset($branch->restaurant->customers);
             }
