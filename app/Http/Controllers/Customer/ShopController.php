@@ -64,10 +64,9 @@ class ShopController extends Controller
                     ->orWhere('slug', $request->filter);
             })
             ->orderBy('id', 'desc')
-            ->paginate(20)      // TODO:: change to 10 after mobile updates
-            ->items();
+            ->paginate($request->size);
 
-        return $this->generateResponse($shopCategories, 200);
+        return $this->generateResponse($shopCategories->items(), 200, false, $shopCategories->lastPage());
     }
 
     public function getCatgorizedProduct(Request $request)
