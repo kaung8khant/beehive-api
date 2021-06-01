@@ -16,6 +16,7 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderVendor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
@@ -69,7 +70,13 @@ class ShopOrderController extends Controller
 
     public function show(ShopOrder $shopOrder)
     {
-        return $this->generateResponse($shopOrder->load('contact', 'contact.township', 'vendors'), 200);
+        $cache = Cache::get('shopOrder:' . $shopOrder->slug);
+        if ($cache) {
+            $shopOrder['assign'] = 'pending';
+        } else {
+            $shopOrder['assign'] = null;
+        }
+        return $this->generateResponse($shopOrder->load('contact', 'contact.township', 'vendors', 'drivers', 'drivers.status'), 200);
     }
 
     public function store(Request $request)

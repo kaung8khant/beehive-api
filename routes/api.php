@@ -168,7 +168,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('contents', 'ContentController', ['except' => ['create', 'edit']]);
 
             Route::post('job/accept', 'OrderDriverController@jobAccept');
-            Route::post('job/{slug}', 'OrderDriverController@jobDetail');
+            Route::get('job/{slug}', 'OrderDriverController@jobDetail');
+            Route::get('jobs', 'OrderDriverController@jobList');
         });
     });
 
