@@ -13,7 +13,10 @@ class ShopOrderDriverStatus extends BaseModel
     protected $hidden = [
         'id',
         'shop_order_driver_id',
-        'status',
+        'created_by',
+        'updated_by',
+        'created_at',
+        'updated_at',
     ];
 
     public function shopOrderDriver()

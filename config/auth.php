@@ -52,11 +52,12 @@ return [
             'provider' => 'customers',
             'hash' => false,
         ],
-        'vendors'=>[
+
+        'vendors' => [
             'driver' => 'jwt',
             'provider' => 'users',
             'hash' => false,
-        ]
+        ],
     ],
 
     /*
@@ -86,10 +87,11 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\Customer::class,
         ],
+
         'vendors' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
-        ]
+        ],
 
         // 'users' => [
         //     'driver' => 'database',
