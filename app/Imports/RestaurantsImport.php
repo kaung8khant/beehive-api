@@ -3,100 +3,124 @@
 namespace App\Imports;
 
 use App\Models\Restaurant;
-use Maatwebsite\Excel\Concerns\ToModel;
+use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
-use App\Models\RestaurantBranch;
-use App\Models\Township;
-use Maatwebsite\Excel\Concerns\Importable;
-use Propaganistas\LaravelPhone\PhoneNumber;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+use App\Jobs\ImportRestaurant;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithUpserts;
-use Maatwebsite\Excel\Concerns\WithValidation;
 
-class RestaurantsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
+class RestaurantsImport implements ToCollection, WithHeadingRow
 {
-    use Importable;
+    protected $batchPerWorker;
 
     public function __construct()
     {
-        ini_set('memory_limit', '256M');
+        $this->batchPerWorker = 200;
     }
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
+
+    public function collection(Collection $rows)
     {
-        $newRestaurant =[
-            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
-            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
-            'name' => $row['name'],
-            'is_enable' => $row['is_enable'],
-        ];
-        if (!isset($row['id'])) {
-            $restaurant=Restaurant::create($newRestaurant);
-            RestaurantBranch::create([
-                'slug' => isset($row['slug']) ? $row['slug'] : StringHelper::generateUniqueSlug(),
-                'name' => $row['branch_name'],
-                'contact_number' => PhoneNumber::make($row['branch_contact_number'], 'MM'),
-                'opening_time' => $row['branch_opening_time'],
-                'closing_time' => $row['branch_closing_time'],
-                'latitude' => $row['branch_latitude'],
-                'longitude' => $row['branch_longitude'],
-                'address' => $row['branch_address'],
-                'township_id' => Township::where('slug', $row['branch_township_slug'])->value('id'),
-                'restaurant_id' => $restaurant->id,
-            ]);
+        $this->validate($rows);
+
+        $rows = $rows->toArray();
+        $workerCount = $this->calculateWorkerCount($rows);
+
+        for ($i = 0; $i < $workerCount; $i++) {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
+            ImportRestaurant::dispatch($uniqueKey, $rowsBatch);
         }
-        return new Restaurant($newRestaurant);
     }
 
-    public function chunkSize(): int
+    private function validate($rows)
     {
-        return 1000;
-    }
+        $validatorErrors = [];
 
-    /**
-     * @return string|array
-     */
-    public function uniqueBy()
-    {
-        return ['slug','id'];
-    }
+        foreach ($rows as $key => $row) {
+            $validateRow = $row->toArray();
 
-    public function rules(): array
-    {
-        return [
-            'name' => 'required|unique:restaurants',
-            'is_enable' => 'required|boolean',
-            'branch_name' => 'required|string',
-            'branch_address' => 'required',
-            'branch_contact_number' => 'required|phone:MM',
-            'branch_opening_time' => 'required|date_format:H:i',
-            'branch_closing_time' => 'required|date_format:H:i',
-            'branch_latitude' => 'required|numeric',
-            'branch_longitude' => 'required|numeric',
-            'branch_township_slug' => 'required|exists:App\Models\Township,slug',
-        ];
-    }
+            if (isset($row['id'])) {
+                $restaurant = Restaurant::where('slug', $row['id'])->first();
+                $rules = [
+                    'name' => [
+                        'required',
+                        Rule::unique('restaurants')->ignore($restaurant->id),
+                    ],
+                    'is_enable' => ['required', 'boolean'],
+                ];
+                $validator = Validator::make(
+                    $validateRow,
+                    $rules
+                );
+            } else {
+                $rules = [
+                    'name' => [
+                        'required',
+                        'unique:restaurants',
+                    ],
+                    'is_enable' => ['required', 'boolean'],
+                    'branch_name' => ['required'],
+                    'branch_address' => ['nullable'],
+                    'branch_contact_number' => ['required', 'phone:MM'],
+                    'branch_opening_time' => ['required', 'date_format:H:i'],
+                    'branch_closing_time' => ['required', 'date_format:H:i'],
+                    'branch_latitude' => ['required', 'numeric'],
+                    'branch_longitude' => ['required', 'numeric'],
+                    'branch_township_slug' => ['nullable', 'exists:App\Models\Township,slug'],
+                ];
+                $validator = Validator::make(
+                    $validateRow,
+                    $rules,
+                    [
+                        'branch_contact_number.phone' => 'Invalid phone number.',
+                    ]
+                );
+            }
 
-    public function customValidationMessages()
-    {
-        return [
-            'contact_number.phone' => 'Invalid Phone Number',
-        ];
-    }
 
-    public function transformSlugToId($value)
-    {
-        $restaurant = Restaurant::where('slug', $value)->first();
-
-        if (!$restaurant) {
-            return null;
+            if ($validator->fails()) {
+                if (isset($row['id'])) {
+                    $validatorErrors[] = [
+                        'row' => $key + 2,
+                        'name' => $row['name'],
+                        'is_enable' => $row['is_enable'],
+                        'errors' => $validator->errors(),
+                    ];
+                } else {
+                    $validatorErrors[] = [
+                        'row' => $key + 2,
+                        'name' => $row['name'],
+                        'is_enable' => $row['is_enable'],
+                        'branch_name' => $row['branch_name'],
+                        'contact_number' => $row['branch_contact_number'],
+                        'opening_time' => $row['branch_opening_time'],
+                        'closing_time' => $row['branch_closing_time'],
+                        'latitude' => $row['branch_latitude'],
+                        'longitude' => $row['branch_longitude'],
+                        'township_slug' => $row['branch_township_slug'],
+                        'errors' => $validator->errors(),
+                    ];
+                }
+            }
         }
 
-        return $restaurant->id;
+        if (count($validatorErrors) > 0) {
+            throw new ImportException(json_encode($validatorErrors));
+        }
+    }
+
+    private function calculateWorkerCount($rows)
+    {
+        $rowCount = count($rows);
+        $workerCount = intval($rowCount / $this->batchPerWorker);
+
+        if ($rowCount % $this->batchPerWorker !== 0) {
+            $workerCount += 1;
+        }
+
+        return $workerCount;
     }
 }

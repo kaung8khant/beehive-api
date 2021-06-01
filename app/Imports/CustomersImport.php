@@ -5,8 +5,10 @@ namespace App\Imports;
 use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportCustomer;
+use App\Models\Customer;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -44,14 +46,25 @@ class CustomersImport implements ToCollection, WithHeadingRow
                 $validateRow['phone_number'] = str_replace([' ', '-'], '', $row['phone_number']);
             }
 
-            $validator = Validator::make(
-                $validateRow,
-                [
+            if (isset($row['id'])) {
+                $customer = Customer::where('slug', $row['id'])->first();
+                $rules = [
+                    'name' => ['nullable', 'max:255', 'max:200'],
+                    'phone_number' => ['required', 'phone:MM'],
+                    'email' => ['nullable', 'email',Rule::unique('customers')->ignore($customer->id)],
+                ];
+            } else {
+                $rules= [
                     'name' => 'nullable|max:255',
-                    'phone_number' => 'required|phone:MM',
+                    'phone_number' => 'required|phone:MM|unique:customers',
                     'email' => 'nullable|email|unique:customers',
                     'customer_group_name' => 'nullable|string',
-                ],
+               ];
+            }
+
+            $validator = Validator::make(
+                $validateRow,
+                $rules,
                 [
                     'phone_number.phone' => 'Invalid phone number.',
                 ]
@@ -62,6 +75,7 @@ class CustomersImport implements ToCollection, WithHeadingRow
                     'row' => $key + 2,
                     'name' => $row['name'],
                     'phone_number' => $row['phone_number'],
+                    'email' => $row['email'],
                     'errors' => $validator->errors(),
                 ];
             }

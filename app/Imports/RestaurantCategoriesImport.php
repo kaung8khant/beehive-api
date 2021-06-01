@@ -3,62 +3,82 @@
 namespace App\Imports;
 
 use App\Models\RestaurantCategory;
-use Maatwebsite\Excel\Concerns\ToModel;
+use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+use App\Jobs\ImportRestaurantCategory;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithUpserts;
-use Maatwebsite\Excel\Concerns\WithValidation;
 
-class RestaurantCategoriesImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
+class RestaurantCategoriesImport implements ToCollection, WithHeadingRow
 {
+    protected $batchPerWorker;
+
     public function __construct()
     {
-        ini_set('memory_limit', '256M');
+        $this->batchPerWorker = 200;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
+    public function collection(Collection $rows)
     {
-        return new RestaurantCategory([
-            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
-            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
-            'name' => $row['name'],
-        ]);
+        $this->validate($rows);
+
+        $rows = $rows->toArray();
+        $workerCount = $this->calculateWorkerCount($rows);
+
+        for ($i = 0; $i < $workerCount; $i++) {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
+            ImportRestaurantCategory::dispatch($uniqueKey, $rowsBatch);
+        }
     }
 
-    public function chunkSize(): int
+    private function validate($rows)
     {
-        return 1000;
-    }
+        $validatorErrors = [];
 
-    /**
-     * @return string|array
-     */
-    public function uniqueBy()
-    {
-        return 'slug';
-    }
+        foreach ($rows as $key => $row) {
+            $validateRow = $row->toArray();
 
-    public function rules(): array
-    {
-        return [
-            'name' => 'required|unique:restaurant_categories',
-        ];
-    }
+            $rules = [
+                'name' => ['required','unique:restaurant_categories'],
+            ];
 
-    public function transformSlugToId($value)
-    {
-        $restaurantCategory = RestaurantCategory::where('slug', $value)->first();
+            if (isset($row['id'])) {
+                $restaurantCategory = RestaurantCategory::where('slug', $row['id'])->first();
+                $rules['name'][1] = Rule::unique('restaurant_categories')->ignore($restaurantCategory->id);
+            }
 
-        if (!$restaurantCategory) {
-            return null;
+            $validator = Validator::make(
+                $validateRow,
+                $rules
+            );
+
+            if ($validator->fails()) {
+                $validatorErrors[] = [
+                    'row' => $key + 2,
+                    'name' => $row['name'],
+                    'errors' => $validator->errors(),
+                ];
+            }
         }
 
-        return $restaurantCategory->id;
+        if (count($validatorErrors) > 0) {
+            throw new ImportException(json_encode($validatorErrors));
+        }
+    }
+
+    private function calculateWorkerCount($rows)
+    {
+        $rowCount = count($rows);
+        $workerCount = intval($rowCount / $this->batchPerWorker);
+
+        if ($rowCount % $this->batchPerWorker !== 0) {
+            $workerCount += 1;
+        }
+
+        return $workerCount;
     }
 }

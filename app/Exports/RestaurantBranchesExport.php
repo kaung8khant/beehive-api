@@ -41,6 +41,10 @@ class RestaurantBranchesExport implements FromQuery, WithHeadings, WithMapping, 
             Township::where('id', $restaurantBranch->township_id)->value('slug'),
             Restaurant::where('id', $restaurantBranch->restaurant_id)->value('name'),
             Restaurant::where('id', $restaurantBranch->restaurant_id)->value('slug'),
+            Carbon::parse($restaurantBranch->opening_time)->format('H:i'),
+            Carbon::parse($restaurantBranch->closing_time)->format('H:i'),
+            $restaurantBranch->latitude,
+            $restaurantBranch->longitude,
         ];
     }
 
@@ -57,6 +61,10 @@ class RestaurantBranchesExport implements FromQuery, WithHeadings, WithMapping, 
             'township_slug',
             'restaurant',
             'restaurant_slug',
+            'opening_time',
+            'closing_time',
+            'latitude',
+            'longitude',
         ];
     }
 
@@ -75,6 +83,10 @@ class RestaurantBranchesExport implements FromQuery, WithHeadings, WithMapping, 
             'H' => ['alignment' => ['horizontal' => 'center']],
             'I' => ['alignment' => ['horizontal' => 'center']],
             'J' => ['alignment' => ['horizontal' => 'center']],
+            'K' => ['alignment' => ['horizontal' => 'center']],
+            'L' => ['alignment' => ['horizontal' => 'center']],
+            'M' => ['alignment' => ['horizontal' => 'center']],
+            'N' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -91,6 +103,10 @@ class RestaurantBranchesExport implements FromQuery, WithHeadings, WithMapping, 
             'H' => 15,
             'I' => 20,
             'J' => 15,
+            'K' => 15,
+            'L' => 15,
+            'M' => 15,
+            'N' => 15,
         ];
     }
 }

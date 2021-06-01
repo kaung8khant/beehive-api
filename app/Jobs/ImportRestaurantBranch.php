@@ -11,11 +11,12 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
-use App\Models\Shop;
+use App\Models\Restaurant;
+use App\Models\RestaurantBranch;
 use App\Models\Township;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
-class ImportShop implements ShouldQueue, ShouldBeUnique
+class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -64,9 +65,8 @@ class ImportShop implements ShouldQueue, ShouldBeUnique
                 $row['contact_number'] = str_replace([' ', '-'], '', $row['contact_number']);
             }
             $rules = [
-                'name' => ['required', 'unique:shops'],
+                'name' => ['required', 'unique:restaurant_branches'],
                 'is_enable' => ['required','boolean'],
-                'is_official' => ['required','boolean'],
                 'address' => ['nullable'],
                 'contact_number' => ['required','phone:MM'],
                 'opening_time' => ['required','date_format:H:i'],
@@ -74,12 +74,13 @@ class ImportShop implements ShouldQueue, ShouldBeUnique
                 'latitude' => ['required','numeric'],
                 'longitude' => ['required','numeric'],
                 'township_slug' => ['nullable','exists:App\Models\Township,slug'],
+                'restaurant_slug' => ['required','exists:App\Models\Restaurant,slug'],
             ];
 
-            $shop=null;
+            $restaurantBranch=null;
             if (isset($row['id'])) {
-                $shop = Shop::where('slug', $row['id'])->first();
-                $rules['name'][1] = Rule::unique('shops')->ignore($shop->id);
+                $restaurantBranch = RestaurantBranch::where('slug', $row['id'])->first();
+                $rules['name'][1] = Rule::unique('restaurant_branches')->ignore($restaurantBranch->id);
             }
 
             $validator = Validator::make(
@@ -91,7 +92,7 @@ class ImportShop implements ShouldQueue, ShouldBeUnique
             );
 
             if (!$validator->fails()) {
-                $shopData = [
+                $restaurantBranchData = [
                     'slug' => StringHelper::generateUniqueSlug(),
                     'name' => $row['name'],
                     'contact_number' => PhoneNumber::make($row['contact_number'], 'MM'),
@@ -101,15 +102,15 @@ class ImportShop implements ShouldQueue, ShouldBeUnique
                     'longitude' => $row['longitude'],
                     'address' => $row['address'],
                     'is_enable' => $row['is_enable'],
-                    'is_official' => $row['is_official'],
                     'township_id' => Township::where('slug', $row['township_slug'])->value('id'),
+                    'restaurant_id' => Restaurant::where('slug', $row['restaurant_slug'])->value('id'),
                 ];
 
-                if (!$shop) {
-                    $shop = Shop::create($shopData);
+                if (!$restaurantBranch) {
+                    $restaurantBranch = RestaurantBranch::create($restaurantBranchData);
                 } else {
-                    $shopData['slug'] = $shop->slug;
-                    $shop->update($shopData);
+                    $restaurantBranchData['slug'] = $restaurantBranch->slug;
+                    $restaurantBranch->update($restaurantBranchData);
                 }
             }
         }

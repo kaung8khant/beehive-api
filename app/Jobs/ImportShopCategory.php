@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ShopCategory;
-use Illuminate\Database\QueryException;
 
 class ImportShopCategory implements ShouldQueue, ShouldBeUnique
 {
@@ -62,9 +61,11 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
             $rules = [
                 'name' => ['required', 'unique:shop_categories'],
             ];
+            $shopCategory=null;
 
             if (isset($row['id'])) {
-                $rules['name'][1] = Rule::unique('shop_categories')->ignore($row['id']);
+                $shopCategory = ShopCategory::where('slug', $row['id'])->first();
+                $rules['name'][1] = Rule::unique('shop_categories')->ignore($shopCategory->id);
             }
 
             $validator = Validator::make(
@@ -73,22 +74,13 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
             );
 
             if (!$validator->fails()) {
-                $shopCategory=null;
-                if (isset($row['id'])) {
-                    $shopCategory = ShopCategory::where('slug', $row['id'])->first();
-                }
                 $shopCategoryData = [
                     'slug' => StringHelper::generateUniqueSlug(),
                     'name' => $row['name'],
                 ];
 
                 if (!$shopCategory) {
-                    try {
-                        $shopCategory = ShopCategory::create($shopCategoryData);
-                    } catch (QueryException $e) {
-                        $shopCategory = ShopCategory::where('name', $row['name'])->first();
-                        $shopCategory->update($shopCategoryData);
-                    }
+                    $shopCategory = ShopCategory::create($shopCategoryData);
                 } else {
                     $shopCategoryData['slug'] = $shopCategory->slug;
                     $shopCategory->update($shopCategoryData);
