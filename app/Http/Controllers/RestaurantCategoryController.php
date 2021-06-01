@@ -56,7 +56,7 @@ class RestaurantCategoryController extends Controller
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
 
-        Cache::forget('category_id_' . $restaurantCategory->id);
+        Cache::forget('restaurant_category_id_' . $restaurantCategory->id);
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'restaurant_categories', $restaurantCategory->slug);

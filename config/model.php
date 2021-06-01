@@ -16,4 +16,6 @@ return [
     'ads' => 'App\Models\Ads',
     'contents' => 'App\Models\Content',
     'users' => 'App\Models\User',
+    'product_variants' => 'App\Models\ProductVariant',
+    'menu_variants' => 'App\Models\MenuVariant',
 ];

@@ -22,6 +22,7 @@ class Product extends BaseModel
 
     protected $casts = [
         'is_enable' => 'boolean',
+        'variants' => 'array',
     ];
 
     protected $appends = ['rating', 'images', 'covers'];
@@ -71,6 +72,11 @@ class Product extends BaseModel
     public function productVariations()
     {
         return $this->hasMany(ProductVariation::class);
+    }
+
+    public function productVariants()
+    {
+        return $this->hasMany(ProductVariant::class);
     }
 
     public function brand()

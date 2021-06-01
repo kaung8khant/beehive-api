@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\CacheHelper;
 use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
 use App\Models\Product;
-use App\Models\ProductVariation;
-use App\Models\ProductVariationValue;
+use App\Models\ProductVariant;
 use App\Models\Shop;
 use App\Models\ShopCategory;
-use App\Models\ShopSubCategory;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -22,7 +21,7 @@ class ProductController extends Controller
     {
         $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $products = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariations.productVariationValues')
+        $products = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariations.productVariationValues', 'productVariants')
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
@@ -42,21 +41,7 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
-
-        $validatedData = $request->validate($this->getParamsToValidate(true));
-        $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
-
-        if ($request->shop_sub_category_slug) {
-            $subCategory = $this->getSubCategory($request->shop_sub_category_slug);
-            $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
-            $validatedData['shop_sub_category_id'] = $subCategory->id;
-        } else {
-            $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
-        }
-
-        if ($request->brand_slug) {
-            $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
-        }
+        $validatedData = $this->validateRequest($request, true);
 
         $product = Product::create($validatedData);
 
@@ -70,34 +55,21 @@ class ProductController extends Controller
             }
         }
 
-        if ($request->product_variations) {
-            $this->createProductVariation($product->id, $validatedData['product_variations']);
+        if (isset($validatedData['product_variants'])) {
+            $this->createProductVariants($product->id, $validatedData['product_variants']);
         }
 
-        return response()->json($product->refresh()->load('shop', "productVariations"), 201);
+        return response()->json($product->refresh()->load('shop', 'productVariants'), 201);
     }
 
     public function show(Product $product)
     {
-        return response()->json($product->load('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues'), 200);
+        return response()->json($product->load('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants'), 200);
     }
 
     public function update(Request $request, Product $product)
     {
-        $validatedData = $request->validate($this->getParamsToValidate());
-        $validatedData['shop_id'] = $this->getShopId($request->shop_slug);
-
-        if ($request->shop_sub_category_slug) {
-            $subCategory = $this->getSubCategory($request->shop_sub_category_slug);
-            $validatedData['shop_category_id'] = $subCategory->shopCategory->id;
-            $validatedData['shop_sub_category_id'] = $subCategory->id;
-        } else {
-            $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
-        }
-
-        if ($request->brand_slug) {
-            $validatedData['brand_id'] = $this->getBrandId($request->brand_slug);
-        }
+        $validatedData = $this->validateRequest($request);
 
         $product->update($validatedData);
 
@@ -111,11 +83,11 @@ class ProductController extends Controller
             }
         }
 
-        if ($request->product_variations) {
-            $product->productVariations()->delete();
-            $this->createProductVariation($product->id, $validatedData['product_variations']);
+        if (isset($validatedData['product_variants'])) {
+            $product->productVariants()->delete();
+            $this->createProductVariants($product->id, $validatedData['product_variants']);
         } else {
-            $product->productVariations()->delete();
+            $product->productVariants()->delete();
         }
 
         return response()->json($product, 200);
@@ -131,14 +103,11 @@ class ProductController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    private function getParamsToValidate($slug = false)
+    private function validateRequest($request, $slug = false)
     {
         $params = [
             'name' => 'required|string',
             'description' => 'nullable|string',
-            'price' => 'required|max:99999999',
-            'tax' => 'required|numeric',
-            'discount' => 'required|numeric',
             'is_enable' => 'required|boolean',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
@@ -148,84 +117,49 @@ class ProductController extends Controller
             'cover_slugs' => 'nullable|array',
             'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
 
-            'product_variations' => 'nullable|array',
-            'product_variations.*.slug' => '',
-            'product_variations.*.name' => 'required|string',
+            'variants' => 'nullable|array',
+            'variants.*.name' => 'required|string',
+            'variants.*.values' => 'required|array',
 
-            'product_variations.*.product_variation_values' => 'required|array',
-            'product_variations.*.product_variation_values.*.value' => 'required|string',
-            'product_variations.*.product_variation_values.*.price' => 'required|numeric',
-            'product_variations.*.product_variation_values.*.image_slug' => 'nullable|exists:App\Models\File,slug',
+            'product_variants' => 'required_with:variants',
+            'product_variants.*.variant' => 'required',
+            'product_variants.*.price' => 'required|numeric',
+            'product_variants.*.tax' => 'required|numeric',
+            'product_variants.*.discount' => 'required|numeric',
+            'product_variants.*.is_enable' => 'required|boolean',
+            'product_variants.*.image_slug' => 'nullable|exists:App\Models\File,slug',
         ];
 
         if ($slug) {
             $params['slug'] = 'required|unique:products';
         }
 
-        return $params;
-    }
+        $validatedData = $request->validate($params);
 
-    private function getShopId($slug)
-    {
-        return Shop::where('slug', $slug)->first()->id;
-    }
+        $validatedData['shop_id'] = CacheHelper::getShopIdBySlug($request->shop_slug);
+        $validatedData['shop_category_id'] = CacheHelper::getShopCategoryIdBySlug($request->shop_category_slug);
 
-    private function getShopCategoryId($slug)
-    {
-        return ShopCategory::where('slug', $slug)->first()->id;
-    }
-
-    private function getSubCategory($slug)
-    {
-        return ShopSubCategory::where('slug', $slug)->first();
-    }
-
-    public function getProductsByShop(Request $request, Shop $shop)
-    {
-        $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        $products = Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues')
-            ->where('shop_id', $shop->id)
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
-
-        if (isset($request->is_enable)) {
-            $products = $products->where('is_enable', $request->is_enable)
-                ->whereHas('shop', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
+        if ($request->shop_sub_category_slug) {
+            $validatedData['shop_sub_category_id'] = CacheHelper::getShopSubCategoryIdBySlug($request->shop_sub_category_slug);
         }
 
-        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
-    }
-
-    private function getBrandId($slug)
-    {
-        return Brand::where('slug', $slug)->first()->id;
-    }
-
-    private function createProductVariation($productId, $productVariations)
-    {
-        foreach ($productVariations as $variation) {
-            $variation['slug'] = $this->generateUniqueSlug();
-            $variation['product_id'] = $productId;
-            $productVariation = ProductVariation::create($variation);
-            $variationId = $productVariation->id;
-            $this->createVariationValues($variationId, $variation['product_variation_values']);
+        if ($request->brand_slug) {
+            $validatedData['brand_id'] = CacheHelper::getBrandIdBySlug($request->brand_slug);
         }
+
+        return $validatedData;
     }
 
-    private function createVariationValues($variationId, $variationValues)
+    private function createProductVariants($productId, $productVariants)
     {
-        foreach ($variationValues as $variationValue) {
-            $variationValue['slug'] = $this->generateUniqueSlug();
-            $variationValue['product_variation_id'] = $variationId;
-            ProductVariationValue::create($variationValue);
-            if (!empty($variationValue['image_slug'])) {
-                $this->updateFile($variationValue['image_slug'], 'product_variation_values', $variationValue['slug']);
+        foreach ($productVariants as $variant) {
+            $variant['product_id'] = $productId;
+            $variant['slug'] = $this->generateUniqueSlug();
+
+            ProductVariant::create($variant);
+
+            if (isset($variant['image_slug'])) {
+                $this->updateFile($variant['image_slug'], 'product_variants', $variant['slug']);
             }
         }
     }
@@ -269,6 +203,28 @@ class ProductController extends Controller
         }
 
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function getProductsByShop(Request $request, Shop $shop)
+    {
+        $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        $products = Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants')
+            ->where('shop_id', $shop->id)
+            ->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            });
+
+        if (isset($request->is_enable)) {
+            $products = $products->where('is_enable', $request->is_enable)
+                ->whereHas('shop', function ($query) use ($request) {
+                    $query->where('is_enable', $request->is_enable);
+                });
+        }
+
+        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
     }
 
     public function getProductsByBrand(Request $request, Brand $brand)
