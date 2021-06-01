@@ -45,21 +45,16 @@ class CustomersImport implements ToCollection, WithHeadingRow
             if (isset($row['phone_number'])) {
                 $validateRow['phone_number'] = str_replace([' ', '-'], '', $row['phone_number']);
             }
+            $rules = [
+                'name' => ['nullable', 'max:255'],
+                    'phone_number' => ['required', 'phone:MM'],
+                    'email' =>[ 'nullable','email','unique:customers'],
+                    'customer_group_name' => ['nullable','string'],
+            ];
 
             if (isset($row['id'])) {
                 $customer = Customer::where('slug', $row['id'])->first();
-                $rules = [
-                    'name' => ['nullable', 'max:255', 'max:200'],
-                    'phone_number' => ['required', 'phone:MM'],
-                    'email' => ['nullable', 'email',Rule::unique('customers')->ignore($customer->id)],
-                ];
-            } else {
-                $rules= [
-                    'name' => 'nullable|max:255',
-                    'phone_number' => 'required|phone:MM|unique:customers',
-                    'email' => 'nullable|email|unique:customers',
-                    'customer_group_name' => 'nullable|string',
-               ];
+                $rules['email'][2] = Rule::unique('customers')->ignore($customer->id);
             }
 
             $validator = Validator::make(
