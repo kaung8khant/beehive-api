@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], function () {
-    Route::group(['prefix' => 'admin'], function () {
+Route::group(['middleware' => ['cors', 'json.response']], function () {
+    Route::group(['prefix' => 'v2/admin'], function () {
         Route::post('login', 'Auth\UserAuthController@login');
         Route::post('forgot-password', 'Auth\OtpController@forgotPassword');
         Route::post('reset-password', 'Auth\UserAuthController@resetPassword');
@@ -188,9 +188,15 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
     /*
      * -----------
+     * Vendor API
+     * -----------
+     */
+    require __DIR__ . '/vendor-api.php';
+
+    /*
+     * -----------
      * Customer API
      * -----------
      */
     require __DIR__ . '/customer-api.php';
-    require __DIR__ . '/vendor-api.php';
 });
