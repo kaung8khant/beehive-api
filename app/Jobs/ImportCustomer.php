@@ -8,13 +8,13 @@ use App\Models\CustomerGroup;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Propaganistas\LaravelPhone\PhoneNumber;
-use Illuminate\Validation\Rule;
 
 class ImportCustomer implements ShouldQueue, ShouldBeUnique
 {
@@ -64,17 +64,18 @@ class ImportCustomer implements ShouldQueue, ShouldBeUnique
             if (isset($row['phone_number'])) {
                 $row['phone_number'] = str_replace([' ', '-'], '', $row['phone_number']);
             }
-            $customer=null;
+
+            $customer = null;
+
             $rules = [
                 'name' => ['nullable', 'max:255'],
-                    'phone_number' => ['required', 'phone:MM'],
-                    'email' =>[ 'nullable','email','unique:customers'],
-                    'customer_group_name' => ['nullable','string'],
+                'phone_number' => ['required', 'phone:MM'],
+                'email' => ['nullable', 'email'],
+                'customer_group_name' => ['nullable', 'string'],
             ];
 
             if (isset($row['id'])) {
                 $customer = Customer::where('slug', $row['id'])->first();
-                $rules['email'][2] = Rule::unique('customers')->ignore($customer->id);
             }
 
             $validator = Validator::make(
@@ -86,18 +87,25 @@ class ImportCustomer implements ShouldQueue, ShouldBeUnique
             );
 
             if (!$validator->fails()) {
+                $phoneNumber = PhoneNumber::make($row['phone_number'], 'MM');
+
                 $customerData = [
                     'slug' => StringHelper::generateUniqueSlug(),
                     'name' => $row['name'] ? $row['name'] : 'Unknown Customer',
                     'email' => $row['email'],
-                    'phone_number' => PhoneNumber::make($row['phone_number'], 'MM'),
+                    'phone_number' => $phoneNumber,
                     'password' => Hash::make(StringHelper::generateRandomPassword()),
                     'gender' => $row['gender'],
                     'created_by' => 'admin',
                 ];
 
                 if (!$customer) {
-                    $customer = Customer::create($customerData);
+                    try {
+                        $customer = Customer::create($customerData);
+                    } catch (QueryException $e) {
+                        $customer = Customer::where('phone_number', $phoneNumber)->first();
+                        $customer->update($customerData);
+                    }
                 } else {
                     $customerData['slug'] = $customer->slug;
                     $customer->update($customerData);

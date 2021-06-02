@@ -2,10 +2,10 @@
 
 namespace App\Imports;
 
-use App\Models\ShopTag;
 use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportShopTag;
+use App\Models\ShopTag;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -43,7 +43,7 @@ class ShopTagsImport implements ToCollection, WithHeadingRow
             $validateRow = $row->toArray();
 
             $rules = [
-                'name' => ['required','unique:shop_tags'],
+                'name' => ['required', 'unique:shop_tags'],
             ];
 
             if (isset($row['id'])) {

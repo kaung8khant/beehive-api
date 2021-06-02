@@ -2,15 +2,16 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StringHelper;
+use App\Models\CustomerGroup;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
-use App\Helpers\StringHelper;
-use App\Models\CustomerGroup;
 use Illuminate\Validation\Rule;
 
 class ImportCustomerGroup implements ShouldQueue, ShouldBeUnique
@@ -63,7 +64,8 @@ class ImportCustomerGroup implements ShouldQueue, ShouldBeUnique
                 'description' => ['nullable', 'string'],
             ];
 
-            $customerGroup=null;
+            $customerGroup = null;
+
             if (isset($row['id'])) {
                 $customerGroup = CustomerGroup::where('slug', $row['id'])->first();
                 $rules['name'][3] = Rule::unique('customer_groups')->ignore($customerGroup->id);
@@ -82,7 +84,13 @@ class ImportCustomerGroup implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$customerGroup) {
-                    $customerGroup = CustomerGroup::create($customerGroupData);
+                    try {
+                        $customerGroup = CustomerGroup::create($customerGroupData);
+                    } catch (QueryException $e) {
+                        $customerGroup = CustomerGroup::where('name', $row['name'])->first();
+                        $customerGroupData['slug'] = $customerGroup->slug;
+                        $customerGroup->update($customerGroupData);
+                    }
                 } else {
                     $customerGroupData['slug'] = $customerGroup->slug;
                     $customerGroup->update($customerGroupData);

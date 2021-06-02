@@ -3,9 +3,9 @@
 namespace App\Imports;
 
 use App\Exceptions\ImportException;
-use App\Models\Brand;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportBrand;
+use App\Models\Brand;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -43,7 +43,7 @@ class BrandsImport implements ToCollection, WithHeadingRow
             $validateRow = $row->toArray();
 
             $rules = [
-                'name' => ['required','unique:brands'],
+                'name' => ['required', 'unique:brands'],
             ];
 
             if (isset($row['id'])) {

@@ -2,18 +2,19 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StringHelper;
+use App\Models\Restaurant;
+use App\Models\RestaurantBranch;
+use App\Models\Township;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Models\Restaurant;
-use App\Models\RestaurantBranch;
-use App\Models\Township;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class ImportRestaurant implements ShouldQueue, ShouldBeUnique
@@ -61,10 +62,11 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
     public function handle()
     {
         foreach ($this->rows as $key => $row) {
-            $rules = [];
             $restaurant = null;
+
             if (isset($row['id'])) {
                 $restaurant = Restaurant::where('slug', $row['id'])->first();
+
                 $rules = [
                     'name' => [
                         'required',
@@ -72,6 +74,7 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                     ],
                     'is_enable' => 'required|boolean',
                 ];
+
                 $validator = Validator::make(
                     $row,
                     $rules
@@ -80,6 +83,7 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                 if (isset($row['branch_contact_number'])) {
                     $row['branch_contact_number'] = str_replace([' ', '-'], '', $row['branch_contact_number']);
                 }
+
                 $rules = [
                     'name' => [
                         'required',
@@ -95,6 +99,7 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                     'branch_longitude' => ['required', 'numeric'],
                     'branch_township_slug' => ['nullable', 'exists:App\Models\Township,slug'],
                 ];
+
                 $validator = Validator::make(
                     $row,
                     $rules,
@@ -104,8 +109,6 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                 );
             }
 
-
-
             if (!$validator->fails()) {
                 $restaurantData = [
                     'slug' => StringHelper::generateUniqueSlug(),
@@ -114,19 +117,25 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$restaurant) {
-                    $restaurant = restaurant::create($restaurantData);
-                    RestaurantBranch::create([
-                        'slug' =>  StringHelper::generateUniqueSlug(),
-                        'name' => $row['branch_name'],
-                        'contact_number' => PhoneNumber::make($row['branch_contact_number'], 'MM'),
-                        'opening_time' => $row['branch_opening_time'],
-                        'closing_time' => $row['branch_closing_time'],
-                        'latitude' => $row['branch_latitude'],
-                        'longitude' => $row['branch_longitude'],
-                        'address' => $row['branch_address'],
-                        'township_id' => Township::where('slug', $row['branch_township_slug'])->value('id'),
-                        'restaurant_id' => $restaurant->id,
-                    ]);
+                    try {
+                        $restaurant = restaurant::create($restaurantData);
+                        RestaurantBranch::create([
+                            'slug' => StringHelper::generateUniqueSlug(),
+                            'name' => $row['branch_name'],
+                            'contact_number' => PhoneNumber::make($row['branch_contact_number'], 'MM'),
+                            'opening_time' => $row['branch_opening_time'],
+                            'closing_time' => $row['branch_closing_time'],
+                            'latitude' => $row['branch_latitude'],
+                            'longitude' => $row['branch_longitude'],
+                            'address' => $row['branch_address'],
+                            'township_id' => Township::where('slug', $row['branch_township_slug'])->value('id'),
+                            'restaurant_id' => $restaurant->id,
+                        ]);
+                    } catch (QueryException $e) {
+                        $restaurant = Restaurant::where('name', $row['name'])->first();
+                        $restaurantData['slug'] = $restaurant->slug;
+                        $restaurant->update($restaurantData);
+                    }
                 } else {
                     $restaurantData['slug'] = $restaurant->slug;
                     $restaurant->update($restaurantData);

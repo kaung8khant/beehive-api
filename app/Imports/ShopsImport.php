@@ -2,11 +2,10 @@
 
 namespace App\Imports;
 
-use App\Models\Shop;
 use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportShop;
-use App\Jobs\ImportShopSubCategory;
+use App\Models\Shop;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;

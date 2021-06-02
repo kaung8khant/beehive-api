@@ -2,30 +2,21 @@
 
 namespace App\Exports;
 
-use App\Models\RestaurantOrder;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
+use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderContact;
 use App\Models\Township;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Carbon\Carbon;
-use Maatwebsite\Excel\Concerns\Exportable;
 
 class RestaurantBranchOrdersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    use Exportable;
-
-    public function __construct(string $params)
-    {
-        $this->params = $params;
-        ini_set('memory_limit', '256M');
-    }
-
     public function query()
     {
         $restaurantBranch = RestaurantBranch::where('slug', $this->params)->firstOrFail();
@@ -39,7 +30,7 @@ class RestaurantBranchOrdersExport implements FromQuery, WithHeadings, WithMappi
     public function map($restaurantBranchOrder): array
     {
         $contact = RestaurantOrderContact::where('restaurant_order_id', $restaurantBranchOrder->id);
-        $floor=$contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
+        $floor = $contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
         $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name') . ',' . Township::where('id', $contact->value('township_id'))->value('name');
         return [
             $restaurantBranchOrder->slug,

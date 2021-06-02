@@ -2,10 +2,10 @@
 
 namespace App\Imports;
 
-use App\Models\Restaurant;
 use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportRestaurant;
+use App\Models\Restaurant;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -44,6 +44,7 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
 
             if (isset($row['id'])) {
                 $restaurant = Restaurant::where('slug', $row['id'])->first();
+
                 $rules = [
                     'name' => [
                         'required',
@@ -51,6 +52,7 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
                     ],
                     'is_enable' => ['required', 'boolean'],
                 ];
+
                 $validator = Validator::make(
                     $validateRow,
                     $rules
@@ -71,6 +73,7 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
                     'branch_longitude' => ['required', 'numeric'],
                     'branch_township_slug' => ['nullable', 'exists:App\Models\Township,slug'],
                 ];
+
                 $validator = Validator::make(
                     $validateRow,
                     $rules,
@@ -79,7 +82,6 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
                     ]
                 );
             }
-
 
             if ($validator->fails()) {
                 if (isset($row['id'])) {

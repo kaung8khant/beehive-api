@@ -2,6 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StringHelper;
+use App\Models\Menu;
+use App\Models\Restaurant;
+use App\Models\RestaurantCategory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -9,10 +13,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
-use App\Helpers\StringHelper;
-use App\Models\Menu;
-use App\Models\Restaurant;
-use App\Models\RestaurantCategory;
 
 class ImportMenu implements ShouldQueue, ShouldBeUnique
 {
@@ -77,6 +77,7 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
 
             if (!$validator->fails()) {
                 $menu = null;
+
                 if (isset($row['id'])) {
                     $menu = Menu::where('slug', $row['id'])->first();
                 }
@@ -97,19 +98,24 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
 
                 if (!$menu) {
                     $menu = Menu::create($menuData);
+
                     foreach ($restaurant->restaurantBranches as $branch) {
                         $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
                         $branch->availableMenus()->attach($availableMenus);
                     }
                 } else {
                     $menuData['slug'] = $menu->slug;
-                    $menu->update($menuData);
                     $oldRestaurantId = $menu->restaurant_id;
+
+                    $menu->update($menuData);
+
                     if ($oldRestaurantId !== $restaurant->id) {
                         $oldRestaurant = Restaurant::where('id', $oldRestaurantId)->firstOrFail();
+
                         foreach ($oldRestaurant->restaurantBranches as $branch) {
                             $branch->availableMenus()->detach($menu->id);
                         }
+
                         foreach ($restaurant->restaurantBranches as $branch) {
                             $branch->availableMenus()->attach($menu->id);
                         }
