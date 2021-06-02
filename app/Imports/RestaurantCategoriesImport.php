@@ -2,10 +2,10 @@
 
 namespace App\Imports;
 
-use App\Models\RestaurantCategory;
 use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportRestaurantCategory;
+use App\Models\RestaurantCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -43,7 +43,7 @@ class RestaurantCategoriesImport implements ToCollection, WithHeadingRow
             $validateRow = $row->toArray();
 
             $rules = [
-                'name' => ['required','unique:restaurant_categories'],
+                'name' => ['required', 'unique:restaurant_categories'],
             ];
 
             if (isset($row['id'])) {

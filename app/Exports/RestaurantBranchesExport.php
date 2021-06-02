@@ -5,21 +5,16 @@ namespace App\Exports;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\Township;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Carbon\Carbon;
 
 class RestaurantBranchesExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    public function __construct()
-    {
-        ini_set('memory_limit', '256M');
-    }
-
     public function query()
     {
         return RestaurantBranch::query();
@@ -34,7 +29,7 @@ class RestaurantBranchesExport implements FromQuery, WithHeadings, WithMapping, 
             $restaurantBranch->slug,
             $restaurantBranch->name,
             $restaurantBranch->contact_number,
-            Carbon::parse($restaurantBranch->opening_time)->format('g:i A').' - '.Carbon::parse($restaurantBranch->closing_time)->format('g:i A'),
+            Carbon::parse($restaurantBranch->opening_time)->format('g:i A') . ' - ' . Carbon::parse($restaurantBranch->closing_time)->format('g:i A'),
             $restaurantBranch->address,
             $restaurantBranch->is_enable ? '1' : '0',
             Township::where('id', $restaurantBranch->township_id)->value('name'),

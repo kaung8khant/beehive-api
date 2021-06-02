@@ -2,10 +2,10 @@
 
 namespace App\Imports;
 
-use App\Models\ShopSubCategory;
 use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportShopSubCategory;
+use App\Models\ShopSubCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -44,7 +44,7 @@ class ShopSubCategoriesImport implements ToCollection, WithHeadingRow
 
             $rules = [
                 'name' => ['required', 'unique:shop_sub_categories'],
-                'shop_category_slug' => ['required','exists:App\Models\ShopCategory,slug'],            ];
+                'shop_category_slug' => ['required', 'exists:App\Models\ShopCategory,slug']];
 
             if (isset($row['id'])) {
                 $shopSubCategory = ShopSubCategory::where('slug', $row['id'])->first();

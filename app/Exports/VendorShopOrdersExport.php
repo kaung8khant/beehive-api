@@ -2,32 +2,20 @@
 
 namespace App\Exports;
 
-use App\Models\ShopOrder;
-use App\Models\Restaurant;
-use App\Models\RestaurantBranch;
-use App\Models\RestaurantOrderContact;
 use App\Models\Shop;
+use App\Models\ShopOrder;
 use App\Models\ShopOrderContact;
 use App\Models\Township;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Carbon\Carbon;
-use Maatwebsite\Excel\Concerns\Exportable;
 
 class VendorShopOrdersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    use Exportable;
-
-    public function __construct(string $params)
-    {
-        $this->params = $params;
-        ini_set('memory_limit', '256M');
-    }
-
     public function query()
     {
         $shop = Shop::where('slug', $this->params)->firstOrFail();
@@ -43,7 +31,7 @@ class VendorShopOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
     public function map($vendorShopOrder): array
     {
         $contact = ShopOrderContact::where('shop_order_id', $vendorShopOrder->id);
-        $floor=$contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
+        $floor = $contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
         $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name') . ',' . Township::where('id', $contact->value('township_id'))->value('name');
         return [
             $vendorShopOrder->slug,

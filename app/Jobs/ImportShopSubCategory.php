@@ -2,18 +2,18 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StringHelper;
+use App\Models\ShopCategory;
+use App\Models\ShopSubCategory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Models\ShopCategory;
-use App\Models\ShopSubCategory;
-use Illuminate\Database\QueryException;
 
 class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
 {
@@ -62,10 +62,11 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
         foreach ($this->rows as $key => $row) {
             $rules = [
                 'name' => ['required', 'unique:shop_sub_categories'],
-                'shop_category_slug' => ['required','exists:App\Models\ShopCategory,slug'],
+                'shop_category_slug' => ['required', 'exists:App\Models\ShopCategory,slug'],
             ];
 
-            $shopSubCategory=null;
+            $shopSubCategory = null;
+
             if (isset($row['id'])) {
                 $shopSubCategory = ShopSubCategory::where('slug', $row['id'])->first();
                 $rules['name'][1] = Rule::unique('shop_sub_categories')->ignore($shopSubCategory->id);
@@ -80,7 +81,7 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
                 $shopSubCategoryData = [
                     'slug' => StringHelper::generateUniqueSlug(),
                     'name' => $row['name'],
-                    'shop_category_id' =>ShopCategory::where('slug', $row['shop_category_slug'])->value('id'),
+                    'shop_category_id' => ShopCategory::where('slug', $row['shop_category_slug'])->value('id'),
                 ];
 
                 if (!$shopSubCategory) {

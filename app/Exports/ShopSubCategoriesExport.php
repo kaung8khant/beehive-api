@@ -13,11 +13,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ShopSubCategoriesExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    public function __construct()
-    {
-        ini_set('memory_limit', '256M');
-    }
-
     public function query()
     {
         return ShopSubCategory::query();

@@ -15,7 +15,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Propaganistas\LaravelPhone\PhoneNumber;
-use Illuminate\Validation\Rule;
 
 class ImportCustomer implements ShouldQueue, ShouldBeUnique
 {
@@ -65,7 +64,9 @@ class ImportCustomer implements ShouldQueue, ShouldBeUnique
             if (isset($row['phone_number'])) {
                 $row['phone_number'] = str_replace([' ', '-'], '', $row['phone_number']);
             }
+
             $customer = null;
+
             $rules = [
                 'name' => ['nullable', 'max:255'],
                 'phone_number' => ['required', 'phone:MM'],
@@ -87,6 +88,7 @@ class ImportCustomer implements ShouldQueue, ShouldBeUnique
 
             if (!$validator->fails()) {
                 $phoneNumber = PhoneNumber::make($row['phone_number'], 'MM');
+
                 $customerData = [
                     'slug' => StringHelper::generateUniqueSlug(),
                     'name' => $row['name'] ? $row['name'] : 'Unknown Customer',

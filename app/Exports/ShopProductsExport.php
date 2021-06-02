@@ -7,7 +7,6 @@ use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
-use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -17,14 +16,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    use Exportable;
-
-    public function __construct(string $params)
-    {
-        $this->params = $params;
-        ini_set('memory_limit', '256M');
-    }
-
     public function query()
     {
         $shop = Shop::where('slug', $this->params)->firstOrFail();

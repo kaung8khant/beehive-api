@@ -12,11 +12,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class RestaurantsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    public function __construct()
-    {
-        ini_set('memory_limit', '256M');
-    }
-
     public function query()
     {
         return Restaurant::query();
@@ -39,7 +34,7 @@ class RestaurantsExport implements FromQuery, WithHeadings, WithMapping, WithSty
         return [
             'id',
             'name',
-            'is_enable'
+            'is_enable',
         ];
     }
 

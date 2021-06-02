@@ -5,9 +5,6 @@ namespace App\Exports;
 use App\Models\Customer;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
-use App\Models\Shop;
-use App\Models\ShopOrder;
-use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -17,14 +14,6 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class RestaurantCustomersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    use Exportable;
-
-    public function __construct(string $params)
-    {
-        $this->params = $params;
-        ini_set('memory_limit', '256M');
-    }
-
     public function query()
     {
         $branch = RestaurantBranch::where('slug', $this->params)->firstOrFail();

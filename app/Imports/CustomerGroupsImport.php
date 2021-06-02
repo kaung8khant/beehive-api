@@ -2,15 +2,15 @@
 
 namespace App\Imports;
 
+use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportCustomerGroup;
+use App\Models\CustomerGroup;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use App\Exceptions\ImportException;
-use App\Models\CustomerGroup;
-use Illuminate\Validation\Rule;
 
 class CustomerGroupsImport implements ToCollection, WithHeadingRow
 {

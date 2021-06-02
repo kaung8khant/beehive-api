@@ -2,21 +2,22 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StringHelper;
+use App\Models\RestaurantCategory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Models\RestaurantCategory;
-use Illuminate\Database\QueryException;
 
 class ImportRestaurantCategory implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
     protected $uniqueKey;
     protected $rows;
 
@@ -61,7 +62,8 @@ class ImportRestaurantCategory implements ShouldQueue, ShouldBeUnique
             $rules = [
                 'name' => ['required', 'unique:restaurant_categories'],
             ];
-            $restaurantCategory=null;
+
+            $restaurantCategory = null;
 
             if (isset($row['id'])) {
                 $restaurantCategory = RestaurantCategory::where('slug', $row['id'])->first();

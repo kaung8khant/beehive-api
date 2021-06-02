@@ -2,10 +2,10 @@
 
 namespace App\Imports;
 
-use App\Models\RestaurantBranch;
 use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportRestaurantBranch;
+use App\Models\RestaurantBranch;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -44,15 +44,15 @@ class RestaurantBranchesImport implements ToCollection, WithHeadingRow
 
             $rules = [
                 'name' => ['required', 'unique:restaurant_branches'],
-                'is_enable' => ['required','boolean'],
+                'is_enable' => ['required', 'boolean'],
                 'address' => ['nullable'],
-                'contact_number' => ['required','phone:MM'],
-                'opening_time' => ['required','date_format:H:i'],
-                'closing_time' => ['required','date_format:H:i'],
-                'latitude' => ['required','numeric'],
-                'longitude' => ['required','numeric'],
-                'township_slug' => ['nullable','exists:App\Models\Township,slug'],
-                'restaurant_slug' => ['required','exists:App\Models\Restaurant,slug'],
+                'contact_number' => ['required', 'phone:MM'],
+                'opening_time' => ['required', 'date_format:H:i'],
+                'closing_time' => ['required', 'date_format:H:i'],
+                'latitude' => ['required', 'numeric'],
+                'longitude' => ['required', 'numeric'],
+                'township_slug' => ['nullable', 'exists:App\Models\Township,slug'],
+                'restaurant_slug' => ['required', 'exists:App\Models\Restaurant,slug'],
             ];
 
             if (isset($row['id'])) {

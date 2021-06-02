@@ -2,17 +2,17 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StringHelper;
+use App\Models\ShopTag;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Models\ShopTag;
-use Illuminate\Database\QueryException;
 
 class ImportShopTag implements ShouldQueue, ShouldBeUnique
 {
@@ -63,7 +63,8 @@ class ImportShopTag implements ShouldQueue, ShouldBeUnique
                 'name' => ['required', 'unique:shop_tags'],
             ];
 
-            $shopTag=null;
+            $shopTag = null;
+
             if (isset($row['id'])) {
                 $shopTag = ShopTag::where('slug', $row['id'])->first();
                 $rules['name'][1] = Rule::unique('shop_tags')->ignore($shopTag->id);

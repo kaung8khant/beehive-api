@@ -2,17 +2,17 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StringHelper;
+use App\Models\RestaurantTag;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Models\RestaurantTag;
-use Illuminate\Database\QueryException;
 
 class ImportRestaurantTag implements ShouldQueue, ShouldBeUnique
 {
@@ -63,7 +63,7 @@ class ImportRestaurantTag implements ShouldQueue, ShouldBeUnique
                 'name' => ['required', 'unique:restaurant_tags'],
             ];
 
-            $restaruantTag=null;
+            $restaruantTag = null;
 
             if (isset($row['id'])) {
                 $restaruantTag = RestaurantTag::where('slug', $row['id'])->first();
