@@ -70,7 +70,7 @@ class ImportCustomer implements ShouldQueue, ShouldBeUnique
                 [
                     'name' => 'nullable|max:255',
                     'phone_number' => 'required|phone:MM',
-                    'email' => 'nullable|email|unique:customers',
+                    'email' => 'nullable|email',
                     'customer_group_name' => 'nullable|string',
                 ],
                 [
