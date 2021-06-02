@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => 'v2/vendor'], function () {
+Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']], function () {
     Route::post('login', 'Auth\VendorAuthController@login');
     Route::post('register', 'Auth\VendorAuthController@register');
 
@@ -26,98 +26,98 @@ Route::group(['prefix' => 'v2/vendor'], function () {
 
         /* restaurant */
         /* restaurant categories */
-        Route::get('restaurants/{slug}/restaurant-categories', 'RestaurantCategoryController@getCategoriesByRestaurant');
-        Route::post('restaurants/add-restaurant-categories/{slug}', 'RestaurantController@addRestaurantCategories');
-        Route::post('restaurants/remove-restaurant-categories/{slug}', 'RestaurantController@removeRestaurantCategories');
-        Route::put('restaurant-branches/{restaurantBranch}/update', 'RestaurantBranchController@updateWithTagsAndCategories');
-        Route::get('restaurant-categories', 'RestaurantCategoryController@index');
-        Route::get('restaurant-tags', 'RestaurantTagController@index');
+        Route::get('restaurants/{slug}/restaurant-categories', 'Admin\RestaurantCategoryController@getCategoriesByRestaurant');
+        Route::post('restaurants/add-restaurant-categories/{slug}', 'Admin\RestaurantController@addRestaurantCategories');
+        Route::post('restaurants/remove-restaurant-categories/{slug}', 'Admin\RestaurantController@removeRestaurantCategories');
+        Route::put('restaurant-branches/{restaurantBranch}/update', 'Admin\RestaurantBranchController@updateWithTagsAndCategories');
+        Route::get('restaurant-categories', 'Admin\RestaurantCategoryController@index');
+        Route::get('restaurant-tags', 'Admin\RestaurantTagController@index');
 
         /* menus */
-        Route::get('restaurant-branches/{restaurantBranch}/menus', 'MenuController@getMenusByBranch');
-        Route::get('restaurant-branches/{restaurantBranch}/menus-with-additionals', 'MenuController@getMenusByBranchWithAdditionals');
-        Route::post('menus/status', 'MenuController@multipleStatusUpdate');
-        Route::patch('menus/toggle-enable/{slug}', 'MenuController@toggleEnable');
-        Route::post('menus/multiple-delete', 'MenuController@multipleDelete');
-        Route::resource('menus', 'MenuController', ['as' => 'vendor', 'except' => ['create', 'edit']]);
+        Route::get('restaurant-branches/{restaurantBranch}/menus', 'Admin\MenuController@getMenusByBranch');
+        Route::get('restaurant-branches/{restaurantBranch}/menus-with-additionals', 'Admin\MenuController@getMenusByBranchWithAdditionals');
+        Route::post('menus/status', 'Admin\MenuController@multipleStatusUpdate');
+        Route::patch('menus/toggle-enable/{slug}', 'Admin\MenuController@toggleEnable');
+        Route::post('menus/multiple-delete', 'Admin\MenuController@multipleDelete');
+        Route::resource('menus', 'Admin\MenuController', ['as' => 'vendor', 'except' => ['create', 'edit']]);
 
-        Route::post('restaurant-branches/{restaurantBranch}/menus/{menu}', 'RestaurantBranchController@toggleAvailable');
+        Route::post('restaurant-branches/{restaurantBranch}/menus/{menu}', 'Admin\RestaurantBranchController@toggleAvailable');
 
-        Route::get('menu-variations/{slug}', 'MenuVariationController@show');
-        Route::post('menu-variations', 'MenuVariationController@store');
-        Route::put('menu-variations/{slug}', 'MenuVariationController@update');
-        Route::delete('menu-variations/{slug}', 'MenuVariationController@destroy');
+        Route::get('menu-variations/{slug}', 'Admin\MenuVariationController@show');
+        Route::post('menu-variations', 'Admin\MenuVariationController@store');
+        Route::put('menu-variations/{slug}', 'Admin\MenuVariationController@update');
+        Route::delete('menu-variations/{slug}', 'Admin\MenuVariationController@destroy');
 
-        Route::get('menu-variation-values/{slug}', 'MenuVariationValueController@show');
-        Route::post('menu-variation-values', 'MenuVariationValueController@store');
-        Route::put('menu-variation-values/{slug}', 'MenuVariationValueController@update');
-        Route::delete('menu-variation-values/{slug}', 'MenuVariationValueController@destroy');
+        Route::get('menu-variation-values/{slug}', 'Admin\MenuVariationValueController@show');
+        Route::post('menu-variation-values', 'Admin\MenuVariationValueController@store');
+        Route::put('menu-variation-values/{slug}', 'Admin\MenuVariationValueController@update');
+        Route::delete('menu-variation-values/{slug}', 'Admin\MenuVariationValueController@destroy');
 
-        Route::get('menu-toppings/{slug}', 'MenuToppingController@show');
-        Route::post('menu-toppings', 'MenuToppingController@store');
-        Route::put('menu-toppings/{slug}', 'MenuToppingController@update');
-        Route::delete('menu-toppings/{slug}', 'MenuToppingController@destroy');
+        Route::get('menu-toppings/{slug}', 'Admin\MenuToppingController@show');
+        Route::post('menu-toppings', 'Admin\MenuToppingController@store');
+        Route::put('menu-toppings/{slug}', 'Admin\MenuToppingController@update');
+        Route::delete('menu-toppings/{slug}', 'Admin\MenuToppingController@destroy');
 
-        Route::get('restaurant-branches/{restaurantBranch}/orders', 'RestaurantOrderController@getBranchOrders');
-        Route::post('restaurant-orders/{restaurantOrder}/change-status', 'RestaurantOrderController@changeStatus');
-        Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor']);
-        Route::get('restaurant-branches/{restaurantBranch}/customers', 'RestaurantBranchController@getRestaurantBranchByCustomers');
+        Route::get('restaurant-branches/{restaurantBranch}/orders', 'Admin\RestaurantOrderController@getBranchOrders');
+        Route::post('restaurant-orders/{restaurantOrder}/change-status', 'Admin\RestaurantOrderController@changeStatus');
+        Route::resource('restaurant-orders', 'Admin\RestaurantOrderController', ['as' => 'vendor']);
+        Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\RestaurantBranchController@getRestaurantBranchByCustomers');
         /* restaurant */
 
         /* shop */
         /* shop categories */
-        Route::resource('shops', 'ShopController', ['as' => 'vendor']);
-        Route::get('shop-tags', 'ShopTagController@index');
-        Route::get('shop-categories', 'ShopCategoryController@index');
-        Route::get('shops/{slug}/shop-categories', 'ShopCategoryController@getCategoriesByShop');
-        Route::post('shops/add-shop-categories/{slug}', 'ShopController@addShopCategories');
-        Route::post('shops/remove-shop-categories/{slug}', 'ShopController@removeShopCategories');
-        Route::get('shop-categories/{slug}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
+        Route::resource('shops', 'Admin\ShopController', ['as' => 'vendor']);
+        Route::get('shop-tags', 'Admin\ShopTagController@index');
+        Route::get('shop-categories', 'Admin\ShopCategoryController@index');
+        Route::get('shops/{slug}/shop-categories', 'Admin\ShopCategoryController@getCategoriesByShop');
+        Route::post('shops/add-shop-categories/{slug}', 'Admin\ShopController@addShopCategories');
+        Route::post('shops/remove-shop-categories/{slug}', 'Admin\ShopController@removeShopCategories');
+        Route::get('shop-categories/{slug}/sub-categories', 'Admin\ShopSubCategoryController@getSubCategoriesByCategory');
 
-        Route::resource('shop-orders', 'ShopOrderController', ['as' => 'vendor']);
-        Route::get('shops/{shop}/shop-orders', 'ShopOrderController@getShopOrders');
-        Route::post('shop-orders/{shopOrder}/change-status', 'ShopOrderController@changeStatus');
-        Route::get('shops/{slug}/customers', 'ShopController@getCustomersByShop');
+        Route::resource('shop-orders', 'Admin\ShopOrderController', ['as' => 'vendor']);
+        Route::get('shops/{shop}/shop-orders', 'Admin\ShopOrderController@getShopOrders');
+        Route::post('shop-orders/{shopOrder}/change-status', 'Admin\ShopOrderController@changeStatus');
+        Route::get('shops/{slug}/customers', 'Admin\ShopController@getCustomersByShop');
 
         /* products */
-        Route::get('shops/{shop}/products', 'ProductController@getProductsByShop');
+        Route::get('shops/{shop}/products', 'Admin\ProductController@getProductsByShop');
 
-        Route::resource('products', 'ProductController', ['as' => 'vendor', 'except' => ['create', 'edit']]);
-        Route::patch('products/toggle-enable/{product}', 'ProductController@toggleEnable');
-        Route::post('products/status', 'ProductController@multipleStatusUpdate');
-        Route::post('products/multiple-delete', 'ProductController@multipleDelete');
+        Route::resource('products', 'Admin\ProductController', ['as' => 'vendor', 'except' => ['create', 'edit']]);
+        Route::patch('products/toggle-enable/{product}', 'Admin\ProductController@toggleEnable');
+        Route::post('products/status', 'Admin\ProductController@multipleStatusUpdate');
+        Route::post('products/multiple-delete', 'Admin\ProductController@multipleDelete');
 
-        Route::get('products/{product}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
-        Route::get('product-variations/{slug}', 'ProductVariationController@show');
-        Route::post('product-variations', 'ProductVariationController@store');
-        Route::put('product-variations/{slug}', 'ProductVariationController@update');
-        Route::delete('product-variations/{slug}', 'ProductVariationController@destroy');
+        Route::get('products/{product}/product-variations', 'Admin\ProductVariationController@getProductVariationsByProduct');
+        Route::get('product-variations/{slug}', 'Admin\ProductVariationController@show');
+        Route::post('product-variations', 'Admin\ProductVariationController@store');
+        Route::put('product-variations/{slug}', 'Admin\ProductVariationController@update');
+        Route::delete('product-variations/{slug}', 'Admin\ProductVariationController@destroy');
 
-        Route::get('product-variations/{productVariation}/product-variation-values', 'ProductVariationValueController@getVariationValuesByVariation');
-        Route::get('product-variation-values/{slug}', 'ProductVariationValueController@show');
-        Route::post('product-variation-values', 'ProductVariationValueController@store');
-        Route::put('product-variation-values/{slug}', 'ProductVariationValueController@update');
-        Route::delete('product-variation-values/{slug}', 'ProductVariationValueController@destroy');
+        Route::get('product-variations/{productVariation}/product-variation-values', 'Admin\ProductVariationValueController@getVariationValuesByVariation');
+        Route::get('product-variation-values/{slug}', 'Admin\ProductVariationValueController@show');
+        Route::post('product-variation-values', 'Admin\ProductVariationValueController@store');
+        Route::put('product-variation-values/{slug}', 'Admin\ProductVariationValueController@update');
+        Route::delete('product-variation-values/{slug}', 'Admin\ProductVariationValueController@destroy');
 
-        Route::get('brands', 'BrandController@index');
-        Route::post('brands', 'BrandController@store');
+        Route::get('brands', 'Admin\BrandController@index');
+        Route::post('brands', 'Admin\BrandController@store');
 
-        Route::get('cities', 'CityController@index');
-        Route::get('townships', 'TownshipController@index');
-        Route::get('cities/{city}/townships', 'TownshipController@getTownshipsByCity');
+        Route::get('cities', 'Admin\CityController@index');
+        Route::get('townships', 'Admin\TownshipController@index');
+        Route::get('cities/{city}/townships', 'Admin\TownshipController@getTownshipsByCity');
 
-        Route::get('customers', 'CustomerController@index');
-        Route::post('customers', 'CustomerController@store');
+        Route::get('customers', 'Admin\CustomerController@index');
+        Route::post('customers', 'Admin\CustomerController@store');
 
         /* Address */
-        Route::get('customers/{slug}/addresses', 'AddressController@index');
-        Route::post('customers/{slug}/addresses', 'AddressController@store');
+        Route::get('customers/{slug}/addresses', 'Admin\AddressController@index');
+        Route::post('customers/{slug}/addresses', 'Admin\AddressController@store');
 
-        Route::get('promocodes', 'PromocodeController@index');
+        Route::get('promocodes', 'Admin\PromocodeController@index');
 
         /* shop */
 
-        Route::post('/register-device', 'UserController@registerToken');
+        Route::post('/register-device', 'Admin\UserController@registerToken');
 
         Route::post('excels/import/{type}', 'Excel\ExportImportController@import');
         Route::get('excels/export/{type}', 'Excel\ExportImportController@export');

@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => 'v2/user'], function () {
+Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']], function () {
     Route::post('login', 'Auth\CustomerAuthController@login');
     Route::post('register', 'Auth\CustomerAuthController@register');
     Route::post('send-otp', 'Auth\OtpController@sendOtpToRegister');
