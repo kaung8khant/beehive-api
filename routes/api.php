@@ -16,12 +16,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('logout', 'Auth\UserAuthController@logout');
 
             /* Address */
-            Route::get('customers/{slug}/addresses', 'AddressController@index');
-            Route::post('customers/{slug}/addresses', 'AddressController@store');
+            Route::get('customers/{slug}/addresses', 'Admin\AddressController@index');
+            Route::post('customers/{slug}/addresses', 'Admin\AddressController@store');
 
-            Route::get('settings', 'SettingController@index');
-            Route::get('settings/{groupName}', 'SettingController@show');
-            Route::put('settings/update', 'SettingController@updateSettings');
+            Route::get('settings', 'Admin\SettingController@index');
+            Route::get('settings/{groupName}', 'Admin\SettingController@show');
+            Route::put('settings/update', 'Admin\SettingController@updateSettings');
 
             /* Dashboard */
             Route::get('dashboard/counts', 'Dashboard\AdminDashboardController@getCountData');
@@ -30,116 +30,116 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('dashboard/order-data', 'Dashboard\AdminDashboardController@getOrderChartData');
             /* Dashboard */
 
-            Route::resource('roles', 'RoleController', ['except' => ['create', 'edit']]);
-            Route::resource('users', 'UserController', ['except' => ['create', 'edit']]);
-            Route::post('users/reset-password/{user}', 'UserController@updatePassword');
-            Route::post('users/reset-password/customer/{customer}', 'UserController@updatePasswordForCustomer');
-            Route::patch('users/toggle-enable/{user}', 'UserController@toggleEnable');
-            Route::get('shop-users', 'UserController@getShopUsers');
-            Route::post('shop-users', 'UserController@storeShopUser');
-            Route::put('shop-users/{user}', 'UserController@updateShopUser');
-            Route::get('restaurant-users', 'UserController@getRestaurantUsers');
-            Route::post('restaurant-users', 'UserController@storeRestaurantUser');
-            Route::put('restaurant-users/{user}', 'UserController@updateRestaurantUser');
-            Route::get('logistics-users', 'UserController@getLogisticsUsers');
-            Route::post('logistics-users', 'UserController@storeLogisticsUser');
-            Route::put('logistics-users/{user}', 'UserController@updateLogisticsUser');
+            Route::resource('roles', 'Admin\RoleController', ['except' => ['create', 'edit']]);
+            Route::resource('users', 'Admin\UserController', ['except' => ['create', 'edit']]);
+            Route::post('users/reset-password/{user}', 'Admin\UserController@updatePassword');
+            Route::post('users/reset-password/customer/{customer}', 'Admin\UserController@updatePasswordForCustomer');
+            Route::patch('users/toggle-enable/{user}', 'Admin\UserController@toggleEnable');
+            Route::get('shop-users', 'Admin\UserController@getShopUsers');
+            Route::post('shop-users', 'Admin\UserController@storeShopUser');
+            Route::put('shop-users/{user}', 'Admin\UserController@updateShopUser');
+            Route::get('restaurant-users', 'Admin\UserController@getRestaurantUsers');
+            Route::post('restaurant-users', 'Admin\UserController@storeRestaurantUser');
+            Route::put('restaurant-users/{user}', 'Admin\UserController@updateRestaurantUser');
+            Route::get('logistics-users', 'Admin\UserController@getLogisticsUsers');
+            Route::post('logistics-users', 'Admin\UserController@storeLogisticsUser');
+            Route::put('logistics-users/{user}', 'Admin\UserController@updateLogisticsUser');
 
-            Route::resource('customers', 'CustomerController', ['except' => ['create', 'edit']]);
-            Route::patch('customers/toggle-enable/{customer}', 'CustomerController@toggleEnable');
+            Route::resource('customers', 'Admin\CustomerController', ['except' => ['create', 'edit']]);
+            Route::patch('customers/toggle-enable/{customer}', 'Admin\CustomerController@toggleEnable');
 
-            Route::resource('drivers', 'DriverController', ['except' => ['create', 'edit']]);
-            Route::patch('drivers/toggle-enable/{user}', 'DriverController@toggleEnable');
+            Route::resource('drivers', 'Admin\DriverController', ['except' => ['create', 'edit']]);
+            Route::patch('drivers/toggle-enable/{user}', 'Admin\DriverController@toggleEnable');
 
-            Route::resource('collectors', 'CollectorController', ['except' => ['create', 'edit']]);
-            Route::patch('collectors/toggle-enable/{user}', 'CollectorController@toggleEnable');
+            Route::resource('collectors', 'Admin\CollectorController', ['except' => ['create', 'edit']]);
+            Route::patch('collectors/toggle-enable/{user}', 'Admin\CollectorController@toggleEnable');
 
-            Route::resource('cities', 'CityController', ['except' => ['create', 'edit']]);
-            Route::resource('townships', 'TownshipController', ['except' => ['create', 'edit']]);
-            Route::get('cities/{city}/townships', 'TownshipController@getTownshipsByCity');
+            Route::resource('cities', 'Admin\CityController', ['except' => ['create', 'edit']]);
+            Route::resource('townships', 'Admin\TownshipController', ['except' => ['create', 'edit']]);
+            Route::get('cities/{city}/townships', 'Admin\TownshipController@getTownshipsByCity');
 
             /* Shop */
-            Route::resource('shop-categories', 'ShopCategoryController', ['except' => ['create', 'edit']]);
-            Route::resource('sub-categories', 'ShopSubCategoryController', ['except' => ['create', 'edit']]);
-            Route::resource('shop-tags', 'ShopTagController', ['except' => ['create', 'edit']]);
-            Route::resource('shops', 'ShopController', ['except' => ['create', 'edit']]);
-            Route::patch('shops/toggle-enable/{shop}', 'ShopController@toggleEnable');
-            Route::post('shops/status', 'ShopController@multipleStatusUpdate');
-            Route::patch('shops/toggle-official/{slug}', 'ShopController@toggleOfficial');
-            Route::get('shops/{slug}/customers', 'ShopController@getCustomersByShop');
-            Route::get('shop-categories/{shopCategory}/sub-categories', 'ShopSubCategoryController@getSubCategoriesByCategory');
-            Route::get('shops/{slug}/shop-tags', 'ShopTagController@getTagsByShop');
-            Route::get('shops/{shop}/ratings', 'ShopRatingController@getShopRatings');
+            Route::resource('shop-categories', 'Admin\ShopCategoryController', ['except' => ['create', 'edit']]);
+            Route::resource('sub-categories', 'Admin\ShopSubCategoryController', ['except' => ['create', 'edit']]);
+            Route::resource('shop-tags', 'Admin\ShopTagController', ['except' => ['create', 'edit']]);
+            Route::resource('shops', 'Admin\ShopController', ['except' => ['create', 'edit']]);
+            Route::patch('shops/toggle-enable/{shop}', 'Admin\ShopController@toggleEnable');
+            Route::post('shops/status', 'Admin\ShopController@multipleStatusUpdate');
+            Route::patch('shops/toggle-official/{slug}', 'Admin\ShopController@toggleOfficial');
+            Route::get('shops/{slug}/customers', 'Admin\ShopController@getCustomersByShop');
+            Route::get('shop-categories/{shopCategory}/sub-categories', 'Admin\ShopSubCategoryController@getSubCategoriesByCategory');
+            Route::get('shops/{slug}/shop-tags', 'Admin\ShopTagController@getTagsByShop');
+            Route::get('shops/{shop}/ratings', 'Admin\ShopRatingController@getShopRatings');
 
-            Route::resource('products', 'ProductController', ['except' => ['create', 'edit']]);
-            Route::patch('products/toggle-enable/{product}', 'ProductController@toggleEnable');
-            Route::post('products/status', 'ProductController@multipleStatusUpdate');
-            Route::get('shops/{shop}/products', 'ProductController@getProductsByShop');
-            Route::get('shop-categories/{shopCategory}/products', 'ProductController@getProductsByCategory');
-            Route::post('products/multiple-delete', 'ProductController@multipleDelete');
+            Route::resource('products', 'Admin\ProductController', ['except' => ['create', 'edit']]);
+            Route::patch('products/toggle-enable/{product}', 'Admin\ProductController@toggleEnable');
+            Route::post('products/status', 'Admin\ProductController@multipleStatusUpdate');
+            Route::get('shops/{shop}/products', 'Admin\ProductController@getProductsByShop');
+            Route::get('shop-categories/{shopCategory}/products', 'Admin\ProductController@getProductsByCategory');
+            Route::post('products/multiple-delete', 'Admin\ProductController@multipleDelete');
 
-            Route::resource('product-variations', 'ProductVariationController', ['except' => ['create', 'edit']]);
-            Route::get('products/{product}/product-variations', 'ProductVariationController@getProductVariationsByProduct');
+            Route::resource('product-variations', 'Admin\ProductVariationController', ['except' => ['create', 'edit']]);
+            Route::get('products/{product}/product-variations', 'Admin\ProductVariationController@getProductVariationsByProduct');
 
-            Route::resource('product-variation-values', 'ProductVariationValueController', ['except' => ['create', 'edit']]);
-            Route::get('product-variations/{productVariation}/product-variation-values', 'ProductVariationValueController@getVariationValuesByVariation');
+            Route::resource('product-variation-values', 'Admin\ProductVariationValueController', ['except' => ['create', 'edit']]);
+            Route::get('product-variations/{productVariation}/product-variation-values', 'Admin\ProductVariationValueController@getVariationValuesByVariation');
 
-            Route::resource('brands', 'BrandController', ['except' => ['create', 'edit']]);
-            Route::get('brands/{brand}/products', 'ProductController@getProductsByBrand');
-            Route::get('brands/{slug}/shops', 'ShopController@getShopsByBrand');
+            Route::resource('brands', 'Admin\BrandController', ['except' => ['create', 'edit']]);
+            Route::get('brands/{brand}/products', 'Admin\ProductController@getProductsByBrand');
+            Route::get('brands/{slug}/shops', 'Admin\ShopController@getShopsByBrand');
             /* Shop */
 
             /* Restaurant */
-            Route::resource('restaurant-categories', 'RestaurantCategoryController', ['except' => ['create', 'edit']]);
-            Route::resource('restaurant-tags', 'RestaurantTagController', ['except' => ['create', 'edit']]);
-            Route::resource('restaurants', 'RestaurantController', ['except' => ['create', 'edit']]);
-            Route::patch('restaurants/toggle-enable/{restaurant}', 'RestaurantController@toggleEnable');
-            Route::post('restaurants/status', 'RestaurantController@multipleStatusUpdate');
-            Route::patch('restaurants/toggle-official/{slug}', 'RestaurantController@toggleOfficial');
-            Route::get('restaurants/{slug}/restaurant-tags', 'RestaurantTagController@getTagsByRestaurant');
-            Route::resource('menus', 'MenuController', ['except' => ['create', 'edit']]);
-            Route::resource('menu-variations', 'MenuVariationController', ['except' => ['create', 'edit']]);
-            Route::resource('menu-variation-values', 'MenuVariationValueController', ['except' => ['create', 'edit']]);
-            Route::resource('menu-toppings', 'MenuToppingController', ['except' => ['create', 'edit']]);
-            Route::patch('menus/toggle-enable/{menu}', 'MenuController@toggleEnable');
-            Route::post('menus/status', 'MenuController@multipleStatusUpdate');
-            Route::post('menus/multiple-delete', 'MenuController@multipleDelete');
-            Route::get('restaurants/{restaurant}/menus', 'MenuController@getMenusByRestaurant');
-            Route::get('menus/{menu}/menu-variations', 'MenuVariationController@getVariationsByMenu');
-            Route::get('menus/{menu}/menu-toppings', 'MenuToppingController@getToppingsByMenu');
-            Route::resource('restaurant-branches', 'RestaurantBranchController', ['except' => ['create', 'edit']]);
-            Route::get('restaurant-branches/{restaurantBranch}/menus', 'MenuController@getMenusByBranch');
-            Route::get('restaurant-categories/{restaurantCategory}/menus', 'MenuController@getMenusByCategory');
-            Route::get('restaurant-branches/{restaurantBranch}/menus-with-additionals', 'MenuController@getMenusByBranchWithAdditionals');
-            Route::post('restaurant-branches/{restaurantBranch}/menus/{menu}', 'RestaurantBranchController@toggleAvailable');
-            Route::post('restaurant-branches/add-available-menus/{restaurantBranch}', 'RestaurantBranchController@addAvailableMenus');
-            Route::post('restaurant-branches/remove-available-menus/{slug}', 'RestaurantBranchController@removeAvailableMenus');
-            Route::patch('restaurant-branches/toggle-enable/{restaurantBranch}', 'RestaurantBranchController@toggleEnable');
-            Route::post('restaurant-branches/status', 'RestaurantBranchController@multipleStatusUpdate');
-            Route::get('restaurant-branches/{restaurantBranch}/customers', 'RestaurantBranchController@getRestaurantBranchByCustomers');
-            Route::get('restaurants/{restaurant}/restaurant-branches', 'RestaurantBranchController@getBranchesByRestaurant');
-            Route::get('townships/{township}/restaurant-branches', 'RestaurantBranchController@getBranchesByTownship');
+            Route::resource('restaurant-categories', 'Admin\RestaurantCategoryController', ['except' => ['create', 'edit']]);
+            Route::resource('restaurant-tags', 'Admin\RestaurantTagController', ['except' => ['create', 'edit']]);
+            Route::resource('restaurants', 'Admin\RestaurantController', ['except' => ['create', 'edit']]);
+            Route::patch('restaurants/toggle-enable/{restaurant}', 'Admin\RestaurantController@toggleEnable');
+            Route::post('restaurants/status', 'Admin\RestaurantController@multipleStatusUpdate');
+            Route::patch('restaurants/toggle-official/{slug}', 'Admin\RestaurantController@toggleOfficial');
+            Route::get('restaurants/{slug}/restaurant-tags', 'Admin\RestaurantTagController@getTagsByRestaurant');
+            Route::resource('menus', 'Admin\MenuController', ['except' => ['create', 'edit']]);
+            Route::resource('menu-variations', 'Admin\MenuVariationController', ['except' => ['create', 'edit']]);
+            Route::resource('menu-variation-values', 'Admin\MenuVariationValueController', ['except' => ['create', 'edit']]);
+            Route::resource('menu-toppings', 'Admin\MenuToppingController', ['except' => ['create', 'edit']]);
+            Route::patch('menus/toggle-enable/{menu}', 'Admin\MenuController@toggleEnable');
+            Route::post('menus/status', 'Admin\MenuController@multipleStatusUpdate');
+            Route::post('menus/multiple-delete', 'Admin\MenuController@multipleDelete');
+            Route::get('restaurants/{restaurant}/menus', 'Admin\MenuController@getMenusByRestaurant');
+            Route::get('menus/{menu}/menu-variations', 'Admin\MenuVariationController@getVariationsByMenu');
+            Route::get('menus/{menu}/menu-toppings', 'Admin\MenuToppingController@getToppingsByMenu');
+            Route::resource('restaurant-branches', 'Admin\RestaurantBranchController', ['except' => ['create', 'edit']]);
+            Route::get('restaurant-branches/{restaurantBranch}/menus', 'Admin\MenuController@getMenusByBranch');
+            Route::get('restaurant-categories/{restaurantCategory}/menus', 'Admin\MenuController@getMenusByCategory');
+            Route::get('restaurant-branches/{restaurantBranch}/menus-with-additionals', 'Admin\MenuController@getMenusByBranchWithAdditionals');
+            Route::post('restaurant-branches/{restaurantBranch}/menus/{menu}', 'Admin\RestaurantBranchController@toggleAvailable');
+            Route::post('restaurant-branches/add-available-menus/{restaurantBranch}', 'Admin\RestaurantBranchController@addAvailableMenus');
+            Route::post('restaurant-branches/remove-available-menus/{slug}', 'Admin\RestaurantBranchController@removeAvailableMenus');
+            Route::patch('restaurant-branches/toggle-enable/{restaurantBranch}', 'Admin\RestaurantBranchController@toggleEnable');
+            Route::post('restaurant-branches/status', 'Admin\RestaurantBranchController@multipleStatusUpdate');
+            Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\RestaurantBranchController@getRestaurantBranchByCustomers');
+            Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
+            Route::get('townships/{township}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByTownship');
 
             /* Restaurant */
 
             /* Order */
-            Route::resource('restaurant-orders', 'RestaurantOrderController');
-            Route::post('restaurant-orders/{restaurantOrder}/change-status', 'RestaurantOrderController@changeStatus');
-            Route::resource('shop-orders', 'ShopOrderController');
-            Route::post('shop-orders/{shopOrder}/change-status', 'ShopOrderController@changeStatus');
+            Route::resource('restaurant-orders', 'Admin\RestaurantOrderController');
+            Route::post('restaurant-orders/{restaurantOrder}/change-status', 'Admin\RestaurantOrderController@changeStatus');
+            Route::resource('shop-orders', 'Admin\ShopOrderController');
+            Route::post('shop-orders/{shopOrder}/change-status', 'Admin\ShopOrderController@changeStatus');
             /* Order */
 
             /* Promocode */
-            Route::resource('promocodes', 'PromocodeController', ['except' => ['create', 'edit']]);
-            Route::post('promocodes/add-rules/{promocode}', 'PromocodeController@addRules');
-            Route::delete('rules/{promocodeRule:id}', 'PromocodeController@removeRule');
-            Route::post('promocodes/validate/{slug}', 'PromocodeController@validateCode');
-            Route::get('promocodes/{promocode}/customers', 'CustomerController@getPromocodeUsedCustomers');
+            Route::resource('promocodes', 'Admin\PromocodeController', ['except' => ['create', 'edit']]);
+            Route::post('promocodes/add-rules/{promocode}', 'Admin\PromocodeController@addRules');
+            Route::delete('rules/{promocodeRule:id}', 'Admin\PromocodeController@removeRule');
+            Route::post('promocodes/validate/{slug}', 'Admin\PromocodeController@validateCode');
+            Route::get('promocodes/{promocode}/customers', 'Admin\CustomerController@getPromocodeUsedCustomers');
 
             /* Promocode */
 
             /* Device Token */
-            Route::post('/register-device', 'UserController@registerToken');
+            Route::post('/register-device', 'Admin\UserController@registerToken');
             /* Device Token */
 
             Route::resource('customer-groups', 'Group\CustomerGroupController', ['except' => ['create', 'edit']]);
@@ -157,19 +157,19 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('excels/import/{type}', 'Excel\ExportImportController@import');
             Route::get('excels/export/{type}', 'Excel\ExportImportController@export');
 
-            Route::get('pages', 'PageController@index');
-            Route::get('pages/{page}', 'PageController@show');
-            Route::patch('pages/{page}', 'PageController@update');
+            Route::get('pages', 'Admin\PageController@index');
+            Route::get('pages/{page}', 'Admin\PageController@show');
+            Route::patch('pages/{page}', 'Admin\PageController@update');
 
             /*Ads */
-            Route::resource('ads', 'AdsController', ['except' => ['create', 'edit']]);
+            Route::resource('ads', 'Admin\AdsController', ['except' => ['create', 'edit']]);
 
             /*Content */
-            Route::resource('contents', 'ContentController', ['except' => ['create', 'edit']]);
+            Route::resource('contents', 'Admin\ContentController', ['except' => ['create', 'edit']]);
 
-            Route::post('job/accept', 'OrderDriverController@jobAccept');
-            Route::get('job/{slug}', 'OrderDriverController@jobDetail');
-            Route::get('jobs', 'OrderDriverController@jobList');
+            Route::post('job/accept', 'Admin\OrderDriverController@jobAccept');
+            Route::get('job/{slug}', 'Admin\OrderDriverController@jobDetail');
+            Route::get('jobs', 'Admin\OrderDriverController@jobList');
         });
     });
 
@@ -184,13 +184,19 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
     Route::get('fix-slug/{table}', 'SlugFixController@fix');
 
-    Route::get('contents', 'ContentController@index');
-
-    /*
-     * -----------
-     * Customer API
-     * -----------
-     */
-    require __DIR__ . '/customer-api.php';
-    require __DIR__ . '/vendor-api.php';
+    Route::get('contents', 'Admin\ContentController@index');
 });
+
+/*
+ * -----------
+ * Vendor API
+ * -----------
+ */
+require __DIR__ . '/vendor-api.php';
+
+/*
+ * -----------
+ * Customer API
+ * -----------
+ */
+require __DIR__ . '/customer-api.php';

@@ -2,18 +2,19 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StringHelper;
+use App\Models\Restaurant;
+use App\Models\RestaurantBranch;
+use App\Models\Township;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Models\Restaurant;
-use App\Models\RestaurantBranch;
-use App\Models\Township;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
@@ -64,20 +65,22 @@ class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
             if (isset($row['contact_number'])) {
                 $row['contact_number'] = str_replace([' ', '-'], '', $row['contact_number']);
             }
+
             $rules = [
                 'name' => ['required', 'unique:restaurant_branches'],
-                'is_enable' => ['required','boolean'],
+                'is_enable' => ['required', 'boolean'],
                 'address' => ['nullable'],
-                'contact_number' => ['required','phone:MM'],
-                'opening_time' => ['required','date_format:H:i'],
-                'closing_time' => ['required','date_format:H:i'],
-                'latitude' => ['required','numeric'],
-                'longitude' => ['required','numeric'],
-                'township_slug' => ['nullable','exists:App\Models\Township,slug'],
-                'restaurant_slug' => ['required','exists:App\Models\Restaurant,slug'],
+                'contact_number' => ['required', 'phone:MM'],
+                'opening_time' => ['required', 'date_format:H:i'],
+                'closing_time' => ['required', 'date_format:H:i'],
+                'latitude' => ['required', 'numeric'],
+                'longitude' => ['required', 'numeric'],
+                'township_slug' => ['nullable', 'exists:App\Models\Township,slug'],
+                'restaurant_slug' => ['required', 'exists:App\Models\Restaurant,slug'],
             ];
 
-            $restaurantBranch=null;
+            $restaurantBranch = null;
+
             if (isset($row['id'])) {
                 $restaurantBranch = RestaurantBranch::where('slug', $row['id'])->first();
                 $rules['name'][1] = Rule::unique('restaurant_branches')->ignore($restaurantBranch->id);
@@ -107,7 +110,13 @@ class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$restaurantBranch) {
-                    $restaurantBranch = RestaurantBranch::create($restaurantBranchData);
+                    try {
+                        $restaurantBranch = RestaurantBranch::create($restaurantBranchData);
+                    } catch (QueryException $e) {
+                        $restaurantBranch = RestaurantBranch::where('name', $row['name'])->first();
+                        $restaurantBranchData['slug'] = $restaurantBranch->slug;
+                        $restaurantBranch->update($restaurantBranchData);
+                    }
                 } else {
                     $restaurantBranchData['slug'] = $restaurantBranch->slug;
                     $restaurantBranch->update($restaurantBranchData);

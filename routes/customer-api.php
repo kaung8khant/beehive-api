@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => 'user'], function () {
+Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']], function () {
     Route::post('login', 'Auth\CustomerAuthController@login');
     Route::post('register', 'Auth\CustomerAuthController@register');
     Route::post('send-otp', 'Auth\OtpController@sendOtpToRegister');
@@ -104,4 +104,10 @@ Route::group(['prefix' => 'user'], function () {
     /* Ads */
     Route::get('ads', 'Customer\HomeController@getAds');
     /* Ads */
+});
+
+Route::group(['prefix' => 'v3/user'], function () {
+    Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
+        Route::resource('restaurants/orders', 'Customer\v3\RestaurantOrderController', ['as' => 'customer-v3']);
+    });
 });

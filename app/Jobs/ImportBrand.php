@@ -2,16 +2,17 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StringHelper;
 use App\Models\Brand;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
 
 class ImportBrand implements ShouldQueue, ShouldBeUnique
 {
@@ -62,7 +63,8 @@ class ImportBrand implements ShouldQueue, ShouldBeUnique
                 'name' => ['required', 'unique:brands'],
             ];
 
-            $brand=null;
+            $brand = null;
+
             if (isset($row['id'])) {
                 $brand = Brand::where('slug', $row['id'])->first();
                 $rules['name'][1] = Rule::unique('brands')->ignore($brand->id);
@@ -80,7 +82,13 @@ class ImportBrand implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$brand) {
-                    $brand = Brand::create($brandData);
+                    try {
+                        $brand = brand::create($brandData);
+                    } catch (QueryException $e) {
+                        $brand = brand::where('name', $row['name'])->first();
+                        $brandData['slug'] = $brand->slug;
+                        $brand->update($brandData);
+                    }
                 } else {
                     $brandData['slug'] = $brand->slug;
                     $brand->update($brandData);

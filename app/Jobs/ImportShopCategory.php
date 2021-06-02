@@ -2,16 +2,17 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StringHelper;
+use App\Models\ShopCategory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Helpers\StringHelper;
-use App\Models\ShopCategory;
 
 class ImportShopCategory implements ShouldQueue, ShouldBeUnique
 {
@@ -61,7 +62,8 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
             $rules = [
                 'name' => ['required', 'unique:shop_categories'],
             ];
-            $shopCategory=null;
+
+            $shopCategory = null;
 
             if (isset($row['id'])) {
                 $shopCategory = ShopCategory::where('slug', $row['id'])->first();
@@ -80,7 +82,13 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$shopCategory) {
-                    $shopCategory = ShopCategory::create($shopCategoryData);
+                    try {
+                        $shopCategory = ShopCategory::create($shopCategoryData);
+                    } catch (QueryException $e) {
+                        $shopCategory = ShopCategory::where('name', $row['name'])->first();
+                        $shopCategoryData['slug'] = $shopCategory->slug;
+                        $shopCategory->update($shopCategoryData);
+                    }
                 } else {
                     $shopCategoryData['slug'] = $shopCategory->slug;
                     $shopCategory->update($shopCategoryData);

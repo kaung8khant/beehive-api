@@ -4,9 +4,7 @@ namespace App\Exports;
 
 use App\Models\Menu;
 use App\Models\Restaurant;
-use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
-use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -16,17 +14,9 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class RestaurantBranchMenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    use Exportable;
-
-    public function __construct(string $params)
-    {
-        $this->params = $params;
-        ini_set('memory_limit', '256M');
-    }
-
     public function query()
     {
-        $menus =  Menu::query()->whereHas('restaurantBranches', function ($query) {
+        $menus = Menu::query()->whereHas('restaurantBranches', function ($query) {
             $query->where('slug', $this->params);
         });
         return $menus;

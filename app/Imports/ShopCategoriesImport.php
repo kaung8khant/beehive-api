@@ -2,10 +2,10 @@
 
 namespace App\Imports;
 
-use App\Models\ShopCategory;
 use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportShopCategory;
+use App\Models\ShopCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -43,7 +43,7 @@ class ShopCategoriesImport implements ToCollection, WithHeadingRow
             $validateRow = $row->toArray();
 
             $rules = [
-                'name' => ['required','unique:shop_categories'],
+                'name' => ['required', 'unique:shop_categories'],
             ];
 
             if (isset($row['id'])) {

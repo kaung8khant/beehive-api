@@ -2,6 +2,12 @@
 
 namespace App\Jobs;
 
+use App\Helpers\StringHelper;
+use App\Models\Brand;
+use App\Models\Product;
+use App\Models\Shop;
+use App\Models\ShopCategory;
+use App\Models\ShopSubCategory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -9,17 +15,10 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
-use App\Helpers\StringHelper;
-use App\Models\Brand;
-use App\Models\Product;
-use App\Models\Shop;
-use App\Models\ShopCategory;
-use App\Models\ShopSubCategory;
 
 class ImportProduct implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
 
     protected $uniqueKey;
     protected $rows;
@@ -82,6 +81,7 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
 
             if (!$validator->fails()) {
                 $product = null;
+
                 if (isset($row['id'])) {
                     $product = Product::where('slug', $row['id'])->first();
                 }

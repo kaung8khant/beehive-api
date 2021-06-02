@@ -2,26 +2,21 @@
 
 namespace App\Exports;
 
-use App\Models\RestaurantOrder;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
+use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderContact;
 use App\Models\Township;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Carbon\Carbon;
 
 class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    public function __construct()
-    {
-        ini_set('memory_limit', '256M');
-    }
-
     public function query()
     {
         return RestaurantOrder::query();
@@ -33,7 +28,7 @@ class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
     public function map($restaurantOrder): array
     {
         $contact = RestaurantOrderContact::where('restaurant_order_id', $restaurantOrder->id);
-        $floor=$contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
+        $floor = $contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
         $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name') . ',' . Township::where('id', $contact->value('township_id'))->value('name');
         return [
             $restaurantOrder->slug,
