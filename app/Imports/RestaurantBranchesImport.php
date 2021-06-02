@@ -3,92 +3,102 @@
 namespace App\Imports;
 
 use App\Models\RestaurantBranch;
-use Maatwebsite\Excel\Concerns\ToModel;
+use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
-use App\Models\Restaurant;
-use App\Models\Township;
-use Maatwebsite\Excel\Concerns\Importable;
-use Propaganistas\LaravelPhone\PhoneNumber;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+use App\Jobs\ImportRestaurantBranch;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithUpserts;
-use Maatwebsite\Excel\Concerns\WithValidation;
 
-class RestaurantBranchesImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
+class RestaurantBranchesImport implements ToCollection, WithHeadingRow
 {
-    use Importable;
+    protected $batchPerWorker;
 
     public function __construct()
     {
-        ini_set('memory_limit', '256M');
-    }
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
-    {
-        return new RestaurantBranch([
-            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
-            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
-            'name' => $row['name'],
-            'contact_number' => PhoneNumber::make($row['contact_number'], 'MM'),
-            'opening_time' => $row['opening_time'],
-            'closing_time' => $row['closing_time'],
-            'latitude' => $row['latitude'],
-            'longitude' => $row['longitude'],
-            'address' => $row['address'],
-            'is_enable' => $row['is_enable'],
-            'township_id' => Township::where('slug', $row['township_slug'])->value('id'),
-            'restaurant_id' => Restaurant::where('slug', $row['restaurant_slug'])->value('id'),
-        ]);
+        $this->batchPerWorker = 200;
     }
 
-    public function chunkSize(): int
+    public function collection(Collection $rows)
     {
-        return 1000;
+        $this->validate($rows);
+
+        $rows = $rows->toArray();
+        $workerCount = $this->calculateWorkerCount($rows);
+
+        for ($i = 0; $i < $workerCount; $i++) {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
+            ImportRestaurantBranch::dispatch($uniqueKey, $rowsBatch);
+        }
     }
 
-    /**
-     * @return string|array
-     */
-    public function uniqueBy()
+    private function validate($rows)
     {
-        return 'slug';
-    }
+        $validatorErrors = [];
 
-    public function rules(): array
-    {
-        return [
-            'name' => 'required',
-            'is_enable' => 'required|boolean',
-            'address' => 'nullable',
-            'contact_number' => 'required|phone:MM',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-            'township_slug' => 'nullable|exists:App\Models\Township,slug',
-        ];
-    }
+        foreach ($rows as $key => $row) {
+            $validateRow = $row->toArray();
 
-    public function customValidationMessages()
-    {
-        return [
-            'contact_number.phone' => 'Invalid Phone Number',
-        ];
-    }
+            $rules = [
+                'name' => ['required', 'unique:restaurant_branches'],
+                'is_enable' => ['required','boolean'],
+                'address' => ['nullable'],
+                'contact_number' => ['required','phone:MM'],
+                'opening_time' => ['required','date_format:H:i'],
+                'closing_time' => ['required','date_format:H:i'],
+                'latitude' => ['required','numeric'],
+                'longitude' => ['required','numeric'],
+                'township_slug' => ['nullable','exists:App\Models\Township,slug'],
+                'restaurant_slug' => ['required','exists:App\Models\Restaurant,slug'],
+            ];
 
-    public function transformSlugToId($value)
-    {
-        $branch = RestaurantBranch::where('slug', $value)->first();
+            if (isset($row['id'])) {
+                $restaurantBranch = RestaurantBranch::where('slug', $row['id'])->first();
+                $rules['name'][1] = Rule::unique('restaurant_branches')->ignore($restaurantBranch->id);
+            }
 
-        if (!$branch) {
-            return null;
+            $validator = Validator::make(
+                $validateRow,
+                $rules,
+                [
+                    'contact_number.phone' => 'Invalid phone number.',
+                ]
+            );
+
+            if ($validator->fails()) {
+                $validatorErrors[] = [
+                    'row' => $key + 2,
+                    'name' => $row['name'],
+                    'is_enable' => $row['is_enable'],
+                    'contact_number' => $row['contact_number'],
+                    'opening_time' => $row['opening_time'],
+                    'closing_time' => $row['closing_time'],
+                    'latitude' => $row['latitude'],
+                    'longitude' => $row['longitude'],
+                    'township_slug' => $row['township_slug'],
+                    'restaurant_slug' => $row['restaurant_slug'],
+                    'errors' => $validator->errors(),
+                ];
+            }
         }
 
-        return $branch->id;
+        if (count($validatorErrors) > 0) {
+            throw new ImportException(json_encode($validatorErrors));
+        }
+    }
+
+    private function calculateWorkerCount($rows)
+    {
+        $rowCount = count($rows);
+        $workerCount = intval($rowCount / $this->batchPerWorker);
+
+        if ($rowCount % $this->batchPerWorker !== 0) {
+            $workerCount += 1;
+        }
+
+        return $workerCount;
     }
 }

@@ -13,7 +13,6 @@ use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
-use Illuminate\Database\QueryException;
 
 class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
 {
@@ -65,8 +64,10 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
                 'shop_category_slug' => ['required','exists:App\Models\ShopCategory,slug'],
             ];
 
+            $shopSubCategory=null;
             if (isset($row['id'])) {
-                $rules['name'][1] = Rule::unique('shop_sub_categories')->ignore($row['id']);
+                $shopSubCategory = ShopSubCategory::where('slug', $row['id'])->first();
+                $rules['name'][1] = Rule::unique('shop_sub_categories')->ignore($shopSubCategory->id);
             }
 
             $validator = Validator::make(
@@ -75,10 +76,6 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
             );
 
             if (!$validator->fails()) {
-                $shopSubCategory=null;
-                if (isset($row['id'])) {
-                    $shopSubCategory = ShopSubCategory::where('slug', $row['id'])->first();
-                }
                 $shopSubCategoryData = [
                     'slug' => StringHelper::generateUniqueSlug(),
                     'name' => $row['name'],
@@ -86,12 +83,7 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$shopSubCategory) {
-                    try {
-                        $shopSubCategory = ShopSubCategory::create($shopSubCategoryData);
-                    } catch (QueryException $e) {
-                        $shopSubCategory = ShopSubCategory::where('name', $row['name'])->first();
-                        $shopSubCategory->update($shopSubCategoryData);
-                    }
+                    $shopSubCategory = ShopSubCategory::create($shopSubCategoryData);
                 } else {
                     $shopSubCategoryData['slug'] = $shopSubCategory->slug;
                     $shopSubCategory->update($shopSubCategoryData);

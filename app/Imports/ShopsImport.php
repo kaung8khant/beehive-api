@@ -63,7 +63,10 @@ class ShopsImport implements ToCollection, WithHeadingRow
 
             $validator = Validator::make(
                 $validateRow,
-                $rules
+                $rules,
+                [
+                    'contact_number.phone' => 'Invalid phone number.',
+                ]
             );
 
             if ($validator->fails()) {
@@ -76,6 +79,7 @@ class ShopsImport implements ToCollection, WithHeadingRow
                     'opening_time' => $row['opening_time'],
                     'closing_time' => $row['closing_time'],
                     'latitude' => $row['latitude'],
+                    'longitude' => $row['longitude'],
                     'township_slug' => $row['township_slug'],
                     'errors' => $validator->errors(),
                 ];

@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantTag;
-use App\Models\ShopTag;
-use Illuminate\Database\QueryException;
 
 class ImportRestaurantTag implements ShouldQueue, ShouldBeUnique
 {
@@ -64,8 +62,11 @@ class ImportRestaurantTag implements ShouldQueue, ShouldBeUnique
                 'name' => ['required', 'unique:restaurant_tags'],
             ];
 
+            $restaruantTag=null;
+
             if (isset($row['id'])) {
-                $rules['name'][1] = Rule::unique('restaurant_tags')->ignore($row['id']);
+                $restaruantTag = RestaurantTag::where('slug', $row['id'])->first();
+                $rules['name'][1] = Rule::unique('restaurant_tags')->ignore($restaruantTag->id);
             }
 
             $validator = Validator::make(
@@ -74,22 +75,13 @@ class ImportRestaurantTag implements ShouldQueue, ShouldBeUnique
             );
 
             if (!$validator->fails()) {
-                $restaruantTag=null;
-                if (isset($row['id'])) {
-                    $restaruantTag = RestaurantTag::where('slug', $row['id'])->first();
-                }
                 $restaruantTagData = [
                     'slug' => StringHelper::generateUniqueSlug(),
                     'name' => $row['name'],
                 ];
 
                 if (!$restaruantTag) {
-                    try {
-                        $restaruantTag = RestaurantTag::create($restaruantTagData);
-                    } catch (QueryException $e) {
-                        $restaruantTag = RestaurantTag::where('name', $row['name'])->first();
-                        $restaruantTag->update($restaruantTagData);
-                    }
+                    $restaruantTag = RestaurantTag::create($restaruantTagData);
                 } else {
                     $restaruantTagData['slug'] = $restaruantTag->slug;
                     $restaruantTag->update($restaruantTagData);

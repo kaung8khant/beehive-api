@@ -35,10 +35,14 @@ class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             $shop->contact_number,
             Carbon::parse($shop->opening_time)->format('g:i A').' - '.Carbon::parse($shop->closing_time)->format('g:i A'),
             $shop->address,
-            $shop->is_enable ? 'TRUE' : 'FALSE',
-            $shop->is_official ? 'TRUE' : 'FALSE',
+            $shop->is_enable ? '1' : '0',
+            $shop->is_official ? '1' : '0',
             Township::where('id', $shop->township_id)->value('name'),
             Township::where('id', $shop->township_id)->value('slug'),
+            Carbon::parse($shop->opening_time)->format('H:i'),
+            Carbon::parse($shop->closing_time)->format('H:i'),
+            $shop->latitude,
+            $shop->longitude,
         ];
     }
 
@@ -54,6 +58,10 @@ class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'is_official',
             'township',
             'township_slug',
+            'opening_time',
+            'closing_time',
+            'latitude',
+            'longitude',
         ];
     }
 
@@ -71,6 +79,10 @@ class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'G' => ['alignment' => ['horizontal' => 'center']],
             'H' => ['alignment' => ['horizontal' => 'center']],
             'I' => ['alignment' => ['horizontal' => 'center']],
+            'J' => ['alignment' => ['horizontal' => 'center']],
+            'K' => ['alignment' => ['horizontal' => 'center']],
+            'L' => ['alignment' => ['horizontal' => 'center']],
+            'M' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -86,6 +98,10 @@ class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'G' => 10,
             'H' => 20,
             'I' => 15,
+            'J' => 15,
+            'K' => 15,
+            'L' => 15,
+            'M' => 15,
         ];
     }
 }

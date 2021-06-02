@@ -9,14 +9,13 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
-use App\Helpers\StringHelper;
-use App\Models\CustomerGroup;
 use Illuminate\Validation\Rule;
+use App\Helpers\StringHelper;
+use App\Models\RestaurantCategory;
 
-class ImportCustomerGroup implements ShouldQueue, ShouldBeUnique
+class ImportRestaurantCategory implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
     protected $uniqueKey;
     protected $rows;
 
@@ -59,14 +58,13 @@ class ImportCustomerGroup implements ShouldQueue, ShouldBeUnique
     {
         foreach ($this->rows as $key => $row) {
             $rules = [
-                'name' => ['required', 'string', 'max:200', 'unique:customer_groups'],
-                'description' => ['nullable', 'string'],
+                'name' => ['required', 'unique:restaurant_categories'],
             ];
+            $restaurantCategory=null;
 
-            $customerGroup=null;
             if (isset($row['id'])) {
-                $customerGroup = CustomerGroup::where('slug', $row['id'])->first();
-                $rules['name'][3] = Rule::unique('customer_groups')->ignore($customerGroup->id);
+                $restaurantCategory = RestaurantCategory::where('slug', $row['id'])->first();
+                $rules['name'][1] = Rule::unique('restaurant_categories')->ignore($row['id']);
             }
 
             $validator = Validator::make(
@@ -75,17 +73,16 @@ class ImportCustomerGroup implements ShouldQueue, ShouldBeUnique
             );
 
             if (!$validator->fails()) {
-                $customerGroupData = [
+                $restaurantCategoryData = [
                     'slug' => StringHelper::generateUniqueSlug(),
                     'name' => $row['name'],
-                    'description' => $row['description'],
                 ];
 
-                if (!$customerGroup) {
-                    $customerGroup = CustomerGroup::create($customerGroupData);
+                if (!$restaurantCategory) {
+                    $restaurantCategory = RestaurantCategory::create($restaurantCategoryData);
                 } else {
-                    $customerGroupData['slug'] = $customerGroup->slug;
-                    $customerGroup->update($customerGroupData);
+                    $restaurantCategoryData['slug'] = $restaurantCategory->slug;
+                    $restaurantCategory->update($restaurantCategoryData);
                 }
             }
         }

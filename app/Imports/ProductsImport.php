@@ -2,85 +2,92 @@
 
 namespace App\Imports;
 
+use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
-use App\Models\Brand;
-use App\Models\Product;
-use App\Models\Shop;
-use App\Models\ShopCategory;
-use App\Models\ShopSubCategory;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+use App\Jobs\ImportProduct;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithUpserts;
-use Maatwebsite\Excel\Concerns\WithValidation;
 
-class ProductsImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
+class ProductsImport implements ToCollection, WithHeadingRow
 {
+    protected $batchPerWorker;
+
     public function __construct()
     {
-        ini_set('memory_limit', '256M');
+        $this->batchPerWorker = 200;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
+    public function collection(Collection $rows)
     {
-        return new Product([
-            'id' => isset($row['id']) && $this->transformSlugToId($row['id']),
-            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
-            'name' => $row['name'],
-            'description' => $row['description'],
-            'price' => $row['price'],
-            'tax' => $row['tax'],
-            'discount' => $row['discount'],
-            'is_enable' => $row['is_enable'],
-            'shop_id' => Shop::where('slug', $row['shop_slug'])->value('id'),
-            'shop_category_id' => ShopCategory::where('slug', $row['shop_category_slug'])->value('id'),
-            'shop_sub_category_id' => ShopSubCategory::where('slug', $row['shop_sub_category_slug'])->value('id'),
-            'brand_id' => Brand::where('slug', $row['brand_slug'])->value('id'),
-        ]);
+        $this->validate($rows);
+
+        $rows = $rows->toArray();
+        $workerCount = $this->calculateWorkerCount($rows);
+
+        for ($i = 0; $i < $workerCount; $i++) {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
+            ImportProduct::dispatch($uniqueKey, $rowsBatch);
+        }
     }
 
-    public function chunkSize(): int
+    private function validate($rows)
     {
-        return 1000;
-    }
+        $validatorErrors = [];
 
-    /**
-     * @return string|array
-     */
-    public function uniqueBy()
-    {
-        return 'slug';
-    }
+        foreach ($rows as $key => $row) {
+            $validateRow = $row->toArray();
 
-    public function rules(): array
-    {
-        return [
-            'name' => 'required|string',
-            'description' => 'nullable|string',
-            'price' => 'required|max:99999999',
-            'tax' => 'required|numeric',
-            'discount' => 'required|numeric',
-            'is_enable' => 'required|boolean',
-            'shop_slug' => 'required|exists:App\Models\Shop,slug',
-            'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
-            'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
-            'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
-        ];
-    }
+            $rules = [
+                'description' => 'nullable|string',
+                'price' => 'required|max:99999999',
+                'tax' => 'required|numeric',
+                'discount' => 'required|numeric',
+                'is_enable' => 'required|boolean',
+                'shop_slug' => 'required|exists:App\Models\Shop,slug',
+                'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
+                'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
+                'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
+            ];
 
-    public function transformSlugToId($value)
-    {
-        $product = Product::where('slug', $value)->first();
+            $validator = Validator::make(
+                $validateRow,
+                $rules
+            );
 
-        if (!$product) {
-            return null;
+            if ($validator->fails()) {
+                $validatorErrors[] = [
+                    'row' => $key + 2,
+                    'name' => $row['name'],
+                    'description' => $row['description'],
+                    'price' => $row['price'],
+                    'tax' => $row['tax'],
+                    'discount' => $row['discount'],
+                    'is_enable' => $row['is_enable'],
+                    'shop_slug' => $row['shop_slug'],
+                    'shop_category_slug' => $row['shop_category_slug'],
+                    'shop_sub_category_slug' => $row['shop_sub_category_slug'],
+                    'errors' => $validator->errors(),
+                ];
+            }
         }
 
-        return $product->id;
+        if (count($validatorErrors) > 0) {
+            throw new ImportException(json_encode($validatorErrors));
+        }
+    }
+
+    private function calculateWorkerCount($rows)
+    {
+        $rowCount = count($rows);
+        $workerCount = intval($rowCount / $this->batchPerWorker);
+
+        if ($rowCount % $this->batchPerWorker !== 0) {
+            $workerCount += 1;
+        }
+
+        return $workerCount;
     }
 }

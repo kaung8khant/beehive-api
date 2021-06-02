@@ -2,103 +2,90 @@
 
 namespace App\Imports;
 
+use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
-use App\Models\Menu;
-use App\Models\Restaurant;
-use App\Models\RestaurantCategory;
-use Maatwebsite\Excel\Concerns\Importable;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+use App\Jobs\ImportMenu;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithUpserts;
-use Maatwebsite\Excel\Concerns\WithValidation;
 
-class MenusImport implements ToModel, WithHeadingRow, WithChunkReading, WithUpserts, WithValidation
+class MenusImport implements ToCollection, WithHeadingRow
 {
+    protected $batchPerWorker;
+
     public function __construct()
     {
-        ini_set('memory_limit', '256M');
+        $this->batchPerWorker = 200;
     }
 
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
+    public function collection(Collection $rows)
     {
-        $restaurantId = Restaurant::where('slug', $row['restaurant_slug'])->value('id');
-        $restaurant = Restaurant::where('slug', $row['restaurant_slug'])->firstOrFail();
-        $newMenu =[
-            'id' =>  isset($row['id']) && $this->transformSlugToId($row['id'])->id,
-            'slug' => isset($row['id']) ? $row['id'] : StringHelper::generateUniqueSlug(),
-            'name' => $row['name'],
-            'description' => $row['description'],
-            'price' => $row['price'],
-            'tax' => $row['tax'],
-            'discount' => $row['discount'],
-            'is_enable' => $row['is_enable'],
-            'restaurant_id' => $restaurantId,
-            'restaurant_category_id' => RestaurantCategory::where('slug', $row['restaurant_category_slug'])->value('id'),
-        ];
-        if (!isset($row['id'])) {
-            $menu=Menu::create($newMenu);
-            foreach ($restaurant->restaurantBranches as $branch) {
-                $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
-                $branch->availableMenus()->attach($availableMenus);
-            }
-        } else {
-            $exitingMenu = $this->transformSlugToId($row['id']);
-            $oldRestaurantId = $exitingMenu->restaurant_id;
-            if ($oldRestaurantId !== $restaurantId) {
-                $oldRestaurant = Restaurant::where('id', $oldRestaurantId)->firstOrFail();
-                foreach ($oldRestaurant->restaurantBranches as $branch) {
-                    $branch->availableMenus()->detach($exitingMenu->id);
-                }
-                foreach ($restaurant->restaurantBranches as $branch) {
-                    $branch->availableMenus()->attach($exitingMenu->id);
-                }
+        $this->validate($rows);
+
+        $rows = $rows->toArray();
+        $workerCount = $this->calculateWorkerCount($rows);
+
+        for ($i = 0; $i < $workerCount; $i++) {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
+            ImportMenu::dispatch($uniqueKey, $rowsBatch);
+        }
+    }
+
+    private function validate($rows)
+    {
+        $validatorErrors = [];
+
+        foreach ($rows as $key => $row) {
+            $validateRow = $row->toArray();
+
+            $rules = [
+                'name' => 'required',
+                'description' => 'nullable',
+                'price' => 'required|numeric',
+                'tax' => 'required|numeric',
+                'discount' => 'required|numeric',
+                'is_enable' => 'required|boolean',
+                'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
+                'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
+            ];
+
+            $validator = Validator::make(
+                $validateRow,
+                $rules
+            );
+
+            if ($validator->fails()) {
+                $validatorErrors[] = [
+                    'row' => $key + 2,
+                    'name' => $row['name'],
+                    'description' => $row['description'],
+                    'price' => $row['price'],
+                    'tax' => $row['tax'],
+                    'discount' => $row['discount'],
+                    'is_enable' => $row['is_enable'],
+                    'restaurant_slug' => $row['restaurant_slug'],
+                    'restaurant_category_slug' => $row['restaurant_category_slug'],
+                    'errors' => $validator->errors(),
+                ];
             }
         }
-        return new Menu($newMenu);
+
+        if (count($validatorErrors) > 0) {
+            throw new ImportException(json_encode($validatorErrors));
+        }
     }
 
-    public function chunkSize(): int
+    private function calculateWorkerCount($rows)
     {
-        return 1000;
-    }
+        $rowCount = count($rows);
+        $workerCount = intval($rowCount / $this->batchPerWorker);
 
-    /**
-     * @return string|array
-     */
-    public function uniqueBy()
-    {
-        return ['slug','id'];
-    }
-
-
-    public function rules(): array
-    {
-        return [
-            'name' => 'required',
-            'description' => 'nullable',
-            'price' => 'required|numeric',
-            'tax' => 'required|numeric',
-            'discount' => 'required|numeric',
-            'is_enable' => 'required|boolean',
-            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-            'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
-        ];
-    }
-
-    public function transformSlugToId($value)
-    {
-        $menu = Menu::where('slug', $value)->first();
-
-        if (!$menu) {
-            return null;
+        if ($rowCount % $this->batchPerWorker !== 0) {
+            $workerCount += 1;
         }
 
-        return $menu;
+        return $workerCount;
     }
 }

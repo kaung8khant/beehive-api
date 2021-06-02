@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ShopTag;
-use Illuminate\Database\QueryException;
 
 class ImportShopTag implements ShouldQueue, ShouldBeUnique
 {
@@ -63,8 +62,10 @@ class ImportShopTag implements ShouldQueue, ShouldBeUnique
                 'name' => ['required', 'unique:shop_tags'],
             ];
 
+            $shopTag=null;
             if (isset($row['id'])) {
-                $rules['name'][1] = Rule::unique('shop_tags')->ignore($row['id']);
+                $shopTag = ShopTag::where('slug', $row['id'])->first();
+                $rules['name'][1] = Rule::unique('shop_tags')->ignore($shopTag->id);
             }
 
             $validator = Validator::make(
@@ -73,22 +74,13 @@ class ImportShopTag implements ShouldQueue, ShouldBeUnique
             );
 
             if (!$validator->fails()) {
-                $shopTag=null;
-                if (isset($row['id'])) {
-                    $shopTag = ShopTag::where('slug', $row['id'])->first();
-                }
                 $shopTagData = [
                     'slug' => StringHelper::generateUniqueSlug(),
                     'name' => $row['name'],
                 ];
 
                 if (!$shopTag) {
-                    try {
-                        $shopTag = ShopTag::create($shopTagData);
-                    } catch (QueryException $e) {
-                        $shopTag = ShopTag::where('name', $row['name'])->first();
-                        $shopTag->update($shopTagData);
-                    }
+                    $shopTag = ShopTag::create($shopTagData);
                 } else {
                     $shopTagData['slug'] = $shopTag->slug;
                     $shopTag->update($shopTagData);
