@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantCategory;
+use Illuminate\Database\QueryException;
 
 class ImportRestaurantCategory implements ShouldQueue, ShouldBeUnique
 {
@@ -79,7 +80,13 @@ class ImportRestaurantCategory implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$restaurantCategory) {
-                    $restaurantCategory = RestaurantCategory::create($restaurantCategoryData);
+                    try {
+                        $restaurantCategory = RestaurantCategory::create($restaurantCategoryData);
+                    } catch (QueryException $e) {
+                        $restaurantCategory = RestaurantCategory::where('name', $row['name'])->first();
+                        $restaurantCategoryData['slug'] = $restaurantCategory->slug;
+                        $restaurantCategory->update($restaurantCategoryData);
+                    }
                 } else {
                     $restaurantCategoryData['slug'] = $restaurantCategory->slug;
                     $restaurantCategory->update($restaurantCategoryData);
