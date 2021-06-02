@@ -13,6 +13,7 @@ use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\Shop;
 use App\Models\Township;
+use Illuminate\Database\QueryException;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class ImportShop implements ShouldQueue, ShouldBeUnique
@@ -106,7 +107,13 @@ class ImportShop implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$shop) {
-                    $shop = Shop::create($shopData);
+                    try {
+                        $shop = Shop::create($shopData);
+                    } catch (QueryException $e) {
+                        $shop = Shop::where('name', $row['name'])->first();
+                        $shopData['slug'] = $shop->slug;
+                        $shop->update($shopData);
+                    }
                 } else {
                     $shopData['slug'] = $shop->slug;
                     $shop->update($shopData);

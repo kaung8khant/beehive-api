@@ -14,6 +14,7 @@ use App\Helpers\StringHelper;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\Township;
+use Illuminate\Database\QueryException;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
@@ -107,7 +108,13 @@ class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$restaurantBranch) {
-                    $restaurantBranch = RestaurantBranch::create($restaurantBranchData);
+                    try {
+                        $restaurantBranch = RestaurantBranch::create($restaurantBranchData);
+                    } catch (QueryException $e) {
+                        $restaurantBranch = RestaurantBranch::where('name', $row['name'])->first();
+                        $restaurantBranchData['slug'] = $restaurantBranch->slug;
+                        $restaurantBranch->update($restaurantBranchData);
+                    }
                 } else {
                     $restaurantBranchData['slug'] = $restaurantBranch->slug;
                     $restaurantBranch->update($restaurantBranchData);

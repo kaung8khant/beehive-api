@@ -11,6 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use App\Helpers\StringHelper;
 use App\Models\CustomerGroup;
+use Illuminate\Database\QueryException;
 use Illuminate\Validation\Rule;
 
 class ImportCustomerGroup implements ShouldQueue, ShouldBeUnique
@@ -82,7 +83,13 @@ class ImportCustomerGroup implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$customerGroup) {
-                    $customerGroup = CustomerGroup::create($customerGroupData);
+                    try {
+                        $customerGroup = CustomerGroup::create($customerGroupData);
+                    } catch (QueryException $e) {
+                        $customerGroup = CustomerGroup::where('name', $row['name'])->first();
+                        $customerGroupData['slug'] = $customerGroup->slug;
+                        $customerGroup->update($customerGroupData);
+                    }
                 } else {
                     $customerGroupData['slug'] = $customerGroup->slug;
                     $customerGroup->update($customerGroupData);

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\RestaurantTag;
+use Illuminate\Database\QueryException;
 
 class ImportRestaurantTag implements ShouldQueue, ShouldBeUnique
 {
@@ -81,7 +82,13 @@ class ImportRestaurantTag implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$restaruantTag) {
-                    $restaruantTag = RestaurantTag::create($restaruantTagData);
+                    try {
+                        $restaruantTag = RestaurantTag::create($restaruantTagData);
+                    } catch (QueryException $e) {
+                        $restaruantTag = RestaurantTag::where('name', $row['name'])->first();
+                        $restaruantTagData['slug'] = $restaruantTag->slug;
+                        $restaruantTag->update($restaruantTagData);
+                    }
                 } else {
                     $restaruantTagData['slug'] = $restaruantTag->slug;
                     $restaruantTag->update($restaruantTagData);

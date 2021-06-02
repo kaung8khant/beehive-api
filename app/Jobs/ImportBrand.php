@@ -12,6 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
+use Illuminate\Database\QueryException;
 
 class ImportBrand implements ShouldQueue, ShouldBeUnique
 {
@@ -80,7 +81,13 @@ class ImportBrand implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$brand) {
-                    $brand = Brand::create($brandData);
+                    try {
+                        $brand = brand::create($brandData);
+                    } catch (QueryException $e) {
+                        $brand = brand::where('name', $row['name'])->first();
+                        $brandData['slug'] = $brand->slug;
+                        $brand->update($brandData);
+                    }
                 } else {
                     $brandData['slug'] = $brand->slug;
                     $brand->update($brandData);

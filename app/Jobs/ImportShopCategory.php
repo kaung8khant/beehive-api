@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ShopCategory;
+use Illuminate\Database\QueryException;
 
 class ImportShopCategory implements ShouldQueue, ShouldBeUnique
 {
@@ -80,7 +81,13 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$shopCategory) {
-                    $shopCategory = ShopCategory::create($shopCategoryData);
+                    try {
+                        $shopCategory = ShopCategory::create($shopCategoryData);
+                    } catch (QueryException $e) {
+                        $shopCategory = ShopCategory::where('name', $row['name'])->first();
+                        $shopCategoryData['slug'] = $shopCategory->slug;
+                        $shopCategory->update($shopCategoryData);
+                    }
                 } else {
                     $shopCategoryData['slug'] = $shopCategory->slug;
                     $shopCategory->update($shopCategoryData);

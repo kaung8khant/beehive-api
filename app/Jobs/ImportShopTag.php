@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Helpers\StringHelper;
 use App\Models\ShopTag;
+use Illuminate\Database\QueryException;
 
 class ImportShopTag implements ShouldQueue, ShouldBeUnique
 {
@@ -80,7 +81,13 @@ class ImportShopTag implements ShouldQueue, ShouldBeUnique
                 ];
 
                 if (!$shopTag) {
-                    $shopTag = ShopTag::create($shopTagData);
+                    try {
+                        $shopTag = ShopTag::create($shopTagData);
+                    } catch (QueryException $e) {
+                        $shopTag = ShopTag::where('name', $row['name'])->first();
+                        $shopTagData['slug'] = $shopTag->slug;
+                        $shopTag->update($shopTagData);
+                    }
                 } else {
                     $shopTagData['slug'] = $shopTag->slug;
                     $shopTag->update($shopTagData);
