@@ -24,10 +24,21 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $products = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariations.productVariationValues')
+        $products = Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues')
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
+                    ->orWhereHas('shop', function ($q) use ($request) {
+                        $q->where('name', 'LIKE', '%' . $request->filter . '%');
+                    })
+                    ->orWhereHas('shopCategory', function ($q) use ($request) {
+                        $q->where('name', 'LIKE', '%' . $request->filter . '%');
+                    })
+                    ->orWhereHas('shopSubCategory', function ($q) use ($request) {
+                        $q->where('name', 'LIKE', '%' . $request->filter . '%');
+                    })
+                    ->orWhereHas('brand', function ($q) use ($request) {
+                        $q->where('name', 'LIKE', '%' . $request->filter . '%');
+                    });
             })
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
