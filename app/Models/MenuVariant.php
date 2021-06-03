@@ -22,4 +22,9 @@ class MenuVariant extends Model
         'is_enable' => 'boolean',
         'variant' => 'array',
     ];
+
+    public function menu()
+    {
+        return $this->belongsTo(Menu::class);
+    }
 }

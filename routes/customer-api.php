@@ -108,8 +108,8 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
 
 Route::group(['prefix' => 'v3/user'], function () {
     Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
-        Route::resource('restaurants/orders', 'Customer\v3\RestaurantOrderController', ['as' => 'customer-v3-restaurant']);
+        Route::resource('restaurants/orders', 'Customer\v3\RestaurantOrderController', ['as' => 'customer-v3-restaurant', 'except' => ['create', 'edit']]);
 
-        Route::resource('shops/orders', 'Customer\v3\ShopOrderController', ['as' => 'customer-v3-shop']);
+        Route::resource('shops/orders', 'Customer\v3\ShopOrderController', ['as' => 'customer-v3-shop', 'except' => ['create', 'edit']]);
     });
 });

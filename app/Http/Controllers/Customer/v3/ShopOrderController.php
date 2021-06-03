@@ -9,6 +9,7 @@ use App\Helpers\ShopOrderHelper as OrderHelper;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
@@ -31,11 +32,11 @@ class ShopOrderController extends Controller
     public function index(Request $request)
     {
         $shopOrder = ShopOrder::where('customer_id', $this->customer->id)
-            ->latest()
+            ->orderBy('id', 'desc')
             ->paginate($request->size)
             ->items();
 
-        return $this->generateShopOrderResponse($shopOrder, 201, 'array');
+        return $this->generateShopOrderResponse($shopOrder, 200, 'array');
     }
 
     public function store(Request $request)
@@ -49,7 +50,7 @@ class ShopOrderController extends Controller
 
         $validatedData['customer_id'] = $this->customer->id;
 
-        $validatedData = OrderHelper::prepareProductVariant($validatedData);
+        $validatedData = OrderHelper::prepareProductVariants($validatedData);
 
         if ($validatedData['promo_code']) {
             $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest()->first();
@@ -82,6 +83,128 @@ class ShopOrderController extends Controller
             return $order;
         });
 
+        $this->notifySystem($validatedData['order_items'], $order->slug);
+
         return $this->generateShopOrderResponse($order->refresh(), 201);
+    }
+
+    public function show($slug)
+    {
+        $shopOrder = ShopOrder::with('contact')
+            ->where('customer_id', $this->customer->id)
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        return $this->generateShopOrderResponse($shopOrder, 200);
+    }
+
+    public function destroy($slug)
+    {
+        $shopOrder = ShopOrder::with('vendors')
+            ->where('customer_id', $this->customer->id)
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
+        }
+
+        $message = 'Your order has successfully been cancelled.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+
+        SendSms::dispatch($uniqueKey, [$this->customer->phone_number], $message, 'order', $smsData);
+        OrderHelper::createOrderStatus($shopOrder->id, 'cancelled');
+
+        foreach ($shopOrder->vendors as $vendor) {
+            $this->notify(
+                $vendor->shop->slug,
+                [
+                    'title' => 'Order cancelled',
+                    'body' => 'Your order been cancelled!',
+                    'action' => 'update',
+                    'status' => 'cancelled',
+                    'slug' => $shopOrder->slug,
+                ]
+            );
+        }
+
+        $this->notifyAdmin(
+            [
+                'title' => 'Order cancelled',
+                'body' => 'Shop order just has been updated',
+                'data' => [
+                    'action' => 'update',
+                    'type' => 'shopOrder',
+                    'status' => 'cancelled',
+                    'slug' => $shopOrder->slug,
+                ],
+            ]
+        );
+
+        return $this->generateResponse($message, 200, true);
+    }
+
+    private function notifySystem($orderItems, $slug)
+    {
+        foreach ($orderItems as $item) {
+            $this->notify(
+                OrderHelper::getShopByProduct($item['slug'])->slug,
+                [
+                    'title' => 'New Order',
+                    'body' => "You've just recevied new order. Check now!",
+                    'action' => 'create',
+                    'status' => 'pending',
+                    'shopOrder' => [
+                        'slug' => OrderHelper::getShopByProduct($item['slug'])->slug,
+                        'order_status' => 'pending',
+                        'total_amount' => ShopOrder::with('contact')
+                            ->with('contact.township')
+                            ->with('vendors')
+                            ->where('slug', $slug)
+                            ->firstOrFail()->total_amount,
+                        'shop_order' => ShopOrder::with('contact')
+                            ->with('contact.township')
+                            ->with('vendors')
+                            ->where('slug', $slug)
+                            ->firstOrFail(),
+                    ],
+                ]);
+        }
+
+        $this->notifyAdmin(
+            [
+                'title' => 'New Order',
+                'body' => 'New Order has been received. Check now!',
+                'data' => [
+                    'action' => 'create',
+                    'type' => 'shopOrder',
+                    'status' => 'pending',
+                    'shopOrder' => ShopOrder::with('contact')
+                        ->with('contact.township')
+                        ->with('vendors')
+                        ->where('slug', $slug)
+                        ->firstOrFail(),
+                ],
+            ]
+        );
+    }
+
+    private function notify($slug, $data)
+    {
+        $this->notifyShop(
+            $slug,
+            [
+                'title' => $data['title'],
+                'body' => $data['body'],
+                'data' => [
+                    'action' => $data['action'],
+                    'type' => 'shopOrder',
+                    'status' => !empty($data['status']) ? $data['status'] : '',
+                    'shopOrder' => !empty($data['shopOrder']) ? $data['shopOrder'] : '',
+                    'slug' => !empty($data['slug']) ? $data['slug'] : '',
+                ],
+            ]
+        );
     }
 }

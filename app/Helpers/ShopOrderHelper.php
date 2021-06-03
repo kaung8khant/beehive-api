@@ -240,7 +240,7 @@ trait ShopOrderHelper
         return $validator->validated();
     }
 
-    public static function prepareProductVariant($validatedData)
+    public static function prepareProductVariants($validatedData)
     {
         $orderItems = [];
         $subTotal = 0;
@@ -257,14 +257,14 @@ trait ShopOrderHelper
             $item['slug'] = $value['slug'];
             $item['name'] = $productVariant->product->name;
             $item['quantity'] = $value['quantity'];
-            $item['price'] = $productVariant->price - $productVariant->discount;
-            $item['tax'] = $item['price'] * $productVariant->tax * 0.01;
+            $item['price'] = $productVariant->price;
+            $item['tax'] = ($item['price'] - $productVariant->discount) * $productVariant->tax * 0.01;
+            $item['discount'] = $productVariant->discount;
             $item['variant'] = $productVariant->variant;
             $item['product_id'] = $productId;
-            $item['discount'] = 0;
 
-            $subTotal += $item['price'] * $value['quantity'];
-            $tax += $item['price'] * $productVariant->tax * 0.01 * $value['quantity'];
+            $subTotal += ($item['price'] - $productVariant->discount) * $value['quantity'];
+            $tax += ($item['price'] - $productVariant->discount) * $productVariant->tax * 0.01 * $value['quantity'];
 
             array_push($orderItems, $item);
         }

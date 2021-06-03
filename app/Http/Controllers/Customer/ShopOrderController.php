@@ -138,6 +138,7 @@ class ShopOrderController extends Controller
                 ],
             ]
         );
+
         return $this->generateShopOrderResponse($order->refresh(), 201);
     }
 
@@ -166,8 +167,6 @@ class ShopOrderController extends Controller
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         OrderHelper::createOrderStatus($shopOrder->id, 'cancelled');
-
-        $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customerId)->firstOrFail();
 
         foreach ($shopOrder->vendors as $vendor) {
             $this->notify($vendor->shop->slug, [
@@ -211,6 +210,5 @@ class ShopOrderController extends Controller
                 ],
             ]
         );
-
     }
 }

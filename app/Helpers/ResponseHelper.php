@@ -104,8 +104,10 @@ trait ResponseHelper
                 $list = $vendor->items;
 
                 foreach ($vendor->items as $item) {
-                    $item['images'] = $item->images;
+                    $item['images'] = isset($item->product->images) ? $item->product->images : [];
                     $item['order_status'] = $vendor->order_status;
+
+                    $item->makeHidden('product');
                 }
 
                 $items = $items->concat($list);
@@ -123,6 +125,8 @@ trait ResponseHelper
                     foreach ($vendor->items as $item) {
                         $item['images'] = isset($item->product->images) ? $item->product->images : [];
                         $item['order_status'] = $vendor->order_status;
+
+                        $item->makeHidden('product');
                     }
 
                     $items = $items->concat($list);

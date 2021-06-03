@@ -2,8 +2,10 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\BadRequestException;
 use App\Models\Menu;
 use App\Models\MenuTopping;
+use App\Models\MenuVariant;
 use App\Models\MenuVariationValue;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
@@ -143,8 +145,7 @@ trait RestaurantOrderHelper
         foreach ($orderItems as $item) {
             $menu = self::getMenu($item['slug']);
 
-            $item['menu_name'] = $menu->name;
-
+            $item['menu_name'] = $item['name'];
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
             $item['restaurant_id'] = $menu->restaurant_id;
@@ -233,5 +234,91 @@ trait RestaurantOrderHelper
             })
             ->where('is_enable', 1)
             ->having('distance', '<', $radius);
+    }
+
+    public static function validateOrderV3($request, $customerSlug = false)
+    {
+        $rules = [
+            'slug' => 'required|unique:restaurant_orders',
+            'order_date' => 'required|date_format:Y-m-d',
+            'special_instruction' => 'nullable',
+            'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
+            'delivery_mode' => 'required|in:pickup,delivery',
+            'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
+            'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
+            'customer_info' => 'required',
+            'customer_info.customer_name' => 'required|string',
+            'customer_info.phone_number' => 'required|string',
+            'address' => 'required',
+            'address.house_number' => 'nullable|string',
+            'address.floor' => 'nullable|string',
+            'address.street_name' => 'nullable|string',
+            'address.latitude' => 'nullable|numeric',
+            'address.longitude' => 'nullable|numeric',
+            'address.township' => 'required',
+            'address.township.slug' => 'required|exists:App\Models\Township,slug',
+            'order_items' => 'required|array',
+            'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
+            'order_items.*.quantity' => 'required|integer',
+            'order_items.*.variant_slug' => 'required|exists:App\Models\MenuVariant,slug',
+            'order_items.*.topping_ slugs' => 'nullable|array',
+            'order_items.*.topping_slugs.*.slug' => 'required|exists:App\Models\MenuTopping,slug',
+            'order_items.*.topping_slugs.*.value' => 'required|integer',
+        ];
+
+        if ($customerSlug) {
+            $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return $validator->errors()->first();
+        }
+        return $validator->validated();
+    }
+
+    public static function prepareRestaurantVariants($validatedData)
+    {
+        $orderItems = [];
+        $subTotal = 0;
+        $tax = 0;
+
+        foreach ($validatedData['order_items'] as $key => $value) {
+            $menuId = Menu::where('slug', $value['slug'])->value('id');
+            $menuVariant = MenuVariant::with('menu')->where('slug', $value['variant_slug'])->where('is_enable', 1)->first();
+
+            if ($menuId !== $menuVariant->menu->id) {
+                throw new BadRequestException('The order_items.' . $key . '.variant_slug must be part of the menu_slug.', 400);
+            }
+
+            $toppings = collect(self::prepareToppings($value['topping_slugs']));
+
+            $item['slug'] = $value['slug'];
+            $item['name'] = $menuVariant->menu->name;
+            $item['quantity'] = $value['quantity'];
+            $item['amount'] = $menuVariant->price + $toppings->sum('price');
+            $item['tax'] = ($item['amount'] - $menuVariant->discount) * $menuVariant->tax * 0.01;
+            $item['discount'] = $menuVariant->discount;
+            $item['variant'] = $menuVariant->variant;
+            $item['toppings'] = $toppings;
+            $item['menu_id'] = $menuId;
+
+            $subTotal += ($item['amount'] - $menuVariant->discount) * $value['quantity'];
+            $tax += ($item['amount'] - $menuVariant->discount) * $menuVariant->tax * 0.01 * $value['quantity'];
+
+            array_push($orderItems, $item);
+        }
+
+        $validatedData['order_items'] = $orderItems;
+        $validatedData['subTotal'] = $subTotal;
+        $validatedData['tax'] = $tax;
+
+        $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
+
+        $validatedData['restaurant_branch_info'] = $restaurantBranch;
+        $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
+        $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
+
+        return $validatedData;
     }
 }
