@@ -22,4 +22,9 @@ class ProductVariant extends Model
         'is_enable' => 'boolean',
         'variant' => 'array',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

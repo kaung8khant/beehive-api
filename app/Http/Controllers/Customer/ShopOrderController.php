@@ -10,7 +10,6 @@ use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
-use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
@@ -25,7 +24,6 @@ class ShopOrderController extends Controller
 
     public function __construct()
     {
-
         if (Auth::guard('customers')->check()) {
             $this->customerId = Auth::guard('customers')->user()->id;
         }
@@ -34,7 +32,8 @@ class ShopOrderController extends Controller
     public function index(Request $request)
     {
         $customerId = Auth::guard('customers')->user()->id;
-        $shopOrder = ShopOrder::where('customer_id', $customerId)->latest()
+        $shopOrder = ShopOrder::where('customer_id', $customerId)
+            ->latest()
             ->paginate($request->size)
             ->items();
         return $this->generateShopOrderResponse($shopOrder, 201, 'array');

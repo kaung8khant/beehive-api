@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Exceptions\BadRequestException;
 use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
