@@ -20,4 +20,9 @@ class Promocode extends BaseModel
     {
         return $this->hasMany(PromocodeRule::class);
     }
+
+    public function promotion()
+    {
+        return $this->hasOne(Promotion::class);
+    }
 }

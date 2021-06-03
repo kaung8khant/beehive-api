@@ -166,7 +166,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /*Content */
             Route::resource('contents', 'Admin\ContentController', ['except' => ['create', 'edit']]);
-
+            Route::resource('promotions', 'Admin\PromotionController', ['except' => ['create', 'edit']]);
             Route::post('job/accept', 'Admin\OrderDriverController@jobAccept');
             Route::get('job/{slug}', 'Admin\OrderDriverController@jobDetail');
             Route::get('jobs', 'Admin\OrderDriverController@jobList');
