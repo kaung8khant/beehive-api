@@ -45,10 +45,9 @@ class ProductController extends Controller
             })
             ->where('is_enable', 1)
             ->orderBy('id', 'desc')
-            ->paginate($request->size)
-            ->items();
+            ->paginate($request->size);
 
-        return $this->generateProductResponse($products, 200);
+        return $this->generateProductResponse($products, 200, 'array', $products->lastPage());
     }
 
     public function show(Product $product)
@@ -62,7 +61,7 @@ class ProductController extends Controller
 
     public function getByCategory(Request $request, ShopCategory $category)
     {
-        $product = Product::with('shop')
+        $products = Product::with('shop')
             ->where('shop_category_id', $category->id)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
@@ -71,7 +70,7 @@ class ProductController extends Controller
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 
-        return $this->generateProductResponse($product, 200, 'array', $product->lastPage());
+        return $this->generateProductResponse($products, 200, 'array', $products->lastPage());
     }
 
     public function getByShop(Request $request, Shop $shop)
