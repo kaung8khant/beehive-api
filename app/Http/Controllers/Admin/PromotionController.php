@@ -45,7 +45,7 @@ class PromotionController extends Controller
             }
         }
 
-        return response()->json($promotion, 201);
+        return response()->json($promotion->refresh()->load('promocode'), 201);
     }
 
     /**
@@ -83,7 +83,7 @@ class PromotionController extends Controller
             }
         }
 
-        return response()->json($promotion, 200);
+        return response()->json($promotion->refresh()->load('promocode'), 200);
     }
 
     /**
