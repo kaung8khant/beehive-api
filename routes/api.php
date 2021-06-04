@@ -187,6 +187,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
     Route::get('contents', 'Admin\ContentController@index');
 });
 
+Route::group(['prefix' => 'v3/admin', 'middleware' => ['cors', 'json.response', 'auth:users', 'user.enable']], function () {
+    Route::resource('restaurant-orders', 'Admin\v3\RestaurantOrderController', ['as' => 'admin-v3-restaurant', 'except' => ['create', 'edit']]);
+
+    Route::resource('shop-orders', 'Admin\v3\ShopOrderController', ['as' => 'admin-v3-shop', 'except' => ['create', 'edit']]);
+});
+
 /*
  * -----------
  * Vendor API

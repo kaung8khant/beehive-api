@@ -124,3 +124,9 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::get('excels/export/{type}/{params}', 'Excel\ExportImportController@exportWithParams');
     });
 });
+
+Route::group(['prefix' => 'v3/vendor', 'middleware' => ['cors', 'json.response', 'auth:vendors', 'user.enable']], function () {
+    Route::resource('shop-orders', 'Admin\v3\ShopOrderController', ['as' => 'vendor-v3-shop', 'except' => ['create', 'edit']]);
+    Route::post('shop-orders/{shopOrder}/change-status', 'Admin\v3\ShopOrderController@changeStatus');
+    Route::get('shops/{shop}/shop-orders', 'Admin\v3\ShopOrderController@getVendorOrders');
+});
