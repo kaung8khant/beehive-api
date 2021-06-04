@@ -45,7 +45,7 @@ class ShopOrderController extends Controller
         $validatedData = OrderHelper::validateOrderV3($request);
 
         if (gettype($validatedData) == 'string') {
-            return $this->generateShopOrderResponse($validatedData, 422, true);
+            return $this->generateResponse($validatedData, 422, true);
         }
 
         $validatedData['customer_id'] = $this->customer->id;
@@ -55,17 +55,17 @@ class ShopOrderController extends Controller
         if ($validatedData['promo_code']) {
             $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest()->first();
             if (!$promocode) {
-                return $this->generateShopOrderResponse('Promocode not found', 422, true);
+                return $this->generateResponse('Promocode not found', 422, true);
             }
 
             $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
             if (!$validUsage) {
-                return $this->generateShopOrderResponse('Invalid promocode usage for shop.', 422, true);
+                return $this->generateResponse('Invalid promocode usage for shop.', 422, true);
             }
 
             $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'shop');
             if (!$validRule) {
-                return $this->generateShopOrderResponse('Invalid promocode.', 422, true);
+                return $this->generateResponse('Invalid promocode.', 422, true);
             }
 
             $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');

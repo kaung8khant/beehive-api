@@ -78,7 +78,7 @@ class RestaurantOrderController extends Controller
 
             $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
             if (!$validUsage) {
-                return $this->generateResponse("Invalid promocode usage for shop.", 422, true);
+                return $this->generateResponse("Invalid promocode usage for restaurant.", 422, true);
             }
 
             $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
