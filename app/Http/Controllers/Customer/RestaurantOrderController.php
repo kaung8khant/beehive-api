@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Exceptions\BadRequestException;
 use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -57,7 +56,7 @@ class RestaurantOrderController extends Controller
         $validatedData = OrderHelper::validateOrder($request, true);
 
         if (gettype($validatedData) == "string") {
-            return $this->generateShopOrderResponse($validatedData, 422, true);
+            return $this->generateResponse($validatedData, 422, true);
         }
 
         //validate variation
@@ -74,17 +73,17 @@ class RestaurantOrderController extends Controller
             // may require amount validation.
             $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
             if (!isset($promocode) && empty($promocode)) {
-                return $this->generateShopOrderResponse("Promocode not found", 422, true);
+                return $this->generateResponse("Promocode not found", 422, true);
             }
 
             $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
             if (!$validUsage) {
-                return $this->generateShopOrderResponse("Invalid promocode usage for shop.", 422, true);
+                return $this->generateResponse("Invalid promocode usage for shop.", 422, true);
             }
 
             $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
             if (!$validRule) {
-                return $this->generateShopOrderResponse("Invalid promocode rule.", 422, true);
+                return $this->generateResponse("Invalid promocode rule.", 422, true);
             }
             $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
 
