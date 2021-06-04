@@ -103,8 +103,6 @@ class ShopOrderController extends Controller
         return $this->generateShopOrderResponse($order->refresh(), 201);
     }
 
-
-
     public function show(ShopOrder $shopOrder)
     {
         $cache = Cache::get('shopOrder:' . $shopOrder->slug);
@@ -118,7 +116,56 @@ class ShopOrderController extends Controller
         return $this->generateResponse($shopOrder->load('contact', 'contact.township', 'vendors', 'drivers', 'drivers.status'), 200);
     }
 
+    public function changeStatus(Request $request, ShopOrder $shopOrder)
+    {
+        if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
+        }
 
+        OrderHelper::createOrderStatus($shopOrder->id, $request->status);
+
+        $notificaitonData = $this->notificationData([
+            'title' => 'Shop order updated',
+            'body' => 'Shop order just has been updated',
+            'status' => $request->status,
+            'slug' => $shopOrder->slug,
+        ]);
+
+        $this->notifyAdmin(
+            $notificaitonData
+        );
+
+        foreach ($shopOrder->vendors as $vendor) {
+            $this->notifyShop(
+                $vendor->shop->slug,
+                $notificaitonData
+            );
+        }
+
+        $message = 'Your order has successfully been ' . $request->status . '.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
+    }
+
+    private function notificationData($data)
+    {
+        return [
+            'title' => $data['title'],
+            'body' => $data['body'],
+            'img' => '',
+            'data' => [
+                'action' => 'update',
+                'type' => 'shopOrder',
+                'status' => $data['status'],
+                'slug' => $data['slug'],
+
+            ],
+        ];
+    }
 
     public function getVendorOrders(Request $request, Shop $shop)
     {

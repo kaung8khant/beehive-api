@@ -106,10 +106,15 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
     /* Ads */
 });
 
-Route::group(['prefix' => 'v3/user'], function () {
-    Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
-        Route::resource('restaurant-orders', 'Customer\v3\RestaurantOrderController', ['as' => 'customer-v3-restaurant', 'except' => ['create', 'edit']]);
+Route::group(
+    [
+        'prefix' => 'v3/user',
+        'namespace' => '\App\\Http\\Controllers\\Customer\\v3',
+        'middleware' => ['cors', 'json.response'],
+    ], function () {
+        Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
+            Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'customer-v3-restaurant', 'except' => ['create', 'edit']]);
 
-        Route::resource('shop-orders', 'Customer\v3\ShopOrderController', ['as' => 'customer-v3-shop', 'except' => ['create', 'edit']]);
+            Route::resource('shop-orders', 'ShopOrderController', ['as' => 'customer-v3-shop', 'except' => ['create', 'edit']]);
+        });
     });
-});
