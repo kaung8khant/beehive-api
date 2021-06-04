@@ -185,6 +185,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
     Route::get('fix-slug/{table}', 'SlugFixController@fix');
 
     Route::get('contents', 'Admin\ContentController@index');
+
+    Route::get('promotions', 'Admin\PromotionController@index');
 });
 
 /*
