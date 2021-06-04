@@ -52,11 +52,11 @@ class RestaurantController extends Controller
             ->with(['restaurantBranches' => function ($query) use ($request) {
                 RestaurantOrderHelper::getBranchQuery($query, $request)->orderBy('distance', 'asc');
             }])
-            ->paginate($request->size)
-            ->pluck('restaurantBranches')
-            ->collapse();
+            ->paginate($request->size);
 
-        return $this->generateBranchResponse($favoriteRestaurants, 200);
+        $data = $favoriteRestaurants->pluck('restaurantBranches')->collapse();
+
+        return $this->generateBranchResponse($data, 200, 'fav', $favoriteRestaurants->lastPage());
     }
 
     public function getRecommendations(Request $request)

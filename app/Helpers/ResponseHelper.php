@@ -25,8 +25,10 @@ trait ResponseHelper
 
     protected function generateBranchResponse($data, $status, $type = 'array', $paginate = false)
     {
-        if ($type === 'array' || $type === 'home') {
-            $data = $paginate ? $data->items() : $data;
+        if ($type === 'array' || $type === 'home' || $type === 'fav') {
+            if ($type !== 'fav') {
+                $data = $paginate ? $data->items() : $data;
+            }
 
             foreach ($data as $branch) {
                 $branch->restaurant->is_favorite = $this->checkFavoriteRestaurant($branch->restaurant->id);
