@@ -18,4 +18,5 @@ return [
     'users' => 'App\Models\User',
     'product_variants' => 'App\Models\ProductVariant',
     'menu_variants' => 'App\Models\MenuVariant',
+    'promotions' => 'App\Models\Promotion',
 ];

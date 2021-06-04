@@ -39,10 +39,17 @@ class PromocodeController extends Controller
         $request['customer_slug'] = Auth::guard('customers')->user()->slug;
 
         // validate order
+        $validatedData = [];
+
         if (isset($request['restaurant_branch_slug'])) {
             $validatedData = \App\Helpers\RestaurantOrderHelper::validateOrder($request, true);
+
         } else {
             $validatedData = \App\Helpers\ShopOrderHelper::validateOrder($request, true);
+        }
+
+        if (gettype($validatedData) == "string") {
+            return $this->generateResponse($validatedData, 422, true);
         }
         // get Customer Info
         $customer = Auth::guard('customers')->user();
@@ -66,11 +73,11 @@ class PromocodeController extends Controller
             }
             $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, $usage);
             if (!$validUsage) {
-                return $this->generateShopOrderResponse("Invalid promocode usage for shop.", 422, true);
+                return $this->generateResponse("Invalid promocode usage for shop.", 422, true);
             }
             $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, $usage);
             if (!$validRule) {
-                return $this->generateShopOrderResponse("Invalid promocode rule.", 422, true);
+                return $this->generateResponse("Invalid promocode rule.", 422, true);
             }
             $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], $usage);
 

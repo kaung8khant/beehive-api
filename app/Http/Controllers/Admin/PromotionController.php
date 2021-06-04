@@ -20,7 +20,7 @@ class PromotionController extends Controller
      */
     public function index(Request $request)
     {
-        return Promotion::where('title', 'LIKE', '%' . $request->filter . '%')
+        return Promotion::with('promocode')->where('title', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
     }
@@ -45,7 +45,7 @@ class PromotionController extends Controller
             }
         }
 
-        return response()->json($promotion, 201);
+        return response()->json($promotion->refresh()->load('promocode'), 201);
     }
 
     /**
@@ -83,7 +83,7 @@ class PromotionController extends Controller
             }
         }
 
-        return response()->json($promotion, 200);
+        return response()->json($promotion->refresh()->load('promocode'), 200);
     }
 
     /**
