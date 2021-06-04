@@ -39,10 +39,16 @@ class PromocodeController extends Controller
         $request['customer_slug'] = Auth::guard('customers')->user()->slug;
 
         // validate order
+        $validatedData = [];
+
         if (isset($request['restaurant_branch_slug'])) {
             $validatedData = \App\Helpers\RestaurantOrderHelper::validateOrder($request, true);
+
         } else {
             $validatedData = \App\Helpers\ShopOrderHelper::validateOrder($request, true);
+        }
+        if (gettype($validatedData) == "string") {
+            return $this->generateShopOrderResponse($validatedData, 422, true);
         }
         // get Customer Info
         $customer = Auth::guard('customers')->user();

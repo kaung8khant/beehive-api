@@ -20,7 +20,7 @@ class Promotion extends Model
 
     public function getCoversAttribute()
     {
-        return File::where('source', 'contents')
+        return File::where('source', 'promotions')
             ->where('source_id', $this->id)
             ->where('type', 'cover')
             ->whereIn('extension', ['png', 'jpg'])
