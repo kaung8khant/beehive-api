@@ -20,9 +20,11 @@ class PromotionController extends Controller
      */
     public function index(Request $request)
     {
-        return Promotion::with('promocode')->where('title', 'LIKE', '%' . $request->filter . '%')
+        $promotions= Promotion::with('promocode')->where('title', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
+
+        return response()->json($promotions, 200);
     }
 
     /**
