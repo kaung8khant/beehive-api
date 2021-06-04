@@ -19,12 +19,14 @@ class ContentController extends Controller
      */
     public function index(Request $request)
     {
-        return Content::where('type', $request->type)
+        $contents= Content::where('type', $request->type)
             ->where(function ($q) use ($request) {
                 $q->where('title', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
             ->paginate(10);
+
+        return response()->json($contents, 200);
     }
 
     /**
