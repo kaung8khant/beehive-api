@@ -91,10 +91,7 @@ class RestaurantBranchController extends Controller
     {
         $validatedData = $request->validate(
             [
-                'name' => [
-                    'required',
-                    Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
-                ],
+                'name' => 'required',
                 'address' => 'nullable',
                 'contact_number' => 'required|phone:MM',
                 'opening_time' => 'required|date_format:H:i',
