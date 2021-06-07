@@ -34,7 +34,11 @@ class ShopOrderController extends Controller
     public function index(Request $request)
     {
         $customerId = Auth::guard('customers')->user()->id;
-        $shopOrder = ShopOrder::where('customer_id', $customerId)->latest()
+        $shopOrder = ShopOrder::with('contact')
+            ->with('township')
+            ->with('vendors')
+            ->where('customer_id', $customerId)
+            ->latest()
             ->paginate($request->size)
             ->items();
         return $this->generateShopOrderResponse($shopOrder, 201, 'array');

@@ -107,6 +107,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('restaurants/{restaurant}/menus', 'Admin\MenuController@getMenusByRestaurant');
             Route::get('menus/{menu}/menu-variations', 'Admin\MenuVariationController@getVariationsByMenu');
             Route::get('menus/{menu}/menu-toppings', 'Admin\MenuToppingController@getToppingsByMenu');
+            Route::get('restaurant-branches/maps', 'Admin\RestaurantBranchController@getAll');
             Route::resource('restaurant-branches', 'Admin\RestaurantBranchController', ['except' => ['create', 'edit']]);
             Route::get('restaurant-branches/{restaurantBranch}/menus', 'Admin\MenuController@getMenusByBranch');
             Route::get('restaurant-categories/{restaurantCategory}/menus', 'Admin\MenuController@getMenusByCategory');
@@ -184,10 +185,25 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
     Route::get('fix-slug/{table}', 'SlugFixController@fix');
 
-    Route::get('contents', 'Admin\ContentController@index');
+    Route::get('announcements', 'Customer\ContentController@index');
 
-    Route::get('promotions', 'Admin\PromotionController@index');
+    Route::get('promotions', 'Customer\PromotionController@index');
 });
+
+Route::group(
+    [
+        'prefix' => 'v3/admin',
+        'namespace' => '\App\\Http\\Controllers\\Admin\\v3',
+        'middleware' => ['cors', 'json.response', 'auth:users', 'user.enable'],
+    ],
+    function () {
+        Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'admin-v3-restaurant', 'except' => ['create', 'edit']]);
+        Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
+
+        Route::resource('shop-orders', 'ShopOrderController', ['as' => 'admin-v3-shop', 'except' => ['create', 'edit']]);
+        Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
+    }
+);
 
 /*
  * -----------

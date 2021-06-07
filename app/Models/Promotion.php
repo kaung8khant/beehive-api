@@ -16,13 +16,13 @@ class Promotion extends Model
         'updated_at',
     ];
 
-    protected $appends = ['covers'];
+    protected $appends = ['images'];
 
-    public function getCoversAttribute()
+    public function getImagesAttribute()
     {
         return File::where('source', 'promotions')
             ->where('source_id', $this->id)
-            ->where('type', 'cover')
+            ->where('type', 'image')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }
