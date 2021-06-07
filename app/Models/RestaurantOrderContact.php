@@ -19,6 +19,11 @@ class RestaurantOrderContact extends Model
         'updated_at',
     ];
 
+    public function getFloorAttribute()
+    {
+        return $this->value ? $this->value : '0';
+    }
+
     public function restaurantOrder()
     {
         return $this->belongsTo(RestaurantOrder::class);
