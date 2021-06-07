@@ -35,7 +35,7 @@ class ShopOrderController extends Controller
     {
         $customerId = Auth::guard('customers')->user()->id;
         $shopOrder = ShopOrder::with('contact')
-            ->with('township')
+            ->with('contact.township')
             ->with('vendors')
             ->where('customer_id', $customerId)
             ->latest()
