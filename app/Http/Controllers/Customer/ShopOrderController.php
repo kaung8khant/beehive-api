@@ -35,12 +35,13 @@ class ShopOrderController extends Controller
     {
         $customerId = Auth::guard('customers')->user()->id;
         $shopOrder = ShopOrder::with('contact')
-            ->with('township')
+            ->with('contact.township')
             ->with('vendors')
             ->where('customer_id', $customerId)
             ->latest()
             ->paginate($request->size)
             ->items();
+
         return $this->generateShopOrderResponse($shopOrder, 201, 'array');
     }
 
