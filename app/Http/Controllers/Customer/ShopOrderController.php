@@ -41,7 +41,7 @@ class ShopOrderController extends Controller
             ->latest()
             ->paginate($request->size)
             ->items();
-        return $this->generateShopOrderResponse($shopOrder, 201, 'array');
+        return $this->generateResponse($shopOrder, 201, 'array');
     }
 
     public function store(Request $request)
