@@ -21,6 +21,11 @@ class ShopOrderContact extends Model
         'pivot',
     ];
 
+    public function getFloorAttribute()
+    {
+        return $this->value ? $this->value : '0';
+    }
+
     public function shopOrder()
     {
         return $this->belongsTo(ShopOrder::class);
