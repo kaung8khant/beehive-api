@@ -15,6 +15,7 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantTag;
 use App\Models\Township;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
@@ -32,6 +33,16 @@ class RestaurantBranchController extends Controller
             ->orWhere('slug', $request->filter)
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
+    }
+
+    /**
+     * Do not delete this method. This route is only for debugging purpose.
+     *
+     * @author Aung Thu Moe
+     */
+    public function getAll()
+    {
+        return RestaurantBranch::with('restaurant', 'township')->get();
     }
 
     public function store(Request $request)
@@ -65,6 +76,8 @@ class RestaurantBranchController extends Controller
 
         $menuIds = Menu::where('restaurant_id', $validatedData['restaurant_id'])->pluck('id');
         $restaurantBranch->availableMenus()->attach($menuIds);
+
+        Cache::forget('all_restaurant_branches_restaurant_id' . $validatedData['restaurant_id']);
 
         return response()->json($restaurantBranch->load('restaurant', 'township'), 201);
     }
@@ -102,11 +115,15 @@ class RestaurantBranchController extends Controller
         $validatedData['township_id'] = $this->getTownshipId($request->township_slug);
 
         $restaurantBranch->update($validatedData);
+        Cache::forget('all_restaurant_branches_restaurant_id' . $validatedData['restaurant_id']);
+
         return response()->json($restaurantBranch->load('restaurant', 'township'), 200);
     }
 
     public function destroy(RestaurantBranch $restaurantBranch)
     {
+        Cache::forget('all_restaurant_branches_restaurant_id' . $restaurantBranch->restaurant_id);
+
         $restaurantBranch->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
@@ -170,12 +187,12 @@ class RestaurantBranchController extends Controller
 
         $availableMenus = Menu::whereIn('slug', $request->available_menus)->pluck('id');
 
+        $restaurantBranch->availableMenus()->detach();
+        $restaurantBranch->availableMenus()->attach($availableMenus);
+
         foreach ($availableMenus as $menuId) {
             CacheHelper::forgetCategoryIdsByBranchCache($menuId);
         }
-
-        $restaurantBranch->availableMenus()->detach();
-        $restaurantBranch->availableMenus()->attach($availableMenus);
 
         return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
     }
@@ -187,12 +204,11 @@ class RestaurantBranchController extends Controller
         ]);
 
         $availableMenus = Menu::whereIn('slug', $request->available_menus)->pluck('id');
+        $restaurantBranch->availableMenus()->detach($availableMenus);
 
         foreach ($availableMenus as $menuId) {
             CacheHelper::forgetCategoryIdsByBranchCache($menuId);
         }
-
-        $restaurantBranch->availableMenus()->detach($availableMenus);
 
         return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
     }
@@ -244,11 +260,11 @@ class RestaurantBranchController extends Controller
             'is_available' => 'required|boolean',
         ]);
 
-        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
-
         $restaurantBranch->availableMenus()->sync([
             $menu->id => ['is_available' => $validatedData['is_available']],
         ], false);
+
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
 
         return response()->json(['message' => 'Success.'], 200);
     }

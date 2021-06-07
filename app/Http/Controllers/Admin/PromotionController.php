@@ -20,9 +20,11 @@ class PromotionController extends Controller
      */
     public function index(Request $request)
     {
-        return Promotion::with('promocode')->where('title', 'LIKE', '%' . $request->filter . '%')
+        $promotions= Promotion::with('promocode')->where('title', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
+
+        return response()->json($promotions, 200);
     }
 
     /**
@@ -39,13 +41,11 @@ class PromotionController extends Controller
         $validatedData['promocode_id'] = $this->getPromocodeIdBySlug($request->promocode_slug);
         $promotion = Promotion::create($validatedData);
 
-        if ($request->cover_slugs) {
-            foreach ($request->cover_slugs as $coverSlug) {
-                $this->updateFile($coverSlug, 'promotions', $promotion->slug);
-            }
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'promotions', $promotion->slug);
         }
 
-        return response()->json($promotion, 201);
+        return response()->json($promotion->refresh()->load('promocode'), 201);
     }
 
     /**
@@ -76,14 +76,11 @@ class PromotionController extends Controller
         $validatedData['promocode_id'] = $this->getPromocodeIdBySlug($request->promocode_slug);
 
         $promotion->update($validatedData);
-
-        if ($request->cover_slugs) {
-            foreach ($request->cover_slugs as $coverSlug) {
-                $this->updateFile($coverSlug, 'contents', $promotion->slug);
-            }
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'promotions', $slug);
         }
 
-        return response()->json($promotion, 200);
+        return response()->json($promotion->refresh()->load('promocode'), 200);
     }
 
     /**
@@ -108,8 +105,10 @@ class PromotionController extends Controller
     {
         $params = [
             'title' => 'required|string',
-            'cover_slugs' => 'nullable|array',
-            'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
+            'target_type' => 'required|string',
+            'target_slug' => 'required|string',
+            'title' => 'required|string',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
             'promocode_slug' => 'nullable|exists:App\Models\Promocode,slug',
         ];
 
