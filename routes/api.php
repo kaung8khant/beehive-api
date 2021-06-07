@@ -185,9 +185,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
     Route::get('fix-slug/{table}', 'SlugFixController@fix');
 
-    Route::get('contents', 'Admin\ContentController@index');
+    Route::get('announcements', 'Customer\ContentController@index');
 
-    Route::get('promotions', 'Admin\PromotionController@index');
+    Route::get('promotions', 'Customer\PromotionController@index');
 });
 
 Route::group(
@@ -195,13 +195,15 @@ Route::group(
         'prefix' => 'v3/admin',
         'namespace' => '\App\\Http\\Controllers\\Admin\\v3',
         'middleware' => ['cors', 'json.response', 'auth:users', 'user.enable'],
-    ], function () {
+    ],
+    function () {
         Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'admin-v3-restaurant', 'except' => ['create', 'edit']]);
         Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
 
         Route::resource('shop-orders', 'ShopOrderController', ['as' => 'admin-v3-shop', 'except' => ['create', 'edit']]);
         Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
-    });
+    }
+);
 
 /*
  * -----------
