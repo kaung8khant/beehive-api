@@ -96,10 +96,10 @@ trait ResponseHelper
 
     public function generateShopOrderResponse($data, $status, $type = 'obj')
     {
-        $items = collect([]);
 
         if ($type === "obj") {
             foreach ($data->vendors as $vendor) {
+                $items = collect([]);
                 $list = $vendor->items;
                 foreach ($vendor->items as $item) {
                     $item['images'] = $item->images;
@@ -113,6 +113,7 @@ trait ResponseHelper
         } elseif ($type === "array") {
             foreach ($data as $shopOrder) {
                 foreach ($shopOrder->vendors as $vendor) {
+                    $items = collect([]);
                     $list = $vendor->items;
                     foreach ($vendor->items as $item) {
                         $item['images'] = isset($item->product->images) ? $item->product->images : [];
