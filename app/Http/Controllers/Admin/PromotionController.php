@@ -41,10 +41,8 @@ class PromotionController extends Controller
         $validatedData['promocode_id'] = $this->getPromocodeIdBySlug($request->promocode_slug);
         $promotion = Promotion::create($validatedData);
 
-        if ($request->cover_slugs) {
-            foreach ($request->cover_slugs as $coverSlug) {
-                $this->updateFile($coverSlug, 'promotions', $promotion->slug);
-            }
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'promotions', $promotion->slug);
         }
 
         return response()->json($promotion->refresh()->load('promocode'), 201);
@@ -78,11 +76,8 @@ class PromotionController extends Controller
         $validatedData['promocode_id'] = $this->getPromocodeIdBySlug($request->promocode_slug);
 
         $promotion->update($validatedData);
-
-        if ($request->cover_slugs) {
-            foreach ($request->cover_slugs as $coverSlug) {
-                $this->updateFile($coverSlug, 'contents', $promotion->slug);
-            }
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'promotions', $slug);
         }
 
         return response()->json($promotion->refresh()->load('promocode'), 200);
@@ -110,8 +105,9 @@ class PromotionController extends Controller
     {
         $params = [
             'title' => 'required|string',
-            'cover_slugs' => 'nullable|array',
-            'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
+            'target_type' => 'nullable|string',
+            'target_slug' => 'nullable|string',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
             'promocode_slug' => 'nullable|exists:App\Models\Promocode,slug',
         ];
 

@@ -35,6 +35,16 @@ class RestaurantBranchController extends Controller
             ->paginate(10);
     }
 
+    /**
+     * Do not delete this method. This route is only for debugging purpose.
+     *
+     * @author Aung Thu Moe
+     */
+    public function getAll()
+    {
+        return RestaurantBranch::with('restaurant', 'township')->get();
+    }
+
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();

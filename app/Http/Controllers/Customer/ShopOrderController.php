@@ -15,6 +15,7 @@ use App\Models\ShopOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ShopOrderController extends Controller
 {
@@ -32,10 +33,15 @@ class ShopOrderController extends Controller
     public function index(Request $request)
     {
         $customerId = Auth::guard('customers')->user()->id;
-        $shopOrder = ShopOrder::where('customer_id', $customerId)
+        $shopOrder = ShopOrder::with('contact')
+            ->with('contact.township')
+            ->with('vendors')
+            ->where('customer_id', $customerId)
             ->latest()
             ->paginate($request->size)
             ->items();
+        Log::info('customer' . $customerId);
+        Log::info('shop_order' . json_encode($shopOrder));
         return $this->generateShopOrderResponse($shopOrder, 201, 'array');
     }
 
