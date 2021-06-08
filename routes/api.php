@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], function () {
+Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () {
     Route::group(['prefix' => 'admin'], function () {
         Route::post('login', 'Auth\UserAuthController@login');
         Route::post('forgot-password', 'Auth\OtpController@forgotPassword');

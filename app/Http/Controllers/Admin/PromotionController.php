@@ -93,8 +93,8 @@ class PromotionController extends Controller
     {
         $promotion = Promotion::where('slug', $slug)->firstOrFail();
 
-        foreach ($promotion->covers as $cover) {
-            $this->deleteFile($cover->slug);
+        foreach ($promotion->images as $image) {
+            $this->deleteFile($image->slug);
         }
 
         $promotion->delete();

@@ -15,7 +15,6 @@ use App\Models\ShopOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class ShopOrderController extends Controller
 {
@@ -40,8 +39,7 @@ class ShopOrderController extends Controller
             ->latest()
             ->paginate($request->size)
             ->items();
-        Log::info('customer' . $customerId);
-        Log::info('shop_order' . json_encode($shopOrder));
+
         return $this->generateShopOrderResponse($shopOrder, 201, 'array');
     }
 
