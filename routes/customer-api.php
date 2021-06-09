@@ -59,6 +59,7 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
         Route::get('cities/{city}/townships', 'Customer\AddressController@getTownshipsByCity');
 
         Route::get('townships', 'Customer\AddressController@getAllTownships');
+        Route::get('addresses/nearest', 'Customer\AddressController@getNearestAddress');
         Route::get('addresses/get-primary', 'Customer\AddressController@getPrimaryAddress');
         Route::patch('addresses/{address}/set-primary', 'Customer\AddressController@setPrimaryAddress');
         Route::resource('addresses', 'Customer\AddressController', ['as' => 'customer', 'except' => ['create', 'edit']]);
@@ -114,7 +115,5 @@ Route::group([
     Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
         Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'customer-v3-restaurant', 'except' => ['create', 'edit']]);
         Route::resource('shop-orders', 'ShopOrderController', ['as' => 'customer-v3-shop', 'except' => ['create', 'edit']]);
-
-        Route::get('addresses/nearest', 'AddressController@getNearestAddress');
     });
 });
