@@ -63,7 +63,7 @@ class ShopController extends Controller
                 return $query->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
-            ->orderBy('id', 'desc')
+            ->orderBy('name', 'asc')
             ->paginate($request->size);
 
         return $this->generateResponse($shopCategories->items(), 200, false, $shopCategories->lastPage());
