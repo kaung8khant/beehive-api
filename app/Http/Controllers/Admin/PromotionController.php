@@ -106,7 +106,7 @@ class PromotionController extends Controller
         $params = [
             'title' => 'required|string',
             'target_type' => 'nullable|string',
-            'target_slug' => 'nullable|string',
+            'value' => 'nullable|string',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
             'promocode_slug' => 'nullable|exists:App\Models\Promocode,slug',
         ];
