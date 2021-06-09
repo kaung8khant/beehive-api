@@ -169,7 +169,7 @@ class ShopOrderController extends Controller
         $uniqueKey = StringHelper::generateUniqueSlug();
         $phoneNumber = Auth::guard('customers')->user()->phone_number;
 
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        // SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         OrderHelper::createOrderStatus($shopOrder->id, 'cancelled');
 
         foreach ($shopOrder->vendors as $vendor) {
