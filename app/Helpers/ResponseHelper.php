@@ -61,7 +61,7 @@ trait ResponseHelper
     public function generateProductResponse($data, $status, $type = 'array', $paginate = false)
     {
         if (empty($data)) {
-            if ($type === "home") {
+            if ($type === 'home') {
                 return $data;
             }
             return $this->generateResponse($data, $status);
@@ -74,7 +74,8 @@ trait ResponseHelper
                 $product['is_favorite'] = $this->checkFavoriteProduct($product->id);
                 unset($product->customers);
             }
-            if ($type === "home") {
+
+            if ($type === 'home') {
                 return $data;
             }
         } elseif ($type === 'arrobj') {
@@ -98,33 +99,43 @@ trait ResponseHelper
 
     public function generateShopOrderResponse($data, $status, $type = 'obj')
     {
+        if ($type === 'obj') {
+            $items = collect([]);
 
-        if ($type === "obj") {
             foreach ($data->vendors as $vendor) {
-                $items = collect([]);
                 $list = $vendor->items;
+
                 foreach ($vendor->items as $item) {
-                    $item['images'] = $item->images;
+                    $item['images'] = isset($item->product->images) ? $item->product->images : [];
                     $item['order_status'] = $vendor->order_status;
+
+                    $item->makeHidden('product');
                 }
+
                 $items = $items->concat($list);
             }
 
             $data['items'] = $items;
-            $data->makeHidden("vendors");
-        } elseif ($type === "array") {
+            $data->makeHidden('vendors');
+        } elseif ($type === 'array') {
             foreach ($data as $shopOrder) {
+                $items = collect([]);
+
                 foreach ($shopOrder->vendors as $vendor) {
-                    $items = collect([]);
                     $list = $vendor->items;
+
                     foreach ($vendor->items as $item) {
                         $item['images'] = isset($item->product->images) ? $item->product->images : [];
                         $item['order_status'] = $vendor->order_status;
+
+                        $item->makeHidden('product');
                     }
+
                     $items = $items->concat($list);
                 }
+
                 $shopOrder['items'] = $items;
-                $shopOrder->makeHidden("vendors");
+                $shopOrder->makeHidden('vendors');
             }
         }
 

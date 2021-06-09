@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ShopOrderItem extends Model
+class ProductVariant extends Model
 {
     use HasFactory;
 
@@ -13,30 +13,15 @@ class ShopOrderItem extends Model
 
     protected $hidden = [
         'id',
-        'is_deleted',
-        'shop_order_vendor_id',
         'product_id',
-        'shop_id',
         'created_at',
         'updated_at',
-        'pivot',
     ];
 
     protected $casts = [
-        'shop' => 'object',
-        'variations' => 'array',
+        'is_enable' => 'boolean',
         'variant' => 'array',
     ];
-
-    public function vendor()
-    {
-        return $this->belongsTo(ShopOrderVendor::class);
-    }
-
-    public function shop()
-    {
-        return $this->belongsTo(Shop::class);
-    }
 
     public function product()
     {

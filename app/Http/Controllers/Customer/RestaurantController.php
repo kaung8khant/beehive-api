@@ -134,7 +134,7 @@ class RestaurantController extends Controller
         $restaurantBranch->load([
             'restaurant',
             'availableMenus' => function ($query) {
-                $query->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuToppings')
+                $query->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings')
                     ->where('is_enable', 1)
                     ->where('is_available', 1)
                     ->orderBy('id', 'desc');
@@ -191,7 +191,7 @@ class RestaurantController extends Controller
         })->collapse()->unique()->slice(($page - 1) * $size, $size)->values();
 
         $categorizedBranches = $categoryIds->map(function ($categoryId) use ($request) {
-            $category = CacheHelper::getRestaurantCategory($categoryId);
+            $category = CacheHelper::getRestaurantCategoryById($categoryId);
 
             $restaurantIds = Menu::where('restaurant_category_id', $categoryId)
                 ->where('is_enable', 1)
