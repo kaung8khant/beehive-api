@@ -35,7 +35,7 @@ class AddressController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validator = Validator::make($request->all(), $this->getParamsToValidate(true));
+        $validator = $this->validateAddress($request, true);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
@@ -61,7 +61,7 @@ class AddressController extends Controller
 
     public function update(Request $request, Address $address)
     {
-        $validator = Validator::make($request->all(), $this->getParamsToValidate());
+        $validator = $this->validateAddress($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
@@ -84,12 +84,12 @@ class AddressController extends Controller
         return $this->generateResponse('Successfully deleted.', 200, true);
     }
 
-    private function getParamsToValidate($slug = false)
+    private function validateAddress($request, $slug = false)
     {
         $params = [
             'label' => 'required',
             'house_number' => 'required',
-            'floor' => 'nullable|min:0|max:50',
+            'floor' => 'nullable|integer|min:0|max:50',
             'street_name' => 'required',
             'latitude' => 'nullable',
             'longitude' => 'nullable',
@@ -100,7 +100,7 @@ class AddressController extends Controller
             $params['slug'] = 'required|unique:addresses';
         }
 
-        return $params;
+        return Validator::make($request->all(), $params);
     }
 
     public function setPrimaryAddress(Address $address)
