@@ -134,7 +134,7 @@ Route::group([
     Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
     Route::get('shops/{shop}/orders', 'ShopOrderController@getVendorOrders');
 
-    Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'admin-v3-restaurant', 'except' => ['create', 'edit']]);
+    Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor-v3-restaurant', 'except' => ['create', 'edit']]);
     Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
     Route::get('restaurant-branches/{restaurantBranch}/orders', 'RestaurantOrderController@getBranchOrders');
 });
