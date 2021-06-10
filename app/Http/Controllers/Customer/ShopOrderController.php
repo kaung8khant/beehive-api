@@ -10,7 +10,6 @@ use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
-use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
@@ -25,7 +24,6 @@ class ShopOrderController extends Controller
 
     public function __construct()
     {
-
         if (Auth::guard('customers')->check()) {
             $this->customerId = Auth::guard('customers')->user()->id;
         }
@@ -144,6 +142,7 @@ class ShopOrderController extends Controller
                 ],
             ]
         );
+
         return $this->generateShopOrderResponse($order->refresh(), 201);
     }
 
@@ -170,10 +169,8 @@ class ShopOrderController extends Controller
         $uniqueKey = StringHelper::generateUniqueSlug();
         $phoneNumber = Auth::guard('customers')->user()->phone_number;
 
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        // SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         OrderHelper::createOrderStatus($shopOrder->id, 'cancelled');
-
-        $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customerId)->firstOrFail();
 
         foreach ($shopOrder->vendors as $vendor) {
             $this->notify($vendor->shop->slug, [
@@ -217,6 +214,5 @@ class ShopOrderController extends Controller
                 ],
             ]
         );
-
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddTargetTypeAndTargetSlugToPromotionsTable extends Migration
+class RenameTargetSlugInPromotionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,8 +14,7 @@ class AddTargetTypeAndTargetSlugToPromotionsTable extends Migration
     public function up()
     {
         Schema::table('promotions', function (Blueprint $table) {
-            $table->string('target_type')->nullable()->after('title');
-            $table->string('target_slug')->nullable()->after('target_type');
+            $table->renameColumn('target_slug', 'value');
         });
     }
 
@@ -27,7 +26,7 @@ class AddTargetTypeAndTargetSlugToPromotionsTable extends Migration
     public function down()
     {
         Schema::table('promotions', function (Blueprint $table) {
-            $table->dropColumn(['target_type', 'value']);
+            $table->renameColumn('target_slug', 'value');
         });
     }
 }

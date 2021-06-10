@@ -21,6 +21,7 @@ class Menu extends BaseModel
 
     protected $casts = [
         'is_enable' => 'boolean',
+        'variants' => 'array',
     ];
 
     protected $appends = ['images'];
@@ -51,6 +52,11 @@ class Menu extends BaseModel
     public function menuVariations()
     {
         return $this->hasMany(MenuVariation::class);
+    }
+
+    public function menuVariants()
+    {
+        return $this->hasMany(MenuVariant::class);
     }
 
     public function menuToppings()

@@ -111,7 +111,9 @@ class ContentController extends Controller
         $params = [
             'title' => 'required|string',
             'description' => 'required|string',
-            'type' => 'nullable|in:announcement,news,blog',
+            'type' => 'nullable|in:announcement,news,blog,branding',
+            'target_type' => 'nullable|string',
+            'value' => 'nullable|string',
             'cover_slugs' => 'nullable|array',
             'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
         ];

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\v3;
 
 use App\Helpers\CollectionHelper;
 use App\Helpers\NotificationHelper;
@@ -17,6 +17,7 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderVendor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -31,73 +32,42 @@ class ShopOrderController extends Controller
         $shopOrders = ShopOrder::with('contact', 'contact.township')
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10)
-            ->items();
+            ->map(function ($shopOrder) {
+                return $shopOrder->makeHidden('vendors');
+            });
 
         return $this->generateResponse($shopOrders, 200);
-    }
-
-    public function getShopOrders(Request $request, Shop $shop)
-    {
-        $sorting = CollectionHelper::getSorting('shop_order_vendors', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        $vendorOrders = ShopOrderVendor::where('shop_id', $shop->id)
-            ->where(function ($query) use ($request) {
-                $query->whereHas('shopOrder', function ($q) use ($request) {
-                    $q->where('slug', $request->filter);
-                })
-                    ->orWhereHas('shopOrder.contact', function ($q) use ($request) {
-                        $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
-                            ->orWhere('phone_number', $request->filter);
-                    });
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10)
-            ->items();
-
-        $result = [];
-        foreach ($vendorOrders as $order) {
-            $shopOrder = ShopOrder::find($order->shop_order_id)->toArray();
-            unset($shopOrder['vendors']);
-
-            $order->shop_order = $shopOrder;
-            $order = $order->toArray();
-
-            unset($order['items']);
-            $result[] = $order;
-        }
-
-        return $this->generateResponse($result, 200);
-    }
-
-    public function show(ShopOrder $shopOrder)
-    {
-        $cache = Cache::get('shopOrder:' . $shopOrder->slug);
-        if ($cache) {
-            $shopOrder['assign'] = 'pending';
-        } else {
-            $shopOrder['assign'] = null;
-        }
-        return $this->generateResponse($shopOrder->load('contact', 'contact.township', 'vendors', 'drivers', 'drivers.status'), 200);
     }
 
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
-        // validate order
-        $validatedData = OrderHelper::validateOrder($request, true);
-        // get Customer Info
-        $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
-        // append customer data
-        $validatedData['customer_id'] = $customer['id'];
-        // validate and prepare variation
-        $validatedData = OrderHelper::prepareProductVariations($validatedData);
+        $validatedData = OrderHelper::validateOrderV3($request, true);
 
-        // validate promocode
-        if ($validatedData['promo_code_slug']) {
-            // may require amount validation.
-            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
-            PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
-            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'shop');
+        if (gettype($validatedData) == 'string') {
+            return $this->generateResponse($validatedData, 422, true);
+        }
+
+        $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
+        $validatedData['customer_id'] = $customer->id;
+        $validatedData = OrderHelper::prepareProductVariants($validatedData);
+
+        if ($validatedData['promo_code']) {
+            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest()->first();
+            if (!$promocode) {
+                return $this->generateResponse('Promocode not found', 422, true);
+            }
+
+            $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
+            if (!$validUsage) {
+                return $this->generateResponse('Invalid promocode usage for shop.', 422, true);
+            }
+
+            $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'shop');
+            if (!$validRule) {
+                return $this->generateResponse('Invalid promocode.', 422, true);
+            }
+
             $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
 
             $validatedData['promocode_id'] = $promocode->id;
@@ -107,17 +77,16 @@ class ShopOrderController extends Controller
 
         $order = DB::transaction(function () use ($validatedData) {
             $order = ShopOrder::create($validatedData);
-            $orderId = $order->id;
-            OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-            OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
-            OrderHelper::createOrderStatus($orderId);
+            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
+            OrderHelper::createOrderStatus($order->id);
             return $order;
         });
 
         $this->notifyAdmin(
             [
-                'title' => "New Order",
-                'body' => "New Order has been received. Check now!",
+                'title' => 'New Order',
+                'body' => 'New Order has been received. Check now!',
                 'data' => [
                     'action' => 'create',
                     'type' => 'shopOrder',
@@ -132,6 +101,19 @@ class ShopOrderController extends Controller
         );
 
         return $this->generateShopOrderResponse($order->refresh(), 201);
+    }
+
+    public function show(ShopOrder $shopOrder)
+    {
+        $cache = Cache::get('shopOrder:' . $shopOrder->slug);
+
+        if ($cache) {
+            $shopOrder['assign'] = 'pending';
+        } else {
+            $shopOrder['assign'] = null;
+        }
+
+        return $this->generateResponse($shopOrder->load('contact', 'contact.township', 'vendors', 'drivers', 'drivers.status'), 200);
     }
 
     public function changeStatus(Request $request, ShopOrder $shopOrder)
@@ -165,13 +147,8 @@ class ShopOrderController extends Controller
         $uniqueKey = StringHelper::generateUniqueSlug();
         $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
 
-        // SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
-    }
-
-    private function getCustomerId($slug)
-    {
-        return Customer::where('slug', $slug)->first()->id;
     }
 
     private function notificationData($data)
@@ -190,24 +167,39 @@ class ShopOrderController extends Controller
         ];
     }
 
-    private function getShop($slug)
+    public function getVendorOrders(Request $request, Shop $shop)
     {
-        return Shop::where('slug', $slug)->firstOrFail();
-    }
+        $vendorShopId = Auth::guard('vendors')->user()->shop_id;
+        if ($vendorShopId !== $shop->id) {
+            abort(404);
+        }
 
-    private function notify($slug, $data)
-    {
-        $this->notifyShop(
-            $slug,
-            [
-                'title' => $data['title'],
-                'body' => $data['body'],
-                'img' => '',
-                'data' => [
-                    'action' => '',
-                    'type' => 'notification',
-                ],
-            ]
-        );
+        $sorting = CollectionHelper::getSorting('shop_order_vendors', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        $vendorOrders = ShopOrderVendor::where('shop_id', $shop->id)
+            ->where(function ($query) use ($request) {
+                $query->whereHas('shopOrder', function ($q) use ($request) {
+                    $q->where('slug', $request->filter);
+                })
+                    ->orWhereHas('shopOrder.contact', function ($q) use ($request) {
+                        $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                            ->orWhere('phone_number', $request->filter);
+                    });
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
+
+        $result = $vendorOrders->map(function ($order) {
+            $shopOrder = ShopOrder::find($order->shop_order_id)->toArray();
+            unset($shopOrder['vendors']);
+
+            $order->shop_order = $shopOrder;
+            $order = $order->toArray();
+
+            unset($order['items']);
+            return $order;
+        });
+
+        return $this->generateResponse($result, 200);
     }
 }
