@@ -27,6 +27,7 @@ class AddTargetTypeAndValueToContentsTable extends Migration
     public function down()
     {
         Schema::table('contents', function (Blueprint $table) {
+            $table->dropColumn(['target_type', 'value']);
         });
     }
 }

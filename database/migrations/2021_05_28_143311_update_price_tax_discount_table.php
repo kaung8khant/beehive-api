@@ -14,16 +14,16 @@ class UpdatePriceTaxDiscountTable extends Migration
     public function up()
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->string('price')->nullable()->change();
-            $table->string('tax')->nullable()->change();
-            $table->string('discount')->nullable()->change();
+            $table->decimal('price', 12, 2)->nullable()->change();
+            $table->decimal('tax', 12, 2)->nullable()->change();
+            $table->decimal('discount', 12, 2)->nullable()->change();
             $table->json('variants')->nullable()->after('brand_id');
         });
 
         Schema::table('menus', function (Blueprint $table) {
-            $table->string('price')->nullable()->change();
-            $table->string('tax')->nullable()->change();
-            $table->string('discount')->nullable()->change();
+            $table->decimal('price', 12, 2)->nullable()->change();
+            $table->decimal('tax', 12, 2)->nullable()->change();
+            $table->decimal('discount', 12, 2)->nullable()->change();
             $table->json('variants')->nullable()->after('restaurant_category_id');
         });
     }
