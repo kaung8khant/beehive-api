@@ -72,7 +72,7 @@ pipelines:
                 - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
                 # install dependencies
                 - composer update
-                - composer install
+                - composer install --optimize-autoloader --no-dev
                 - zip -r application.zip . -x "vendor/*" "dotenv" ".profile_env"
 
               caches:
