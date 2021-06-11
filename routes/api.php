@@ -171,6 +171,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::post('job/accept', 'Admin\OrderDriverController@jobAccept');
             Route::get('job/{slug}', 'Admin\OrderDriverController@jobDetail');
             Route::get('jobs', 'Admin\OrderDriverController@jobList');
+
+            Route::post('devices', 'Admin\UserController@registerDevice');
         });
     });
 

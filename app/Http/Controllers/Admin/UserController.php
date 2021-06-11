@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
+use App\Helpers\OneSignalHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
@@ -12,11 +13,14 @@ use App\Models\RestaurantBranch;
 use App\Models\Role;
 use App\Models\Shop;
 use App\Models\User;
+use App\Models\UserDevice;
 use App\Models\UserSession;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Ladumor\OneSignal\OneSignal;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserController extends Controller
@@ -255,29 +259,6 @@ class UserController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function registerToken(Request $request)
-    {
-        $userId = Auth::guard('vendors')->user()->id;
-
-        $jwt = str_replace("Bearer ", "", $request->header('Authorization'));
-        $data['user_id'] = $userId;
-        $data['jwt'] = $jwt;
-        $data['device_token'] = $request->token;
-
-        $userSession = UserSession::where('jwt', $jwt)->orWhere('device_token', $request->token)->first();
-
-        if ($userSession) {
-            $userSession['user_id'] = $userId;
-            $userSession['jwt'] = $data['jwt'];
-            $userSession['device_token'] = $data['device_token'];
-            $userSession->update();
-        } else {
-            UserSession::create($data);
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
-
     private function validateUserCreate($request, $type = null)
     {
         $request['phone_number'] = PhoneNumber::make($request->phone_number, 'MM');
@@ -365,5 +346,60 @@ class UserController extends Controller
         }
 
         return $this->generateResponse('Your current password is incorrect.', 403, true);
+    }
+
+    public function registerToken(Request $request)
+    {
+        $userId = Auth::guard('vendors')->user()->id;
+
+        $jwt = str_replace("Bearer ", "", $request->header('Authorization'));
+        $data['user_id'] = $userId;
+        $data['jwt'] = $jwt;
+        $data['device_token'] = $request->token;
+
+        $userSession = UserSession::where('jwt', $jwt)->orWhere('device_token', $request->token)->first();
+
+        if ($userSession) {
+            $userSession['user_id'] = $userId;
+            $userSession['jwt'] = $data['jwt'];
+            $userSession['device_token'] = $data['device_token'];
+            $userSession->update();
+        } else {
+            UserSession::create($data);
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function registerDevice(Request $request)
+    {
+        $validator = OneSignalHelper::validateDevice($request);
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, true);
+        }
+
+        $fields = [
+            'device_type' => OneSignalHelper::getDeviceType($request->device_type),
+            'identifier' => $request->identifier,
+            'timezone' => '+23400',
+            'test_type' => 1,
+        ];
+
+        $responseData = OneSignal::addDevice($fields);
+
+        if ($responseData['success'] === true) {
+            try {
+                $userDevice = UserDevice::create([
+                    'user_id' => Auth::guard('users')->user()->id,
+                    'player_id' => $responseData['id'],
+                ]);
+            } catch (QueryException $e) {
+                return $this->generateResponse('Device already registered', 409, true);
+            }
+
+            return $this->generateResponse($userDevice->load('user'), 200);
+        }
+
+        return $this->generateResponse('Something went wrong', 406, true);
     }
 }
