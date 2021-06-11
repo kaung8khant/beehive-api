@@ -26,7 +26,7 @@ class RenameTargetSlugInPromotionsTable extends Migration
     public function down()
     {
         Schema::table('promotions', function (Blueprint $table) {
-            $table->renameColumn('target_slug', 'value');
+            $table->renameColumn('value', 'target_slug');
         });
     }
 }

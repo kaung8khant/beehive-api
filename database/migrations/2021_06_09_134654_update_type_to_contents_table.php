@@ -1,8 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class UpdateTypeToContentsTable extends Migration
 {
@@ -13,7 +12,7 @@ class UpdateTypeToContentsTable extends Migration
      */
     public function up()
     {
-        \DB::statement("ALTER TABLE `contents` CHANGE `type` `type` ENUM('blog', 'news','announcement','branding') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+        DB::statement("ALTER TABLE `contents` CHANGE `type` `type` ENUM('blog', 'news','announcement','branding') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
     }
 
     /**

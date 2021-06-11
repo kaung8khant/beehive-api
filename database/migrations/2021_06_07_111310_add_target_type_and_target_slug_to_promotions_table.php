@@ -27,7 +27,7 @@ class AddTargetTypeAndTargetSlugToPromotionsTable extends Migration
     public function down()
     {
         Schema::table('promotions', function (Blueprint $table) {
-            $table->dropColumn(['target_type', 'value']);
+            $table->dropColumn(['target_type', 'target_slug']);
         });
     }
 }

@@ -19,7 +19,7 @@ class CreateProductVariantsTable extends Migration
             $table->string('slug')->unique();
             $table->json('variant');
             $table->decimal('price', 12, 0);
-            $table->integer('tax');
+            $table->decimal('tax', 12, 2);
             $table->decimal('discount', 12, 2);
             $table->boolean('is_enable')->default(1);
             $table->timestamps();
