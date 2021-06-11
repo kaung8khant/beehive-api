@@ -156,7 +156,7 @@ class AddressController extends Controller
         }
 
         $address = Address::with('township')
-            ->selectRaw('label, house_number, street_name, latitude, longitude, is_primary, township_id,
+            ->selectRaw('label, house_number, floor, street_name, latitude, longitude, is_primary, township_id,
         ( 6371 * acos( cos(radians(?)) *
             cos(radians(latitude)) * cos(radians(longitude) - radians(?))
             + sin(radians(?)) * sin(radians(latitude)) )
