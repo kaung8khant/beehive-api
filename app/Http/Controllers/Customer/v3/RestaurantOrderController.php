@@ -32,7 +32,6 @@ class RestaurantOrderController extends Controller
     public function index(Request $request)
     {
         $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact')
-            ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
             ->where('customer_id', $this->customer->id)
             ->orderBy('id', 'desc')
@@ -94,7 +93,6 @@ class RestaurantOrderController extends Controller
     public function show($slug)
     {
         $order = RestaurantOrder::with('RestaurantOrderContact')
-            ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
             ->where('slug', $slug)
             ->where('customer_id', $this->customer->id)
