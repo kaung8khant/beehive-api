@@ -25,6 +25,7 @@ class ShopOrderItem extends Model
     protected $casts = [
         'shop' => 'object',
         'variations' => 'array',
+        'variant' => 'array',
     ];
 
     public function vendor()

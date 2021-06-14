@@ -25,6 +25,7 @@ class RestaurantOrderItem extends Model
         'is_deleted' => 'boolean',
         'variations' => AsArrayObject::class,
         'toppings' => AsArrayObject::class,
+        'variant' => 'array',
     ];
 
     protected $appends = ['images'];

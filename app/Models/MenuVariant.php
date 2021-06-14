@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class Address extends BaseModel
+class MenuVariant extends Model
 {
     use HasFactory;
 
@@ -12,17 +13,18 @@ class Address extends BaseModel
 
     protected $hidden = [
         'id',
-        'customer_id',
+        'menu_id',
         'created_at',
         'updated_at',
     ];
 
     protected $casts = [
-        'is_primary' => 'boolean',
+        'is_enable' => 'boolean',
+        'variant' => 'array',
     ];
 
-    // public function township()
-    // {
-    //     return $this->belongsTo(Township::class)->with('city');
-    // }
+    public function menu()
+    {
+        return $this->belongsTo(Menu::class);
+    }
 }

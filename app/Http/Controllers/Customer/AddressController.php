@@ -27,7 +27,7 @@ class AddressController extends Controller
 
     public function index()
     {
-        $addresses = Address::with('township')->where('customer_id', $this->customerId)->paginate(10)->items();
+        $addresses = Address::where('customer_id', $this->customerId)->paginate(10)->items();
         return $this->generateResponse($addresses, 200);
     }
 
@@ -35,7 +35,7 @@ class AddressController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validator = Validator::make($request->all(), $this->getParamsToValidate(true));
+        $validator = $this->validateAddress($request, true);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
@@ -44,35 +44,26 @@ class AddressController extends Controller
         $validatedData['customer_id'] = $this->customerId;
         $validatedData['is_primary'] = true;
 
-        if ($validatedData['township_slug']) {
-            $validatedData['township_id'] = Township::where('slug', $validatedData['township_slug'])->first()->id;
-        }
-
         $this->setNonPrimary();
 
         $address = Address::create($validatedData);
-        return $this->generateResponse($address->refresh()->load('township'), 201);
+        return $this->generateResponse($address->refresh(), 201);
     }
 
     public function show(Address $address)
     {
-        return $this->generateResponse($address->load('township'), 200);
+        return $this->generateResponse($address, 200);
     }
 
     public function update(Request $request, Address $address)
     {
-        $validator = Validator::make($request->all(), $this->getParamsToValidate());
+        $validator = $this->validateAddress($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $validatedData = $validator->validated();
         $validatedData['customer_id'] = $this->customerId;
-        $validatedData['township_id'] = null;
-
-        if ($validatedData['township_slug']) {
-            $validatedData['township_id'] = Township::where('slug', $validatedData['township_slug'])->first()->id;
-        }
 
         $address->update($validatedData);
         return $this->generateResponse($address->load('township'), 200);
@@ -84,23 +75,22 @@ class AddressController extends Controller
         return $this->generateResponse('Successfully deleted.', 200, true);
     }
 
-    private function getParamsToValidate($slug = false)
+    private function validateAddress($request, $slug = false)
     {
         $params = [
             'label' => 'required',
             'house_number' => 'required',
-            'floor' => 'nullable|min:0|max:50',
+            'floor' => 'nullable|integer|min:0|max:50',
             'street_name' => 'required',
             'latitude' => 'nullable',
             'longitude' => 'nullable',
-            'township_slug' => 'nullable|exists:App\Models\Township,slug',
         ];
 
         if ($slug) {
             $params['slug'] = 'required|unique:addresses';
         }
 
-        return $params;
+        return Validator::make($request->all(), $params);
     }
 
     public function setPrimaryAddress(Address $address)
@@ -142,5 +132,30 @@ class AddressController extends Controller
     private function setNonPrimary()
     {
         Address::where('customer_id', $this->customerId)->update(['is_primary' => 0]);
+    }
+
+    public function getNearestAddress(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, true);
+        }
+
+        $address = Address::
+            selectRaw('label, house_number, floor, street_name, latitude, longitude, is_primary, township_id,
+        ( 6371 * acos( cos(radians(?)) *
+            cos(radians(latitude)) * cos(radians(longitude) - radians(?))
+            + sin(radians(?)) * sin(radians(latitude)) )
+        ) AS distance', [$request->lat, $request->lng, $request->lat])
+            ->having('distance', '<', 1)
+            ->orderBy('distance', 'asc')
+            ->where('customer_id', Auth::guard('customers')->user()->id)
+            ->first();
+
+        return $this->generateResponse($address, 200);
     }
 }

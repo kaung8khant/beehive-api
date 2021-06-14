@@ -10,8 +10,7 @@ use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\MenuTopping;
-use App\Models\MenuVariation;
-use App\Models\MenuVariationValue;
+use App\Models\MenuVariant;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
@@ -45,25 +44,26 @@ class MenuController extends Controller
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
-
-        $validatedData = $request->validate($this->getParamsToValidate(true));
-        $restaurant = Restaurant::where('slug', $request->restaurant_slug)->firstOrFail();
-        $validatedData['restaurant_id'] = $restaurant->id;
-        $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
+        $validatedData = $this->validateRequest($request, true);
 
         $menu = Menu::create($validatedData);
-        $menuId = $menu->id;
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'menus', $menu->slug);
         }
 
-        $this->createVariations($menuId, $validatedData['menu_variations']);
-        $this->createToppings($menuId, $validatedData['menu_toppings']);
+        if (isset($validatedData['menu_variants'])) {
+            $this->createMenuVariants($menu->id, $validatedData['menu_variants']);
+        }
 
-        foreach ($restaurant->restaurantBranches as $branch) {
-            $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
-            $branch->availableMenus()->attach($availableMenus);
+        if (isset($validatedData['menu_toppings'])) {
+            $this->createToppings($menu->id, $validatedData['menu_toppings']);
+        }
+
+        $restaurantBranches = CacheHelper::getAllRestaurantBranchesByRestaurantId($validatedData['restaurant_id']);
+
+        foreach ($restaurantBranches as $branch) {
+            $branch->availableMenus()->attach($menu->id);
         }
 
         return response()->json($menu->load('restaurant'), 200);
@@ -71,43 +71,44 @@ class MenuController extends Controller
 
     public function show(Menu $menu)
     {
-        return response()->json($menu->load(['restaurant', 'restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuToppings']), 200);
+        return response()->json($menu->load(['restaurant', 'restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings']), 200);
     }
 
     public function update(Request $request, Menu $menu)
     {
-        $validatedData = $request->validate($this->getParamsToValidate());
-        $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
-        $validatedData['restaurant_category_id'] = $this->getRestaurantCategoryId($request->restaurant_category_slug);
+        $validatedData = $this->validateRequest($request);
+        $oldRestaurantId = $menu->restaurant_id;
 
-        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         $menu->update($validatedData);
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'menus', $menu->slug);
         }
 
-        if ($request->menu_variations) {
-            $menu->menuVariations()->delete();
-            $this->createVariations($menu->id, $validatedData['menu_variations']);
+        if (isset($validatedData['menu_variants'])) {
+            $menu->menuVariants()->delete();
+            $this->createMenuVariants($menu->id, $validatedData['menu_variants']);
         } else {
-            $menu->menuVariations()->delete();
+            $menu->menuVariants()->delete();
         }
 
-        if ($request->menu_toppings) {
+        if (isset($validatedData['menu_toppings'])) {
             $menu->menuToppings()->delete();
             $this->createToppings($menu->id, $validatedData['menu_toppings']);
         } else {
             $menu->menuToppings()->delete();
         }
 
-        if ($menu->restaurant_id !== $validatedData['restaurant_id']) {
-            $restaurant = Restaurant::where('slug', $request->restaurant_slug)->firstOrFail();
-            $oldRestaurant = Restaurant::where('id', $menu->restaurant_id)->firstOrFail();
-            foreach ($oldRestaurant->restaurantBranches as $branch) {
+        if ($oldRestaurantId !== $validatedData['restaurant_id']) {
+            $newBranches = CacheHelper::getAllRestaurantBranchesByRestaurantId($validatedData['restaurant_id']);
+            $oldBranches = CacheHelper::getAllRestaurantBranchesByRestaurantId($oldRestaurantId);
+
+            foreach ($oldBranches as $branch) {
                 $branch->availableMenus()->detach($menu->id);
             }
-            foreach ($restaurant->restaurantBranches as $branch) {
+
+            foreach ($newBranches as $branch) {
                 $branch->availableMenus()->attach($menu->id);
             }
         }
@@ -124,6 +125,119 @@ class MenuController extends Controller
         CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         $menu->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+    }
+
+    private function validateRequest($request, $slug = false)
+    {
+        $params = [
+            'name' => 'required',
+            'description' => 'nullable',
+            'is_enable' => 'required|boolean',
+            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
+            'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
+
+            'variants' => 'nullable|array',
+            'variants.*.name' => 'required|string',
+            'variants.*.values' => 'required|array',
+
+            'menu_variants' => 'required_with:variants',
+            'menu_variants.*.variant' => 'required',
+            'menu_variants.*.price' => 'required|numeric',
+            'menu_variants.*.tax' => 'required|numeric',
+            'menu_variants.*.discount' => 'required|numeric',
+            'menu_variants.*.is_enable' => 'required|boolean',
+            'menu_variants.*.image_slug' => 'nullable|exists:App\Models\File,slug',
+
+            'menu_toppings' => 'nullable|array',
+            'menu_toppings.*.name' => 'required|string',
+            'menu_toppings.*.price' => 'required|numeric',
+            'menu_toppings.*.is_incremental' => 'required|boolean',
+            'menu_toppings.*.max_quantity' => 'nullable|max:10',
+            'menu_toppings.*.image_slug' => 'nullable|exists:App\Models\File,slug',
+        ];
+
+        if ($slug) {
+            $params['slug'] = 'required|unique:menus';
+        }
+
+        $validatedData = $request->validate($params);
+
+        $validatedData['restaurant_id'] = CacheHelper::getRestaurantIdBySlug($request->restaurant_slug);
+        $validatedData['restaurant_category_id'] = CacheHelper::getRestaurantCategoryIdBySlug($request->restaurant_category_slug);
+
+        return $validatedData;
+    }
+
+    private function createMenuVariants($menuId, $menuVariants)
+    {
+        foreach ($menuVariants as $variant) {
+            $variant['menu_id'] = $menuId;
+            $variant['slug'] = $this->generateUniqueSlug();
+
+            MenuVariant::create($variant);
+
+            if (isset($variant['image_slug'])) {
+                $this->updateFile($variant['image_slug'], 'menu_variants', $variant['slug']);
+            }
+        }
+    }
+
+    private function createToppings($menuId, $toppings)
+    {
+        foreach ($toppings as $topping) {
+            $topping['slug'] = $this->generateUniqueSlug();
+            $topping['menu_id'] = $menuId;
+            MenuTopping::create($topping);
+            if (!empty($topping['image_slug'])) {
+                $this->updateFile($topping['image_slug'], 'menu_toppings', $topping['slug']);
+            }
+        }
+    }
+
+    public function toggleEnable(Menu $menu)
+    {
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
+        $menu->update(['is_enable' => !$menu->is_enable]);
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function multipleStatusUpdate(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Menu,slug',
+        ]);
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $menu = Menu::where('slug', $slug)->firstOrFail();
+
+            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
+            $menu->update(['is_enable' => $request->is_enable]);
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function multipleDelete(Request $request)
+    {
+        $validatedData = $request->validate([
+            'slugs' => 'required|array',
+            'slugs.*' => 'required|exists:App\Models\Menu,slug',
+        ]);
+
+        foreach ($validatedData['slugs'] as $slug) {
+            $menu = Menu::where('slug', $slug)->firstOrFail();
+
+            foreach ($menu->images as $image) {
+                $this->deleteFile($image->slug);
+            }
+
+            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
+            $menu->delete();
+        }
+
+        return response()->json(['message' => 'Success.'], 200);
     }
 
     public function getMenusByRestaurant(Request $request, Restaurant $restaurant)
@@ -203,7 +317,7 @@ class MenuController extends Controller
         $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
 
         $menus = $restaurantBranch->availableMenus()
-            ->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuToppings')
+            ->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings')
             ->where('is_available', true)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
@@ -219,128 +333,5 @@ class MenuController extends Controller
 
         return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
-    }
-
-    private function getParamsToValidate($slug = false)
-    {
-        $params = [
-            'name' => 'required',
-            'description' => 'nullable',
-            'price' => 'required|numeric',
-            'tax' => 'required|numeric',
-            'discount' => 'required|numeric',
-            'is_enable' => 'required|boolean',
-            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-            'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
-            'menu_variations' => 'nullable|array',
-            'menu_variations.*.name' => 'required|string',
-            'menu_toppings' => 'nullable|array',
-            'menu_toppings.*.name' => 'required|string',
-            'menu_toppings.*.price' => 'required|numeric',
-            'menu_toppings.*.is_incremental' => 'required|boolean',
-            'menu_toppings.*.max_quantity' => 'nullable|max:10',
-            'menu_toppings.*.image_slug' => 'nullable|exists:App\Models\File,slug',
-            'menu_variations.*.menu_variation_values' => 'required|array',
-            'menu_variations.*.menu_variation_values.*.value' => 'required|string',
-            'menu_variations.*.menu_variation_values.*.price' => 'required|numeric',
-            'menu_variations.*.menu_variation_values.*.image_slug' => 'nullable|exists:App\Models\File,slug',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ];
-
-        if ($slug) {
-            $params['slug'] = 'required|unique:menus';
-        }
-
-        return $params;
-    }
-
-    private function createVariations($menuId, $variations)
-    {
-        foreach ($variations as $variation) {
-            $variation['slug'] = $this->generateUniqueSlug();
-            $variation['menu_id'] = $menuId;
-            $menuVariation = MenuVariation::create($variation);
-            $variationId = $menuVariation->id;
-            $this->createVariationValues($variationId, $variation['menu_variation_values']);
-        }
-    }
-
-    private function createVariationValues($variationId, $variationValues)
-    {
-        foreach ($variationValues as $variationValue) {
-            $variationValue['slug'] = $this->generateUniqueSlug();
-            $variationValue['menu_variation_id'] = $variationId;
-            MenuVariationValue::create($variationValue);
-            if (!empty($variationValue['image_slug'])) {
-                $this->updateFile($variationValue['image_slug'], 'menu_variation_values', $variationValue['slug']);
-            }
-        }
-    }
-
-    private function createToppings($menuId, $toppings)
-    {
-        foreach ($toppings as $topping) {
-            $topping['slug'] = $this->generateUniqueSlug();
-            $topping['menu_id'] = $menuId;
-            MenuTopping::create($topping);
-            if (!empty($topping['image_slug'])) {
-                $this->updateFile($topping['image_slug'], 'menu_toppings', $topping['slug']);
-            }
-        }
-    }
-
-    private function getRestaurantId($slug)
-    {
-        return Restaurant::where('slug', $slug)->first()->id;
-    }
-
-    private function getRestaurantCategoryId($slug)
-    {
-        return RestaurantCategory::where('slug', $slug)->first()->id;
-    }
-
-    public function toggleEnable(Menu $menu)
-    {
-        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
-        $menu->update(['is_enable' => !$menu->is_enable]);
-        return response()->json(['message' => 'Success.'], 200);
-    }
-
-    public function multipleStatusUpdate(Request $request)
-    {
-        $validatedData = $request->validate([
-            'slugs' => 'required|array',
-            'slugs.*' => 'required|exists:App\Models\Menu,slug',
-        ]);
-
-        foreach ($validatedData['slugs'] as $slug) {
-            $menu = Menu::where('slug', $slug)->firstOrFail();
-
-            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
-            $menu->update(['is_enable' => $request->is_enable]);
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
-    }
-
-    public function multipleDelete(Request $request)
-    {
-        $validatedData = $request->validate([
-            'slugs' => 'required|array',
-            'slugs.*' => 'required|exists:App\Models\Menu,slug',
-        ]);
-
-        foreach ($validatedData['slugs'] as $slug) {
-            $menu = Menu::where('slug', $slug)->firstOrFail();
-
-            foreach ($menu->images as $image) {
-                $this->deleteFile($image->slug);
-            }
-
-            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
-            $menu->delete();
-        }
-
-        return response()->json(['message' => 'Success.'], 200);
     }
 }

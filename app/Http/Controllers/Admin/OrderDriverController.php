@@ -52,7 +52,7 @@ class OrderDriverController extends Controller
     public function jobDetail($slug)
     {
         $shopOrder = ShopOrder::where('slug', $slug)
-            ->with('contact', 'contact.township')->firstOrFail();
+            ->with('contact')->firstOrFail();
 
         $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status')->where('slug', $slug)->first();
 
@@ -68,13 +68,12 @@ class OrderDriverController extends Controller
     public function jobList(Request $request)
     {
         $driver = Auth::user()->id;
-        $shopOrder = ShopOrder::with('drivers', 'drivers.status', 'contact',
-            'contact.township')->whereHas('drivers.status', function ($q) use ($driver) {
+        $shopOrder = ShopOrder::with('drivers', 'drivers.status', 'contact')->whereHas('drivers.status', function ($q) use ($driver) {
             $q->where('status', 'accepted');
         })->whereHas('drivers', function ($q) use ($driver) {
             $q->where('user_id', $driver);
         })->get();
-        $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact', 'restaurantOrderContact.township')->whereHas('drivers.status', function ($q) use ($driver) {
+        $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact')->whereHas('drivers.status', function ($q) use ($driver) {
             $q->where('status', 'accepted');
         })->whereHas('drivers', function ($q) use ($driver) {
             $q->where('user_id', $driver);

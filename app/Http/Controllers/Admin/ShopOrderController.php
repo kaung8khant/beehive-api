@@ -28,7 +28,7 @@ class ShopOrderController extends Controller
     {
         $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $shopOrders = ShopOrder::with('contact', 'contact.township')
+        $shopOrders = ShopOrder::with('contact')
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10)
             ->items();
@@ -77,7 +77,7 @@ class ShopOrderController extends Controller
         } else {
             $shopOrder['assign'] = null;
         }
-        return $this->generateResponse($shopOrder->load('contact', 'contact.township', 'vendors', 'drivers', 'drivers.status'), 200);
+        return $this->generateResponse($shopOrder->load('contact', 'vendors', 'drivers', 'drivers.status'), 200);
     }
 
     public function store(Request $request)
@@ -123,7 +123,6 @@ class ShopOrderController extends Controller
                     'type' => 'shopOrder',
                     'status' => 'pending',
                     'shopOrder' => ShopOrder::with('contact')
-                        ->with('contact.township')
                         ->with('vendors')
                         ->where('slug', $order->slug)
                         ->firstOrFail(),
@@ -165,7 +164,7 @@ class ShopOrderController extends Controller
         $uniqueKey = StringHelper::generateUniqueSlug();
         $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
 
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        // SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
     }
 

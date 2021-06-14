@@ -18,9 +18,8 @@ class CreatePromotionsTable extends Migration
             $table->string('slug')->unique();
             $table->string('title');
             $table->unsignedBigInteger('promocode_id');
-            $table->foreign('promocode_id')->references('id')->on('promocodes')
-                ->onDelete('cascade');
             $table->timestamps();
+            $table->foreign('promocode_id')->references('id')->on('promocodes')->onDelete('cascade');
         });
     }
 

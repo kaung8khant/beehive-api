@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Exceptions\BadRequestException;
 use App\Helpers\StringHelper;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\ProductVariationValue;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderContact;
@@ -30,14 +31,11 @@ trait ShopOrderHelper
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
             'address' => 'required',
-            // 'address.label' => 'required|string',
             'address.house_number' => 'nullable|string',
-            'address.floor' => 'nullable|numeric',
+            'address.floor' => 'nullable|integer|min:0|max:50',
             'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
-            'address.township' => 'required',
-            'address.township.slug' => 'required|exists:App\Models\Township,slug',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -133,7 +131,6 @@ trait ShopOrderHelper
     {
         $customerInfo = array_merge($customerInfo, $address);
         $customerInfo['shop_order_id'] = $orderId;
-        $customerInfo['township_id'] = self::getTownshipId($customerInfo['township']['slug']);
         ShopOrderContact::create($customerInfo);
     }
 
@@ -142,13 +139,13 @@ trait ShopOrderHelper
         foreach ($orderItems as $item) {
             $shop = self::getShopByProduct($item['slug']);
             $shopOrderVendor = self::createShopOrderVendor($orderId, $shop->id);
-            $item['discount'] = $item['discount'];
 
             $item['shop'] = $shop;
             $item['shop_order_vendor_id'] = $shopOrderVendor->id;
             $item['shop_id'] = $shop->id;
             $item['product_name'] = $item['name'];
             $item['amount'] = $item['price'];
+
             ShopOrderItem::create($item);
         }
     }
@@ -199,5 +196,77 @@ trait ShopOrderHelper
     {
         $product = Product::with('shop')->where('slug', $slug)->firstOrFail();
         return $product->shop;
+    }
+
+    public static function validateOrderV3($request, $customerSlug = false)
+    {
+        $rules = [
+            'slug' => 'required|unique:products',
+            'order_date' => 'required|date_format:Y-m-d',
+            'special_instruction' => 'nullable',
+            'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
+            'delivery_mode' => 'required|in:pickup,delivery',
+            'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
+            'customer_info' => 'required',
+            'customer_info.customer_name' => 'required|string',
+            'customer_info.phone_number' => 'required|string',
+            'address' => 'required',
+            'address.house_number' => 'nullable|string',
+            'address.floor' => 'nullable|integer|min:0|max:50',
+            'address.street_name' => 'nullable|string',
+            'address.latitude' => 'nullable|numeric',
+            'address.longitude' => 'nullable|numeric',
+            'order_items' => 'required|array',
+            'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
+            'order_items.*.quantity' => 'required|integer',
+            'order_items.*.variant_slug' => 'required|exists:App\Models\ProductVariant,slug',
+        ];
+
+        if ($customerSlug) {
+            $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return $validator->errors()->first();
+        }
+
+        return $validator->validated();
+    }
+
+    public static function prepareProductVariants($validatedData)
+    {
+        $orderItems = [];
+        $subTotal = 0;
+        $tax = 0;
+
+        foreach ($validatedData['order_items'] as $key => $value) {
+            $productId = Product::where('slug', $value['slug'])->value('id');
+            $productVariant = ProductVariant::with('product')->where('slug', $value['variant_slug'])->where('is_enable', 1)->first();
+
+            if ($productId !== $productVariant->product->id) {
+                throw new BadRequestException('The order_items.' . $key . '.variant_slug must be part of the product_slug.', 400);
+            }
+
+            $item['slug'] = $value['slug'];
+            $item['name'] = $productVariant->product->name;
+            $item['quantity'] = $value['quantity'];
+            $item['price'] = $productVariant->price;
+            $item['tax'] = ($item['price'] - $productVariant->discount) * $productVariant->tax * 0.01;
+            $item['discount'] = $productVariant->discount;
+            $item['variant'] = $productVariant->variant;
+            $item['product_id'] = $productId;
+
+            $subTotal += ($item['price'] - $productVariant->discount) * $value['quantity'];
+            $tax += ($item['price'] - $productVariant->discount) * $productVariant->tax * 0.01 * $value['quantity'];
+
+            array_push($orderItems, $item);
+        }
+
+        $validatedData['order_items'] = $orderItems;
+        $validatedData['subTotal'] = $subTotal;
+        $validatedData['tax'] = $tax;
+
+        return $validatedData;
     }
 }
