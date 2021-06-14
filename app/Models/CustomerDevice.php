@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class UserDevice extends Model
+class CustomerDevice extends Model
 {
     use HasFactory;
 
@@ -13,13 +13,13 @@ class UserDevice extends Model
 
     protected $hidden = [
         'id',
-        'user_id',
+        'customer_id',
         'created_at',
         'updated_at',
     ];
 
-    public function user()
+    public function customer()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Customer::class);
     }
 }

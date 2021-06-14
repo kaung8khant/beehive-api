@@ -172,7 +172,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('job/{slug}', 'Admin\OrderDriverController@jobDetail');
             Route::get('jobs', 'Admin\OrderDriverController@jobList');
 
-            Route::post('devices', 'Admin\UserController@registerDevice');
+            Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
+            Route::post('devices/send', 'OneSignal\OneSignalController@sendPushNotification');
         });
     });
 

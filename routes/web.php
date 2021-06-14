@@ -8,7 +8,5 @@ Route::group(['middleware' => ['cors']], function () {
             'status' => 'success',
             'build_number' => config('system.build_number'),
         ], 200);
-
-        // return view('subscribe');
     });
 });

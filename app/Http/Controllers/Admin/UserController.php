@@ -370,36 +370,4 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Success.'], 200);
     }
-
-    public function registerDevice(Request $request)
-    {
-        $validator = OneSignalHelper::validateDevice($request);
-        if ($validator->fails()) {
-            return $this->generateResponse($validator->errors()->first(), 422, true);
-        }
-
-        $fields = [
-            'device_type' => OneSignalHelper::getDeviceType($request->device_type),
-            'identifier' => $request->identifier,
-            'timezone' => '+23400',
-            'test_type' => 1,
-        ];
-
-        $responseData = OneSignal::addDevice($fields);
-
-        if ($responseData['success'] === true) {
-            try {
-                $userDevice = UserDevice::create([
-                    'user_id' => Auth::guard('users')->user()->id,
-                    'player_id' => $responseData['id'],
-                ]);
-            } catch (QueryException $e) {
-                return $this->generateResponse('Device already registered', 409, true);
-            }
-
-            return $this->generateResponse($userDevice->load('user'), 200);
-        }
-
-        return $this->generateResponse('Something went wrong', 406, true);
-    }
 }
