@@ -36,8 +36,6 @@ trait ShopOrderHelper
             'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
-            'address.township' => 'required',
-            'address.township.slug' => 'required|exists:App\Models\Township,slug',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -133,7 +131,6 @@ trait ShopOrderHelper
     {
         $customerInfo = array_merge($customerInfo, $address);
         $customerInfo['shop_order_id'] = $orderId;
-        $customerInfo['township_id'] = self::getTownshipId($customerInfo['township']['slug']);
         ShopOrderContact::create($customerInfo);
     }
 
@@ -219,8 +216,6 @@ trait ShopOrderHelper
             'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
-            'address.township' => 'required',
-            'address.township.slug' => 'required|exists:App\Models\Township,slug',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
             'order_items.*.quantity' => 'required|integer',

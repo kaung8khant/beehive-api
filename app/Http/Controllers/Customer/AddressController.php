@@ -27,7 +27,7 @@ class AddressController extends Controller
 
     public function index()
     {
-        $addresses = Address::with('township')->where('customer_id', $this->customerId)->paginate(10)->items();
+        $addresses = Address::where('customer_id', $this->customerId)->paginate(10)->items();
         return $this->generateResponse($addresses, 200);
     }
 
@@ -44,19 +44,15 @@ class AddressController extends Controller
         $validatedData['customer_id'] = $this->customerId;
         $validatedData['is_primary'] = true;
 
-        if ($validatedData['township_slug']) {
-            $validatedData['township_id'] = Township::where('slug', $validatedData['township_slug'])->first()->id;
-        }
-
         $this->setNonPrimary();
 
         $address = Address::create($validatedData);
-        return $this->generateResponse($address->refresh()->load('township'), 201);
+        return $this->generateResponse($address->refresh(), 201);
     }
 
     public function show(Address $address)
     {
-        return $this->generateResponse($address->load('township'), 200);
+        return $this->generateResponse($address, 200);
     }
 
     public function update(Request $request, Address $address)
@@ -68,11 +64,6 @@ class AddressController extends Controller
 
         $validatedData = $validator->validated();
         $validatedData['customer_id'] = $this->customerId;
-        $validatedData['township_id'] = null;
-
-        if ($validatedData['township_slug']) {
-            $validatedData['township_id'] = Township::where('slug', $validatedData['township_slug'])->first()->id;
-        }
 
         $address->update($validatedData);
         return $this->generateResponse($address->load('township'), 200);
@@ -93,7 +84,6 @@ class AddressController extends Controller
             'street_name' => 'required',
             'latitude' => 'nullable',
             'longitude' => 'nullable',
-            'township_slug' => 'nullable|exists:App\Models\Township,slug',
         ];
 
         if ($slug) {
@@ -155,8 +145,8 @@ class AddressController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $address = Address::with('township')
-            ->selectRaw('label, house_number, floor, street_name, latitude, longitude, is_primary, township_id,
+        $address = Address::
+            selectRaw('label, house_number, floor, street_name, latitude, longitude, is_primary, township_id,
         ( 6371 * acos( cos(radians(?)) *
             cos(radians(latitude)) * cos(radians(longitude) - radians(?))
             + sin(radians(?)) * sin(radians(latitude)) )
