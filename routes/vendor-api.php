@@ -122,6 +122,8 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::post('excels/import/{type}', 'Excel\ExportImportController@import');
         Route::get('excels/export/{type}', 'Excel\ExportImportController@export');
         Route::get('excels/export/{type}/{params}', 'Excel\ExportImportController@exportWithParams');
+
+        Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
     });
 });
 
