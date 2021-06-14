@@ -58,7 +58,7 @@ class Customer extends Authenticatable implements JWTSubject
 
     public function addresses()
     {
-        return $this->hasMany(Address::class)->with('township');
+        return $this->hasMany(Address::class);
     }
 
     public function customerGroups()
