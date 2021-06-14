@@ -159,12 +159,10 @@ class ShopOrderController extends Controller
                         'slug' => OrderHelper::getShopByProduct($item['slug'])->slug,
                         'order_status' => 'pending',
                         'total_amount' => ShopOrder::with('contact')
-                            ->with('contact.township')
                             ->with('vendors')
                             ->where('slug', $slug)
                             ->firstOrFail()->total_amount,
                         'shop_order' => ShopOrder::with('contact')
-                            ->with('contact.township')
                             ->with('vendors')
                             ->where('slug', $slug)
                             ->firstOrFail(),

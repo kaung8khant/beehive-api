@@ -33,7 +33,6 @@ class ShopOrderController extends Controller
     {
         $customerId = Auth::guard('customers')->user()->id;
         $shopOrder = ShopOrder::with('contact')
-            ->with('contact.township')
             ->with('vendors')
             ->where('customer_id', $customerId)
             ->latest()
@@ -113,12 +112,10 @@ class ShopOrderController extends Controller
                         'slug' => OrderHelper::getShopByProduct($item['slug'])->slug,
                         'order_status' => 'pending',
                         'total_amount' => ShopOrder::with('contact')
-                            ->with('contact.township')
                             ->with('vendors')
                             ->where('slug', $order->slug)
                             ->firstOrFail()->total_amount,
                         'shop_order' => ShopOrder::with('contact')
-                            ->with('contact.township')
                             ->with('vendors')
                             ->where('slug', $order->slug)
                             ->firstOrFail(),
@@ -135,7 +132,6 @@ class ShopOrderController extends Controller
                     'type' => 'shopOrder',
                     'status' => 'pending',
                     'shopOrder' => ShopOrder::with('contact')
-                        ->with('contact.township')
                         ->with('vendors')
                         ->where('slug', $order->slug)
                         ->firstOrFail(),
@@ -143,7 +139,7 @@ class ShopOrderController extends Controller
             ]
         );
 
-        return $this->generateShopOrderResponse($order->refresh(), 201);
+        return $this->generateShopOrderResponse($order->refresh()->load('contact'), 201);
     }
 
     public function show($slug)

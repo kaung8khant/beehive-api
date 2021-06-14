@@ -38,8 +38,6 @@ trait RestaurantOrderHelper
             'address.street_name' => 'required|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
-            'address.township' => 'required',
-            'address.township.slug' => 'required|exists:App\Models\Township,slug',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -136,7 +134,6 @@ trait RestaurantOrderHelper
     {
         $customerInfo = array_merge($customerInfo, $address);
         $customerInfo['restaurant_order_id'] = $orderId;
-        $customerInfo['township_id'] = self::getTownshipId($customerInfo['township']['slug']);
         RestaurantOrderContact::create($customerInfo);
     }
 
@@ -224,7 +221,7 @@ trait RestaurantOrderHelper
 
         return $query->with('restaurant')
             ->with('restaurant.availableTags')
-            ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id, township_id,
+            ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id,
             ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
                 + sin(radians(?)) * sin(radians(latitude)) )
@@ -255,8 +252,6 @@ trait RestaurantOrderHelper
             'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
-            'address.township' => 'required',
-            'address.township.slug' => 'required|exists:App\Models\Township,slug',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',

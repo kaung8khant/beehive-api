@@ -29,8 +29,8 @@ class RestaurantOrderContact extends Model
         return $this->belongsTo(RestaurantOrder::class);
     }
 
-    public function township()
-    {
-        return $this->belongsTo(Township::class);
-    }
+    // public function township()
+    // {
+    //     return $this->belongsTo(Township::class);
+    // }
 }

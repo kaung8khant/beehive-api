@@ -24,7 +24,6 @@ class RestaurantOrderController extends Controller
     {
         $customerId = Auth::guard('customers')->user()->id;
         $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact')
-            ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
             ->where('customer_id', $customerId)
             ->latest()
@@ -38,7 +37,6 @@ class RestaurantOrderController extends Controller
     {
         $customerId = Auth::guard('customers')->user()->id;
         $order = RestaurantOrder::with('RestaurantOrderContact')
-            ->with('restaurantOrderContact.township')
             ->with('RestaurantOrderItems')
             ->where('slug', $slug)
             ->where('customer_id', $customerId)
@@ -111,7 +109,6 @@ class RestaurantOrderController extends Controller
                 'body' => "You've just recevied new order. Check now!",
                 'type' => 'create',
                 'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
-                    ->with('restaurantOrderContact.township')
                     ->with('RestaurantOrderItems')
                     ->where('slug', $order->slug)
                     ->firstOrFail(),
@@ -120,7 +117,7 @@ class RestaurantOrderController extends Controller
         );
 
         return $this->generateResponse(
-            $order->refresh()->load('restaurantOrderContact', 'restaurantOrderContact.township', 'restaurantOrderItems'),
+            $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'),
             201,
         );
     }
