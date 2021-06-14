@@ -89,6 +89,8 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
 
         Route::get('promocode', 'Customer\PromocodeController@index');
         Route::post('promocode/validate', 'Customer\PromocodeController@validatePromoCode');
+
+        Route::post('devices', 'OneSignal\OneSignalController@registerCustomerDevice');
     });
 
     /* Product */
