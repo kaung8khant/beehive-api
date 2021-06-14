@@ -256,7 +256,7 @@ trait RestaurantOrderHelper
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',
             'order_items.*.variant_slug' => 'required|exists:App\Models\MenuVariant,slug',
-            'order_items.*.topping_ slugs' => 'nullable|array',
+            'order_items.*.topping_slugs' => 'nullable|array',
             'order_items.*.topping_slugs.*.slug' => 'required|exists:App\Models\MenuTopping,slug',
             'order_items.*.topping_slugs.*.value' => 'required|integer',
         ];
