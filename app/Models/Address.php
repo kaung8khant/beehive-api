@@ -12,7 +12,6 @@ class Address extends BaseModel
 
     protected $hidden = [
         'id',
-        'township_id',
         'customer_id',
         'created_at',
         'updated_at',
@@ -22,8 +21,8 @@ class Address extends BaseModel
         'is_primary' => 'boolean',
     ];
 
-    public function township()
-    {
-        return $this->belongsTo(Township::class)->with('city');
-    }
+    // public function township()
+    // {
+    //     return $this->belongsTo(Township::class)->with('city');
+    // }
 }

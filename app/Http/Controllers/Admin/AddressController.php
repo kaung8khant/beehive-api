@@ -20,7 +20,7 @@ class AddressController extends Controller
         $customer = Customer::where('slug', $slug)->firstOrFail();
         $customerId = $customer->id;
 
-        $addresses = Address::with('township')->where('customer_id', $customerId)->paginate(10)->items();
+        $addresses = Address::where('customer_id', $customerId)->paginate(10)->items();
         return $this->generateResponse($addresses, 200);
     }
 
@@ -39,14 +39,10 @@ class AddressController extends Controller
         $validatedData['customer_id'] = $customer->id;
         $validatedData['is_primary'] = true;
 
-        if ($validatedData['township_slug']) {
-            $validatedData['township_id'] = Township::where('slug', $validatedData['township_slug'])->first()->id;
-        }
-
         $this->setNonPrimary($customer->id);
 
         $address = Address::create($validatedData);
-        return $this->generateResponse($address->refresh()->load('township'), 201);
+        return $this->generateResponse($address->refresh(), 201);
     }
 
     private function getParamsToValidate($slug = false)
@@ -58,7 +54,6 @@ class AddressController extends Controller
             'street_name' => 'nullable',
             'latitude' => 'nullable',
             'longitude' => 'nullable',
-            'township_slug' => 'nullable|exists:App\Models\Township,slug',
         ];
 
         if ($slug) {
