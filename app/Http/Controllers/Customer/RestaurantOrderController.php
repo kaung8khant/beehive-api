@@ -98,7 +98,7 @@ class RestaurantOrderController extends Controller
         if ($restaurant->commission>0) {
             $validatedData['commission']=($validatedData['subTotal']+$validatedData['tax']) * $restaurant->commission * 0.01;
 
-            if ($validatedData['promo_code_slug']) {
+            if ($validatedData['promo_code']) {
                 $validatedData['commission']=($validatedData['subTotal']+$validatedData['tax']-$validatedData['promocode_amount']) * $restaurant->commission * 0.01;
             }
         }

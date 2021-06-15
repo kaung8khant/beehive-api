@@ -28,7 +28,7 @@ class RestaurantOrderController extends Controller
     {
         $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'restaurantOrderContact.township', 'RestaurantOrderItems')
+        $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
             ->whereHas('restaurantOrderContact', function ($q) use ($request) {
                 $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('phone_number', $request->filter);
@@ -85,7 +85,7 @@ class RestaurantOrderController extends Controller
         if ($restaurant->commission>0) {
             $validatedData['commission']=($validatedData['subTotal']+$validatedData['tax']) * $restaurant->commission * 0.01;
 
-            if ($validatedData['promo_code_slug']) {
+            if ($validatedData['promo_code']) {
                 $validatedData['commission']=($validatedData['subTotal']+$validatedData['tax']-$validatedData['promocode_amount']) * $restaurant->commission * 0.01;
             }
         }
@@ -105,7 +105,7 @@ class RestaurantOrderController extends Controller
 
     public function show(RestaurantOrder $restaurantOrder)
     {
-        return $this->generateResponse($restaurantOrder->load('RestaurantOrderContact', 'restaurantOrderContact.township', 'RestaurantOrderItems'), 200);
+        return $this->generateResponse($restaurantOrder->load('RestaurantOrderContact', 'RestaurantOrderItems'), 200);
     }
 
     public function destroy(RestaurantOrder $restaurantOrder)
@@ -156,7 +156,6 @@ class RestaurantOrderController extends Controller
             'body' => 'Restaurant order just has been updated',
             'status' => $status,
             'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
-                ->with('restaurantOrderContact.township')
                 ->with('RestaurantOrderItems')
                 ->where('slug', $slug)
                 ->firstOrFail(),
