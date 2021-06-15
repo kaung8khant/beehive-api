@@ -73,10 +73,16 @@ class OneSignalController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $playerIds = OneSignalHelper::getPlayerIds($request->type, $request->slugs);
-
-        if (!$playerIds) {
-            return $this->generateResponse('The type must be customer, admin or vendor', 406, true);
+        if ($request->type) {
+            $playerIds = OneSignalHelper::getPlayerIdsByType($request->type, $request->slugs);
+            if (!$playerIds) {
+                return $this->generateResponse('The type must be customer, admin or vendor.', 406, true);
+            }
+        } else {
+            $playerIds = OneSignalHelper::getPlayerIdsByGroup($request->group_slug);
+            if (!$playerIds) {
+                return $this->generateResponse('There is no customer in this group.', 406, true);
+            }
         }
 
         $fields['include_player_ids'] = $playerIds;

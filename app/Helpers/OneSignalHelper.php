@@ -4,10 +4,13 @@ namespace App\Helpers;
 
 use App\Models\Customer;
 use App\Models\CustomerDevice;
+use App\Models\CustomerGroup;
 use App\Models\User;
 use App\Models\UserDevice;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Ladumor\OneSignal\OneSignal;
+use phpDocumentor\Reflection\Types\Nullable;
 
 trait OneSignalHelper
 {
@@ -52,8 +55,9 @@ trait OneSignalHelper
     public static function validateUsers($request)
     {
         $rules = [
-            'type' => 'required|in:customer,admin,vendor',
-            'slugs' => 'required|array',
+            'type' => 'required_without:group_slug|in:customer,admin,vendor',
+            'slugs' => 'required_with:type|array',
+            'group_slug' => 'required_without:type|exists:customer_groups,slug',
             'message' => 'required|string',
             'url' => 'nullable|url',
         ];
@@ -67,16 +71,22 @@ trait OneSignalHelper
         return Validator::make($request->all(), $rules);
     }
 
-    public static function getPlayerIds($type, $slugs)
+    public static function getPlayerIdsByType($type, $slugs)
     {
         if ($type === 'customer') {
-            $customerId = Customer::whereIn('slug', $slugs)->pluck('id');
-            $playerIds = CustomerDevice::whereIn('customer_id', $customerId)->pluck('player_id');
+            $customerIds = Customer::whereIn('slug', $slugs)->pluck('id');
+            $playerIds = CustomerDevice::whereIn('customer_id', $customerIds)->pluck('player_id');
         } else {
-            $userId = User::whereIn('slug', $slugs)->pluck('id');
-            $playerIds = UserDevice::whereIn('customer_id', $userId)->pluck('player_id');
+            $userIds = User::whereIn('slug', $slugs)->pluck('id');
+            $playerIds = UserDevice::whereIn('customer_id', $userIds)->pluck('player_id');
         }
 
         return $playerIds;
+    }
+
+    public static function getPlayerIdsByGroup($groupSlug)
+    {
+        $customerIds = CustomerGroup::where('slug', $groupSlug)->first()->customers()->pluck('id');
+        return CustomerDevice::whereIn('customer_id', $customerIds)->pluck('player_id');
     }
 }
