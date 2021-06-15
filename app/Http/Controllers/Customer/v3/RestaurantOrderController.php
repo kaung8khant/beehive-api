@@ -154,7 +154,6 @@ class RestaurantOrderController extends Controller
                 'body' => "You've just recevied new order. Check now!",
                 'type' => 'create',
                 'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
-                    ->with('restaurantOrderContact.township')
                     ->with('RestaurantOrderItems')
                     ->where('slug', $slug)
                     ->firstOrFail(),
