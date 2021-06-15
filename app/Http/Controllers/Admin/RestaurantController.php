@@ -52,6 +52,7 @@ class RestaurantController extends Controller
                 'image_slug' => 'nullable|exists:App\Models\File,slug',
                 'cover_slugs' => 'nullable|array',
                 'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
+                'commission' => 'nullable|numeric',
             ],
             [
                 'restaurant_branch.contact_number.phone' => 'Invalid phone number.',
@@ -99,6 +100,7 @@ class RestaurantController extends Controller
             'image_slug' => 'nullable|exists:App\Models\File,slug',
             'cover_slugs' => 'nullable|array',
             'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
+            'commission' => 'nullable|numeric',
         ]);
 
         $restaurant->update($validatedData);
