@@ -11,6 +11,8 @@ use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
+use App\Models\Restaurant;
+use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -88,6 +90,17 @@ class RestaurantOrderController extends Controller
             $validatedData['promocode_id'] = $promocode->id;
             $validatedData['promocode'] = $promocode->code;
             $validatedData['promocode_amount'] = $promocodeAmount;
+        }
+
+        //commission
+        $restaurantBranch = RestaurantBranch::where('slug', $validatedData['restaurant_branch_slug'])->firstOrFail();
+        $restaurant = Restaurant::where('id', $restaurantBranch->restaurant_id)->firstOrFail();
+        if ($restaurant->commission>0) {
+            $validatedData['commission']=($validatedData['subTotal']+$validatedData['tax']) * $restaurant->commission * 0.01;
+
+            if ($validatedData['promo_code_slug']) {
+                $validatedData['commission']=($validatedData['subTotal']+$validatedData['tax']-$validatedData['promocode_amount']) * $restaurant->commission * 0.01;
+            }
         }
 
         // try catch and rollback if failed.
