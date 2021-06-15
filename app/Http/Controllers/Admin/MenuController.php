@@ -132,6 +132,9 @@ class MenuController extends Controller
         $params = [
             'name' => 'required',
             'description' => 'nullable',
+            'price' => 'nullable|numeric',
+            'tax' => 'nullable|numeric',
+            'discount' => 'nullable|numeric',
             'is_enable' => 'required|boolean',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
