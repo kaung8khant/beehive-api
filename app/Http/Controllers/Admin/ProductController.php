@@ -109,6 +109,9 @@ class ProductController extends Controller
         $params = [
             'name' => 'required|string',
             'description' => 'nullable|string',
+            'price' => 'nullable|numeric',
+            'tax' => 'nullable|numeric',
+            'discount' => 'nullable|numeric',
             'is_enable' => 'required|boolean',
             'shop_slug' => 'required|exists:App\Models\Shop,slug',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
