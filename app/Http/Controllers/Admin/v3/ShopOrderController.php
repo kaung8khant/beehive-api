@@ -29,7 +29,7 @@ class ShopOrderController extends Controller
     {
         $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $shopOrders = ShopOrder::with('contact', 'contact.township')
+        $shopOrders = ShopOrder::with('contact')
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10)
             ->map(function ($shopOrder) {
@@ -92,7 +92,6 @@ class ShopOrderController extends Controller
                     'type' => 'shopOrder',
                     'status' => 'pending',
                     'shopOrder' => ShopOrder::with('contact')
-                        ->with('contact.township')
                         ->with('vendors')
                         ->where('slug', $order->slug)
                         ->firstOrFail(),
@@ -113,7 +112,7 @@ class ShopOrderController extends Controller
             $shopOrder['assign'] = null;
         }
 
-        return $this->generateResponse($shopOrder->load('contact', 'contact.township', 'vendors', 'drivers', 'drivers.status'), 200);
+        return $this->generateResponse($shopOrder->load('contact', 'vendors', 'drivers', 'drivers.status'), 200);
     }
 
     public function changeStatus(Request $request, ShopOrder $shopOrder)
