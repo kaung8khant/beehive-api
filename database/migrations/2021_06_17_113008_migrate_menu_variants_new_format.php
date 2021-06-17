@@ -21,7 +21,7 @@ class MigrateMenuVariantsNewFormat extends Migration
                 $_key = array_keys($variant)[0];
                 $_value = $variant[$_key];
 
-                $data[] = [
+                $data = [
                     'name' => $_key == 'name' ? 'default' : $_key,
                     'value' => $_value,
                 ];
