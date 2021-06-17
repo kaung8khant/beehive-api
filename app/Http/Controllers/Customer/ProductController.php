@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
+use App\Models\File;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
@@ -54,6 +55,28 @@ class ProductController extends Controller
     {
         if (!$product->is_enable || !$product->shop->is_enable) {
             abort(404);
+        }
+
+        if ($product->variants && $product->variants['ui'] === 'image') {
+            $values = [];
+
+            foreach ($product->variants['values'] as $value) {
+                if (isset($value['id'])) {
+                    $image = File::where('id', $value['id'])->value('slug');
+                    $url = "/api/v2/images/{$image}";
+                    $value['url'] = config('app.url') . $url;
+                }
+
+                $values[] = $value;
+            }
+
+            $data = [
+                'ui' => $product->variants['ui'],
+                'name' => $product->variants['name'],
+                'values' => $values,
+            ];
+
+            $product->variants = $data;
         }
 
         return $this->generateProductResponse($product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations'), 200, 'other');
