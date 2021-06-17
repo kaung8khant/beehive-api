@@ -149,11 +149,6 @@ trait ShopOrderHelper
         }
     }
 
-    private static function getTownshipId($slug)
-    {
-        return Township::where('slug', $slug)->first()->id;
-    }
-
     private static function prepareVariations($variationValueSlugs)
     {
         $variations = [];

@@ -3,7 +3,6 @@
 namespace App\Exports;
 
 use App\Models\Shop;
-use App\Models\Township;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
@@ -32,8 +31,8 @@ class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             $shop->address,
             $shop->is_enable ? '1' : '0',
             $shop->is_official ? '1' : '0',
-            Township::where('id', $shop->township_id)->value('name'),
-            Township::where('id', $shop->township_id)->value('slug'),
+            $shop->township,
+            $shop->city,
             Carbon::parse($shop->opening_time)->format('H:i'),
             Carbon::parse($shop->closing_time)->format('H:i'),
             $shop->latitude,
@@ -52,7 +51,7 @@ class ShopsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'is_enable',
             'is_official',
             'township',
-            'township_slug',
+            'city',
             'opening_time',
             'closing_time',
             'latitude',

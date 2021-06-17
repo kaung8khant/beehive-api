@@ -54,9 +54,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::resource('collectors', 'Admin\CollectorController', ['except' => ['create', 'edit']]);
             Route::patch('collectors/toggle-enable/{user}', 'Admin\CollectorController@toggleEnable');
 
-            Route::resource('cities', 'Admin\CityController', ['except' => ['create', 'edit']]);
-            Route::resource('townships', 'Admin\TownshipController', ['except' => ['create', 'edit']]);
-            Route::get('cities/{city}/townships', 'Admin\TownshipController@getTownshipsByCity');
+            // Route::resource('cities', 'Admin\CityController', ['except' => ['create', 'edit']]);
+            // Route::resource('townships', 'Admin\TownshipController', ['except' => ['create', 'edit']]);
+            // Route::get('cities/{city}/townships', 'Admin\TownshipController@getTownshipsByCity');
 
             /* Shop */
             Route::resource('shop-categories', 'Admin\ShopCategoryController', ['except' => ['create', 'edit']]);
@@ -119,7 +119,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::post('restaurant-branches/status', 'Admin\RestaurantBranchController@multipleStatusUpdate');
             Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\RestaurantBranchController@getRestaurantBranchByCustomers');
             Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
-            Route::get('townships/{township}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByTownship');
+            // Route::get('townships/{township}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByTownship');
 
             /* Restaurant */
 
