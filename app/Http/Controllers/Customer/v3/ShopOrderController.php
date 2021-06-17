@@ -49,41 +49,13 @@ class ShopOrderController extends Controller
         }
 
         $validatedData['customer_id'] = $this->customer->id;
-
         $validatedData = OrderHelper::prepareProductVariants($validatedData);
 
         if ($validatedData['promo_code']) {
-            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest()->first();
-            if (!$promocode) {
-                return $this->generateResponse('Promocode not found', 422, true);
-            }
-
-            $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
-            if (!$validUsage) {
-                return $this->generateResponse('Invalid promocode usage for shop.', 422, true);
-            }
-
-            $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'shop');
-            if (!$validRule) {
-                return $this->generateResponse('Invalid promocode.', 422, true);
-            }
-
-            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
-
-            $validatedData['promocode_id'] = $promocode->id;
-            $validatedData['promocode'] = $promocode->code;
-            $validatedData['promocode_amount'] = $promocodeAmount;
+            $validatedData = $this->getPromoData($validatedData);
         }
 
-        $order = DB::transaction(function () use ($validatedData) {
-            $order = ShopOrder::create($validatedData);
-            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
-            OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
-            OrderHelper::createOrderStatus($order->id);
-            return $order;
-        });
-
-        $this->notifySystem($validatedData['order_items'], $order->slug);
+        $order = $this->shopOrderTransaction($validatedData);
 
         return $this->generateShopOrderResponse($order->refresh(), 201);
     }
@@ -145,6 +117,47 @@ class ShopOrderController extends Controller
         return $this->generateResponse($message, 200, true);
     }
 
+    private function getPromoData($validatedData)
+    {
+        $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest()->first();
+        if (!$promocode) {
+            return $this->generateResponse('Promocode not found', 422, true);
+        }
+
+        $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
+        if (!$validUsage) {
+            return $this->generateResponse('Invalid promocode usage for shop.', 422, true);
+        }
+
+        $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'shop');
+        if (!$validRule) {
+            return $this->generateResponse('Invalid promocode.', 422, true);
+        }
+
+        $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
+
+        $validatedData['promocode_id'] = $promocode->id;
+        $validatedData['promocode'] = $promocode->code;
+        $validatedData['promocode_amount'] = $promocodeAmount;
+
+        return $validatedData;
+    }
+
+    private function shopOrderTransaction($validatedData)
+    {
+        $order = DB::transaction(function () use ($validatedData) {
+            $order = ShopOrder::create($validatedData);
+            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
+            OrderHelper::createOrderStatus($order->id);
+            return $order;
+        });
+
+        $this->notifySystem($validatedData['order_items'], $order->slug);
+
+        return $order;
+    }
+
     private function notifySystem($orderItems, $slug)
     {
         foreach ($orderItems as $item) {
@@ -179,7 +192,6 @@ class ShopOrderController extends Controller
                     'type' => 'shopOrder',
                     'status' => 'pending',
                     'shopOrder' => ShopOrder::with('contact')
-                        ->with('contact.township')
                         ->with('vendors')
                         ->where('slug', $slug)
                         ->firstOrFail(),

@@ -26,7 +26,6 @@ trait ShopOrderHelper
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
-            'promo_code_slug' => 'nullable|string|exists:App\Models\Promocode,slug',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
