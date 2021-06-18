@@ -188,7 +188,15 @@ class RestaurantController extends Controller
 
         $categoryIds = $branchIds->map(function ($branchId) {
             return CacheHelper::getCategoryIdsByBranch($branchId);
-        })->collapse()->unique()->slice(($page - 1) * $size, $size)->values();
+        })->collapse()->unique()->values();
+
+        $categoryIdsCount = $categoryIds->count();
+        $lastPage = intval($categoryIdsCount / $size);
+        if ($categoryIdsCount % $size !== 0) {
+            $lastPage += 1;
+        }
+
+        $categoryIds = $categoryIds->slice(($page - 1) * $size, $size)->values();
 
         $categorizedBranches = $categoryIds->map(function ($categoryId) use ($request) {
             $category = CacheHelper::getRestaurantCategoryById($categoryId);
@@ -212,7 +220,7 @@ class RestaurantController extends Controller
             return $category;
         });
 
-        return $this->generateBranchResponse($categorizedBranches, 200, 'arrobj');
+        return $this->generateBranchResponse($categorizedBranches, 200, 'arrobj', $lastPage);
     }
 
     public function getTags(Request $request)
@@ -257,15 +265,23 @@ class RestaurantController extends Controller
             ->groupBy('restaurant_id')
             ->pluck('restaurant_id');
 
-        $category->restaurant_branches = $restaurantIds->map(function ($restaurantId) use ($request) {
+        $restaurantBranches = $restaurantIds->map(function ($restaurantId) use ($request) {
             return RestaurantOrderHelper::getBranches($request)
                 ->without('restaurant.availableTags')
                 ->where('restaurant_id', $restaurantId)
                 ->orderBy('distance', 'asc')
                 ->get();
-        })->collapse()->sortBy('distance')->slice(($page - 1) * $size, $size)->values();
+        })->collapse()->sortBy('distance')->values();
 
-        return $this->generateBranchResponse($category->makeHidden(['created_by', 'updated_by']), 200, 'cattag');
+        $branchesCount = $restaurantBranches->count();
+        $lastPage = intval($branchesCount / $size);
+        if ($branchesCount % $size !== 0) {
+            $lastPage += 1;
+        }
+
+        $category->restaurant_branches = $restaurantBranches->slice(($page - 1) * $size, $size)->values();
+
+        return $this->generateBranchResponse($category->makeHidden(['created_by', 'updated_by']), 200, 'cattag', $lastPage);
     }
 
     public function getByTag(Request $request, $slug)
