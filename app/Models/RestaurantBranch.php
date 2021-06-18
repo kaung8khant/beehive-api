@@ -13,7 +13,6 @@ class RestaurantBranch extends BaseModel
     protected $hidden = [
         'id',
         'restaurant_id',
-        'township_id',
         'created_at',
         'updated_at',
         'pivot',
@@ -31,11 +30,6 @@ class RestaurantBranch extends BaseModel
     public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);
-    }
-
-    public function township()
-    {
-        return $this->belongsTo(Township::class);
     }
 
     public function availableMenus()

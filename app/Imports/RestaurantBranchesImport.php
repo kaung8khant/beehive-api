@@ -51,7 +51,8 @@ class RestaurantBranchesImport implements ToCollection, WithHeadingRow
                 'closing_time' => ['required', 'date_format:H:i'],
                 'latitude' => ['required', 'numeric'],
                 'longitude' => ['required', 'numeric'],
-                'township_slug' => ['nullable', 'exists:App\Models\Township,slug'],
+                'township' => ['nullable', 'string'],
+                'city' => ['nullable', 'string'],
                 'restaurant_slug' => ['required', 'exists:App\Models\Restaurant,slug'],
             ];
 
@@ -78,7 +79,8 @@ class RestaurantBranchesImport implements ToCollection, WithHeadingRow
                     'closing_time' => $row['closing_time'],
                     'latitude' => $row['latitude'],
                     'longitude' => $row['longitude'],
-                    'township_slug' => $row['township_slug'],
+                    'township' => $row['township'],
+                    'city' => $row['city'],
                     'restaurant_slug' => $row['restaurant_slug'],
                     'errors' => $validator->errors(),
                 ];

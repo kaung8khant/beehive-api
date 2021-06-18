@@ -189,11 +189,6 @@ trait RestaurantOrderHelper
         return $toppings;
     }
 
-    private static function getTownshipId($slug)
-    {
-        return Township::where('slug', $slug)->first()->id;
-    }
-
     private static function getMenu($slug)
     {
         return Menu::where('slug', $slug)->first();

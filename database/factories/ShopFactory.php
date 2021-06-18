@@ -35,9 +35,8 @@ class ShopFactory extends Factory
             'closing_time' => rand(12, 23) . ':' . rand(0, 59),
             'latitude' => $this->faker->latitude(16.76, 16.93),
             'longitude' => $this->faker->longitude(96.17, 96.2),
-            'township_id' => function () {
-                return Township::pluck('id')->random(1)[0];
-            },
+            'township' => $this->faker->unique()->state(),
+            'city' => $this->faker->unique()->city(),
         ];
     }
 }

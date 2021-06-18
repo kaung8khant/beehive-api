@@ -75,7 +75,8 @@ class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
                 'closing_time' => ['required', 'date_format:H:i'],
                 'latitude' => ['required', 'numeric'],
                 'longitude' => ['required', 'numeric'],
-                'township_slug' => ['nullable', 'exists:App\Models\Township,slug'],
+                'township' => ['nullable', 'string'],
+                'city' => ['nullable', 'string'],
                 'restaurant_slug' => ['required', 'exists:App\Models\Restaurant,slug'],
             ];
 
@@ -105,7 +106,8 @@ class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
                     'longitude' => $row['longitude'],
                     'address' => $row['address'],
                     'is_enable' => $row['is_enable'],
-                    'township_id' => Township::where('slug', $row['township_slug'])->value('id'),
+                    'township' => $row['township'],
+                    'city' => $row['city'],
                     'restaurant_id' => Restaurant::where('slug', $row['restaurant_slug'])->value('id'),
                 ];
 
