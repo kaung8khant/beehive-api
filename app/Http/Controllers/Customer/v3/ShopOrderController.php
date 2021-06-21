@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer\v3;
 
 use App\Helpers\NotificationHelper;
+use App\Helpers\PaymentHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper as OrderHelper;
@@ -55,9 +56,21 @@ class ShopOrderController extends Controller
             $validatedData = $this->getPromoData($validatedData);
         }
 
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $kPayData = PaymentHelper::createKbzPay($validatedData, 'shop');
+
+            if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
+                return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            }
+        }
+
         $order = $this->shopOrderTransaction($validatedData);
 
-        return $this->generateShopOrderResponse($order->refresh(), 201);
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+        }
+
+        return $this->generateShopOrderResponse($order, 201);
     }
 
     public function show($slug)
@@ -155,7 +168,7 @@ class ShopOrderController extends Controller
 
         $this->notifySystem($validatedData['order_items'], $order->slug);
 
-        return $order;
+        return $order->refresh();
     }
 
     private function notifySystem($orderItems, $slug)
