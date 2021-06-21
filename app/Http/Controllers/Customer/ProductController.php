@@ -79,7 +79,7 @@ class ProductController extends Controller
             $product->variants = $data;
         }
 
-        return $this->generateProductResponse($product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations'), 200, 'other');
+        return $this->generateProductResponse($product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariants'), 200, 'other');
     }
 
     public function getByCategory(Request $request, ShopCategory $category)
