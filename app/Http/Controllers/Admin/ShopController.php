@@ -53,7 +53,6 @@ class ShopController extends Controller
                 'township' => 'nullable|string',
                 'city' => 'nullable|string',
                 'image_slug' => 'nullable|exists:App\Models\File,slug',
-                'commission' => 'nullable|numeric',
             ],
             [
                 'contact_number.phone' => 'Invalid phone number.',
@@ -105,7 +104,6 @@ class ShopController extends Controller
                 'township' => 'nullable|string',
                 'city' => 'nullable|string',
                 'image_slug' => 'nullable|exists:App\Models\File,slug',
-                'commission' => 'nullable|numeric',
             ],
             [
                 'contact_number.phone' => 'Invalid phone number.',

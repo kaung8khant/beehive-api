@@ -128,6 +128,7 @@ class ProductController extends Controller
             'product_variants' => 'required_with:variants',
             'product_variants.*.variant' => 'required',
             'product_variants.*.price' => 'required|numeric',
+            'product_variants.*.vendor_price' => 'required|numeric',
             'product_variants.*.tax' => 'required|numeric',
             'product_variants.*.discount' => 'required|numeric',
             'product_variants.*.is_enable' => 'required|boolean',
