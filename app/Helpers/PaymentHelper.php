@@ -9,48 +9,9 @@ use GuzzleHttp\Exception\RequestException;
 
 trait PaymentHelper
 {
-    public static function createKbzPay($validatedData)
+    public static function createKbzPay($validatedData, $orderType)
     {
-        $timestamp = Carbon::now()->timestamp;
-        $notifyUrl = config('payment.kbz_pay.notify_url');
-        $nonceStr = StringHelper::generateRandomStringLength32();
-        $appId = config('payment.kbz_pay.app_id');
-        $merchCode = config('payment.kbz_pay.merch_code');
-        $merchOrderId = '00000001AABBCCDD';
-        $totalAmount = strval($validatedData['subTotal'] + $validatedData['tax'] - $validatedData['promocode_amount']);
-        
-        $stringA = 'appid=' . $appId;
-        $stringA .= '&merch_code=' . $merchCode;
-        $stringA .= '&merch_order_id=' . $merchOrderId;
-        $stringA .= '&method=kbz.payment.precreate';
-        $stringA .= '&nonce_str=' . $nonceStr;
-        $stringA .= '&notify_url=' . $notifyUrl;
-        $stringA .= '&timestamp=' . $timestamp;
-        $stringA .= '&total_amount=' . $totalAmount;
-        $stringA .= '&trade_type=APP';
-        $stringA .= '&trans_currency=MMK';
-        $stringA .= '&version=1.0';
-
-        $stringToSign = $stringA . '&key=' . config('payment.kbz_pay.app_key');
-        $sign = strtoupper(hash('sha256', $stringToSign));
-
-        $data = [
-            'timestamp' => $timestamp,
-            'notify_url' => $notifyUrl,
-            'method' => 'kbz.payment.precreate',
-            'nonce_str' => $nonceStr,
-            'sign_type' => 'SHA256',
-            'sign' => $sign,
-            'version' => '1.0',
-            'biz_content' => [
-                'appid' => $appId,
-                'merch_code' => $merchCode,
-                'merch_order_id' => $merchOrderId,
-                'trade_type' => 'APP',
-                'total_amount' => $totalAmount,
-                'trans_currency' => 'MMK',
-            ],
-        ];
+        $paymentRequest = self::buildPaymentRequest($validatedData, $orderType);
 
         try {
             $client = new Client();
@@ -61,39 +22,74 @@ trait PaymentHelper
                     'headers' => [
                         'Accept' => 'application/json',
                     ],
-                    'json' => $data,
+                    'json' => ['Request' => $paymentRequest],
                 ]
             );
 
             $response = json_decode($response->getBody(), true);
             return $response;
         } catch (RequestException $e) {
-            throw $e;
+            return false;
+        }
+    }
+
+    private static function buildPaymentRequest($validatedData, $orderType)
+    {
+        $paymentRequest = [
+            'timestamp' => Carbon::now()->timestamp,
+            'notify_url' => config('payment.kbz_pay.notify_url'),
+            'method' => 'kbz.payment.precreate',
+            'nonce_str' => StringHelper::generateRandomStringLength32(),
+            'version' => '1.0',
+        ];
+
+        $bizData = [
+            'appid' => config('payment.kbz_pay.app_id'),
+            'merch_code' => config('payment.kbz_pay.merch_code'),
+            'merch_order_id' => strtoupper($orderType) . '-' . $validatedData['slug'],
+            'trade_type' => 'APP',
+            'total_amount' => self::getTotalAmount($validatedData),
+            'trans_currency' => 'MMK',
+            'timeout_express' => '15m',
+        ];
+
+        $signKeyVal = array_merge($paymentRequest, $bizData);
+        $sign = self::signature(self::joinKeyValue($signKeyVal));
+
+        $paymentRequest['sign_type'] = 'SHA256';
+        $paymentRequest['sign'] = $sign;
+        $paymentRequest['biz_content'] = $bizData;
+
+        return $paymentRequest;
+    }
+
+    private static function getTotalAmount($validatedData)
+    {
+        $totalAmount = $validatedData['subTotal'] + $validatedData['tax'];
+
+        if (isset($validatedData['promocode_amount'])) {
+            $totalAmount = $totalAmount - $validatedData['promocode_amount'];
         }
 
-        return $data;
+        return strval($totalAmount);
+    }
+
+    private static function joinKeyValue(array $arr)
+    {
+        ksort($arr);
+
+        $joinKeyVal = function (&$val, $key) {
+            $val = "$key=$val";
+        };
+
+        array_walk($arr, $joinKeyVal);
+
+        return implode('&', $arr);
+    }
+
+    private static function signature($text)
+    {
+        $stringToSign = $text . '&key=' . config('payment.kbz_pay.app_key');
+        return strtoupper(hash('sha256', $stringToSign));
     }
 }
-
-// {
-//     "Request": {
-//       "timestamp": "1535166225",
-//       "method": "kbz.payment.precreate",
-//       "notify_url": "http://xxxxxx",
-//       "nonce_str": "5K8264ILTKCH16CQ2502SI8ZNMTM67VS",
-//       "sign_type": "SHA256",
-//       "sign": "768E0C18F7FF0450B6A652000068980335E5DD1067FD276994116E6799EE9FCC",
-//       "version": "1.0",
-//       "biz_content": {
-//         "merch_order_id": "0101234123456789012",
-//         "merch_code": "09991234567",
-//         "appid": "kp1234567890987654321aabbccddeef ",
-//         "trade_type": "APP",
-//         "title": "iPhoneX",
-//         "total_amount": "5000000",
-//         "trans_currency": "MMK",
-//         "timeout_express": "100m",
-//         "callback_info": "title%3diphonex"
-//       }
-//     }
-//   }

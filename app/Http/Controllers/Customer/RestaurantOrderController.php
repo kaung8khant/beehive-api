@@ -55,7 +55,7 @@ class RestaurantOrderController extends Controller
         // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
 
-        if (gettype($validatedData) == "string") {
+        if (gettype($validatedData) == 'string') {
             return $this->generateResponse($validatedData, 422, true);
         }
 
@@ -73,17 +73,17 @@ class RestaurantOrderController extends Controller
             // may require amount validation.
             $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
             if (!isset($promocode) && empty($promocode)) {
-                return $this->generateResponse("Promocode not found", 422, true);
+                return $this->generateResponse('Promocode not found', 422, true);
             }
 
             $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
             if (!$validUsage) {
-                return $this->generateResponse("Invalid promocode usage for restaurant.", 422, true);
+                return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
             }
 
             $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
             if (!$validRule) {
-                return $this->generateResponse("Invalid promocode rule.", 422, true);
+                return $this->generateResponse('Invalid promocode rule.', 422, true);
             }
             $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
 
@@ -149,7 +149,7 @@ class RestaurantOrderController extends Controller
             $order->restaurantBranch->slug,
             [
                 'title' => 'Order cancelled',
-                'body' => "Restaurant order just has been updated",
+                'body' => 'Restaurant order just has been updated',
                 'type' => 'update',
                 'slug' => $order->slug,
                 'status' => 'cancelled',
@@ -176,9 +176,9 @@ class RestaurantOrderController extends Controller
                 'data' => [
                     'action' => $data['type'],
                     'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
+                    'status' => !empty($data['status']) ? $data['status'] : '',
+                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : '',
+                    'slug' => !empty($data['slug']) ? $data['slug'] : '',
                 ],
             ]
         );
@@ -190,9 +190,9 @@ class RestaurantOrderController extends Controller
                 'data' => [
                     'action' => $data['type'],
                     'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
+                    'status' => !empty($data['status']) ? $data['status'] : '',
+                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : '',
+                    'slug' => !empty($data['slug']) ? $data['slug'] : '',
                 ],
             ]
         );

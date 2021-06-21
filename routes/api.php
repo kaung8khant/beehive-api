@@ -162,10 +162,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('pages/{page}', 'Admin\PageController@show');
             Route::patch('pages/{page}', 'Admin\PageController@update');
 
-            /*Ads */
+            /* Ads */
             Route::resource('ads', 'Admin\AdsController', ['except' => ['create', 'edit']]);
 
-            /*Content */
+            /* Content */
             Route::resource('contents', 'Admin\ContentController', ['except' => ['create', 'edit']]);
             Route::resource('promotions', 'Admin\PromotionController', ['except' => ['create', 'edit']]);
             Route::post('job/accept', 'Admin\OrderDriverController@jobAccept');
@@ -191,6 +191,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
     Route::get('announcements', 'Customer\ContentController@index');
 
     Route::get('promotions', 'Customer\PromotionController@index');
+
+    /* KBZ Pay Notify */
+    Route::post('kbz/notify', function () {
+        \Log::info(request()->all());
+        return request()->all();
+    });
 });
 
 Route::group([

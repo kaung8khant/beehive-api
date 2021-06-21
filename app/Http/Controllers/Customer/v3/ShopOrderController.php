@@ -57,14 +57,20 @@ class ShopOrderController extends Controller
         }
 
         if ($validatedData['payment_mode'] === 'KPay') {
-            return PaymentHelper::createKbzPay($validatedData);
-        }
+            $kPayData = PaymentHelper::createKbzPay($validatedData, 'shop');
 
-        return 'ok';
+            if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
+                return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            }
+        }
 
         $order = $this->shopOrderTransaction($validatedData);
 
-        return $this->generateShopOrderResponse($order->refresh(), 201);
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+        }
+
+        return $this->generateShopOrderResponse($order, 201);
     }
 
     public function show($slug)
@@ -162,7 +168,7 @@ class ShopOrderController extends Controller
 
         $this->notifySystem($validatedData['order_items'], $order->slug);
 
-        return $order;
+        return $order->refresh();
     }
 
     private function notifySystem($orderItems, $slug)
