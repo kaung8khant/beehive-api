@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer\v3;
 
 use App\Helpers\NotificationHelper;
+use App\Helpers\PaymentHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper as OrderHelper;
@@ -54,6 +55,12 @@ class ShopOrderController extends Controller
         if ($validatedData['promo_code']) {
             $validatedData = $this->getPromoData($validatedData);
         }
+
+        if ($validatedData['payment_mode'] === 'KPay') {
+            return PaymentHelper::createKbzPay($validatedData);
+        }
+
+        return 'ok';
 
         $order = $this->shopOrderTransaction($validatedData);
 
