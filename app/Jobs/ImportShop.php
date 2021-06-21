@@ -75,7 +75,8 @@ class ImportShop implements ShouldQueue, ShouldBeUnique
                 'closing_time' => ['required', 'date_format:H:i'],
                 'latitude' => ['required', 'numeric'],
                 'longitude' => ['required', 'numeric'],
-                'township_slug' => ['nullable', 'exists:App\Models\Township,slug'],
+                'township' => ['nullable', 'string'],
+                'city' => ['nullable', 'string'],
             ];
 
             $shop = null;
@@ -105,7 +106,8 @@ class ImportShop implements ShouldQueue, ShouldBeUnique
                     'address' => $row['address'],
                     'is_enable' => $row['is_enable'],
                     'is_official' => $row['is_official'],
-                    'township_id' => Township::where('slug', $row['township_slug'])->value('id'),
+                    'township' => $row['township'],
+                    'city' => $row['city'],
                 ];
 
                 if (!$shop) {

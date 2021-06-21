@@ -9,7 +9,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantTag;
-use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
@@ -48,7 +47,8 @@ class RestaurantController extends Controller
                 'restaurant_branch.closing_time' => 'required|date_format:H:i',
                 'restaurant_branch.latitude' => 'required|numeric',
                 'restaurant_branch.longitude' => 'required|numeric',
-                'restaurant_branch.township_slug' => 'required|exists:App\Models\Township,slug',
+                'restaurant_branch.township' => 'nullable|string',
+                'restaurant_branch.city' => 'nullable|string',
                 'image_slug' => 'nullable|exists:App\Models\File,slug',
                 'cover_slugs' => 'nullable|array',
                 'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
@@ -157,12 +157,6 @@ class RestaurantController extends Controller
     {
         $restaurantBranch['slug'] = $this->generateUniqueSlug();
         $restaurantBranch['restaurant_id'] = $restaurantId;
-        $restaurantBranch['township_id'] = $this->getTownshipIdBySlug($restaurantBranch['township_slug']);
         RestaurantBranch::create($restaurantBranch);
-    }
-
-    private function getTownshipIdBySlug($slug)
-    {
-        return Township::where('slug', $slug)->first()->id;
     }
 }
