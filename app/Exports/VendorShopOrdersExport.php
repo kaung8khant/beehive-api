@@ -32,7 +32,7 @@ class VendorShopOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
     {
         $contact = ShopOrderContact::where('shop_order_id', $vendorShopOrder->id);
         $floor = $contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
-        $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name') . ',' . Township::where('id', $contact->value('township_id'))->value('name');
+        $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name');
         return [
             $vendorShopOrder->slug,
             $vendorShopOrder->invoice_id,

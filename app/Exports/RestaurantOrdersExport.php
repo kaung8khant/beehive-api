@@ -29,7 +29,7 @@ class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
     {
         $contact = RestaurantOrderContact::where('restaurant_order_id', $restaurantOrder->id);
         $floor = $contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
-        $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name') . ',' . Township::where('id', $contact->value('township_id'))->value('name');
+        $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name');
         return [
             $restaurantOrder->slug,
             $restaurantOrder->invoice_id,

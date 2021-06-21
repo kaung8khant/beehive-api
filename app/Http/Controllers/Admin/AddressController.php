@@ -63,12 +63,6 @@ class AddressController extends Controller
         return $params;
     }
 
-    public function getAllTownships(Request $request)
-    {
-        $townships = Township::paginate($request->size)->items();
-        return $this->generateResponse($townships, 200);
-    }
-
     private function setNonPrimary($id)
     {
         Address::where('customer_id', $id)->update(['is_primary' => 0]);

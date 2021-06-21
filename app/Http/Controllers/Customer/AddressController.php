@@ -108,26 +108,26 @@ class AddressController extends Controller
         return $this->generateResponse($address, 200);
     }
 
-    public function getAllCities(Request $request)
-    {
-        $cities = City::where('name', 'LIKE', '%' . $request->filter . '%')->get();
-        return $this->generateResponse($cities, 200);
-    }
+    // public function getAllCities(Request $request)
+    // {
+    //     $cities = City::where('name', 'LIKE', '%' . $request->filter . '%')->get();
+    //     return $this->generateResponse($cities, 200);
+    // }
 
-    public function getTownshipsByCity(Request $request, City $city)
-    {
-        $townships = Township::where('city_id', $city->id)
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->get();
+    // public function getTownshipsByCity(Request $request, City $city)
+    // {
+    //     $townships = Township::where('city_id', $city->id)
+    //         ->where('name', 'LIKE', '%' . $request->filter . '%')
+    //         ->get();
 
-        return $this->generateResponse($townships, 200);
-    }
+    //     return $this->generateResponse($townships, 200);
+    // }
 
-    public function getAllTownships()
-    {
-        $townships = Township::all();
-        return $this->generateResponse($townships, 200);
-    }
+    // public function getAllTownships()
+    // {
+    //     $townships = Township::all();
+    //     return $this->generateResponse($townships, 200);
+    // }
 
     private function setNonPrimary()
     {
