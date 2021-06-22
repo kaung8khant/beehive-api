@@ -304,6 +304,9 @@ trait RestaurantOrderHelper
         $validatedData['tax'] = $tax;
 
         $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
+        if ($restaurantBranch->restaurant->commission>0) {
+            $validatedData['commission']=$validatedData['subTotal'] * $restaurantBranch->restaurant->commission * 0.01;
+        }
 
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;

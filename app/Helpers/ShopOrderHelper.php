@@ -255,7 +255,7 @@ trait ShopOrderHelper
 
             $subTotal += ($item['price'] - $productVariant->discount) * $value['quantity'];
 
-            $commission +=max(($item['price']-$item['vendor_price'] - $productVariant->discount) * $value['quantity'], 0);
+            $commission +=max(($item['price']-$productVariant->discount-$item['vendor_price']) * $value['quantity'], 0);
             $tax += ($item['price'] - $productVariant->discount) * $productVariant->tax * 0.01 * $value['quantity'];
 
             array_push($orderItems, $item);
