@@ -69,7 +69,7 @@ class RestaurantOrderController extends Controller
         })
             ->where('commission', '>', 0)
             ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
-            ->paginate(10);
+            ->get();
     }
 
     private function getYesterdayCommissions($restaurantSlug)
@@ -82,7 +82,7 @@ class RestaurantOrderController extends Controller
         })
             ->where('commission', '>', 0)
             ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
-            ->paginate(10);
+            ->get();
     }
 
     private function getThisWeekCommissions($restaurantSlug)
@@ -95,7 +95,7 @@ class RestaurantOrderController extends Controller
         })
             ->where('commission', '>', 0)
             ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
-            ->paginate(10);
+            ->get();
     }
 
     private function getThisMonthCommissions($restaurantSlug)
@@ -108,7 +108,7 @@ class RestaurantOrderController extends Controller
         })
             ->where('commission', '>', 0)
             ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
-            ->paginate(10);
+            ->get();
     }
 
     private function getThisYearCommissions($restaurantSlug)
@@ -121,7 +121,7 @@ class RestaurantOrderController extends Controller
         })
             ->where('commission', '>', 0)
             ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
-            ->paginate(10);
+            ->get();
     }
 
     public function store(Request $request)

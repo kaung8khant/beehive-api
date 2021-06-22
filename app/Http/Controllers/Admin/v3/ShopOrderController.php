@@ -84,8 +84,7 @@ class ShopOrderController extends Controller
                 $query->where('slug', $shopSlug);
             })
             ->where('commission', '>', 0)
-            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
-            ->paginate(10);
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
     }
 
     private function getYesterdayCommissions($shopSlug)
@@ -98,8 +97,7 @@ class ShopOrderController extends Controller
                 $query->where('slug', $shopSlug);
             })
             ->where('commission', '>', 0)
-            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
-            ->paginate(10);
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
     }
 
     private function getThisWeekCommissions($shopSlug)
@@ -112,8 +110,7 @@ class ShopOrderController extends Controller
                 $query->where('slug', $shopSlug);
             })
             ->where('commission', '>', 0)
-            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
-            ->paginate(10);
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
     }
 
     private function getThisMonthCommissions($shopSlug)
@@ -126,8 +123,7 @@ class ShopOrderController extends Controller
                 $query->where('slug', $shopSlug);
             })
             ->where('commission', '>', 0)
-            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
-            ->paginate(10);
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
     }
 
     private function getThisYearCommissions($shopSlug)
@@ -140,8 +136,7 @@ class ShopOrderController extends Controller
                 $query->where('slug', $shopSlug);
             })
             ->where('commission', '>', 0)
-            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
-            ->paginate(10);
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
     }
 
     public function store(Request $request)
