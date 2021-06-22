@@ -193,10 +193,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
     Route::get('promotions', 'Customer\PromotionController@index');
 
     /* KBZ Pay Notify */
-    Route::post('kbz/notify', function () {
-        \Log::info(request()->all());
-        return request()->all();
-    });
+    Route::post('kbz/notify', 'Payment\KbzPayController@notify');
 });
 
 Route::group([

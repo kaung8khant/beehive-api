@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
-trait PaymentHelper
+trait KbzPayHelper
 {
     public static function createKbzPay($validatedData, $orderType)
     {
@@ -74,7 +74,7 @@ trait PaymentHelper
         return strval($totalAmount);
     }
 
-    private static function joinKeyValue(array $arr)
+    public static function joinKeyValue(array $arr)
     {
         ksort($arr);
 
@@ -87,7 +87,7 @@ trait PaymentHelper
         return implode('&', $arr);
     }
 
-    private static function signature($text)
+    public static function signature($text)
     {
         $stringToSign = $text . '&key=' . config('payment.kbz_pay.app_key');
         return strtoupper(hash('sha256', $stringToSign));
