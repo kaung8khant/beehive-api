@@ -16,6 +16,7 @@ use App\Models\Promocode;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,88 @@ class RestaurantOrderController extends Controller
             ->items();
 
         return $this->generateResponse($restaurantOrders, 200);
+    }
+
+    public function getOrderCommission(Request $request, Restaurant $restaurant)
+    {
+        if ($request->type === 'today') {
+            $result = $this->getTodayCommissions($restaurant->slug);
+        } elseif ($request->type === 'yesterday') {
+            $result = $this->getYesterdayCommissions($restaurant->slug);
+        } elseif ($request->type === 'thisweek') {
+            $result = $this->getThisWeekCommissions($restaurant->slug);
+        } elseif ($request->type === 'thismonth') {
+            $result = $this->getThisMonthCommissions($restaurant->slug);
+        } elseif ($request->type === 'thisyear') {
+            $result = $this->getThisYearCommissions($restaurant->slug);
+        }
+
+        return response()->json($result);
+    }
+
+    private function getTodayCommissions($restaurantSlug)
+    {
+        $startDate = Carbon::now()->startOfDay();
+        $endDate = Carbon::now();
+
+        return RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurantSlug) {
+            $query->where('slug', $restaurantSlug);
+        })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->get();
+    }
+
+    private function getYesterdayCommissions($restaurantSlug)
+    {
+        $startDate = Carbon::now()->subDays(1)->startOfDay();
+        $endDate = Carbon::now()->subDays(1);
+
+        return RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurantSlug) {
+            $query->where('slug', $restaurantSlug);
+        })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->get();
+    }
+
+    private function getThisWeekCommissions($restaurantSlug)
+    {
+        $startDate = Carbon::now()->subDays(6);
+        $endDate = Carbon::now();
+
+        return RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurantSlug) {
+            $query->where('slug', $restaurantSlug);
+        })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->get();
+    }
+
+    private function getThisMonthCommissions($restaurantSlug)
+    {
+        $startDate = Carbon::now()->subDays(29);
+        $endDate = Carbon::now();
+
+        return RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurantSlug) {
+            $query->where('slug', $restaurantSlug);
+        })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->get();
+    }
+
+    private function getThisYearCommissions($restaurantSlug)
+    {
+        $startDate = Carbon::now()->subMonths(11)->startOfMonth();
+        $endDate = Carbon::now();
+
+        return RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurantSlug) {
+            $query->where('slug', $restaurantSlug);
+        })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->get();
     }
 
     public function store(Request $request)
