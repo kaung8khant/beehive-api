@@ -15,6 +15,7 @@ use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
+use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +36,22 @@ class ShopOrderController extends Controller
             ->map(function ($shopOrder) {
                 return $shopOrder->makeHidden('vendors');
             });
+
+        return $this->generateResponse($shopOrders, 200);
+    }
+
+    public function getOrderCommission(Request $request, Shop $shop)
+    {
+        $sorting = CollectionHelper::getSorting('shop_order_items', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        $shopOrders = ShopOrderItem::with('shop', 'vendor', 'product')
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->whereHas('shop', function ($query) use ($shop) {
+                $query->where('slug', $shop->slug);
+            })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($request->from, $request->to))
+            ->paginate(10);
 
         return $this->generateResponse($shopOrders, 200);
     }
