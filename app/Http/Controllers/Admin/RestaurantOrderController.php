@@ -96,17 +96,6 @@ class RestaurantOrderController extends Controller
             $validatedData['promocode_amount'] = $promocodeAmount;
         }
 
-        //commission
-        $restaurantBranch = RestaurantBranch::where('slug', $validatedData['restaurant_branch_slug'])->firstOrFail();
-        $restaurant = Restaurant::where('id', $restaurantBranch->restaurant_id)->firstOrFail();
-        if ($restaurant->commission>0) {
-            $validatedData['commission']=($validatedData['subTotal']+$validatedData['tax']) * $restaurant->commission * 0.01;
-
-            if ($validatedData['promo_code_slug']) {
-                $validatedData['commission']=($validatedData['subTotal']+$validatedData['tax']-$validatedData['promocode_amount']) * $restaurant->commission * 0.01;
-            }
-        }
-
         // try catch and rollback if failed.
         $order = DB::transaction(function () use ($validatedData) {
             $order = RestaurantOrder::create($validatedData);
