@@ -170,6 +170,19 @@ trait ShopOrderHelper
 
     private static function createShopOrderVendor($orderId, $shopId)
     {
+        // $shopOrderVendor=ShopOrderVendor::where('shop_order_id', $orderId)->where('shop_id', $shopId)->first();
+
+        // if (isset($shopOrderVendor)) {
+        //     return ShopOrderVendor::updateOrCreate(
+        //         ['commission' => $commission+$shopOrderVendor->commission],
+        //         ['slug' => StringHelper::generateUniqueSlug()]
+        //     );
+        // } else {
+        //     return ShopOrderVendor::create(
+        //         ['shop_order_id' => $orderId, 'shop_id' => $shopId,'commission'=>$commission],
+        //         ['slug' => StringHelper::generateUniqueSlug()]
+        //     );
+        // }
         return ShopOrderVendor::updateOrCreate(
             ['shop_order_id' => $orderId, 'shop_id' => $shopId],
             ['slug' => StringHelper::generateUniqueSlug()]
@@ -252,8 +265,10 @@ trait ShopOrderHelper
             $item['discount'] = $productVariant->discount;
             $item['variant'] = $productVariant->variant;
             $item['product_id'] = $productId;
+            $item['commission']=max(($item['price']-$productVariant->discount-$item['vendor_price']) * $value['quantity'], 0);
 
             $subTotal += ($item['price'] - $productVariant->discount) * $value['quantity'];
+
 
             $commission +=max(($item['price']-$productVariant->discount-$item['vendor_price']) * $value['quantity'], 0);
             $tax += ($item['price'] - $productVariant->discount) * $productVariant->tax * 0.01 * $value['quantity'];

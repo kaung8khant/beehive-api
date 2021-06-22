@@ -210,6 +210,7 @@ Route::group([
     Route::resource('shop-orders', 'ShopOrderController', ['as' => 'admin-v3-shop', 'except' => ['create', 'edit']]);
     Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
     Route::get('restaurants/{restaurant}/commissions', 'RestaurantOrderController@getOrderCommission');
+    Route::get('shops/{shop}/commissions', 'ShopOrderController@getOrderCommission');
 });
 
 /*
