@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer\v3;
 
 use App\Helpers\NotificationHelper;
+use App\Helpers\KbzPayHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
@@ -11,7 +12,6 @@ use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
-use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -58,9 +58,21 @@ class RestaurantOrderController extends Controller
             $validatedData = $this->getPromoData($validatedData);
         }
 
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'shop');
+
+            if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
+                return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            }
+        }
+
         $order = $this->restaurantOrderTransaction($validatedData);
 
-        return $this->generateResponse($order->refresh(), 201);
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+        }
+
+        return $this->generateResponse($order, 201);
     }
 
     public function show($slug)

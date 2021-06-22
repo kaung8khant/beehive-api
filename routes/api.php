@@ -193,10 +193,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
     Route::get('promotions', 'Customer\PromotionController@index');
 
     /* KBZ Pay Notify */
-    Route::post('kbz/notify', function () {
-        \Log::info(request()->all());
-        return request()->all();
-    });
+    Route::post('kbz/notify', 'Payment\KbzPayController@notify');
 });
 
 Route::group([
@@ -209,6 +206,8 @@ Route::group([
 
     Route::resource('shop-orders', 'ShopOrderController', ['as' => 'admin-v3-shop', 'except' => ['create', 'edit']]);
     Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
+    Route::get('restaurants/{restaurant}/commissions', 'RestaurantOrderController@getOrderCommission');
+    Route::get('shops/{shop}/commissions', 'ShopOrderController@getOrderCommission');
 });
 
 /*
