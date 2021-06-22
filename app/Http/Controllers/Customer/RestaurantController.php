@@ -122,7 +122,7 @@ class RestaurantController extends Controller
             abort(404);
         }
 
-        return $this->generateBranchResponse($restaurantBranch->load('restaurant', 'restaurant.availableTags', 'township'), 200, 'obj');
+        return $this->generateBranchResponse($restaurantBranch->load('restaurant', 'restaurant.availableTags'), 200, 'obj');
     }
 
     public function getAvailableMenusByBranch(RestaurantBranch $restaurantBranch)
