@@ -62,14 +62,20 @@ class OtpController extends Controller
     private function sendOtp($phoneNumber, $type, $source)
     {
         $otpCode = rand(100000, 999999);
-        $checkNumber = $this->checkOtp($phoneNumber, $type, $source);
+        $otp = $this->getOtp($phoneNumber, $type, $source);
 
-        if ($checkNumber) {
-            $fifteenMinutes = Carbon::parse($checkNumber->created_at)->addMinutes(15);
+        if ($otp) {
+            // $fifteenMinutes = Carbon::parse($otp->created_at)->addMinutes(15);
 
-            if ($fifteenMinutes->gt(Carbon::now())) {
-                $remainingTime = $fifteenMinutes->diff(Carbon::now())->format('%i');
-                return $this->generateResponse('You can send another code after ' . $remainingTime . ' minutes.', 403, true);
+            // if ($fifteenMinutes->gt(Carbon::now())) {
+            //     $remainingTime = $fifteenMinutes->diff(Carbon::now())->format('%i');
+            //     return $this->generateResponse('You can send another code after ' . $remainingTime . ' minutes.', 403, true);
+            // }
+
+            $oneMinute = Carbon::parse($otp->created_at)->addMinute();
+
+            if ($oneMinute->gt(Carbon::now())) {
+                return $this->generateResponse('You can send another code after one minute.', 403, true);
             }
         }
 
@@ -102,7 +108,7 @@ class OtpController extends Controller
         );
     }
 
-    private function checkOtp($phoneNumber, $type, $source)
+    private function getOtp($phoneNumber, $type, $source)
     {
         return OneTimePassword::where('phone_number', $phoneNumber)
             ->where('type', $type)
@@ -122,5 +128,37 @@ class OtpController extends Controller
             'type' => $type,
             'source' => $source,
         ]);
+    }
+
+    public function checkOtpToRegister(Request $request)
+    {
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'phone_number' => 'required|phone:MM',
+                'otp_code' => 'required',
+            ],
+            [
+                'phone_number.phone' => 'Invalid phone number.',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, true);
+        }
+
+        $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
+        $otp = $this->getOtp($phoneNumber, 'register', 'customers');
+
+        if (!$otp || $otp->otp_code !== $request->otp_code) {
+            return $this->generateResponse('The OTP code is incorrect.', 406, true);
+        }
+
+        $fifteenMinutes = Carbon::parse($otp->created_at)->addMinutes(15);
+        if (Carbon::now()->gt($fifteenMinutes)) {
+            return $this->generateResponse('The OTP code is expired. Please send another one.', 406, true);
+        }
+
+        return $this->generateResponse('success', 200, true);
     }
 }

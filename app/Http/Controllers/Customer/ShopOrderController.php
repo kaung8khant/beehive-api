@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Helpers\NotificationHelper;
+use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper as OrderHelper;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper,OrderAssignHelper;
 
     protected $customerId;
 
@@ -138,6 +139,8 @@ class ShopOrderController extends Controller
                 ],
             ]
         );
+
+        $this->assignOrder('shop',$order->slug,);
 
         return $this->generateShopOrderResponse($order->refresh()->load('contact'), 201);
     }

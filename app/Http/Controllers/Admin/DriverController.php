@@ -6,13 +6,17 @@ use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
+use App\Models\DriverAttendance;
 use App\Models\Role;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
+use Illuminate\Support\Facades\Validator;
 
 class DriverController extends Controller
 {
@@ -135,5 +139,34 @@ class DriverController extends Controller
 
         $user->update(['is_enable' => !$user->is_enable]);
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function attendance(Request $request){
+        $rules = [
+            'type' => 'in:check-in,check-out',
+        ];
+
+        $validator =  Validator::make($request->all(), $rules);
+
+        $request['user_id'] = Auth::guard('users')->user()->id;
+
+        $data = DriverAttendance::where('user_id',$request->user_id)->where('type',$request->type)->whereDate('created_at',Carbon::now()->format('Y-m-d'))->get();
+       
+        if(count($data)==0){
+            if ($validator->fails()) {
+                return $this->generateResponse($validator->errors()->first(), 422, true);
+            }
+            DriverAttendance::create(['user_id'=>$request->user_id,'type'=>$request->type]);
+    
+            return response()->json(['message' => 'Success.'], 200);
+        }
+        return response()->json(['message' => 'Already '.$request->type], 409);
+       
+    }
+    public function getCheckin(){
+        $user_id = Auth::guard('users')->user()->id;
+        $data = DriverAttendance::where('user_id',$user_id)->get();
+
+        return response()->json(['data' => $data], 200);
     }
 }
