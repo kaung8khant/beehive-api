@@ -7,10 +7,8 @@ use App\Models\CustomerDevice;
 use App\Models\CustomerGroup;
 use App\Models\User;
 use App\Models\UserDevice;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Ladumor\OneSignal\OneSignal;
-use phpDocumentor\Reflection\Types\Nullable;
 
 trait OneSignalHelper
 {
@@ -89,11 +87,12 @@ trait OneSignalHelper
         $customerIds = CustomerGroup::where('slug', $groupSlug)->first()->customers()->pluck('id');
         return CustomerDevice::whereIn('customer_id', $customerIds)->pluck('player_id');
     }
-    public static function validatePlayerID($request){
+
+    public static function validatePlayerID($request)
+    {
         $rules = [
             'type' => 'required_without:group_slug|in:customer,admin,vendor',
         ];
-
 
         return Validator::make($request->all(), $rules);
     }

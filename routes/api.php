@@ -168,7 +168,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             /* Content */
             Route::resource('contents', 'Admin\ContentController', ['except' => ['create', 'edit']]);
             Route::resource('promotions', 'Admin\PromotionController', ['except' => ['create', 'edit']]);
-           
+
             Route::get('jobs', 'Admin\OrderDriverController@jobList');
 
             Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
@@ -178,9 +178,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::post('job/accept/{slug}', 'Admin\OrderDriverController@jobAccept');
             Route::post('job/reject/{slug}', 'Admin\OrderDriverController@jobReject');
             Route::get('job/{slug}', 'Admin\OrderDriverController@jobDetail');
-            
-            Route::post('attendances','Admin\DriverController@attendance');
-            Route::get('attendances','Admin\DriverController@getCheckin');
+
+            Route::post('attendances', 'Admin\DriverController@attendance');
+            Route::get('attendances', 'Admin\DriverController@getCheckin');
         });
     });
 
