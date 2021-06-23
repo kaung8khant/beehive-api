@@ -140,4 +140,5 @@ Route::group([
     Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
     Route::get('restaurant-branches/{restaurantBranch}/orders', 'RestaurantOrderController@getBranchOrders');
     Route::get('shops/{shop}/commissions', 'ShopOrderController@getOrderCommission');
+    Route::get('restaurant-branches/{restaurantBranch}/commissions', 'RestaurantOrderController@getOrderCommission');
 });
