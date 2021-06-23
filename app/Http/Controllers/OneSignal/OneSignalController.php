@@ -86,18 +86,42 @@ class OneSignalController extends Controller
         }
 
         $fields['include_player_ids'] = $playerIds;
+        $fields['data'] = ['slug'=>"slug"];
         $message = $request->message;
 
         if ($request->url) {
             $fields['url'] = $request->url;
         }
-
-        $response = OneSignal::sendPush($fields, $message);
+        try{
+            $response = OneSignal::sendPush($fields, $message);
+        }catch(Exception $e){
+            throw new Exception('Division by zero.');
+        }
+        
 
         if (isset($response['errors'])) {
             return $this->generateResponse('The user did not subscribe to beehive.', 422, true);
         }
 
         return $this->generateResponse('Successfully sent push notification.', 200, true);
+    }
+    public function registerAdminPlayerID($playerId,Request $request){
+        $validator = OneSignalHelper::validatePlayerID($request);
+        $request['user_id'] = Auth::guard('users')->user()->id;
+
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, true);
+        }
+
+        try {
+            $userDevice = UserDevice::create([
+                'user_id' => $request['user_id'],
+                'player_id' =>$playerId,
+            ]);
+        } catch (QueryException $e) {
+            return $this->generateResponse('Device already registered', 409, true);
+        }
+
+        return $this->generateResponse($userDevice->load('user'), 200);
     }
 }

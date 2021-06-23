@@ -78,7 +78,7 @@ trait OneSignalHelper
             $playerIds = CustomerDevice::whereIn('customer_id', $customerIds)->pluck('player_id');
         } else {
             $userIds = User::whereIn('slug', $slugs)->pluck('id');
-            $playerIds = UserDevice::whereIn('customer_id', $userIds)->pluck('player_id');
+            $playerIds = UserDevice::whereIn('user_id', $userIds)->pluck('player_id');
         }
 
         return $playerIds;
@@ -88,5 +88,13 @@ trait OneSignalHelper
     {
         $customerIds = CustomerGroup::where('slug', $groupSlug)->first()->customers()->pluck('id');
         return CustomerDevice::whereIn('customer_id', $customerIds)->pluck('player_id');
+    }
+    public static function validatePlayerID($request){
+        $rules = [
+            'type' => 'required_without:group_slug|in:customer,admin,vendor',
+        ];
+
+
+        return Validator::make($request->all(), $rules);
     }
 }
