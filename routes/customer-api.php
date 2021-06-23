@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\FirebaseController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']], function () {
@@ -9,7 +8,7 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
     Route::post('send-otp', 'Auth\OtpController@sendOtpToRegister');
     Route::post('check-otp', 'Auth\OtpController@checkOtpToRegister');
 
-    Route::get('database','FirebaseController@getdata');
+    Route::get('database', 'FirebaseController@getdata');
 
     Route::post('forgot-password', 'Auth\OtpController@forgotPassword');
     Route::post('reset-password', 'Auth\CustomerAuthController@resetPassword');
