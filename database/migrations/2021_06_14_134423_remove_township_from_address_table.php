@@ -13,8 +13,9 @@ class RemoveTownshipFromAddressTable extends Migration
      */
     public function up()
     {
-        Schema::table('address', function (Blueprint $table) {
-            //
+        Schema::table('addresses', function (Blueprint $table) {
+            $table->dropForeign(['township_id']);
+            $table->dropColumn('township_id');
         });
     }
 
@@ -25,8 +26,9 @@ class RemoveTownshipFromAddressTable extends Migration
      */
     public function down()
     {
-        Schema::table('address', function (Blueprint $table) {
-            //
+        Schema::table('addresses', function (Blueprint $table) {
+            $table->unsignedBigInteger('township_id');
+            $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
         });
     }
 }

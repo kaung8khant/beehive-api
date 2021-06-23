@@ -14,35 +14,57 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+
 class OrderDriverController extends Controller
 {
     use ResponseHelper;
 
-    public function jobAccept(Request $request)
+    public function jobAccept($slug)
     {
 
-        $userId = User::where('slug', $request['user_slug'])->firstOrFail()->id;
+        $userId = Auth::guard('users')->user()->id;
 
-        $shopOrder = ShopOrder::where('slug', $request['order_slug'])->first();
-        $restaurantOrder = ShopOrder::where('slug', $request['order_slug'])->first();
+        $shopOrder = ShopOrder::where('slug', $slug)->first();
+        $restaurantOrder = RestaurantOrder::where('slug', $slug)->first();
 
         if (!empty($shopOrder) && isset($shopOrder)) {
-            $shopOrderDriver = ShopOrderDriver::create([
-                'shop_order_id' => $shopOrder->id,
-                'user_id' => $userId,
-            ]);
+            $shopOrderDriver = ShopOrderDriver::where('shop_order_id',$shopOrder->id)->where('user_id',$userId)->first();
+          
             ShopOrderDriverStatus::create([
                 'shop_order_driver_id' => $shopOrderDriver->id,
                 'status' => "accepted",
             ]);
         } else {
-            $restaurantOrder = RestaurantOrderDriver::create([
-                'restaurant_order_id' => $restaurantOrder->id,
-                'user_id' => $userId,
-            ]);
+            $restaurantOrder = RestaurantOrderDriver::where('restaurant_order_id',$shopOrder)->where('user_id',$userId)->first();
             RestaurantOrderDriverStatus::create([
                 'restaurant_order_driver_id' => $restaurantOrder->id,
                 'status' => "accepted",
+            ]);
+        }
+
+        return response()->json(['message' => 'created'], 201);
+    }
+
+    public function jobReject($slug)
+    {
+
+        $userId = Auth::guard('users')->user()->id;
+
+        $shopOrder = ShopOrder::where('slug', $slug)->first();
+        $restaurantOrder = RestaurantOrder::where('slug', $slug)->first();
+
+        if (!empty($shopOrder) && isset($shopOrder)) {
+            $shopOrderDriver = ShopOrderDriver::where('shop_order_id',$shopOrder->id)->where('user_id',$userId)->first();
+          
+            ShopOrderDriverStatus::create([
+                'shop_order_driver_id' => $shopOrderDriver->id,
+                'status' => "rejected",
+            ]);
+        } else {
+            $restaurantOrder = RestaurantOrderDriver::where('restaurant_order_id',$shopOrder)->where('user_id',$userId)->first();
+            RestaurantOrderDriverStatus::create([
+                'restaurant_order_driver_id' => $restaurantOrder->id,
+                'status' => "rejected ",
             ]);
         }
 
@@ -67,7 +89,7 @@ class OrderDriverController extends Controller
 
     public function jobList(Request $request)
     {
-        $driver = Auth::user()->id;
+        $driver =  Auth::guard('users')->user()->id;
         $shopOrder = ShopOrder::with('drivers', 'drivers.status', 'contact')->whereHas('drivers.status', function ($q) use ($driver) {
             $q->where('status', 'accepted');
         })->whereHas('drivers', function ($q) use ($driver) {
