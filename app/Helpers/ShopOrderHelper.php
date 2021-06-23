@@ -26,7 +26,6 @@ trait ShopOrderHelper
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
-            'promo_code_slug' => 'nullable|string|exists:App\Models\Promocode,slug',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
@@ -150,11 +149,6 @@ trait ShopOrderHelper
         }
     }
 
-    private static function getTownshipId($slug)
-    {
-        return Township::where('slug', $slug)->first()->id;
-    }
-
     private static function prepareVariations($variationValueSlugs)
     {
         $variations = [];
@@ -176,6 +170,19 @@ trait ShopOrderHelper
 
     private static function createShopOrderVendor($orderId, $shopId)
     {
+        // $shopOrderVendor=ShopOrderVendor::where('shop_order_id', $orderId)->where('shop_id', $shopId)->first();
+
+        // if (isset($shopOrderVendor)) {
+        //     return ShopOrderVendor::updateOrCreate(
+        //         ['commission' => $commission+$shopOrderVendor->commission],
+        //         ['slug' => StringHelper::generateUniqueSlug()]
+        //     );
+        // } else {
+        //     return ShopOrderVendor::create(
+        //         ['shop_order_id' => $orderId, 'shop_id' => $shopId,'commission'=>$commission],
+        //         ['slug' => StringHelper::generateUniqueSlug()]
+        //     );
+        // }
         return ShopOrderVendor::updateOrCreate(
             ['shop_order_id' => $orderId, 'shop_id' => $shopId],
             ['slug' => StringHelper::generateUniqueSlug()]
@@ -238,6 +245,7 @@ trait ShopOrderHelper
     {
         $orderItems = [];
         $subTotal = 0;
+        $commission = 0;
         $tax = 0;
 
         foreach ($validatedData['order_items'] as $key => $value) {
@@ -252,12 +260,17 @@ trait ShopOrderHelper
             $item['name'] = $productVariant->product->name;
             $item['quantity'] = $value['quantity'];
             $item['price'] = $productVariant->price;
+            $item['vendor_price'] = $productVariant->vendor_price;
             $item['tax'] = ($item['price'] - $productVariant->discount) * $productVariant->tax * 0.01;
             $item['discount'] = $productVariant->discount;
             $item['variant'] = $productVariant->variant;
             $item['product_id'] = $productId;
+            $item['commission']=max(($item['price']-$productVariant->discount-$item['vendor_price']) * $value['quantity'], 0);
 
             $subTotal += ($item['price'] - $productVariant->discount) * $value['quantity'];
+
+
+            $commission +=max(($item['price']-$productVariant->discount-$item['vendor_price']) * $value['quantity'], 0);
             $tax += ($item['price'] - $productVariant->discount) * $productVariant->tax * 0.01 * $value['quantity'];
 
             array_push($orderItems, $item);
@@ -265,6 +278,7 @@ trait ShopOrderHelper
 
         $validatedData['order_items'] = $orderItems;
         $validatedData['subTotal'] = $subTotal;
+        $validatedData['commission'] = $commission;
         $validatedData['tax'] = $tax;
 
         return $validatedData;

@@ -15,7 +15,9 @@ use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
+use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -37,6 +39,104 @@ class ShopOrderController extends Controller
             });
 
         return $this->generateResponse($shopOrders, 200);
+    }
+
+    // public function getOrderCommission(Request $request, Shop $shop)
+    // {
+    //     $sorting = CollectionHelper::getSorting('shop_order_items', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+    //     $shopOrders = ShopOrderItem::with('shop', 'vendor', 'product')
+    //         ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+    //         ->whereHas('shop', function ($query) use ($shop) {
+    //             $query->where('slug', $shop->slug);
+    //         })
+    //         ->where('commission', '>', 0)
+    //         ->whereBetween('created_at', array($request->from, $request->to))
+    //         ->paginate(10);
+
+    //     return $this->generateResponse($shopOrders, 200);
+    // }
+
+    public function getOrderCommission(Request $request, Shop $shop)
+    {
+        if ($request->type === 'today') {
+            $result = $this->getTodayCommissions($shop->slug);
+        } elseif ($request->type === 'yesterday') {
+            $result = $this->getYesterdayCommissions($shop->slug);
+        } elseif ($request->type === 'thisweek') {
+            $result = $this->getThisWeekCommissions($shop->slug);
+        } elseif ($request->type === 'thismonth') {
+            $result = $this->getThisMonthCommissions($shop->slug);
+        } elseif ($request->type === 'thisyear') {
+            $result = $this->getThisYearCommissions($shop->slug);
+        }
+
+        return response()->json($result);
+    }
+
+    private function getTodayCommissions($shopSlug)
+    {
+        $startDate = Carbon::now()->startOfDay();
+        $endDate = Carbon::now();
+
+        return ShopOrderItem::with('shop', 'vendor', 'product')
+            ->whereHas('shop', function ($query) use ($shopSlug) {
+                $query->where('slug', $shopSlug);
+            })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
+    }
+
+    private function getYesterdayCommissions($shopSlug)
+    {
+        $startDate = Carbon::now()->subDays(1)->startOfDay();
+        $endDate = Carbon::now()->subDays(1);
+
+        return ShopOrderItem::with('shop', 'vendor', 'product')
+            ->whereHas('shop', function ($query) use ($shopSlug) {
+                $query->where('slug', $shopSlug);
+            })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
+    }
+
+    private function getThisWeekCommissions($shopSlug)
+    {
+        $startDate = Carbon::now()->subDays(6);
+        $endDate = Carbon::now();
+
+        return ShopOrderItem::with('shop', 'vendor', 'product')
+            ->whereHas('shop', function ($query) use ($shopSlug) {
+                $query->where('slug', $shopSlug);
+            })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
+    }
+
+    private function getThisMonthCommissions($shopSlug)
+    {
+        $startDate = Carbon::now()->subDays(29);
+        $endDate = Carbon::now();
+
+        return ShopOrderItem::with('shop', 'vendor', 'product')
+            ->whereHas('shop', function ($query) use ($shopSlug) {
+                $query->where('slug', $shopSlug);
+            })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
+    }
+
+    private function getThisYearCommissions($shopSlug)
+    {
+        $startDate = Carbon::now()->subMonths(11)->startOfMonth();
+        $endDate = Carbon::now();
+
+        return ShopOrderItem::with('shop', 'vendor', 'product')
+            ->whereHas('shop', function ($query) use ($shopSlug) {
+                $query->where('slug', $shopSlug);
+            })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
     }
 
     public function store(Request $request)

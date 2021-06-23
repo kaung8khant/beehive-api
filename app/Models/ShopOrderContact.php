@@ -30,9 +30,4 @@ class ShopOrderContact extends Model
     {
         return $this->belongsTo(ShopOrder::class);
     }
-
-    // public function township()
-    // {
-    //     return $this->belongsTo(Township::class);
-    // }
 }

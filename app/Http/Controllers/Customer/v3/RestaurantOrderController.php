@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer\v3;
 
 use App\Helpers\NotificationHelper;
+use App\Helpers\KbzPayHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
@@ -11,8 +12,6 @@ use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
-use App\Models\Restaurant;
-use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,54 +52,27 @@ class RestaurantOrderController extends Controller
         }
 
         $validatedData['customer_id'] = $this->customer->id;
-
         $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
 
         if ($validatedData['promo_code']) {
-            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
-            if (!$promocode) {
-                return $this->generateResponse('Promocode not found', 422, true);
-            }
-
-            $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
-            if (!$validUsage) {
-                return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
-            }
-
-            $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'restaurant');
-            if (!$validRule) {
-                return $this->generateResponse('Invalid promocode.', 422, true);
-            }
-
-            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
-
-            $validatedData['promocode_id'] = $promocode->id;
-            $validatedData['promocode'] = $promocode->code;
-            $validatedData['promocode_amount'] = $promocodeAmount;
+            $validatedData = $this->getPromoData($validatedData);
         }
 
-        //commission
-        $restaurantBranch = RestaurantBranch::where('slug', $validatedData['restaurant_branch_slug'])->firstOrFail();
-        $restaurant = Restaurant::where('id', $restaurantBranch->restaurant_id)->firstOrFail();
-        if ($restaurant->commission>0) {
-            $validatedData['commission']=($validatedData['subTotal']+$validatedData['tax']) * $restaurant->commission * 0.01;
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'shop');
 
-            if ($validatedData['promo_code']) {
-                $validatedData['commission']=($validatedData['subTotal']+$validatedData['tax']-$validatedData['promocode_amount']) * $restaurant->commission * 0.01;
+            if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
+                return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
             }
         }
 
-        $order = DB::transaction(function () use ($validatedData) {
-            $order = RestaurantOrder::create($validatedData);
-            OrderHelper::createOrderStatus($order->id);
-            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
-            OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
-            return $order;
-        });
+        $order = $this->restaurantOrderTransaction($validatedData);
 
-        $this->notifySystem($validatedData['restaurant_branch_slug'], $order->slug);
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+        }
 
-        return $this->generateResponse($order->refresh(), 201, );
+        return $this->generateResponse($order, 201);
     }
 
     public function show($slug)
@@ -143,6 +115,47 @@ class RestaurantOrderController extends Controller
         OrderHelper::createOrderStatus($order->id, 'cancelled');
 
         return $this->generateResponse($message, 200, true);
+    }
+
+    private function getPromoData($validatedData)
+    {
+        $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
+        if (!$promocode) {
+            return $this->generateResponse('Promocode not found', 422, true);
+        }
+
+        $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
+        if (!$validUsage) {
+            return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
+        }
+
+        $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'restaurant');
+        if (!$validRule) {
+            return $this->generateResponse('Invalid promocode.', 422, true);
+        }
+
+        $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
+
+        $validatedData['promocode_id'] = $promocode->id;
+        $validatedData['promocode'] = $promocode->code;
+        $validatedData['promocode_amount'] = $promocodeAmount;
+
+        return $validatedData;
+    }
+
+    private function restaurantOrderTransaction($validatedData)
+    {
+        $order = DB::transaction(function () use ($validatedData) {
+            $order = RestaurantOrder::create($validatedData);
+            OrderHelper::createOrderStatus($order->id);
+            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
+            return $order;
+        });
+
+        $this->notifySystem($validatedData['restaurant_branch_slug'], $order->slug);
+
+        return $order->refresh();
     }
 
     private function notifySystem($branchSlug, $slug)

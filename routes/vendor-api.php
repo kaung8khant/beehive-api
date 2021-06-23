@@ -102,9 +102,9 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::get('brands', 'Admin\BrandController@index');
         Route::post('brands', 'Admin\BrandController@store');
 
-        Route::get('cities', 'Admin\CityController@index');
-        Route::get('townships', 'Admin\TownshipController@index');
-        Route::get('cities/{city}/townships', 'Admin\TownshipController@getTownshipsByCity');
+        // Route::get('cities', 'Admin\CityController@index');
+        // Route::get('townships', 'Admin\TownshipController@index');
+        // Route::get('cities/{city}/townships', 'Admin\TownshipController@getTownshipsByCity');
 
         Route::get('customers', 'Admin\CustomerController@index');
         Route::post('customers', 'Admin\CustomerController@store');
@@ -139,4 +139,5 @@ Route::group([
     Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor-v3-restaurant', 'except' => ['create', 'edit']]);
     Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
     Route::get('restaurant-branches/{restaurantBranch}/orders', 'RestaurantOrderController@getBranchOrders');
+    Route::get('shops/{shop}/commissions', 'ShopOrderController@getOrderCommission');
 });

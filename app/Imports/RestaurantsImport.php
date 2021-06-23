@@ -71,7 +71,8 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
                     'branch_closing_time' => ['required', 'date_format:H:i'],
                     'branch_latitude' => ['required', 'numeric'],
                     'branch_longitude' => ['required', 'numeric'],
-                    'branch_township_slug' => ['nullable', 'exists:App\Models\Township,slug'],
+                    'branch_township' => ['nullable', 'string'],
+                    'branch_city' => ['nullable', 'string'],
                 ];
 
                 $validator = Validator::make(
@@ -102,7 +103,8 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
                         'closing_time' => $row['branch_closing_time'],
                         'latitude' => $row['branch_latitude'],
                         'longitude' => $row['branch_longitude'],
-                        'township_slug' => $row['branch_township_slug'],
+                        'township' => $row['branch_township'],
+                        'city' => $row['branch_city'],
                         'errors' => $validator->errors(),
                     ];
                 }
