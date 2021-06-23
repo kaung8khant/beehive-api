@@ -93,6 +93,11 @@ class CustomerAuthController extends Controller
             return $this->generateResponse('The OTP code is incorrect.', 406, true);
         }
 
+        $fifteenMinutes = Carbon::parse($otp->created_at)->addMinutes(15);
+        if (Carbon::now()->gt($fifteenMinutes)) {
+            return $this->generateResponse('The OTP code is expired. Please send another one.', 406, true);
+        }
+
         if ($customer) {
             $customer->update($validatedData);
         } else {
@@ -215,7 +220,7 @@ class CustomerAuthController extends Controller
         }
 
         $fifteenMinutes = Carbon::parse($otp->created_at)->addMinutes(15);
-        if ($fifteenMinutes->lt(Carbon::now())) {
+        if (Carbon::now()->gt($fifteenMinutes)) {
             return $this->generateResponse('The OTP code is expired. Please send another one.', 406, true);
         }
 
