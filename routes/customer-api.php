@@ -6,6 +6,9 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
     Route::post('login', 'Auth\CustomerAuthController@login');
     Route::post('register', 'Auth\CustomerAuthController@register');
     Route::post('send-otp', 'Auth\OtpController@sendOtpToRegister');
+    Route::post('check-otp', 'Auth\OtpController@checkOtpToRegister');
+
+    Route::get('database', 'FirebaseController@getdata');
 
     Route::post('forgot-password', 'Auth\OtpController@forgotPassword');
     Route::post('reset-password', 'Auth\CustomerAuthController@resetPassword');
