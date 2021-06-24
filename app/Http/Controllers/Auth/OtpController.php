@@ -148,7 +148,11 @@ class OtpController extends Controller
         }
 
         $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
-        $otp = $this->getOtp($phoneNumber, 'register', 'customers');
+        $otp = OneTimePassword::where('phone_number', $phoneNumber)
+            ->where('source', 'customers')
+            ->where('is_used', 0)
+            ->latest()
+            ->first();
 
         if (!$otp || $otp->otp_code !== $request->otp_code) {
             return $this->generateResponse('The OTP code is incorrect.', 406, true);
