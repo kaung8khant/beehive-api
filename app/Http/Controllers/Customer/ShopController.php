@@ -47,7 +47,7 @@ class ShopController extends Controller
             abort(404);
         }
 
-        return $this->generateResponse($shop->load('availableCategories', 'availableTags', 'township'), 200);
+        return $this->generateResponse($shop->load('availableCategories', 'availableTags'), 200);
     }
 
     public function getCategories(Request $request)
