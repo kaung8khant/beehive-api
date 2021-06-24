@@ -55,8 +55,8 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
 
         Route::get('menu-toppings/{slug}', 'Admin\MenuToppingController@show');
         Route::post('menu-toppings', 'Admin\MenuToppingController@store');
-        Route::put('menu-toppings/{slug}', 'Admin\MenuToppingController@update');
-        Route::delete('menu-toppings/{slug}', 'Admin\MenuToppingController@destroy');
+        Route::put('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@update');
+        Route::delete('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@destroy');
 
         Route::get('restaurant-branches/{restaurantBranch}/orders', 'Admin\RestaurantOrderController@getBranchOrders');
         Route::post('restaurant-orders/{restaurantOrder}/change-status', 'Admin\RestaurantOrderController@changeStatus');
