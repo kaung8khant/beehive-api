@@ -343,6 +343,6 @@ trait RestaurantOrderHelper
         $appId = config('one-signal.vendor_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
 
-        OneSignalHelper::sendPush($fields, 'admin');
+        OneSignalHelper::sendPush($fields, 'vendor');
     }
 }
