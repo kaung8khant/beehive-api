@@ -70,6 +70,13 @@ class ShopOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
+        $message = 'Your order has successfully been created.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = $this->customer->phone_number;
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+
         return $this->generateShopOrderResponse($order, 201);
     }
 
@@ -94,7 +101,7 @@ class ShopOrderController extends Controller
             return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
         }
 
-        $message = 'Your order has successfully been cancelled.';
+        $message = 'Your order has been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
