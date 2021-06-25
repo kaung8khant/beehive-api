@@ -59,7 +59,7 @@ class RestaurantOrderController extends Controller
         }
 
         if ($validatedData['payment_mode'] === 'KPay') {
-            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'shop');
+            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'restaurant');
 
             if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
                 return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
@@ -71,6 +71,13 @@ class RestaurantOrderController extends Controller
         if ($validatedData['payment_mode'] === 'KPay') {
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
+
+        $message = 'Your order has successfully been created.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = $this->customer->phone_number;
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
 
         return $this->generateResponse($order, 201);
     }
@@ -107,7 +114,7 @@ class RestaurantOrderController extends Controller
             ]
         );
 
-        $message = 'Your order has successfully been cancelled.';
+        $message = 'Your order has been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 

@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\ServiceAccount;
 
 Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () {
     Route::group(['prefix' => 'admin'], function () {
@@ -171,9 +173,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
 
             Route::get('jobs', 'Admin\OrderDriverController@jobList');
 
-            Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
-            Route::post('devices/send', 'OneSignal\OneSignalController@sendPushNotification');
+            // Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
+            // Route::post('devices/send', 'OneSignal\OneSignalController@sendPushNotification');
             Route::post('devices/{playerId}', 'OneSignal\OneSignalController@registerAdminPlayerID');
+
+            Route::post('devices/send/admins', 'OneSignal\OneSignalController@sendAdmins');
+            Route::post('devices/send/vendors', 'OneSignal\OneSignalController@sendVendors');
 
             Route::post('job/accept/{slug}', 'Admin\OrderDriverController@jobAccept');
             Route::post('job/reject/{slug}', 'Admin\OrderDriverController@jobReject');
@@ -181,6 +186,13 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
 
             Route::post('attendances', 'Admin\DriverController@attendance');
             Route::get('attendances', 'Admin\DriverController@getCheckin');
+
+
+            Route::get('shop-commissions', 'Admin\CommissionController@getShopOrderCommissions');
+            Route::get('shops/{shop}/commissions', 'Admin\CommissionController@getOneShopOrderCommissions');
+            Route::get('restaurant-commissions', 'Admin\CommissionController@getRestaurantOrderCommissions');
+            Route::get('restaurants/{restaurant}/commissions', 'Admin\CommissionController@getOneRestaurantOrderCommissions');
+            Route::get('restaurant-branches/{restaurantBranch}/commissions', 'Admin\CommissionController@getRestaurantBranchOrderCommissions');
         });
     });
 
@@ -201,6 +213,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
 
     /* KBZ Pay Notify */
     Route::post('kbz/notify', 'Payment\KbzPayController@notify');
+
+    Route::post('calculate-driver', 'FirebaseController@index');
 });
 
 Route::group([
@@ -213,8 +227,8 @@ Route::group([
 
     Route::resource('shop-orders', 'ShopOrderController', ['as' => 'admin-v3-shop', 'except' => ['create', 'edit']]);
     Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
-    Route::get('restaurants/{restaurant}/commissions', 'RestaurantOrderController@getOrderCommission');
     Route::get('shops/{shop}/commissions', 'ShopOrderController@getOrderCommission');
+    Route::get('shop-commissions', 'ShopOrderController@getAllOrderCommission');
 });
 
 /*

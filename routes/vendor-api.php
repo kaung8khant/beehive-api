@@ -55,8 +55,8 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
 
         Route::get('menu-toppings/{slug}', 'Admin\MenuToppingController@show');
         Route::post('menu-toppings', 'Admin\MenuToppingController@store');
-        Route::put('menu-toppings/{slug}', 'Admin\MenuToppingController@update');
-        Route::delete('menu-toppings/{slug}', 'Admin\MenuToppingController@destroy');
+        Route::put('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@update');
+        Route::delete('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@destroy');
 
         Route::get('restaurant-branches/{restaurantBranch}/orders', 'Admin\RestaurantOrderController@getBranchOrders');
         Route::post('restaurant-orders/{restaurantOrder}/change-status', 'Admin\RestaurantOrderController@changeStatus');
@@ -124,6 +124,9 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::get('excels/export/{type}/{params}', 'Excel\ExportImportController@exportWithParams');
 
         Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
+
+        Route::get('shops/{shop}/commissions', 'Admin\CommissionController@getOneShopOrderCommissions');
+        Route::get('restaurant-branches/{restaurantBranch}/commissions', 'Admin\CommissionController@getRestaurantBranchOrderCommissions');
     });
 });
 
@@ -139,5 +142,4 @@ Route::group([
     Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor-v3-restaurant', 'except' => ['create', 'edit']]);
     Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
     Route::get('restaurant-branches/{restaurantBranch}/orders', 'RestaurantOrderController@getBranchOrders');
-    Route::get('shops/{shop}/commissions', 'ShopOrderController@getOrderCommission');
 });
