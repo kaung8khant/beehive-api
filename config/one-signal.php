@@ -1,13 +1,13 @@
 <?php
-return [
 
+return [
     /*
     |-------------------------------------------------------------------------------------------
     | URL - One Signal have different endpoint.
     |-------------------------------------------------------------------------------------------
     |
     */
-    'url'    => env('ONE_SIGNAL_URL', 'https://onesignal.com/api/v1/'),
+    'url' => env('ONE_SIGNAL_URL', 'https://onesignal.com/api/v1/'),
 
     /*
     |-------------------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ return [
     |
     */
 
-    'authorize'       => env('ONE_SIGNAL_AUTHORIZE'),
+    'authorize' => env('ONE_SIGNAL_AUTHORIZE'),
 
     /*
     |-------------------------------------------------------------------------------------------
@@ -46,6 +46,18 @@ return [
     | You can manage apps
     |-------------------------------------------------------------------------------------------
     |
-   */
-    'auth_key' => env('ONE_SIGNAL_AUTH_KEY')
+    */
+    'auth_key' => env('ONE_SIGNAL_AUTH_KEY'),
+
+    /*
+    |-------------------------------------------------------------------------------------------
+    | Customize One Signal app and rest api keys
+    |-------------------------------------------------------------------------------------------
+    |
+    */
+    'admin_app_id' => env('ONE_SIGNAL_ADMIN_APP_ID'),
+    'admin_api_key' => env('ONE_SIGNAL_ADMIN_API_KEY'),
+
+    'vendor_app_id' => env('ONE_SIGNAL_VENDOR_APP_ID'),
+    'vendor_api_key' => env('ONE_SIGNAL_VENDOR_API_KEY'),    
 ];
