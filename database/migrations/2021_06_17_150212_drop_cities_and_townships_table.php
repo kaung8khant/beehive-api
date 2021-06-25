@@ -12,10 +12,6 @@ class DropCitiesAndTownshipsTable extends Migration
      */
     public function up()
     {
-        Schema::table('addresses', function (Blueprint $table) {
-            $table->dropForeign(['township_id']);
-            $table->dropColumn('township_id');
-        });
         Schema::drop('townships');
         Schema::drop('cities');
     }
@@ -27,10 +23,6 @@ class DropCitiesAndTownshipsTable extends Migration
      */
     public function down()
     {
-        Schema::table('addresses', function (Blueprint $table) {
-            $table->unsignedBigInteger('township_id');
-            $table->foreign('township_id')->references('id')->on('townships')->onDelete('cascade');
-        });
         Schema::dropIfExists('townships');
         Schema::dropIfExists('cities');
     }
