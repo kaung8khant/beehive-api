@@ -88,6 +88,9 @@ class RestaurantOrderController extends Controller
         OrderHelper::sendAdminPushNotifications();
         OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
 
+        OrderHelper::sendAdminSms();
+        OrderHelper::sendVendorSms($validatedData['restaurant_branch_id']);
+
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();

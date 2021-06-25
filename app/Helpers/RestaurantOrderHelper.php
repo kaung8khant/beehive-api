@@ -2,7 +2,10 @@
 
 namespace App\Helpers;
 
+use App\Helpers\SmsHelper;
+use App\Helpers\StringHelper;
 use App\Exceptions\BadRequestException;
+use App\Jobs\SendSms;
 use App\Models\Menu;
 use App\Models\MenuTopping;
 use App\Models\MenuVariant;
@@ -344,5 +347,29 @@ trait RestaurantOrderHelper
         $fields = OneSignalHelper::prepareNotification($request, $appId);
 
         OneSignalHelper::sendPush($fields, 'vendor');
+    }
+
+    public static function sendAdminSms()
+    {
+        $admins = User::whereHas('roles', function ($query) {
+            $query->where('name', 'Admin');
+        })->pluck('phone_number');
+
+        $message = 'A restaurant order has been received.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+
+        SendSms::dispatch($uniqueKey, [$admins], $message, 'order', $smsData);
+    }
+
+    public static function sendVendorSms($branchId)
+    {
+        $vendors = User::where('restaurant_branch_id', $branchId)->pluck('phone_number');
+
+        $message = 'An order has been received.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+
+        SendSms::dispatch($uniqueKey, [$vendors], $message, 'order', $smsData);
     }
 }
