@@ -57,26 +57,30 @@ class ProductController extends Controller
             abort(404);
         }
 
-        if ($product->variants && $product->variants['ui'] === 'image') {
-            $values = [];
+        if ($product->variants) {
+            foreach ($product->variants as $variants) {
+                if ($variants && $variants['ui'] === 'image') {
+                    $values = [];
 
-            foreach ($product->variants['values'] as $value) {
-                if (isset($value['slug'])) {
-                    $image = File::where('slug', $value['slug'])->value('slug');
-                    $url = "/api/v2/images/{$image}";
-                    $value['url'] = config('app.url') . $url;
+                    foreach ($variants['values'] as $value) {
+                        if (isset($value['slug'])) {
+                            $image = File::where('slug', $value['slug'])->value('slug');
+                            $url = "/api/v2/images/{$image}";
+                            $value['url'] = config('app.url') . $url;
+                        }
+
+                        $values[] = $value;
+                    }
+
+                    $data = [
+                        'ui' => $variants['ui'],
+                        'name' => $variants['name'],
+                        'values' => $values,
+                    ];
+
+                    $variants = $data;
                 }
-
-                $values[] = $value;
             }
-
-            $data = [
-                'ui' => $product->variants['ui'],
-                'name' => $product->variants['name'],
-                'values' => $values,
-            ];
-
-            $product->variants = $data;
         }
 
         return $this->generateProductResponse($product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariants'), 200, 'other');
