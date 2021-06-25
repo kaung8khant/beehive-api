@@ -124,6 +124,9 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::get('excels/export/{type}/{params}', 'Excel\ExportImportController@exportWithParams');
 
         Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
+
+        Route::get('shops/{shop}/commissions', 'Admin\CommissionController@getOneShopOrderCommissions');
+        Route::get('restaurant-branches/{restaurantBranch}/commissions', 'Admin\CommissionController@getRestaurantBranchOrderCommissions');
     });
 });
 
@@ -139,5 +142,4 @@ Route::group([
     Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor-v3-restaurant', 'except' => ['create', 'edit']]);
     Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
     Route::get('restaurant-branches/{restaurantBranch}/orders', 'RestaurantOrderController@getBranchOrders');
-    Route::get('shops/{shop}/commissions', 'ShopOrderController@getOrderCommission');
 });

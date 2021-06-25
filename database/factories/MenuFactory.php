@@ -29,13 +29,11 @@ class MenuFactory extends Factory
             'slug' => $this->generateUniqueSlug(),
             'name' => $this->faker->text(30),
             'description' => $this->faker->paragraph(),
-            'price' => $this->faker->numberBetween(1000, 10000),
-            'tax' => $this->faker->numberBetween(0, 50),
-            'discount'=>$this->faker->numberBetween(0, 50),
             'restaurant_id' => Restaurant::pluck('id')->random(1)[0],
             'restaurant_category_id' => function (array $attributes) {
                 return Restaurant::find($attributes['restaurant_id'])->availableCategories()->pluck('restaurant_category_id')->random(1)[0];
             },
+            'variants'=>[],
         ];
     }
 }

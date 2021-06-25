@@ -181,6 +181,13 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
 
             Route::post('attendances', 'Admin\DriverController@attendance');
             Route::get('attendances', 'Admin\DriverController@getCheckin');
+
+
+            Route::get('shop-commissions', 'Admin\CommissionController@getShopOrderCommissions');
+            Route::get('shops/{shop}/commissions', 'Admin\CommissionController@getOneShopOrderCommissions');
+            Route::get('restaurant-commissions', 'Admin\CommissionController@getRestaurantOrderCommissions');
+            Route::get('restaurants/{restaurant}/commissions', 'Admin\CommissionController@getOneRestaurantOrderCommissions');
+            Route::get('restaurant-branches/{restaurantBranch}/commissions', 'Admin\CommissionController@getRestaurantBranchOrderCommissions');
         });
     });
 
@@ -213,8 +220,8 @@ Route::group([
 
     Route::resource('shop-orders', 'ShopOrderController', ['as' => 'admin-v3-shop', 'except' => ['create', 'edit']]);
     Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
-    Route::get('restaurants/{restaurant}/commissions', 'RestaurantOrderController@getOrderCommission');
     Route::get('shops/{shop}/commissions', 'ShopOrderController@getOrderCommission');
+    Route::get('shop-commissions', 'ShopOrderController@getAllOrderCommission');
 });
 
 /*
