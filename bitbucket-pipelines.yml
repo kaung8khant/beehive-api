@@ -67,6 +67,10 @@ pipelines:
                   APP_DEBUG=false
                   FILESYSTEM_DRIVER=s3
                   BUILD_NUMBER=${BITBUCKET_BUILD_NUMBER}
+                  ONE_SIGNAL_ADMIN_APP_ID=${ONE_SIGNAL_ADMIN_APP_ID}
+                  ONE_SIGNAL_ADMIN_API_KEY=${ONE_SIGNAL_ADMIN_API_KEY}
+                  ONE_SIGNAL_VENDOR_APP_ID=${ONE_SIGNAL_VENDOR_APP_ID}
+                  ONE_SIGNAL_VENDOR_API_KEY=${ONE_SIGNAL_VENDOR_API_KEY}
 
                 # install composer
                 - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
