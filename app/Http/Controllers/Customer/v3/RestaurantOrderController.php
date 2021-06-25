@@ -59,7 +59,7 @@ class RestaurantOrderController extends Controller
         }
 
         if ($validatedData['payment_mode'] === 'KPay') {
-            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'shop');
+            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'restaurant');
 
             if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
                 return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
