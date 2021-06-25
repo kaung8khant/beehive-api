@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Customer;
 
 use App\Helpers\KbzPayHelper;
 use App\Helpers\NotificationHelper;
-use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper as OrderHelper;
@@ -20,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
 
     protected $customer;
 
@@ -72,6 +71,9 @@ class ShopOrderController extends Controller
         if ($validatedData['payment_mode'] === 'KPay') {
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
+
+        OrderHelper::sendAdminPushNotifications();
+        OrderHelper::sendVendorPushNotifications($validatedData['order_items']);
 
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
@@ -217,7 +219,6 @@ class ShopOrderController extends Controller
             ]
         );
 
-        $this->assignOrder('shop', $slug);
     }
 
     private function notify($slug, $data)

@@ -90,6 +90,9 @@ class RestaurantOrderController extends Controller
 
         $this->notifySystem($request->satus, $order->slug);
 
+        OrderHelper::sendAdminPushNotifications();
+        OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
+
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();

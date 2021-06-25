@@ -85,6 +85,9 @@ class RestaurantOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
+        OrderHelper::sendAdminPushNotifications();
+        OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
+
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
