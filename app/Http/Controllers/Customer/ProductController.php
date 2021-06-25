@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
+use App\Models\File;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
@@ -56,7 +57,33 @@ class ProductController extends Controller
             abort(404);
         }
 
-        return $this->generateProductResponse($product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations'), 200, 'other');
+        if ($product->variants) {
+            foreach ($product->variants as $variants) {
+                if ($variants && $variants['ui'] === 'image') {
+                    $values = [];
+
+                    foreach ($variants['values'] as $value) {
+                        if (isset($value['slug'])) {
+                            $image = File::where('slug', $value['slug'])->value('slug');
+                            $url = "/api/v2/images/{$image}";
+                            $value['url'] = config('app.url') . $url;
+                        }
+
+                        $values[] = $value;
+                    }
+
+                    $data = [
+                        'ui' => $variants['ui'],
+                        'name' => $variants['name'],
+                        'values' => $values,
+                    ];
+
+                    $variants = $data;
+                }
+            }
+        }
+
+        return $this->generateProductResponse($product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariants'), 200, 'other');
     }
 
     public function getByCategory(Request $request, ShopCategory $category)

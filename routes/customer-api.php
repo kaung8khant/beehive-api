@@ -6,6 +6,9 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
     Route::post('login', 'Auth\CustomerAuthController@login');
     Route::post('register', 'Auth\CustomerAuthController@register');
     Route::post('send-otp', 'Auth\OtpController@sendOtpToRegister');
+    Route::post('check-otp', 'Auth\OtpController@checkOtpToRegister');
+
+    Route::get('database', 'FirebaseController@getdata');
 
     Route::post('forgot-password', 'Auth\OtpController@forgotPassword');
     Route::post('reset-password', 'Auth\CustomerAuthController@resetPassword');
@@ -55,10 +58,10 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
         Route::post('/register-device', 'Customer\HomeController@registerCustomerToken');
         /* regist device token */
 
-        Route::get('cities', 'Customer\AddressController@getAllCities');
-        Route::get('cities/{city}/townships', 'Customer\AddressController@getTownshipsByCity');
+        // Route::get('cities', 'Customer\AddressController@getAllCities');
+        // Route::get('cities/{city}/townships', 'Customer\AddressController@getTownshipsByCity');
 
-        Route::get('townships', 'Customer\AddressController@getAllTownships');
+        // Route::get('townships', 'Customer\AddressController@getAllTownships');
         Route::get('addresses/nearest', 'Customer\AddressController@getNearestAddress');
         Route::get('addresses/get-primary', 'Customer\AddressController@getPrimaryAddress');
         Route::patch('addresses/{address}/set-primary', 'Customer\AddressController@setPrimaryAddress');

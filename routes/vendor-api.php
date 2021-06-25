@@ -55,8 +55,8 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
 
         Route::get('menu-toppings/{slug}', 'Admin\MenuToppingController@show');
         Route::post('menu-toppings', 'Admin\MenuToppingController@store');
-        Route::put('menu-toppings/{slug}', 'Admin\MenuToppingController@update');
-        Route::delete('menu-toppings/{slug}', 'Admin\MenuToppingController@destroy');
+        Route::put('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@update');
+        Route::delete('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@destroy');
 
         Route::get('restaurant-branches/{restaurantBranch}/orders', 'Admin\RestaurantOrderController@getBranchOrders');
         Route::post('restaurant-orders/{restaurantOrder}/change-status', 'Admin\RestaurantOrderController@changeStatus');
@@ -102,9 +102,9 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::get('brands', 'Admin\BrandController@index');
         Route::post('brands', 'Admin\BrandController@store');
 
-        Route::get('cities', 'Admin\CityController@index');
-        Route::get('townships', 'Admin\TownshipController@index');
-        Route::get('cities/{city}/townships', 'Admin\TownshipController@getTownshipsByCity');
+        // Route::get('cities', 'Admin\CityController@index');
+        // Route::get('townships', 'Admin\TownshipController@index');
+        // Route::get('cities/{city}/townships', 'Admin\TownshipController@getTownshipsByCity');
 
         Route::get('customers', 'Admin\CustomerController@index');
         Route::post('customers', 'Admin\CustomerController@store');
@@ -124,6 +124,9 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::get('excels/export/{type}/{params}', 'Excel\ExportImportController@exportWithParams');
 
         Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
+
+        Route::get('shops/{shop}/commissions', 'Admin\CommissionController@getOneShopOrderCommissions');
+        Route::get('restaurant-branches/{restaurantBranch}/commissions', 'Admin\CommissionController@getRestaurantBranchOrderCommissions');
     });
 });
 

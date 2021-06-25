@@ -13,8 +13,10 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Customer;
 use App\Models\Promocode;
+use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +29,7 @@ class RestaurantOrderController extends Controller
     {
         $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'restaurantOrderContact.township', 'RestaurantOrderItems')
+        $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
             ->whereHas('restaurantOrderContact', function ($q) use ($request) {
                 $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('phone_number', $request->filter);
@@ -88,12 +90,22 @@ class RestaurantOrderController extends Controller
 
         $this->notifySystem($request->satus, $order->slug);
 
+        OrderHelper::sendAdminPushNotifications();
+        OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
+
+        $message = 'Your order has successfully been created.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+
         return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
     }
 
     public function show(RestaurantOrder $restaurantOrder)
     {
-        return $this->generateResponse($restaurantOrder->load('RestaurantOrderContact', 'restaurantOrderContact.township', 'RestaurantOrderItems'), 200);
+        return $this->generateResponse($restaurantOrder->load('RestaurantOrderContact', 'RestaurantOrderItems'), 200);
     }
 
     public function destroy(RestaurantOrder $restaurantOrder)
@@ -102,13 +114,14 @@ class RestaurantOrderController extends Controller
             return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
         }
 
-        $message = 'Your order has successfully been cancelled.';
+        $message = 'Your order has been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
         $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         OrderHelper::createOrderStatus($restaurantOrder->id, 'cancelled');
+
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
 
@@ -128,12 +141,15 @@ class RestaurantOrderController extends Controller
             'action' => 'update',
         ]);
 
-        $message = 'Your order has successfully been ' . $request->status . '.';
-        $smsData = SmsHelper::prepareSmsData($message);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
+        if ($request->status === 'cancelled') {
+            $message = 'Your order has been cancelled.';
+            $smsData = SmsHelper::prepareSmsData($message);
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
-        // SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        }
+
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
     }
 
@@ -144,7 +160,6 @@ class RestaurantOrderController extends Controller
             'body' => 'Restaurant order just has been updated',
             'status' => $status,
             'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
-                ->with('restaurantOrderContact.township')
                 ->with('RestaurantOrderItems')
                 ->where('slug', $slug)
                 ->firstOrFail(),
@@ -207,5 +222,87 @@ class RestaurantOrderController extends Controller
             ->items();
 
         return $this->generateResponse($restaurantOrders, 200);
+    }
+
+    public function getOrderCommission(Request $request, Restaurant $restaurant)
+    {
+        if ($request->type === 'today') {
+            $result = $this->getTodayCommissions($restaurant->slug);
+        } elseif ($request->type === 'yesterday') {
+            $result = $this->getYesterdayCommissions($restaurant->slug);
+        } elseif ($request->type === 'thisweek') {
+            $result = $this->getThisWeekCommissions($restaurant->slug);
+        } elseif ($request->type === 'thismonth') {
+            $result = $this->getThisMonthCommissions($restaurant->slug);
+        } elseif ($request->type === 'thisyear') {
+            $result = $this->getThisYearCommissions($restaurant->slug);
+        }
+
+        return response()->json($result);
+    }
+
+    private function getTodayCommissions($restaurantSlug)
+    {
+        $startDate = Carbon::now()->startOfDay();
+        $endDate = Carbon::now();
+
+        return RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurantSlug) {
+            $query->where('slug', $restaurantSlug);
+        })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->get();
+    }
+
+    private function getYesterdayCommissions($restaurantSlug)
+    {
+        $startDate = Carbon::now()->subDays(1)->startOfDay();
+        $endDate = Carbon::now()->subDays(1);
+
+        return RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurantSlug) {
+            $query->where('slug', $restaurantSlug);
+        })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->get();
+    }
+
+    private function getThisWeekCommissions($restaurantSlug)
+    {
+        $startDate = Carbon::now()->subDays(6);
+        $endDate = Carbon::now();
+
+        return RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurantSlug) {
+            $query->where('slug', $restaurantSlug);
+        })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->get();
+    }
+
+    private function getThisMonthCommissions($restaurantSlug)
+    {
+        $startDate = Carbon::now()->subDays(29);
+        $endDate = Carbon::now();
+
+        return RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurantSlug) {
+            $query->where('slug', $restaurantSlug);
+        })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->get();
+    }
+
+    private function getThisYearCommissions($restaurantSlug)
+    {
+        $startDate = Carbon::now()->subMonths(11)->startOfMonth();
+        $endDate = Carbon::now();
+
+        return RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurantSlug) {
+            $query->where('slug', $restaurantSlug);
+        })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->get();
     }
 }

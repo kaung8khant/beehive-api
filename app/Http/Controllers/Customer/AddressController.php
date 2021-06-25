@@ -6,8 +6,6 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Address;
-use App\Models\City;
-use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -66,7 +64,7 @@ class AddressController extends Controller
         $validatedData['customer_id'] = $this->customerId;
 
         $address->update($validatedData);
-        return $this->generateResponse($address->load('township'), 200);
+        return $this->generateResponse($address, 200);
     }
 
     public function destroy(Address $address)
@@ -108,27 +106,6 @@ class AddressController extends Controller
         return $this->generateResponse($address, 200);
     }
 
-    public function getAllCities(Request $request)
-    {
-        $cities = City::where('name', 'LIKE', '%' . $request->filter . '%')->get();
-        return $this->generateResponse($cities, 200);
-    }
-
-    public function getTownshipsByCity(Request $request, City $city)
-    {
-        $townships = Township::where('city_id', $city->id)
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->get();
-
-        return $this->generateResponse($townships, 200);
-    }
-
-    public function getAllTownships()
-    {
-        $townships = Township::all();
-        return $this->generateResponse($townships, 200);
-    }
-
     private function setNonPrimary()
     {
         Address::where('customer_id', $this->customerId)->update(['is_primary' => 0]);
@@ -146,7 +123,7 @@ class AddressController extends Controller
         }
 
         $address = Address::
-            selectRaw('label, house_number, floor, street_name, latitude, longitude, is_primary, township_id,
+            selectRaw('label, house_number, floor, street_name, latitude, longitude, is_primary,
         ( 6371 * acos( cos(radians(?)) *
             cos(radians(latitude)) * cos(radians(longitude) - radians(?))
             + sin(radians(?)) * sin(radians(latitude)) )

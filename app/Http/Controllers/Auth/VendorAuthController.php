@@ -82,7 +82,7 @@ class VendorAuthController extends Controller
 
     public function getProfile()
     {
-        $user = User::with('shop', 'restaurantBranch', 'restaurantBranch.restaurant', 'roles', 'restaurantBranch.township', 'restaurantBranch.township.city', 'restaurantBranch.restaurant.availableTags', 'restaurantBranch.restaurant.availableCategories', 'shop.township', 'shop.township.city', 'shop.availableTags', 'shop.availableCategories')->where('id', Auth::guard('vendors')->user()->id)->get();
+        $user = User::with('shop', 'restaurantBranch', 'restaurantBranch.restaurant', 'roles', 'restaurantBranch.restaurant.availableTags', 'restaurantBranch.restaurant.availableCategories', 'shop.availableTags', 'shop.availableCategories')->where('id', Auth::guard('vendors')->user()->id)->get();
 
         return response()->json($user);
     }
@@ -155,7 +155,7 @@ class VendorAuthController extends Controller
         }
 
         $fifteenMinutes = Carbon::parse($otp->created_at)->addMinutes(15);
-        if ($fifteenMinutes->lt(Carbon::now())) {
+        if (Carbon::now()->gt($fifteenMinutes)) {
             return $this->generateResponse('The OTP code is expired. Please send another one.', 406, true);
         }
 

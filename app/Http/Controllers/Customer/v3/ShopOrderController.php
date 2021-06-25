@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer\v3;
 
 use App\Helpers\NotificationHelper;
+use App\Helpers\KbzPayHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper as OrderHelper;
@@ -49,43 +50,37 @@ class ShopOrderController extends Controller
         }
 
         $validatedData['customer_id'] = $this->customer->id;
-
         $validatedData = OrderHelper::prepareProductVariants($validatedData);
 
         if ($validatedData['promo_code']) {
-            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest()->first();
-            if (!$promocode) {
-                return $this->generateResponse('Promocode not found', 422, true);
-            }
-
-            $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
-            if (!$validUsage) {
-                return $this->generateResponse('Invalid promocode usage for shop.', 422, true);
-            }
-
-            $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'shop');
-            if (!$validRule) {
-                return $this->generateResponse('Invalid promocode.', 422, true);
-            }
-
-            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
-
-            $validatedData['promocode_id'] = $promocode->id;
-            $validatedData['promocode'] = $promocode->code;
-            $validatedData['promocode_amount'] = $promocodeAmount;
+            $validatedData = $this->getPromoData($validatedData);
         }
 
-        $order = DB::transaction(function () use ($validatedData) {
-            $order = ShopOrder::create($validatedData);
-            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
-            OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
-            OrderHelper::createOrderStatus($order->id);
-            return $order;
-        });
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'shop');
 
-        $this->notifySystem($validatedData['order_items'], $order->slug);
+            if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
+                return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            }
+        }
 
-        return $this->generateShopOrderResponse($order->refresh(), 201);
+        $order = $this->shopOrderTransaction($validatedData);
+
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+        }
+
+        OrderHelper::sendAdminPushNotifications();
+        OrderHelper::sendVendorPushNotifications($validatedData['order_items']);
+
+        $message = 'Your order has successfully been created.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = $this->customer->phone_number;
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+
+        return $this->generateShopOrderResponse($order, 201);
     }
 
     public function show($slug)
@@ -109,7 +104,7 @@ class ShopOrderController extends Controller
             return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
         }
 
-        $message = 'Your order has successfully been cancelled.';
+        $message = 'Your order has been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
@@ -143,6 +138,47 @@ class ShopOrderController extends Controller
         );
 
         return $this->generateResponse($message, 200, true);
+    }
+
+    private function getPromoData($validatedData)
+    {
+        $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest()->first();
+        if (!$promocode) {
+            return $this->generateResponse('Promocode not found', 422, true);
+        }
+
+        $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
+        if (!$validUsage) {
+            return $this->generateResponse('Invalid promocode usage for shop.', 422, true);
+        }
+
+        $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'shop');
+        if (!$validRule) {
+            return $this->generateResponse('Invalid promocode.', 422, true);
+        }
+
+        $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
+
+        $validatedData['promocode_id'] = $promocode->id;
+        $validatedData['promocode'] = $promocode->code;
+        $validatedData['promocode_amount'] = $promocodeAmount;
+
+        return $validatedData;
+    }
+
+    private function shopOrderTransaction($validatedData)
+    {
+        $order = DB::transaction(function () use ($validatedData) {
+            $order = ShopOrder::create($validatedData);
+            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
+            OrderHelper::createOrderStatus($order->id);
+            return $order;
+        });
+
+        $this->notifySystem($validatedData['order_items'], $order->slug);
+
+        return $order->refresh();
     }
 
     private function notifySystem($orderItems, $slug)
@@ -179,7 +215,6 @@ class ShopOrderController extends Controller
                     'type' => 'shopOrder',
                     'status' => 'pending',
                     'shopOrder' => ShopOrder::with('contact')
-                        ->with('contact.township')
                         ->with('vendors')
                         ->where('slug', $slug)
                         ->firstOrFail(),

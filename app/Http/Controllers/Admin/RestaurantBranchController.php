@@ -13,7 +13,6 @@ use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantTag;
-use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
@@ -27,7 +26,7 @@ class RestaurantBranchController extends Controller
     {
         $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        return RestaurantBranch::with('restaurant', 'township')
+        return RestaurantBranch::with('restaurant')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('contact_number', $request->filter)
             ->orWhere('slug', $request->filter)
@@ -42,7 +41,7 @@ class RestaurantBranchController extends Controller
      */
     public function getAll()
     {
-        return RestaurantBranch::with('restaurant', 'township')->get();
+        return RestaurantBranch::with('restaurant')->get();
     }
 
     public function store(Request $request)
@@ -60,7 +59,8 @@ class RestaurantBranchController extends Controller
                 'latitude' => 'required',
                 'longitude' => 'required',
                 'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-                'township_slug' => 'nullable|exists:App\Models\Township,slug',
+                'township' => 'nullable|string',
+                'city' => 'nullable|string',
                 'is_enable' => 'required|boolean',
             ],
             [
@@ -70,7 +70,6 @@ class RestaurantBranchController extends Controller
 
         $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
-        $validatedData['township_id'] = $this->getTownshipId($request->township_slug);
 
         $restaurantBranch = RestaurantBranch::create($validatedData);
 
@@ -79,12 +78,12 @@ class RestaurantBranchController extends Controller
 
         Cache::forget('all_restaurant_branches_restaurant_id' . $validatedData['restaurant_id']);
 
-        return response()->json($restaurantBranch->load('restaurant', 'township'), 201);
+        return response()->json($restaurantBranch->load('restaurant'), 201);
     }
 
     public function show(RestaurantBranch $restaurantBranch)
     {
-        return response()->json($restaurantBranch->load('restaurant', 'township', 'township.city'), 200);
+        return response()->json($restaurantBranch->load('restaurant'), 200);
     }
 
     public function update(Request $request, RestaurantBranch $restaurantBranch)
@@ -99,7 +98,8 @@ class RestaurantBranchController extends Controller
                 'latitude' => 'required',
                 'longitude' => 'required',
                 'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-                'township_slug' => 'nullable|exists:App\Models\Township,slug',
+                'township' => 'nullable|string',
+                'city' => 'nullable|string',
                 'is_enable' => 'required|boolean',
             ],
             [
@@ -109,12 +109,11 @@ class RestaurantBranchController extends Controller
 
         $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
-        $validatedData['township_id'] = $this->getTownshipId($request->township_slug);
 
         $restaurantBranch->update($validatedData);
         Cache::forget('all_restaurant_branches_restaurant_id' . $validatedData['restaurant_id']);
 
-        return response()->json($restaurantBranch->load('restaurant', 'township'), 200);
+        return response()->json($restaurantBranch->load('restaurant'), 200);
     }
 
     public function destroy(RestaurantBranch $restaurantBranch)
@@ -130,10 +129,6 @@ class RestaurantBranchController extends Controller
         return Restaurant::where('slug', $slug)->first()->id;
     }
 
-    private function getTownshipId($slug)
-    {
-        return Township::where('slug', $slug)->first()->id;
-    }
 
     public function getBranchesByRestaurant(Request $request, Restaurant $restaurant)
     {
@@ -145,15 +140,15 @@ class RestaurantBranchController extends Controller
             ->paginate(10);
     }
 
-    public function getBranchesByTownship(Request $request, Township $township)
-    {
-        $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
+    // public function getBranchesByTownship(Request $request, Township $township)
+    // {
+    //     $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        return RestaurantBranch::where('township_id', $township->id)
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
-    }
+    //     return RestaurantBranch::where('township_id', $township->id)
+    //         ->where('name', 'LIKE', '%' . $request->filter . '%')
+    //         ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+    //         ->paginate(10);
+    // }
 
     public function toggleEnable(RestaurantBranch $restaurantBranch)
     {
@@ -207,7 +202,7 @@ class RestaurantBranchController extends Controller
             CacheHelper::forgetCategoryIdsByBranchCache($menuId);
         }
 
-        return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
+        return response()->json($restaurantBranch->load(['availableMenus', 'restaurant']), 201);
     }
 
     public function updateWithTagsAndCategories(Request $request, RestaurantBranch $restaurantBranch)
@@ -224,7 +219,8 @@ class RestaurantBranchController extends Controller
             'latitude' => 'required',
             'longitude' => 'required',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-            'township_slug' => 'nullable|exists:App\Models\Township,slug',
+            'township' => 'nullable|string',
+            'city' => 'nullable|string',
             'is_enable' => 'nullable|boolean',
             'restaurant_tags' => 'required|array',
             'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
@@ -233,7 +229,6 @@ class RestaurantBranchController extends Controller
         ]);
 
         $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
-        $validatedData['township_id'] = $this->getTownshipId($request->township_slug);
 
         $restaurantBranch->update($validatedData);
         $restaurant = Restaurant::where('slug', $request->restaurant_slug)->firstOrFail();
@@ -248,7 +243,7 @@ class RestaurantBranchController extends Controller
             $restaurant->availableCategories()->attach($restaurantCategories);
         }
 
-        return response()->json($restaurantBranch->load('restaurant', 'township'), 200);
+        return response()->json($restaurantBranch->load('restaurant'), 200);
     }
 
     public function toggleAvailable(Request $request, RestaurantBranch $restaurantBranch, Menu $menu)

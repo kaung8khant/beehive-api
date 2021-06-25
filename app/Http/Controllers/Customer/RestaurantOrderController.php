@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\KbzPayHelper;
 use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -19,6 +20,15 @@ use Illuminate\Support\Facades\DB;
 class RestaurantOrderController extends Controller
 {
     use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+
+    protected $customer;
+
+    public function __construct()
+    {
+        if (Auth::guard('customers')->check()) {
+            $this->customer = Auth::guard('customers')->user();
+        }
+    }
 
     public function index(Request $request)
     {
@@ -48,78 +58,44 @@ class RestaurantOrderController extends Controller
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
+        $validatedData = OrderHelper::validateOrder($request);
 
-        $request['customer_slug'] = Auth::guard('customers')->user()->slug;
-        // validate order
-        $validatedData = OrderHelper::validateOrder($request, true);
-
-        if (gettype($validatedData) == "string") {
+        if (gettype($validatedData) == 'string') {
             return $this->generateResponse($validatedData, 422, true);
         }
 
-        //validate variation
-        OrderHelper::checkVariationsExist($validatedData['order_items']);
-
-        // get Customer Info
-        $customer = Auth::guard('customers')->user();
-        // append customer data
-        $validatedData['customer_id'] = Auth::guard('customers')->user()->id;
-        // validate and prepare variation
+        $validatedData['customer_id'] = $this->customer->id;
         $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
 
         if ($validatedData['promo_code']) {
-            // may require amount validation.
-            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
-            if (!isset($promocode) && empty($promocode)) {
-                return $this->generateResponse("Promocode not found", 422, true);
-            }
-
-            $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
-            if (!$validUsage) {
-                return $this->generateResponse("Invalid promocode usage for restaurant.", 422, true);
-            }
-
-            $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
-            if (!$validRule) {
-                return $this->generateResponse("Invalid promocode rule.", 422, true);
-            }
-            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
-
-            $validatedData['promocode_id'] = $promocode->id;
-            $validatedData['promocode'] = $promocode->code;
-            $validatedData['promocode_amount'] = $promocodeAmount;
+            $validatedData = $this->getPromoData($validatedData);
         }
 
-        // try catch and rollback if failed.
-        $order = DB::transaction(function () use ($validatedData) {
-            $order = RestaurantOrder::create($validatedData);
-            $orderId = $order->id;
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'restaurant');
 
-            OrderHelper::createOrderStatus($orderId);
+            if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
+                return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            }
+        }
 
-            OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-            OrderHelper::createOrderItems($orderId, $validatedData['order_items']);
-            return $order;
-        });
+        $order = $this->restaurantOrderTransaction($validatedData);
 
-        $this->notify(
-            $validatedData['restaurant_branch_slug'],
-            [
-                'title' => 'New Order',
-                'body' => "You've just recevied new order. Check now!",
-                'type' => 'create',
-                'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
-                    ->with('RestaurantOrderItems')
-                    ->where('slug', $order->slug)
-                    ->firstOrFail(),
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+        }
 
-            ]
-        );
+        OrderHelper::sendAdminPushNotifications();
+        OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
 
-        return $this->generateResponse(
-            $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'),
-            201,
-        );
+        $message = 'Your order has successfully been created.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = $this->customer->phone_number;
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+
+        return $this->generateResponse($order, 201);
     }
 
     public function destroy($slug)
@@ -136,21 +112,77 @@ class RestaurantOrderController extends Controller
             $order->restaurantBranch->slug,
             [
                 'title' => 'Order cancelled',
-                'body' => "Restaurant order just has been updated",
+                'body' => 'Restaurant order just has been updated',
                 'type' => 'update',
                 'slug' => $order->slug,
                 'status' => 'cancelled',
             ]
         );
 
-        $message = 'Your order has successfully been cancelled.';
+        $message = 'Your order has been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        // SendSms::dispatch($uniqueKey, [$customer->phone_number], $message, 'order', $smsData);
+        SendSms::dispatch($uniqueKey, [$customer->phone_number], $message, 'order', $smsData);
         OrderHelper::createOrderStatus($order->id, 'cancelled');
 
         return $this->generateResponse($message, 200, true);
+    }
+
+    private function getPromoData($validatedData)
+    {
+        $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
+        if (!isset($promocode) && empty($promocode)) {
+            return $this->generateResponse('Promocode not found', 422, true);
+        }
+
+        $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
+        if (!$validUsage) {
+            return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
+        }
+
+        $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'restaurant');
+        if (!$validRule) {
+            return $this->generateResponse('Invalid promocode rule.', 422, true);
+        }
+        $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
+
+        $validatedData['promocode_id'] = $promocode->id;
+        $validatedData['promocode'] = $promocode->code;
+        $validatedData['promocode_amount'] = $promocodeAmount;
+
+        return $validatedData;
+    }
+
+    private function restaurantOrderTransaction($validatedData)
+    {
+        $order = DB::transaction(function () use ($validatedData) {
+            $order = RestaurantOrder::create($validatedData);
+            OrderHelper::createOrderStatus($order->id);
+            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
+            return $order;
+        });
+
+        $this->notifySystem($validatedData['restaurant_branch_slug'], $order->slug);
+
+        return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
+    }
+
+    private function notifySystem($branchSlug, $slug)
+    {
+        $this->notify(
+            $branchSlug,
+            [
+                'title' => 'New Order',
+                'body' => "You've just recevied new order. Check now!",
+                'type' => 'create',
+                'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
+                    ->with('RestaurantOrderItems')
+                    ->where('slug', $slug)
+                    ->firstOrFail(),
+            ]
+        );
     }
 
     private function notify($slug, $data)
@@ -163,9 +195,9 @@ class RestaurantOrderController extends Controller
                 'data' => [
                     'action' => $data['type'],
                     'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
+                    'status' => !empty($data['status']) ? $data['status'] : '',
+                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : '',
+                    'slug' => !empty($data['slug']) ? $data['slug'] : '',
                 ],
             ]
         );
@@ -177,9 +209,9 @@ class RestaurantOrderController extends Controller
                 'data' => [
                     'action' => $data['type'],
                     'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
+                    'status' => !empty($data['status']) ? $data['status'] : '',
+                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : '',
+                    'slug' => !empty($data['slug']) ? $data['slug'] : '',
                 ],
             ]
         );

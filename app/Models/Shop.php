@@ -16,7 +16,6 @@ class Shop extends BaseModel
         'updated_at',
         'pivot',
         'shop_id',
-        'township_id',
     ];
 
     protected $casts = [
@@ -57,11 +56,6 @@ class Shop extends BaseModel
     public function products()
     {
         return $this->hasMany(Product::class);
-    }
-
-    public function township()
-    {
-        return $this->belongsTo(Township::class);
     }
 
     public function user()

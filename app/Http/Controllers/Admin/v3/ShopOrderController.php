@@ -15,7 +15,9 @@ use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
+use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -29,7 +31,7 @@ class ShopOrderController extends Controller
     {
         $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $shopOrders = ShopOrder::with('contact', 'contact.township')
+        $shopOrders = ShopOrder::with('contact')
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10)
             ->map(function ($shopOrder) {
@@ -92,13 +94,22 @@ class ShopOrderController extends Controller
                     'type' => 'shopOrder',
                     'status' => 'pending',
                     'shopOrder' => ShopOrder::with('contact')
-                        ->with('contact.township')
                         ->with('vendors')
                         ->where('slug', $order->slug)
                         ->firstOrFail(),
                 ],
             ]
         );
+
+        OrderHelper::sendAdminPushNotifications();
+        OrderHelper::sendVendorPushNotifications($validatedData['order_items']);
+
+        $message = 'Your order has successfully been created.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
 
         return $this->generateShopOrderResponse($order->refresh(), 201);
     }
@@ -113,7 +124,7 @@ class ShopOrderController extends Controller
             $shopOrder['assign'] = null;
         }
 
-        return $this->generateResponse($shopOrder->load('contact', 'contact.township', 'vendors', 'drivers', 'drivers.status'), 200);
+        return $this->generateResponse($shopOrder->load('contact', 'vendors', 'drivers', 'drivers.status'), 200);
     }
 
     public function changeStatus(Request $request, ShopOrder $shopOrder)
@@ -142,12 +153,15 @@ class ShopOrderController extends Controller
             );
         }
 
-        $message = 'Your order has successfully been ' . $request->status . '.';
-        $smsData = SmsHelper::prepareSmsData($message);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
+        if ($request->status === 'cancelled') {
+            $message = 'Your order has successfully been ' . $request->status . '.';
+            $smsData = SmsHelper::prepareSmsData($message);
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
 
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        }
+
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
     }
 
@@ -201,5 +215,87 @@ class ShopOrderController extends Controller
         });
 
         return $this->generateResponse($result, 200);
+    }
+
+    public function getOrderCommission(Request $request, Shop $shop)
+    {
+        if ($request->type === 'today') {
+            $result = $this->getTodayCommissions($shop->slug);
+        } elseif ($request->type === 'yesterday') {
+            $result = $this->getYesterdayCommissions($shop->slug);
+        } elseif ($request->type === 'thisweek') {
+            $result = $this->getThisWeekCommissions($shop->slug);
+        } elseif ($request->type === 'thismonth') {
+            $result = $this->getThisMonthCommissions($shop->slug);
+        } elseif ($request->type === 'thisyear') {
+            $result = $this->getThisYearCommissions($shop->slug);
+        }
+
+        return response()->json($result);
+    }
+
+    private function getTodayCommissions($shopSlug)
+    {
+        $startDate = Carbon::now()->startOfDay();
+        $endDate = Carbon::now();
+
+        return ShopOrderItem::with('shop', 'vendor', 'product')
+            ->whereHas('shop', function ($query) use ($shopSlug) {
+                $query->where('slug', $shopSlug);
+            })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
+    }
+
+    private function getYesterdayCommissions($shopSlug)
+    {
+        $startDate = Carbon::now()->subDays(1)->startOfDay();
+        $endDate = Carbon::now()->subDays(1);
+
+        return ShopOrderItem::with('shop', 'vendor', 'product')
+            ->whereHas('shop', function ($query) use ($shopSlug) {
+                $query->where('slug', $shopSlug);
+            })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
+    }
+
+    private function getThisWeekCommissions($shopSlug)
+    {
+        $startDate = Carbon::now()->subDays(6);
+        $endDate = Carbon::now();
+
+        return ShopOrderItem::with('shop', 'vendor', 'product')
+            ->whereHas('shop', function ($query) use ($shopSlug) {
+                $query->where('slug', $shopSlug);
+            })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
+    }
+
+    private function getThisMonthCommissions($shopSlug)
+    {
+        $startDate = Carbon::now()->subDays(29);
+        $endDate = Carbon::now();
+
+        return ShopOrderItem::with('shop', 'vendor', 'product')
+            ->whereHas('shop', function ($query) use ($shopSlug) {
+                $query->where('slug', $shopSlug);
+            })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
+    }
+
+    private function getThisYearCommissions($shopSlug)
+    {
+        $startDate = Carbon::now()->subMonths(11)->startOfMonth();
+        $endDate = Carbon::now();
+
+        return ShopOrderItem::with('shop', 'vendor', 'product')
+            ->whereHas('shop', function ($query) use ($shopSlug) {
+                $query->where('slug', $shopSlug);
+            })
+            ->where('commission', '>', 0)
+            ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
     }
 }

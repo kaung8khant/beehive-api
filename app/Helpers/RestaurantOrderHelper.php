@@ -13,7 +13,8 @@ use App\Models\RestaurantOrderContact;
 use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use App\Models\Setting;
-use App\Models\Township;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 trait RestaurantOrderHelper
@@ -189,11 +190,6 @@ trait RestaurantOrderHelper
         return $toppings;
     }
 
-    private static function getTownshipId($slug)
-    {
-        return Township::where('slug', $slug)->first()->id;
-    }
-
     private static function getMenu($slug)
     {
         return Menu::where('slug', $slug)->first();
@@ -309,11 +305,44 @@ trait RestaurantOrderHelper
         $validatedData['tax'] = $tax;
 
         $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
+        if ($restaurantBranch->restaurant->commission > 0) {
+            $validatedData['commission'] = $validatedData['subTotal'] * $restaurantBranch->restaurant->commission * 0.01;
+        }
 
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
 
         return $validatedData;
+    }
+
+    public static function sendAdminPushNotifications()
+    {
+        $admins = User::whereHas('roles', function ($query) {
+            $query->where('name', 'Admin');
+        })->pluck('slug');
+
+        $request = new Request();
+        $request['slugs'] = $admins;
+        $request['message'] = 'A restaurant order has been received.';
+
+        $appId = config('one-signal.admin_app_id');
+        $fields = OneSignalHelper::prepareNotification($request, $appId);
+
+        OneSignalHelper::sendPush($fields, 'admin');
+    }
+
+    public static function sendVendorPushNotifications($branchId)
+    {
+        $vendors = User::where('restaurant_branch_id', $branchId)->pluck('slug');
+
+        $request = new Request();
+        $request['slugs'] = $vendors;
+        $request['message'] = 'An order has been received.';
+
+        $appId = config('one-signal.vendor_app_id');
+        $fields = OneSignalHelper::prepareNotification($request, $appId);
+
+        OneSignalHelper::sendPush($fields, 'admin');
     }
 }

@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Helpers\StringHelper;
-use App\Models\City;
+use App\Models\Menu;
+use App\Models\MenuVariant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class CityFactory extends Factory
+class MenuVariantFactory extends Factory
 {
     use StringHelper;
 
@@ -15,7 +16,7 @@ class CityFactory extends Factory
      *
      * @var string
      */
-    protected $model = City::class;
+    protected $model = MenuVariant::class;
 
     /**
      * Define the model's default state.
@@ -26,7 +27,11 @@ class CityFactory extends Factory
     {
         return [
             'slug' => $this->generateUniqueSlug(),
-            'name' => $this->faker->unique()->city(),
+            'menu_id' => Menu::pluck('id')->random(1)[0],
+            'price' => $this->faker->numberBetween(1000, 10000),
+            'tax' => $this->faker->numberBetween(0, 50),
+            'discount'=>$this->faker->numberBetween(0, 50),
+            'variant' =>json_decode('[{"value":"Standard"}]'),
         ];
     }
 }

@@ -11,7 +11,6 @@ use App\Models\Customer;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopTag;
-use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
@@ -51,9 +50,9 @@ class ShopController extends Controller
                 'closing_time' => 'required|date_format:H:i',
                 'latitude' => 'required|numeric',
                 'longitude' => 'required|numeric',
-                'township_slug' => 'nullable|exists:App\Models\Township,slug',
+                'township' => 'nullable|string',
+                'city' => 'nullable|string',
                 'image_slug' => 'nullable|exists:App\Models\File,slug',
-
             ],
             [
                 'contact_number.phone' => 'Invalid phone number.',
@@ -61,9 +60,7 @@ class ShopController extends Controller
         );
 
         $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
-        $townshipId = $this->getTownshipIdBySlug($request->township_slug);
-        $validatedData['township_id'] = $townshipId;
-        $shop = Shop::create($validatedData, $townshipId);
+        $shop = Shop::create($validatedData);
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'shops', $shop->slug);
@@ -83,7 +80,7 @@ class ShopController extends Controller
 
     public function show(Shop $shop)
     {
-        return response()->json($shop->load('availableTags', 'township', 'township.city'), 200);
+        return response()->json($shop->load('availableTags'), 200);
     }
 
     public function update(Request $request, Shop $shop)
@@ -104,7 +101,8 @@ class ShopController extends Controller
                 'closing_time' => 'required|date_format:H:i',
                 'latitude' => 'required|numeric',
                 'longitude' => 'required|numeric',
-                'township_slug' => 'nullable|exists:App\Models\Township,slug',
+                'township' => 'nullable|string',
+                'city' => 'nullable|string',
                 'image_slug' => 'nullable|exists:App\Models\File,slug',
             ],
             [
@@ -113,7 +111,6 @@ class ShopController extends Controller
         );
 
         $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
-        $validatedData['township_id'] = $this->getTownshipIdBySlug($request->township_slug);
         $shop->update($validatedData);
 
         $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
@@ -166,11 +163,6 @@ class ShopController extends Controller
     {
         $shop->update(['is_official' => !$shop->is_official]);
         return response()->json(['message' => 'Success.'], 200);
-    }
-
-    private function getTownshipIdBySlug($slug)
-    {
-        return Township::where('slug', $slug)->first()->id;
     }
 
     public function getShopsByBrand(Request $request, Brand $brand)
