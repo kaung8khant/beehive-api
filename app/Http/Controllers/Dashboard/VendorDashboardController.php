@@ -296,7 +296,7 @@ class VendorDashboardController extends Controller
         foreach ($orders as $key) {
             $order = [
                 'order_id' => $key->slug,
-                'location' => $this->getRestaurantContactLocation($key->id),
+                // 'location' => $this->getRestaurantContactLocation($key->id),
                 'status' => $key->order_status,
                 'delivered_time' => $this->getRestaurantDeliveredTime($key->id),
             ];
@@ -338,7 +338,7 @@ class VendorDashboardController extends Controller
             $orderSlug=ShopOrder::where('id', $key->id)->firstOrFail()->slug;
             $order = [
                 'order_id' => $orderSlug,
-                'location' => $this->getShopContactLocation($key->shop_order_id),
+                // 'location' => $this->getShopContactLocation($key->shop_order_id),
                 'status' => $key->order_status,
                 'delivered_time' => $this->getShopDeliveredTime($key->id),
             ];
