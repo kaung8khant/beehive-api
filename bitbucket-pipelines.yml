@@ -71,6 +71,11 @@ pipelines:
                   ONE_SIGNAL_ADMIN_API_KEY=${ONE_SIGNAL_ADMIN_API_KEY}
                   ONE_SIGNAL_VENDOR_APP_ID=${ONE_SIGNAL_VENDOR_APP_ID}
                   ONE_SIGNAL_VENDOR_API_KEY=${ONE_SIGNAL_VENDOR_API_KEY}
+                  KBZ_PAY_NOTIFY_URL=https://api.beehivemm.com/api/v2/kbz/notify
+                  KBZ_PAY_MERCH_CODE=${KBZ_PAY_MERCH_CODE}
+                  KBZ_PAY_APP_ID=${KBZ_PAY_APP_ID}
+                  KBZ_PAY_APP_KEY=${KBZ_PAY_APP_KEY}
+                  KBZ_PAY_CREATE_URL=${KBZ_PAY_CREATE_URL}
 
                 # install composer
                 - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
