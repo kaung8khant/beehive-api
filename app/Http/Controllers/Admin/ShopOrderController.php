@@ -130,6 +130,13 @@ class ShopOrderController extends Controller
             ]
         );
 
+        $message = 'Your order has successfully been created.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+
         return $this->generateShopOrderResponse($order->refresh(), 201);
     }
 
@@ -159,12 +166,15 @@ class ShopOrderController extends Controller
             );
         }
 
-        $message = 'Your order has successfully been ' . $request->status . '.';
-        $smsData = SmsHelper::prepareSmsData($message);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
+        if ($request->status === 'cancelled') {
+            $message = 'Your order has been cancelled.';
+            $smsData = SmsHelper::prepareSmsData($message);
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
 
-        // SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        }
+
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
     }
 

@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 class OrderAssignScheduler extends Command
 {
     use OrderAssignHelper;
+
     /**
      * The name and signature of the console command.
      *
@@ -39,6 +40,6 @@ class OrderAssignScheduler extends Command
      */
     public function handle()
     {
-       $this->assignOrderToOther();
+        $this->assignOrderToOther();
     }
 }

@@ -72,6 +72,13 @@ class RestaurantOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
+        $message = 'Your order has successfully been created.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = $this->customer->phone_number;
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+
         return $this->generateResponse($order, 201);
     }
 
@@ -107,7 +114,7 @@ class RestaurantOrderController extends Controller
             ]
         );
 
-        $message = 'Your order has successfully been cancelled.';
+        $message = 'Your order has been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 

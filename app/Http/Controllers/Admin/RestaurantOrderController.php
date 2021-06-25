@@ -13,7 +13,6 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Customer;
 use App\Models\Promocode;
-use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
@@ -83,8 +82,6 @@ class RestaurantOrderController extends Controller
         // validate and prepare variation
         $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
 
-
-
         if ($validatedData['promo_code_slug']) {
             // may require amount validation.
             $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
@@ -120,6 +117,13 @@ class RestaurantOrderController extends Controller
             'slug' => $order->slug,
         ]);
 
+        $message = 'Your order has successfully been created.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+
         return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
     }
 
@@ -129,13 +133,14 @@ class RestaurantOrderController extends Controller
             return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
         }
 
-        $message = 'Your order has successfully been cancelled.';
+        $message = 'Your order has been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
         $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
-        // SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         OrderHelper::createOrderStatus($restaurantOrder->id, 'cancelled');
+
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
 
@@ -155,12 +160,15 @@ class RestaurantOrderController extends Controller
             'action' => 'update',
         ]);
 
-        $message = 'Your order has successfully been ' . $request->status . '.';
-        $smsData = SmsHelper::prepareSmsData($message);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
+        if ($request->status === 'cancelled') {
+            $message = 'Your order has been cancelled.';
+            $smsData = SmsHelper::prepareSmsData($message);
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
-        // SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        }
+
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
     }
 
