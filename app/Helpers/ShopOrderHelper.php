@@ -12,7 +12,8 @@ use App\Models\ShopOrderContact;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderStatus;
 use App\Models\ShopOrderVendor;
-use App\Models\Township;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 trait ShopOrderHelper
@@ -265,12 +266,11 @@ trait ShopOrderHelper
             $item['discount'] = $productVariant->discount;
             $item['variant'] = $productVariant->variant;
             $item['product_id'] = $productId;
-            $item['commission']=max(($item['price']-$productVariant->discount-$item['vendor_price']) * $value['quantity'], 0);
+            $item['commission'] = max(($item['price'] - $productVariant->discount - $item['vendor_price']) * $value['quantity'], 0);
 
             $subTotal += ($item['price'] - $productVariant->discount) * $value['quantity'];
 
-
-            $commission +=max(($item['price']-$productVariant->discount-$item['vendor_price']) * $value['quantity'], 0);
+            $commission += max(($item['price'] - $productVariant->discount - $item['vendor_price']) * $value['quantity'], 0);
             $tax += ($item['price'] - $productVariant->discount) * $productVariant->tax * 0.01 * $value['quantity'];
 
             array_push($orderItems, $item);
@@ -282,5 +282,42 @@ trait ShopOrderHelper
         $validatedData['tax'] = $tax;
 
         return $validatedData;
+    }
+
+    public static function sendAdminPushNotifications()
+    {
+        $admins = User::whereHas('roles', function ($query) {
+            $query->where('name', 'Admin');
+        })->pluck('slug');
+
+        $request = new Request();
+        $request['slugs'] = $admins;
+        $request['message'] = 'A shop order has been received.';
+
+        $appId = config('one-signal.admin_app_id');
+        $fields = OneSignalHelper::prepareNotification($request, $appId);
+
+        OneSignalHelper::sendPush($fields, 'admin');
+    }
+
+    public static function sendVendorPushNotifications($orderItems)
+    {
+        $shopIds = [];
+        foreach ($orderItems as $item) {
+            $shopIds[] = Product::where('slug', $item['slug'])->value('shop_id');
+        }
+
+        $shopIds = array_values(array_unique($shopIds));
+
+        $vendors = User::whereIn('shop_id', $shopIds)->pluck('slug');
+
+        $request = new Request();
+        $request['slugs'] = $vendors;
+        $request['message'] = 'An order has been received.';
+
+        $appId = config('one-signal.vendor_app_id');
+        $fields = OneSignalHelper::prepareNotification($request, $appId);
+
+        return OneSignalHelper::sendPush($fields, 'vendor');
     }
 }
