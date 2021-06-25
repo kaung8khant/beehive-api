@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\KbzPayHelper;
 use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -9,10 +10,7 @@ use App\Helpers\RestaurantOrderHelper as OrderHelper;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
-use App\Jobs\SendSms;
 use App\Models\Promocode;
-use App\Models\Restaurant;
-use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -91,6 +89,15 @@ class RestaurantOrderController extends Controller
             $validatedData['promocode'] = $promocode->code;
             $validatedData['promocode_amount'] = $promocodeAmount;
         }
+
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'shop');
+
+            if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
+                return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            }
+        }
+
         // try catch and rollback if failed.
         $order = DB::transaction(function () use ($validatedData) {
             $order = RestaurantOrder::create($validatedData);
@@ -100,8 +107,12 @@ class RestaurantOrderController extends Controller
 
             OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createOrderItems($orderId, $validatedData['order_items']);
-            return $order;
+            return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
+
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+        }
 
         $this->notify(
             $validatedData['restaurant_branch_slug'],
@@ -117,10 +128,7 @@ class RestaurantOrderController extends Controller
             ]
         );
 
-        return $this->generateResponse(
-            $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'),
-            201,
-        );
+        return $this->generateResponse($order, 201);
     }
 
     public function destroy($slug)

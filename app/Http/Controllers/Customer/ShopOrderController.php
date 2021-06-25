@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\KbzPayHelper;
 use App\Helpers\NotificationHelper;
 use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
@@ -10,7 +11,6 @@ use App\Helpers\ShopOrderHelper as OrderHelper;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
-use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper,OrderAssignHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     protected $customerId;
 
@@ -90,6 +90,14 @@ class ShopOrderController extends Controller
             $validatedData['promocode_amount'] = $promocodeAmount;
         }
 
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'shop');
+
+            if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
+                return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            }
+        }
+
         // (transaction) try catch and rollback if failed.
         $order = DB::transaction(function () use ($validatedData) {
             $order = ShopOrder::create($validatedData);
@@ -97,9 +105,12 @@ class ShopOrderController extends Controller
             OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
             OrderHelper::createOrderStatus($orderId);
-            return $order;
-
+            return $order->refresh()->load('contact');
         });
+
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+        }
 
         foreach ($validatedData['order_items'] as $item) {
             $this->notify(
@@ -140,9 +151,9 @@ class ShopOrderController extends Controller
             ]
         );
 
-        $this->assignOrder('shop',$order->slug,);
+        $this->assignOrder('shop', $order->slug);
 
-        return $this->generateShopOrderResponse($order->refresh()->load('contact'), 201);
+        return $this->generateShopOrderResponse($order, 201);
     }
 
     public function show($slug)
