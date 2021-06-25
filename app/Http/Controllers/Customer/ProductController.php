@@ -57,27 +57,29 @@ class ProductController extends Controller
             abort(404);
         }
 
-        foreach ($product->variants as $variants) {
-            if ($variants && $variants['ui'] === 'image') {
-                $values = [];
+        if ($product->variants) {
+            foreach ($product->variants as $variants) {
+                if ($variants && $variants['ui'] === 'image') {
+                    $values = [];
 
-                foreach ($variants['values'] as $value) {
-                    if (isset($value['slug'])) {
-                        $image = File::where('slug', $value['slug'])->value('slug');
-                        $url = "/api/v2/images/{$image}";
-                        $value['url'] = config('app.url') . $url;
+                    foreach ($variants['values'] as $value) {
+                        if (isset($value['slug'])) {
+                            $image = File::where('slug', $value['slug'])->value('slug');
+                            $url = "/api/v2/images/{$image}";
+                            $value['url'] = config('app.url') . $url;
+                        }
+
+                        $values[] = $value;
                     }
 
-                    $values[] = $value;
+                    $data = [
+                        'ui' => $variants['ui'],
+                        'name' => $variants['name'],
+                        'values' => $values,
+                    ];
+
+                    $variants = $data;
                 }
-
-                $data = [
-                    'ui' => $variants['ui'],
-                    'name' => $variants['name'],
-                    'values' => $values,
-                ];
-
-                $variants = $data;
             }
         }
 
