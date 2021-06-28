@@ -112,11 +112,13 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
                         $branch->availableMenus()->attach($availableMenus);
                     }
                 } else {
-                    $menu = $menuVariant->menu;
-                    $menu['name'] = $row['name'];
-                    $menu['description'] = $row['description'];
-                    $menu['is_enable'] = $row['is_enable'];
-                    $menu->update($menuData);
+                    // $menu = $menuVariant->menu;
+                    // $menu['name'] = $row['name'];
+                    // $menu['description'] = $row['description'];
+                    // $menu['is_enable'] = $row['is_enable'];
+                    $menuData['slug']=$menuVariant->menu->slug;
+                    $menuData['variant']=$menuVariant->menu->variant;
+                    $menuVariant->menu->update($menuData);
 
                     $menuVariantData = [
                         'menu_id' => $menuVariant->menu->id,
