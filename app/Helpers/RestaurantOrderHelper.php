@@ -2,7 +2,10 @@
 
 namespace App\Helpers;
 
+use App\Helpers\SmsHelper;
+use App\Helpers\StringHelper;
 use App\Exceptions\BadRequestException;
+use App\Jobs\SendSms;
 use App\Models\Menu;
 use App\Models\MenuTopping;
 use App\Models\MenuVariant;
@@ -13,7 +16,8 @@ use App\Models\RestaurantOrderContact;
 use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use App\Models\Setting;
-use App\Models\Township;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 trait RestaurantOrderHelper
@@ -305,8 +309,8 @@ trait RestaurantOrderHelper
         $validatedData['tax'] = $tax;
 
         $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
-        if ($restaurantBranch->restaurant->commission>0) {
-            $validatedData['commission']=$validatedData['subTotal'] * $restaurantBranch->restaurant->commission * 0.01;
+        if ($restaurantBranch->restaurant->commission > 0) {
+            $validatedData['commission'] = $validatedData['subTotal'] * $restaurantBranch->restaurant->commission * 0.01;
         }
 
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
@@ -314,5 +318,59 @@ trait RestaurantOrderHelper
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
 
         return $validatedData;
+    }
+
+    public static function sendAdminPushNotifications()
+    {
+        $admins = User::whereHas('roles', function ($query) {
+            $query->where('name', 'Admin');
+        })->pluck('slug');
+
+        $request = new Request();
+        $request['slugs'] = $admins;
+        $request['message'] = 'A restaurant order has been received.';
+
+        $appId = config('one-signal.admin_app_id');
+        $fields = OneSignalHelper::prepareNotification($request, $appId);
+
+        OneSignalHelper::sendPush($fields, 'admin');
+    }
+
+    public static function sendVendorPushNotifications($branchId)
+    {
+        $vendors = User::where('restaurant_branch_id', $branchId)->pluck('slug');
+
+        $request = new Request();
+        $request['slugs'] = $vendors;
+        $request['message'] = 'An order has been received.';
+
+        $appId = config('one-signal.vendor_app_id');
+        $fields = OneSignalHelper::prepareNotification($request, $appId);
+
+        OneSignalHelper::sendPush($fields, 'vendor');
+    }
+
+    public static function sendAdminSms()
+    {
+        $admins = User::whereHas('roles', function ($query) {
+            $query->where('name', 'Admin');
+        })->pluck('phone_number');
+
+        $message = 'A restaurant order has been received.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+
+        SendSms::dispatch($uniqueKey, $admins, $message, 'order', $smsData);
+    }
+
+    public static function sendVendorSms($branchId)
+    {
+        $vendors = User::where('restaurant_branch_id', $branchId)->pluck('phone_number');
+
+        $message = 'An order has been received.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+
+        SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
     }
 }

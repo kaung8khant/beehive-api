@@ -139,7 +139,7 @@ class OneSignalController extends Controller
 
         $response = OneSignalHelper::sendPush($fields, 'admin');
         if (isset($response['errors'])) {
-            return $this->generateResponse('One of the users did not subscribe to beehive.', 422, true);
+            return $this->generateResponse('The user did not subscribe to beehive.', 422, true);
         }
 
         return $this->generateResponse('Successfully sent push notification.', 200, true);
@@ -157,7 +157,7 @@ class OneSignalController extends Controller
 
         $response = OneSignalHelper::sendPush($fields, 'vendor');
         if (isset($response['errors'])) {
-            return $this->generateResponse('One of the users did not subscribe to beehive.', 422, true);
+            return $this->generateResponse('The user did not subscribe to beehive.', 422, true);
         }
 
         return $this->generateResponse('Successfully sent push notification.', 200, true);
