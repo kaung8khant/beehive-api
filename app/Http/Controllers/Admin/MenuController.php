@@ -24,7 +24,7 @@ class MenuController extends Controller
     {
         $sorting = CollectionHelper::getSorting('menus', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $menus = Menu::with(['restaurant', 'restaurantCategory','menuVariants'])
+        $menus = Menu::with(['restaurant', 'restaurantCategory', 'menuVariants'])
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);

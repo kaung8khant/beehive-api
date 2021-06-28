@@ -45,7 +45,7 @@ class SmsController extends Controller
     private function validateRequest($request)
     {
         $request->validate([
-            'name' => 'required|string',
+            'name' => 'nullable|string',
             'description' => 'nullable',
             'phone_numbers' => 'required|array|max:10000',
             'message' => 'required',
@@ -69,7 +69,7 @@ class SmsController extends Controller
     {
         SmsCampaign::create([
             'batch_id' => $batchId,
-            'name' => $request->name,
+            'name' => $request->name ? $request->name : 'Instant Message',
             'description' => $request->description,
             'type' => $request->type,
             'total_numbers' => count($request->phone_numbers),
