@@ -116,12 +116,8 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                     ];
                     ProductVariant::create($standardProductVariant);
                 } else {
-                    // $product = $productVariant->product;
-                    // $product['name'] = $row['name'];
-                    // $product['description'] = $row['description'];
-                    // $product['is_enable'] = $row['is_enable'];
                     $productData['slug']=$productVariant->product->slug;
-                    $productData['variant']=$productVariant->product->variant;
+                    $productData['variants']=$productVariant->product->variants;
                     $productVariant->product->update($productData);
 
                     $productVariantData = [
