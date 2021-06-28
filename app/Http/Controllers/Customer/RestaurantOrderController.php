@@ -16,10 +16,12 @@ use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\OrderAssignHelper;
+use Illuminate\Support\Facades\Log;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     protected $customer;
 
@@ -63,6 +65,8 @@ class RestaurantOrderController extends Controller
         if (gettype($validatedData) == 'string') {
             return $this->generateResponse($validatedData, 422, true);
         }
+        
+
 
         $validatedData['customer_id'] = $this->customer->id;
         $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
@@ -91,6 +95,8 @@ class RestaurantOrderController extends Controller
         $phoneNumber = $this->customer->phone_number;
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+
+        $this->assignOrder('restaurant',$order->slug);
 
         return $this->generateResponse($order, 201);
     }
