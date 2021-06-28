@@ -32,7 +32,7 @@ class ShopOrdersExport implements FromQuery, WithHeadings, WithMapping, WithStyl
         return [
             $shopOrder->slug,
             $shopOrder->invoice_id,
-            Carbon::parse($shopOrder->order_date)->format('M d Y'),
+            Carbon::parse($shopOrder->order_date)->format('M d Y h:i a'),
             $contact->value('customer_name'),
             $contact->value('phone_number'),
             $address,

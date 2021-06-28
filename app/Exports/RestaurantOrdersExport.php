@@ -33,7 +33,7 @@ class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
         return [
             $restaurantOrder->slug,
             $restaurantOrder->invoice_id,
-            Carbon::parse($restaurantOrder->order_date)->format('M d Y'),
+            Carbon::parse($restaurantOrder->order_date)->format('M d Y h:i a'),
             Restaurant::where('id', $restaurantOrder->restaurant_id)->value('name'),
             RestaurantBranch::where('id', $restaurantOrder->restaurant_branch_id)->value('name'),
             RestaurantBranch::where('id', $restaurantOrder->restaurant_branch_id)->value('contact_number'),

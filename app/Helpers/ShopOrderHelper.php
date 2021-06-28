@@ -24,7 +24,7 @@ trait ShopOrderHelper
     {
         $rules = [
             'slug' => 'required',
-            'order_date' => 'required|date_format:Y-m-d',
+            'order_date' => 'nullable',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
@@ -212,7 +212,7 @@ trait ShopOrderHelper
     {
         $rules = [
             'slug' => 'required|unique:products',
-            'order_date' => 'required|date_format:Y-m-d',
+            'order_date' => 'nullable',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
