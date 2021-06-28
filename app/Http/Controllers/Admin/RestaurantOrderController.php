@@ -70,8 +70,9 @@ class RestaurantOrderController extends Controller
         // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
 
-        //validate variation
-        OrderHelper::checkVariationsExist($validatedData['order_items']);
+        if (gettype($validatedData) == 'string') {
+            return $this->generateResponse($validatedData, 422, true);
+        }
 
         // get Customer Info
         $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
@@ -82,12 +83,24 @@ class RestaurantOrderController extends Controller
         // validate and prepare variation
         $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
 
-        if ($validatedData['promo_code_slug']) {
-            // may require amount validation.
-            $promocode = Promocode::where('slug', $validatedData['promo_code_slug'])->with('rules')->firstOrFail();
-            PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
-            PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
+        if ($validatedData['promo_code']) {
+            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
+            if (!$promocode) {
+                return $this->generateResponse('Promocode not found', 422, true);
+            }
+
+            $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
+            if (!$validUsage) {
+                return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
+            }
+
+            $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
+            if (!$validRule) {
+                return $this->generateResponse('Invalid promocode.', 422, true);
+            }
+
             $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
+
             $validatedData['promocode_id'] = $promocode->id;
             $validatedData['promocode'] = $promocode->code;
             $validatedData['promocode_amount'] = $promocodeAmount;
@@ -117,8 +130,8 @@ class RestaurantOrderController extends Controller
             'slug' => $order->slug,
         ]);
 
-        OrderHelper::sendAdminPushNotifications();
-        OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
+        // OrderHelper::sendAdminPushNotifications();
+        // OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
 
         OrderHelper::sendAdminSms();
         OrderHelper::sendVendorSms($validatedData['restaurant_branch_id']);

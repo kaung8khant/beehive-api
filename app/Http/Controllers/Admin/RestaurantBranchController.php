@@ -22,6 +22,16 @@ class RestaurantBranchController extends Controller
 {
     use StringHelper;
 
+    /**
+     * Do not delete this method. This route is only for debugging purpose.
+     *
+     * @author Aung Thu Moe
+     */
+    public function getAll()
+    {
+        return RestaurantBranch::with('restaurant')->get();
+    }
+
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
@@ -34,42 +44,9 @@ class RestaurantBranchController extends Controller
             ->paginate(10);
     }
 
-    /**
-     * Do not delete this method. This route is only for debugging purpose.
-     *
-     * @author Aung Thu Moe
-     */
-    public function getAll()
-    {
-        return RestaurantBranch::with('restaurant')->get();
-    }
-
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-
-        $validatedData = $request->validate(
-            [
-                'slug' => 'required|unique:restaurant_branches',
-                'name' => 'required',
-                'address' => 'nullable',
-                'contact_number' => 'required|phone:MM',
-                'opening_time' => 'required|date_format:H:i',
-                'closing_time' => 'required|date_format:H:i',
-                'latitude' => 'required',
-                'longitude' => 'required',
-                'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-                'township' => 'nullable|string',
-                'city' => 'nullable|string',
-                'is_enable' => 'required|boolean',
-            ],
-            [
-                'contact_number.phone' => 'Invalid phone number.',
-            ]
-        );
-
-        $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
-        $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
+        $validatedData = $this->validateRestaurantBranch($request, true);
 
         $restaurantBranch = RestaurantBranch::create($validatedData);
 
@@ -88,27 +65,7 @@ class RestaurantBranchController extends Controller
 
     public function update(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $validatedData = $request->validate(
-            [
-                'name' => 'required',
-                'address' => 'nullable',
-                'contact_number' => 'required|phone:MM',
-                'opening_time' => 'required|date_format:H:i',
-                'closing_time' => 'required|date_format:H:i',
-                'latitude' => 'required',
-                'longitude' => 'required',
-                'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-                'township' => 'nullable|string',
-                'city' => 'nullable|string',
-                'is_enable' => 'required|boolean',
-            ],
-            [
-                'contact_number.phone' => 'Invalid phone number.',
-            ]
-        );
-
-        $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
-        $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
+        $validatedData = $this->validateRestaurantBranch($request);
 
         $restaurantBranch->update($validatedData);
         Cache::forget('all_restaurant_branches_restaurant_id' . $validatedData['restaurant_id']);
@@ -124,11 +81,64 @@ class RestaurantBranchController extends Controller
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    private function getRestaurantId($slug)
+    private function validateRestaurantBranch($request, $slug = false, $tagsCategories = false, $branchId = null)
     {
-        return Restaurant::where('slug', $slug)->first()->id;
+        $rules = [
+            'name' => 'required',
+            'address' => 'nullable',
+            'city' => 'nullable|string',
+            'township' => 'nullable|string',
+            'contact_number' => 'required|phone:MM',
+            'notify_numbers' => 'nullable|array',
+            'notify_numbers.*' => 'required|phone:MM',
+            'opening_time' => 'required|date_format:H:i',
+            'closing_time' => 'required|date_format:H:i',
+            'latitude' => 'required',
+            'longitude' => 'required',
+            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
+            'is_enable' => 'required|boolean',
+        ];
+
+        if ($slug) {
+            $request['slug'] = $this->generateUniqueSlug();
+            $rules['slug'] = 'required|unique:restaurant_branches';
+        }
+
+        if ($tagsCategories) {
+            $rules['name'] = [
+                'required',
+                Rule::unique('restaurant_branches')->ignore($branchId),
+            ];
+            $rules['restaurant_tags'] = 'required|array';
+            $rules['restaurant_tags.*'] = 'exists:App\Models\RestaurantTag,slug';
+            $rules['available_categories'] = 'nullable|array';
+            $rules['available_categories.*'] = 'exists:App\Models\RestaurantCategory,slug';
+        }
+
+        $messages = [
+            'contact_number.phone' => 'Invalid phone number.',
+            'notify_numbers.*.phone' => 'Invalid phone number.',
+        ];
+
+        $validatedData = $request->validate($rules, $messages);
+        $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
+        $validatedData['restaurant_id'] = Restaurant::where('slug', $validatedData['restaurant_slug'])->first()->id;
+
+        if ($validatedData['notify_numbers']) {
+            $validatedData['notify_numbers'] = $this->makeNotifyNumbers($validatedData['notify_numbers']);
+        }
+
+        return $validatedData;
     }
 
+    private function makeNotifyNumbers($notifyNumbers)
+    {
+        $notifyNumbers = array_map(function ($notifyNumber) {
+            return PhoneNumber::make($notifyNumber, 'MM');
+        }, $notifyNumbers);
+
+        return array_values(array_unique($notifyNumbers));
+    }
 
     public function getBranchesByRestaurant(Request $request, Restaurant $restaurant)
     {
@@ -139,16 +149,6 @@ class RestaurantBranchController extends Controller
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
-
-    // public function getBranchesByTownship(Request $request, Township $township)
-    // {
-    //     $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-    //     return RestaurantBranch::where('township_id', $township->id)
-    //         ->where('name', 'LIKE', '%' . $request->filter . '%')
-    //         ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-    //         ->paginate(10);
-    // }
 
     public function toggleEnable(RestaurantBranch $restaurantBranch)
     {
@@ -186,7 +186,7 @@ class RestaurantBranchController extends Controller
             CacheHelper::forgetCategoryIdsByBranchCache($menuId);
         }
 
-        return response()->json($restaurantBranch->load(['availableMenus', 'restaurant', 'township']), 201);
+        return response()->json($restaurantBranch->load(['availableMenus', 'restaurant']), 201);
     }
 
     public function removeAvailableMenus(Request $request, RestaurantBranch $restaurantBranch)
@@ -207,28 +207,7 @@ class RestaurantBranchController extends Controller
 
     public function updateWithTagsAndCategories(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $validatedData = $request->validate([
-            'name' => [
-                'required',
-                Rule::unique('restaurant_branches')->ignore($restaurantBranch->id),
-            ],
-            'address' => 'nullable',
-            'contact_number' => 'required',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i',
-            'latitude' => 'required',
-            'longitude' => 'required',
-            'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-            'township' => 'nullable|string',
-            'city' => 'nullable|string',
-            'is_enable' => 'nullable|boolean',
-            'restaurant_tags' => 'required|array',
-            'restaurant_tags.*' => 'exists:App\Models\RestaurantTag,slug',
-            'available_categories' => 'nullable|array',
-            'available_categories.*' => 'exists:App\Models\RestaurantCategory,slug',
-        ]);
-
-        $validatedData['restaurant_id'] = $this->getRestaurantId($request->restaurant_slug);
+        $validatedData = $this->validateRestaurantBranch($request, false, true, $restaurantBranch->id);
 
         $restaurantBranch->update($validatedData);
         $restaurant = Restaurant::where('slug', $request->restaurant_slug)->firstOrFail();

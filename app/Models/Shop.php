@@ -21,6 +21,7 @@ class Shop extends BaseModel
     protected $casts = [
         'is_official' => 'boolean',
         'is_enable' => 'boolean',
+        'notify_numbers' => 'array',
     ];
 
     protected $appends = ['rating', 'images'];

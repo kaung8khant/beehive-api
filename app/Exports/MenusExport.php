@@ -2,7 +2,8 @@
 
 namespace App\Exports;
 
-use App\Models\Menu;
+// use App\Models\Menu;
+use App\Models\MenuVariant;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -16,26 +17,37 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
 {
     public function query()
     {
-        return Menu::query();
+        return MenuVariant::query()->with("menu");
+    }
+
+    public function stringifyVariant($variants)
+    {
+        $implode = array();
+        foreach ($variants as $variant) {
+            $implode[] = implode(':', $variant);
+        }
+        return implode(' / ', $implode);
     }
 
     /**
      * @var Menu $menu
      */
-    public function map($menu): array
+    public function map($menuVariant): array
     {
         return [
-            $menu->slug,
-            $menu->name,
-            $menu->description,
-            $menu->price ? $menu->price : '0',
-            $menu->tax ? $menu->tax : '0',
-            $menu->discount ? $menu->discount : '0',
-            $menu->is_enable ? '1' : '0',
-            Restaurant::where('id', $menu->restaurant_id)->value('name'),
-            Restaurant::where('id', $menu->restaurant_id)->value('slug'),
-            RestaurantCategory::where('id', $menu->restaurant_category_id)->value('name'),
-            RestaurantCategory::where('id', $menu->restaurant_category_id)->value('slug'),
+            $menuVariant->menu->slug,
+            $menuVariant->slug,
+            $menuVariant->menu->name,
+            $menuVariant->menu->description,
+            $this->stringifyVariant($menuVariant->variant),
+            $menuVariant->price ? $menuVariant->price : '0',
+            $menuVariant->tax ? $menuVariant->tax : '0',
+            $menuVariant->discount ? $menuVariant->discount : '0',
+            $menuVariant->is_enable ? '1' : '0',
+            Restaurant::where('id', $menuVariant->menu->restaurant_id)->value('name'),
+            Restaurant::where('id', $menuVariant->menu->restaurant_id)->value('slug'),
+            RestaurantCategory::where('id', $menuVariant->menu->restaurant_category_id)->value('name'),
+            RestaurantCategory::where('id', $menuVariant->menu->restaurant_category_id)->value('slug'),
         ];
     }
 
@@ -43,8 +55,10 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
     {
         return [
             'id',
+            'menu_variant_slug',
             'name',
             'description',
+            'variant',
             'price',
             'tax',
             'discount',
@@ -61,17 +75,6 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
         return [
             // Style the first row as bold text.
             1 => ['font' => ['bold' => true]],
-            'A' => ['alignment' => ['horizontal' => 'center']],
-            'B' => ['alignment' => ['horizontal' => 'center']],
-            'C' => ['alignment' => ['horizontal' => 'center']],
-            'D' => ['alignment' => ['horizontal' => 'center']],
-            'E' => ['alignment' => ['horizontal' => 'center']],
-            'F' => ['alignment' => ['horizontal' => 'center']],
-            'G' => ['alignment' => ['horizontal' => 'center']],
-            'H' => ['alignment' => ['horizontal' => 'center']],
-            'I' => ['alignment' => ['horizontal' => 'center']],
-            'J' => ['alignment' => ['horizontal' => 'center']],
-            'K' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -81,7 +84,7 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'A' => 15,
             'B' => 30,
             'C' => 45,
-            'D' => 10,
+            'D' => 45,
             'E' => 10,
             'F' => 10,
             'G' => 10,
@@ -89,6 +92,8 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'I' => 15,
             'J' => 25,
             'K' => 25,
+            'L' => 25,
+            'M' => 25,
         ];
     }
 }

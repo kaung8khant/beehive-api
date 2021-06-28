@@ -14,33 +14,24 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-
 class OrderDriverController extends Controller
 {
     use ResponseHelper;
 
     public function jobAccept($slug)
     {
-
+        
         $userId = Auth::guard('users')->user()->id;
-
-        $shopOrder = ShopOrder::where('slug', $slug)->first();
+        
         $restaurantOrder = RestaurantOrder::where('slug', $slug)->first();
 
-        if (!empty($shopOrder) && isset($shopOrder)) {
-            $shopOrderDriver = ShopOrderDriver::where('shop_order_id',$shopOrder->id)->where('user_id',$userId)->first();
-          
-            ShopOrderDriverStatus::create([
-                'shop_order_driver_id' => $shopOrderDriver->id,
-                'status' => "accepted",
-            ]);
-        } else {
-            $restaurantOrder = RestaurantOrderDriver::where('restaurant_order_id',$shopOrder)->where('user_id',$userId)->first();
-            RestaurantOrderDriverStatus::create([
-                'restaurant_order_driver_id' => $restaurantOrder->id,
-                'status' => "accepted",
-            ]);
-        }
+        $restaurantOrderDriver = RestaurantOrderDriver::where('restaurant_order_id',$restaurantOrder->id)->where('user_id',$userId)->first();
+       
+        RestaurantOrderDriverStatus::create([
+            'restaurant_order_driver_id' => $restaurantOrderDriver->id,
+            'status' => "accepted",
+        ]);
+      
 
         return response()->json(['message' => 'created'], 201);
     }
@@ -73,17 +64,12 @@ class OrderDriverController extends Controller
 
     public function jobDetail($slug)
     {
-        $shopOrder = ShopOrder::where('slug', $slug)
-            ->with('contact')->firstOrFail();
+        
+        $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status','restaurantOrderContact')->where('slug', $slug)->first();
 
-        $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status')->where('slug', $slug)->first();
-
-        if (!empty($shopOrder) && isset($shopOrder)) {
-            $shopOrder['type'] = "shop";
-            return $this->generateShopOrderResponse($shopOrder, 200);
-        } else {
-            return $this->generateResponse($restaurantOrder, 200);
-        }
+     
+        return $this->generateResponse($restaurantOrder, 200);
+        
 
     }
 

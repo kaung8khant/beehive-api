@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -52,6 +53,7 @@ class RestaurantOrderController extends Controller
         }
 
         $validatedData['customer_id'] = $this->customer->id;
+        $validatedData['order_date'] = Carbon::now()->format('Y-m-d H:i');
         $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
 
         if ($validatedData['promo_code']) {
@@ -72,8 +74,8 @@ class RestaurantOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        OrderHelper::sendAdminPushNotifications();
-        OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
+        // OrderHelper::sendAdminPushNotifications();
+        // OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
 
         OrderHelper::sendAdminSms();
         OrderHelper::sendVendorSms($validatedData['restaurant_branch_id']);

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Helpers\StringHelper;
 use App\Models\Menu;
+use App\Models\MenuVariant;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
 use Illuminate\Bus\Queueable;
@@ -51,6 +52,7 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
         return $this->uniqueKey;
     }
 
+
     /**
      * Execute the job.
      *
@@ -66,8 +68,6 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
                 'tax' => 'required|numeric',
                 'discount' => 'required|numeric',
                 'is_enable' => 'required|boolean',
-                'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
-                'restaurant_category_slug' => 'required|exists:App\Models\RestaurantCategory,slug',
             ];
 
             $validator = Validator::make(
@@ -76,10 +76,10 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
             );
 
             if (!$validator->fails()) {
-                $menu = null;
+                $menuVariant = null;
 
                 if (isset($row['id'])) {
-                    $menu = Menu::where('slug', $row['id'])->first();
+                    $menuVariant = MenuVariant::where('slug', $row['menu_variant_slug'])->first();
                 }
 
                 $restaurant = Restaurant::where('slug', $row['restaurant_slug'])->firstOrFail();
@@ -88,38 +88,43 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
                     'slug' => StringHelper::generateUniqueSlug(),
                     'name' => $row['name'],
                     'description' => $row['description'],
-                    'price' => $row['price'],
-                    'tax' => $row['tax'],
-                    'discount' => $row['discount'],
                     'is_enable' => $row['is_enable'],
                     'restaurant_id' => $restaurant->id,
+                    'variants' => [],
                     'restaurant_category_id' => RestaurantCategory::where('slug', $row['restaurant_category_slug'])->value('id'),
                 ];
 
-                if (!$menu) {
+                if (!$menuVariant) {
                     $menu = Menu::create($menuData);
+                    $standardMenuVariant = [
+                        'menu_id' => $menu->id,
+                        'slug' => StringHelper::generateUniqueSlug(),
+                        'variant' => json_decode('[{"value":"Standard"}]'),
+                        'price' => $row['price'],
+                        'tax' => $row['tax'],
+                        'discount' => $row['discount'],
+                    ];
+                    MenuVariant::create($standardMenuVariant);
 
+                    // NOTE:: i don't think we need this
                     foreach ($restaurant->restaurantBranches as $branch) {
                         $availableMenus = Menu::where('slug', $menu->slug)->pluck('id');
                         $branch->availableMenus()->attach($availableMenus);
                     }
                 } else {
-                    $menuData['slug'] = $menu->slug;
-                    $oldRestaurantId = $menu->restaurant_id;
+                    $menuData['slug']=$menuVariant->menu->slug;
+                    $menuData['variants']=$menuVariant->menu->variants;
+                    $menuVariant->menu->update($menuData);
 
-                    $menu->update($menuData);
+                    $menuVariantData = [
+                        'menu_id' => $menuVariant->menu->id,
+                        'slug' => $row['menu_variant_slug'],
+                        'price' => $row['price'],
+                        'tax' => $row['tax'],
+                        'discount' => $row['discount'],
+                    ];
 
-                    if ($oldRestaurantId !== $restaurant->id) {
-                        $oldRestaurant = Restaurant::where('id', $oldRestaurantId)->firstOrFail();
-
-                        foreach ($oldRestaurant->restaurantBranches as $branch) {
-                            $branch->availableMenus()->detach($menu->id);
-                        }
-
-                        foreach ($restaurant->restaurantBranches as $branch) {
-                            $branch->availableMenus()->attach($menu->id);
-                        }
-                    }
+                    $menuVariant->update($menuVariantData);
                 }
             }
         }

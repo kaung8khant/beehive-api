@@ -26,13 +26,12 @@ trait RestaurantOrderHelper
     {
         $rules = [
             'slug' => 'required|unique:restaurant_orders',
-            'order_date' => 'required|date_format:Y-m-d',
+            'order_date' => 'nullable',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
-            'promo_code_slug' => 'nullable|string|exists:App\Models\Promocode,slug',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
@@ -150,6 +149,7 @@ trait RestaurantOrderHelper
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
             $item['restaurant_id'] = $menu->restaurant_id;
+            $item['discount'] = 0;
 
             RestaurantOrderItem::create($item);
         }
@@ -236,7 +236,7 @@ trait RestaurantOrderHelper
     {
         $rules = [
             'slug' => 'required|unique:restaurant_orders',
-            'order_date' => 'required|date_format:Y-m-d',
+            'order_date' => 'nullable',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
@@ -364,7 +364,7 @@ trait RestaurantOrderHelper
 
     public static function sendVendorSms($branchId)
     {
-        $vendors = User::where('restaurant_branch_id', $branchId)->pluck('phone_number');
+        $vendors = RestaurantBranch::where('id', $branchId)->value('notify_numbers');
 
         $message = 'An order has been received.';
         $smsData = SmsHelper::prepareSmsData($message);
