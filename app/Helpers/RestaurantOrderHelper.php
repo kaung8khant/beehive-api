@@ -26,7 +26,8 @@ trait RestaurantOrderHelper
     {
         $rules = [
             'slug' => 'required|unique:restaurant_orders',
-            'order_date' => 'required|date_format:Y-m-d H:i',
+            // 'order_date' => 'required|date_format:Y-m-d H:i',
+            'order_date' => 'nullable',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
@@ -237,7 +238,7 @@ trait RestaurantOrderHelper
     {
         $rules = [
             'slug' => 'required|unique:restaurant_orders',
-            'order_date' => 'required|date_format:Y-m-d H:i',
+            'order_date' => 'nullable',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
