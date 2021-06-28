@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Brand;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
@@ -18,30 +19,42 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
 {
     public function query()
     {
-        return Product::query();
+        return ProductVariant::query()->with("product");
+    }
+
+    public function stringifyVariant($variants)
+    {
+        $implode = array();
+        foreach ($variants as $variant) {
+            $implode[] = implode(':', $variant);
+        }
+        return implode(' / ', $implode);
     }
 
     /**
      * @var Product $product
      */
-    public function map($product): array
+    public function map($productVatiant): array
     {
         return [
-            $product->slug,
-            $product->name,
-            $product->description,
-            $product->price ? $product->price : '0',
-            $product->tax ? $product->tax : '0',
-            $product->discount ? $product->discount : '0',
-            $product->is_enable ? '1' : '0',
-            Shop::where('id', $product->shop_id)->value('name'),
-            Shop::where('id', $product->shop_id)->value('slug'),
-            ShopCategory::where('id', $product->shop_category_id)->value('name'),
-            ShopCategory::where('id', $product->shop_category_id)->value('slug'),
-            ShopSubCategory::where('id', $product->shop_sub_category_id)->value('name'),
-            ShopSubCategory::where('id', $product->shop_sub_category_id)->value('slug'),
-            Brand::where('id', $product->brand_id)->value('name'),
-            Brand::where('id', $product->brand_id)->value('slug'),
+            $productVatiant->product->slug,
+            $productVatiant->slug,
+            $productVatiant->product->name,
+            $productVatiant->product->description,
+            $this->stringifyVariant($productVatiant->variant),
+            $productVatiant->price ? $productVatiant->price : '0',
+            $productVatiant->vendor_price ? $productVatiant->vendor_price : '0',
+            $productVatiant->tax ? $productVatiant->tax : '0',
+            $productVatiant->discount ? $productVatiant->discount : '0',
+            $productVatiant->is_enable ? '1' : '0',
+            Shop::where('id', $productVatiant->product->shop_id)->value('name'),
+                Shop::where('id', $productVatiant->product->shop_id)->value('slug'),
+                ShopCategory::where('id', $productVatiant->product->shop_category_id)->value('name'),
+                ShopCategory::where('id', $productVatiant->product->shop_category_id)->value('slug'),
+                ShopSubCategory::where('id', $productVatiant->product->shop_sub_category_id)->value('name'),
+                ShopSubCategory::where('id', $productVatiant->product->shop_sub_category_id)->value('slug'),
+                Brand::where('id', $productVatiant->product->brand_id)->value('name'),
+                Brand::where('id', $productVatiant->product->brand_id)->value('slug'),
         ];
     }
 
@@ -49,9 +62,12 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     {
         return [
             'id',
+            'product_variant_slug',
             'name',
             'description',
+            'variant',
             'price',
+            'vendor_price',
             'tax',
             'discount',
             'is_enable',
@@ -86,6 +102,9 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'M' => ['alignment' => ['horizontal' => 'center']],
             'N' => ['alignment' => ['horizontal' => 'center']],
             'O' => ['alignment' => ['horizontal' => 'center']],
+            'P' => ['alignment' => ['horizontal' => 'center']],
+            'Q' => ['alignment' => ['horizontal' => 'center']],
+            'R' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -95,7 +114,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'A' => 15,
             'B' => 30,
             'C' => 45,
-            'D' => 10,
+            'D' => 45,
             'E' => 10,
             'F' => 10,
             'G' => 10,
@@ -107,6 +126,9 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'M' => 25,
             'N' => 25,
             'O' => 25,
+            'P' => 25,
+            'Q' => 25,
+            'R' => 25,
         ];
     }
 }

@@ -41,8 +41,10 @@ class ProductsImport implements ToCollection, WithHeadingRow
             $validateRow = $row->toArray();
 
             $rules = [
+                'name' => 'required',
                 'description' => 'nullable|string',
                 'price' => 'required|max:99999999',
+                'vendor_price' => 'required|max:99999999',
                 'tax' => 'required|numeric',
                 'discount' => 'required|numeric',
                 'is_enable' => 'required|boolean',
@@ -63,6 +65,7 @@ class ProductsImport implements ToCollection, WithHeadingRow
                     'name' => $row['name'],
                     'description' => $row['description'],
                     'price' => $row['price'],
+                    'vendor_price' => $row['vendor_price'],
                     'tax' => $row['tax'],
                     'discount' => $row['discount'],
                     'is_enable' => $row['is_enable'],
