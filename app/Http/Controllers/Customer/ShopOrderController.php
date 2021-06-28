@@ -72,8 +72,8 @@ class ShopOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        OrderHelper::sendAdminPushNotifications();
-        OrderHelper::sendVendorPushNotifications($validatedData['order_items']);
+        // OrderHelper::sendAdminPushNotifications();
+        // OrderHelper::sendVendorPushNotifications($validatedData['order_items']);
 
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);

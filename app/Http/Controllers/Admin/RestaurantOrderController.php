@@ -117,8 +117,8 @@ class RestaurantOrderController extends Controller
             'slug' => $order->slug,
         ]);
 
-        OrderHelper::sendAdminPushNotifications();
-        OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
+        // OrderHelper::sendAdminPushNotifications();
+        // OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
 
         OrderHelper::sendAdminSms();
         OrderHelper::sendVendorSms($validatedData['restaurant_branch_id']);
