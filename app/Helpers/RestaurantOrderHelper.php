@@ -32,7 +32,6 @@ trait RestaurantOrderHelper
             'delivery_mode' => 'required|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
-            'promo_code_slug' => 'nullable|string|exists:App\Models\Promocode,slug',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
@@ -365,7 +364,7 @@ trait RestaurantOrderHelper
 
     public static function sendVendorSms($branchId)
     {
-        $vendors = User::where('restaurant_branch_id', $branchId)->pluck('phone_number');
+        $vendors = RestaurantBranch::where('id', $branchId)->value('notify_numbers');
 
         $message = 'An order has been received.';
         $smsData = SmsHelper::prepareSmsData($message);

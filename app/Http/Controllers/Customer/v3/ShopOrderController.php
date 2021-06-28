@@ -73,6 +73,9 @@ class ShopOrderController extends Controller
         // OrderHelper::sendAdminPushNotifications();
         // OrderHelper::sendVendorPushNotifications($validatedData['order_items']);
 
+        OrderHelper::sendAdminSms();
+        OrderHelper::sendVendorSms($validatedData['order_items']);
+
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();

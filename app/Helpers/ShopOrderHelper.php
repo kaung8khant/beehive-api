@@ -4,9 +4,11 @@ namespace App\Helpers;
 
 use App\Exceptions\BadRequestException;
 use App\Helpers\StringHelper;
+use App\Jobs\SendSms;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductVariationValue;
+use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderContact;
 use App\Models\ShopOrderItem;
@@ -302,10 +304,9 @@ trait ShopOrderHelper
 
     public static function sendVendorPushNotifications($orderItems)
     {
-        $shopIds = [];
-        foreach ($orderItems as $item) {
-            $shopIds[] = Product::where('slug', $item['slug'])->value('shop_id');
-        }
+        $shopIds = array_map(function ($item) {
+            return Product::where('slug', $item['slug'])->value('shop_id');
+        }, $orderItems);
 
         $shopIds = array_values(array_unique($shopIds));
 
@@ -319,5 +320,34 @@ trait ShopOrderHelper
         $fields = OneSignalHelper::prepareNotification($request, $appId);
 
         return OneSignalHelper::sendPush($fields, 'vendor');
+    }
+
+    public static function sendAdminSms()
+    {
+        $admins = User::whereHas('roles', function ($query) {
+            $query->where('name', 'Admin');
+        })->pluck('phone_number');
+
+        $message = 'A shop order has been received.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+
+        SendSms::dispatch($uniqueKey, $admins, $message, 'order', $smsData);
+    }
+
+    public static function sendVendorSms($orderItems)
+    {
+        $vendors = array_map(function ($item) {
+            $shopId = Product::where('slug', $item['slug'])->value('shop_id');
+            return Shop::where('id', $shopId)->value('notify_numbers');
+        }, $orderItems);
+
+        $vendors = array_values(array_unique(array_merge(...$vendors)));
+
+        $message = 'An order has been received.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+
+        SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
     }
 }

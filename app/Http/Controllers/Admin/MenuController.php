@@ -247,7 +247,7 @@ class MenuController extends Controller
     {
         $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
 
-        $menus = Menu::with(['restaurant', 'restaurantCategory','menuVariants'])
+        $menus = Menu::with(['restaurant', 'restaurantCategory', 'menuVariants'])
             ->where('restaurant_id', $restaurant->id)
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->filter . '%')
@@ -270,7 +270,7 @@ class MenuController extends Controller
         $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
 
         $menus = $restaurantBranch->availableMenus()
-            ->with(['restaurant', 'restaurantCategory','menuVariants'])
+            ->with(['restaurant', 'restaurantCategory', 'menuVariants'])
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
