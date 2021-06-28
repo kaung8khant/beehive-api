@@ -20,6 +20,7 @@ class RestaurantBranch extends BaseModel
 
     protected $casts = [
         'is_enable' => 'boolean',
+        'notify_numbers' => 'array',
     ];
 
     public function getIsAvailableAttribute()
