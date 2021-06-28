@@ -121,6 +121,9 @@ trait OneSignalHelper
         if ($request->url) {
             $fields['url'] = $request->url;
         }
+        if($request->data){
+            $fields['data'] = $request->data;
+        }
 
         return json_encode($fields);
     }

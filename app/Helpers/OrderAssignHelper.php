@@ -3,6 +3,8 @@
 namespace App\Helpers;
 
 use App\Models\RestaurantOrder;
+use App\Models\RestaurantOrderDriver;
+use App\Models\RestaurantOrderDriverStatus;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderDriver;
 use App\Models\ShopOrderDriverStatus;
@@ -10,8 +12,10 @@ use App\Models\User;
 use App\Models\UserDevice;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Ladumor\OneSignal\OneSignal;
+use App\Helpers\RestaurantOrderHelper as OrderHelper;
+use \stdClass;
+use Illuminate\Http\Request;
 
 trait OrderAssignHelper{
 
@@ -19,87 +23,96 @@ trait OrderAssignHelper{
 
     public static function assignOrder($type,$slug){
         $driverList = self::getdriver();
+      
         $driverSlug =  key($driverList);
-
+       
         if($type=="shop"){
             $order = ShopOrder::where('slug', $slug)->first();
         }else{
             $order = RestaurantOrder::where('slug', $slug)->first();
         }
 
-        self::assignAndAlert($driverSlug,$order,$type);
+        self::assignAndAlert($driverSlug,$order);
     }
 
 
 
     public static function assignOrderToOther(){
         $driverList = self::getdriver();
-        $shop_order_list = DB::select('Select od.id,od.shop_order_id,od.user_id,ods.status from (SELECT sod1.* FROM shop_order_drivers sod1
-        JOIN (SELECT shop_order_id, MAX(created_at) created_at FROM shop_order_drivers GROUP BY shop_order_id) sod2
-            ON sod1.shop_order_id = sod2.shop_order_id AND sod1.created_at = sod2.created_at) od left join shop_order_driver_statuses ods on od.id=ods.shop_order_driver_id where ods.status="pending"');
-         
-        foreach($shop_order_list as $order){
-            $assignedDriver = User::where('id',$order->user_id)->first()->slug;
-            $drivers = $driverList;
-            
-            ShopOrderDriverStatus::create([
-                'shop_order_driver_id' => $order->id,
-                'status' => "no_response",
-            ]);
-
-
-            unset($drivers[$assignedDriver]);
-            $driverSlug =  key($drivers);
-
-            self::assignAndAlert($driverSlug,$order,'shop');
-        }
-
-        $restaurant_orders = DB::select('Select * from (SELECT sod1.* FROM restaurant_order_drivers sod1
+    
+        $restaurant_orders = DB::select('Select od.id,od.restaurant_order_id,od.user_id,ods.status from (SELECT sod1.* FROM restaurant_order_drivers sod1
         JOIN (SELECT restaurant_order_id, MAX(created_at) created_at FROM restaurant_order_drivers GROUP BY restaurant_order_id) sod2
             ON sod1.restaurant_order_id = sod2.restaurant_order_id AND sod1.created_at = sod2.created_at) od left join restaurant_order_driver_statuses ods on od.id=ods.restaurant_order_driver_id where ods.status="pending"');
          
         foreach($restaurant_orders as $order){
+            $reOrder = RestaurantOrderDriverStatus::where('restaurant_order_driver_id',$order->id)->get();
+           
             $assignedDriver = User::where('id',$order->user_id)->first()->slug;
             $drivers = $driverList;
         
             unset($drivers[$assignedDriver]);
+
             $driverSlug =  key($drivers);
 
-            self::assignAndAlert($driverSlug,$order,'restaurant');
+
+            $resOrderDriver = RestaurantOrderDriver::where('user_id',$order->user_id)->where('restaurant_order_id',$order->restaurant_order_id)->first();
+            RestaurantOrderDriverStatus::create([
+                'restaurant_order_driver_id' => $resOrderDriver->id,
+                'status' => "no-response",
+            ]);
+            $restaurantOrder = RestaurantOrder::where('id',$order->restaurant_order_id)->first();
+            if(count($reOrder)<2){
+                self::assignAndAlert($driverSlug,$restaurantOrder);
+            }else{
+                OrderHelper::createOrderStatus($restaurantOrder->id, "cancelled");
+
+                $request=new Request();
+                $request['slugs'] = User::with('roles')->whereHas('roles', function ($query) {
+                    return $query->where('name', "Admin");
+                })->get()->pluck('slug');
+
+                $request['message'] = "No driver has been assigned to order ".$restaurantOrder->slug." and has been cancelled";
+
+                $appId = config('one-signal.admin_app_id');
+            
+                $fields = OneSignalHelper::prepareNotification($request, $appId);
+                $response = OneSignalHelper::sendPush($fields, 'admin');
+            }
         }
     }
     
-    private static function assignAndAlert($driverSlug,$order,$type){
+    private static function assignAndAlert($driverSlug,$order){
 
-        $driverID= User::where('slug',$driverSlug)->first()->id;
-        if($type=="shop"){
-            $shopOrderDriver = ShopOrderDriver::create([
-                'shop_order_id' => $order->id,
-                'user_id' => $driverID,
-            ]);
-            ShopOrderDriverStatus::create([
-                'shop_order_driver_id' => $shopOrderDriver->id,
-                'status' => "pending",
-            ]);
-        }else{
-            $resOrderDriver = RestaurantOrderDriver::create([
-                'restaurant_order_id' => $order->id,
-                'user_id' => $driverID,
-            ]);
-            RestaurantOrderDriverStatus::create([
-                'restaurant_order_driver_id' => $resOrderDriver->id,
-                'status' => "pending",
-            ]);
-        }
+        $driver= User::where('slug',$driverSlug)->first();
+        
+        if(isset($driver)){
+            $driverID=$driver->id;
+            $resOrderDriver = RestaurantOrderDriver::where( 'restaurant_order_id',$order->id)->where('user_id', $driverID)->first();
+            if(empty($resOrderDriver)){
+                $resOrderDriver = RestaurantOrderDriver::create([
+                    'restaurant_order_id' => $order->id,
+                    'user_id' => $driverID,
+                ]);
+                RestaurantOrderDriverStatus::create([
+                    'restaurant_order_driver_id' => $resOrderDriver->id,
+                    'status' => "pending",
+                ]);
+            }
        
+            
+            $request=new Request();
+            $request['slugs'] = Array($driverSlug);
+            $request['message'] = "You have received new order. Accept Now!";
+            $appId = config('one-signal.admin_app_id');
+            $order = RestaurantOrder::where('id',$order->id)->first();
+            $request['data'] = ["slug"=>$order->slug,'price'=>$order->total_amount];
+            $fields = OneSignalHelper::prepareNotification($request, $appId);
+            
+
+            $response = OneSignalHelper::sendPush($fields, 'admin');
+           
+        }
         
-        $userIds = User::whereIn('slug', array($driverSlug))->pluck('id');
-        $playerIds = UserDevice::whereIn('user_id', $userIds)->pluck('player_id');
-        
-        $fields['include_player_ids'] = $playerIds;
-        $fields['data'] = ['slug'=>$order->slug,'price'=>$order->total_amount];
-        $message = "test";
-        OneSignal::sendPush($fields, $message);
     }
 
     private static function getdriver(){
