@@ -92,6 +92,8 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'I' => 15,
             'J' => 25,
             'K' => 25,
+            'L' => 25,
+            'M' => 25,
         ];
     }
 }

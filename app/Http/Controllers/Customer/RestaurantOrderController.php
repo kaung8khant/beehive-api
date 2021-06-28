@@ -17,6 +17,7 @@ use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class RestaurantOrderController extends Controller
 {
@@ -66,6 +67,7 @@ class RestaurantOrderController extends Controller
         }
 
         $validatedData['customer_id'] = $this->customer->id;
+        $validatedData['order_date'] = Carbon::now()->format('Y-m-d H:i');
         $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
 
         if ($validatedData['promo_code']) {

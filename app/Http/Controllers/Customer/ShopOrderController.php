@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -52,6 +53,7 @@ class ShopOrderController extends Controller
         }
 
         $validatedData['customer_id'] = $this->customer->id;
+        $validatedData['order_date'] = Carbon::now()->format('Y-m-d H:i');
         $validatedData = OrderHelper::prepareProductVariations($validatedData);
 
         if ($validatedData['promo_code']) {
@@ -200,7 +202,8 @@ class ShopOrderController extends Controller
                             ->where('slug', $slug)
                             ->firstOrFail(),
                     ],
-                ]);
+                ]
+            );
         }
 
         $this->notifyAdmin(
@@ -218,7 +221,6 @@ class ShopOrderController extends Controller
                 ],
             ]
         );
-
     }
 
     private function notify($slug, $data)
