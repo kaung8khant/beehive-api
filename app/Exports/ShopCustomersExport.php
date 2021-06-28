@@ -14,6 +14,12 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ShopCustomersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
+    public function __construct(string $params)
+    {
+        $this->params = $params;
+        ini_set('memory_limit', '256M');
+    }
+
     public function query()
     {
         $shop = Shop::where('slug', $this->params)->firstOrFail();

@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Menu;
+use App\Models\MenuVariant;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -14,31 +15,47 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class RestaurantBranchMenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
+    public function __construct(string $params)
+    {
+        $this->params = $params;
+        ini_set('memory_limit', '256M');
+    }
+
     public function query()
     {
-        $menus = Menu::query()->whereHas('restaurantBranches', function ($query) {
-            $query->where('slug', $this->params);
+        return  MenuVariant::with("menu", 'menu.restaurantBranches')->whereHas('menu.restaurantBranches', function ($q) {
+            $q->where('slug', $this->params);
         });
-        return $menus;
+    }
+
+    public function stringifyVariant($variants)
+    {
+        $implode = array();
+        foreach ($variants as $variant) {
+            $implode[] = implode(':', $variant);
+        }
+        return implode(' / ', $implode);
     }
 
     /**
-     * @var Menus $restaurantBranchMenus
+     * @var Menu $menu
      */
-    public function map($restaurantBranchMenus): array
+    public function map($menuVariant): array
     {
         return [
-            $restaurantBranchMenus->slug,
-            $restaurantBranchMenus->name,
-            $restaurantBranchMenus->description,
-            $restaurantBranchMenus->price ? $restaurantBranchMenus->price : '0',
-            $restaurantBranchMenus->tax ? $restaurantBranchMenus->tax : '0',
-            $restaurantBranchMenus->discount ? $restaurantBranchMenus->discount : '0',
-            $restaurantBranchMenus->is_enable ? '1' : '0',
-            Restaurant::where('id', $restaurantBranchMenus->restaurant_id)->value('name'),
-            Restaurant::where('id', $restaurantBranchMenus->restaurant_id)->value('slug'),
-            RestaurantCategory::where('id', $restaurantBranchMenus->restaurant_category_id)->value('name'),
-            RestaurantCategory::where('id', $restaurantBranchMenus->restaurant_category_id)->value('slug'),
+            $menuVariant->menu->slug,
+            $menuVariant->slug,
+            $menuVariant->menu->name,
+            $menuVariant->menu->description,
+            $this->stringifyVariant($menuVariant->variant),
+            $menuVariant->price ? $menuVariant->price : '0',
+            $menuVariant->tax ? $menuVariant->tax : '0',
+            $menuVariant->discount ? $menuVariant->discount : '0',
+            $menuVariant->is_enable ? '1' : '0',
+            Restaurant::where('id', $menuVariant->menu->restaurant_id)->value('name'),
+            Restaurant::where('id', $menuVariant->menu->restaurant_id)->value('slug'),
+            RestaurantCategory::where('id', $menuVariant->menu->restaurant_category_id)->value('name'),
+            RestaurantCategory::where('id', $menuVariant->menu->restaurant_category_id)->value('slug'),
         ];
     }
 
@@ -46,8 +63,10 @@ class RestaurantBranchMenusExport implements FromQuery, WithHeadings, WithMappin
     {
         return [
             'id',
+            'menu_variant_slug',
             'name',
             'description',
+            'variant',
             'price',
             'tax',
             'discount',
@@ -64,17 +83,6 @@ class RestaurantBranchMenusExport implements FromQuery, WithHeadings, WithMappin
         return [
             // Style the first row as bold text.
             1 => ['font' => ['bold' => true]],
-            'A' => ['alignment' => ['horizontal' => 'center']],
-            'B' => ['alignment' => ['horizontal' => 'center']],
-            'C' => ['alignment' => ['horizontal' => 'center']],
-            'D' => ['alignment' => ['horizontal' => 'center']],
-            'E' => ['alignment' => ['horizontal' => 'center']],
-            'F' => ['alignment' => ['horizontal' => 'center']],
-            'G' => ['alignment' => ['horizontal' => 'center']],
-            'H' => ['alignment' => ['horizontal' => 'center']],
-            'I' => ['alignment' => ['horizontal' => 'center']],
-            'J' => ['alignment' => ['horizontal' => 'center']],
-            'K' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -84,7 +92,7 @@ class RestaurantBranchMenusExport implements FromQuery, WithHeadings, WithMappin
             'A' => 15,
             'B' => 30,
             'C' => 45,
-            'D' => 10,
+            'D' => 45,
             'E' => 10,
             'F' => 10,
             'G' => 10,
@@ -92,6 +100,8 @@ class RestaurantBranchMenusExport implements FromQuery, WithHeadings, WithMappin
             'I' => 15,
             'J' => 25,
             'K' => 25,
+            'L' => 25,
+            'M' => 25,
         ];
     }
 }
