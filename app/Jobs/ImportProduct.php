@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
@@ -65,6 +66,7 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                 'name' => 'required|string',
                 'description' => 'nullable|string',
                 'price' => 'required|max:99999999',
+                'vendor_price' => 'required|max:99999999',
                 'tax' => 'required|numeric',
                 'discount' => 'required|numeric',
                 'is_enable' => 'required|boolean',
@@ -80,10 +82,10 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
             );
 
             if (!$validator->fails()) {
-                $product = null;
+                $productVariant = null;
 
                 if (isset($row['id'])) {
-                    $product = Product::where('slug', $row['id'])->first();
+                    $productVariant = ProductVariant::where('slug', $row['product_variant_slug'])->first();
                 }
 
                 $productData = [
@@ -98,13 +100,40 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                     'shop_category_id' => ShopCategory::where('slug', $row['shop_category_slug'])->value('id'),
                     'shop_sub_category_id' => ShopSubCategory::where('slug', $row['shop_sub_category_slug'])->value('id'),
                     'brand_id' => Brand::where('slug', $row['brand_slug'])->value('id'),
+                    'variants' => [],
                 ];
 
-                if (!$product) {
+                if (!$productVariant) {
                     $product = Product::create($productData);
+                    $standardProductVariant= [
+                        'product_id' => $product->id,
+                        'slug' => StringHelper::generateUniqueSlug(),
+                        'variant' => json_decode('[{"value":"Standard"}]'),
+                        'price' => $row['price'],
+                        'vendor_price' => $row['vendor_price'],
+                        'tax' => $row['tax'],
+                        'discount' => $row['discount'],
+                    ];
+                    ProductVariant::create($standardProductVariant);
                 } else {
-                    $productData['slug'] = $product->slug;
-                    $product->update($productData);
+                    // $product = $productVariant->product;
+                    // $product['name'] = $row['name'];
+                    // $product['description'] = $row['description'];
+                    // $product['is_enable'] = $row['is_enable'];
+                    $productData['slug']=$productVariant->product->slug;
+                    $productData['variant']=$productVariant->product->variant;
+                    $productVariant->product->update($productData);
+
+                    $productVariantData = [
+                        'product_id' => $productVariant->product->id,
+                        'slug' => $row['product_variant_slug'],
+                        'price' => $row['price'],
+                        'vendor_price' => $row['vendor_price'],
+                        'tax' => $row['tax'],
+                        'discount' => $row['discount'],
+                    ];
+
+                    $productVariant->update($productVariantData);
                 }
             }
         }

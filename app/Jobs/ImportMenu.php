@@ -52,6 +52,7 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
         return $this->uniqueKey;
     }
 
+
     /**
      * Execute the job.
      *
@@ -115,18 +116,17 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
                     $menu['name'] = $row['name'];
                     $menu['description'] = $row['description'];
                     $menu['is_enable'] = $row['is_enable'];
-                    $menu->update($menu);
+                    $menu->update($menuData);
 
-                    // foreach ($restaurant->restaurantBranches as $branch) {
-                    //     $branch->availableMenus()->detach($menu->id);
-                    // }
+                    $menuVariantData = [
+                        'menu_id' => $menuVariant->menu->id,
+                        'slug' => $row['menu_variant_slug'],
+                        'price' => $row['price'],
+                        'tax' => $row['tax'],
+                        'discount' => $row['discount'],
+                    ];
 
-                    $menuVariant['price'] = $row['price'];
-                    $menuVariant['tax'] = $row['tax'];
-                    $menuVariant['discount'] = $row['discount'];
-                    $menuVariant['is_enable'] = $row['is_enable'];
-
-                    $menuVariant->update($menuVariant);
+                    $menuVariant->update($menuVariantData);
                 }
             }
         }

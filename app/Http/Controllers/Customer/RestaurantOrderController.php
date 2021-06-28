@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Helpers\KbzPayHelper;
 use App\Helpers\NotificationHelper;
+use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
@@ -16,8 +17,6 @@ use App\Models\RestaurantOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Helpers\OrderAssignHelper;
-use Illuminate\Support\Facades\Log;
 
 class RestaurantOrderController extends Controller
 {
@@ -65,8 +64,6 @@ class RestaurantOrderController extends Controller
         if (gettype($validatedData) == 'string') {
             return $this->generateResponse($validatedData, 422, true);
         }
-        
-
 
         $validatedData['customer_id'] = $this->customer->id;
         $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
@@ -89,8 +86,8 @@ class RestaurantOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        OrderHelper::sendAdminPushNotifications();
-        OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
+        // OrderHelper::sendAdminPushNotifications();
+        // OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
 
         OrderHelper::sendAdminSms();
         OrderHelper::sendVendorSms($validatedData['restaurant_branch_id']);
@@ -102,7 +99,7 @@ class RestaurantOrderController extends Controller
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
 
-        $this->assignOrder('restaurant',$order->slug);
+        $this->assignOrder('restaurant', $order->slug);
 
         return $this->generateResponse($order, 201);
     }
