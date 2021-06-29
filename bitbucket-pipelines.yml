@@ -44,7 +44,7 @@ pipelines:
                 # - apt-get install -y zlib1g-dev
                 - docker-php-ext-install -j$(nproc) gd
                 # testing credentials
-                - echo ${FIREBASE_CREDENTIALS} > testing.txt
+                - echo ${FIREBASE_CREDENTIALS} > /var/app/current/storage/firebase/firebase_credentials.json
                 # copy env file
                 - cp .env.example .env
                 - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
