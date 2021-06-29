@@ -47,7 +47,7 @@ return [
              *
              */
             'credentials' => [
-                'file' => storage_path('firebase/firebase_credentials.json'),
+                'file' => preg_replace('/[\x00-\x1F\x7F]/', '', env('FIREBASE_CREDENTIALS')),
 
                 /*
                  * If you want to prevent the auto discovery of credentials, set the
