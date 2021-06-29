@@ -34,6 +34,7 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
+        $request['phone_number'] = PhoneNumber::make($request->phone_number, 'MM');
 
         $validatedData = $request->validate(
             [
@@ -52,8 +53,6 @@ class CustomerController extends Controller
         );
 
         $password = $validatedData['password'] ? $validatedData['password'] : $this->generateRandomPassword();
-
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
         $validatedData['password'] = Hash::make($password);
         $validatedData['created_by'] = 'admin';
 

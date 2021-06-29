@@ -122,18 +122,9 @@ class ShopOrderController extends Controller
             ]
         );
 
-        // OrderHelper::sendAdminPushNotifications();
-        // OrderHelper::sendVendorPushNotifications($validatedData['order_items']);
-
-        OrderHelper::sendAdminSms();
-        OrderHelper::sendVendorSms($validatedData['order_items']);
-
-        $message = 'Your order has successfully been created.';
-        $smsData = SmsHelper::prepareSmsData($message);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
-
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+        OrderHelper::sendPushNotifications($validatedData['order_items']);
+        OrderHelper::sendSmsNotifications($validatedData['order_items'], $phoneNumber);
 
         return $this->generateShopOrderResponse($order->refresh(), 201);
     }

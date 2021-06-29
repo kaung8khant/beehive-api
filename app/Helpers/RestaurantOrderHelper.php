@@ -319,6 +319,12 @@ trait RestaurantOrderHelper
         return $validatedData;
     }
 
+    public static function sendPushNotifications($branchId)
+    {
+        // self::sendAdminPushNotifications();
+        // self::sendVendorPushNotifications($branchId);
+    }
+
     public static function sendAdminPushNotifications()
     {
         $admins = User::whereHas('roles', function ($query) {
@@ -349,6 +355,13 @@ trait RestaurantOrderHelper
         OneSignalHelper::sendPush($fields, 'vendor');
     }
 
+    public static function sendSmsNotifications($branchId, $customerPhoneNumber)
+    {
+        // self::sendAdminSms();
+        self::sendVendorSms($branchId);
+        self::sendCustomerSms($customerPhoneNumber);
+    }
+
     public static function sendAdminSms()
     {
         $admins = User::whereHas('roles', function ($query) {
@@ -375,5 +388,14 @@ trait RestaurantOrderHelper
         if ($vendors !== null && $vendors->count() > 0) {
             SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
         }
+    }
+
+    public static function sendCustomerSms($phoneNumber)
+    {
+        $message = 'Your order has successfully been created.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
     }
 }
