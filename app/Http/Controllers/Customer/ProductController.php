@@ -63,8 +63,8 @@ class ProductController extends Controller
                     $values = [];
 
                     foreach ($variants['values'] as $value) {
-                        if (isset($value['slug'])) {
-                            $image = File::where('slug', $value['slug'])->value('slug');
+                        if (isset($value['image_slug'])) {
+                            $image = File::where('slug', $value['image_slug'])->value('slug');
                             $url = "/api/v2/images/{$image}";
                             $value['url'] = config('app.url') . $url;
                         }

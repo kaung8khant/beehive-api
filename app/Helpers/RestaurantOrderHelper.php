@@ -359,7 +359,9 @@ trait RestaurantOrderHelper
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        SendSms::dispatch($uniqueKey, $admins, $message, 'order', $smsData);
+        if ($admins->count() > 0) {
+            SendSms::dispatch($uniqueKey, $admins, $message, 'order', $smsData);
+        }
     }
 
     public static function sendVendorSms($branchId)
@@ -370,6 +372,8 @@ trait RestaurantOrderHelper
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
+        if ($vendors !== null && $vendors->count() > 0) {
+            SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
+        }
     }
 }

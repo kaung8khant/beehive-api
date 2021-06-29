@@ -61,7 +61,7 @@ class SendSms implements ShouldQueue, ShouldBeUnique
      */
     public function handle()
     {
-        if (count($this->phoneNumbers) > 0) {
+        if ($this->phoneNumbers !== null && count($this->phoneNumbers) > 0) {
             foreach ($this->phoneNumbers as $number) {
                 $validator = $this->validateNumber($number);
 
