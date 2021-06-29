@@ -332,22 +332,24 @@ trait ShopOrderHelper
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        SendSms::dispatch($uniqueKey, $admins, $message, 'order', $smsData);
+        if ($admins->count() > 0) {
+            SendSms::dispatch($uniqueKey, $admins, $message, 'order', $smsData);
+        }
     }
 
     public static function sendVendorSms($orderItems)
     {
-        $vendors = array_map(function ($item) {
+        $vendors = collect($orderItems)->map(function ($item) {
             $shopId = Product::where('slug', $item['slug'])->value('shop_id');
             return Shop::where('id', $shopId)->value('notify_numbers');
-        }, $orderItems);
-
-        $vendors = array_values(array_unique(array_merge(...$vendors)));
+        })->filter()->collapse()->unique()->values();
 
         $message = 'An order has been received.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
+        if ($vendors->count() > 0) {
+            SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
+        }
     }
 }
