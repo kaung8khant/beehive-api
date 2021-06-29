@@ -51,6 +51,7 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
                         Rule::unique('restaurants')->ignore($restaurant->id),
                     ],
                     'is_enable' => ['required', 'boolean'],
+                    'commission' => ['nullable','numeric'],
                 ];
 
                 $validator = Validator::make(
@@ -64,6 +65,7 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
                         'unique:restaurants',
                     ],
                     'is_enable' => ['required', 'boolean'],
+                    'commission' => ['nullable','numeric'],
                     'branch_name' => ['required'],
                     'branch_address' => ['nullable'],
                     'branch_contact_number' => ['required', 'phone:MM'],
