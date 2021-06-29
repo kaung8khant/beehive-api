@@ -107,18 +107,9 @@ class RestaurantOrderController extends Controller
 
         $this->notifySystem($request->satus, $order->slug);
 
-        // OrderHelper::sendAdminPushNotifications();
-        // OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
-
-        OrderHelper::sendAdminSms();
-        OrderHelper::sendVendorSms($validatedData['restaurant_branch_id']);
-
-        $message = 'Your order has successfully been created.';
-        $smsData = SmsHelper::prepareSmsData($message);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
-
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+        OrderHelper::sendPushNotifications($validatedData['restaurant_branch_id']);
+        OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $phoneNumber);
 
         return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
     }

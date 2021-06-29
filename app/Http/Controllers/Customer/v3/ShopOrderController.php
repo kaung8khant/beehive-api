@@ -72,18 +72,8 @@ class ShopOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        // OrderHelper::sendAdminPushNotifications();
-        // OrderHelper::sendVendorPushNotifications($validatedData['order_items']);
-
-        OrderHelper::sendAdminSms();
-        OrderHelper::sendVendorSms($validatedData['order_items']);
-
-        $message = 'Your order has successfully been created.';
-        $smsData = SmsHelper::prepareSmsData($message);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = $this->customer->phone_number;
-
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        OrderHelper::sendPushNotifications($validatedData['order_items']);
+        OrderHelper::sendSmsNotifications($validatedData['order_items'], $this->customer->phone_number);
 
         return $this->generateShopOrderResponse($order, 201);
     }

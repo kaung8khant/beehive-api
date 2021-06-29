@@ -286,6 +286,12 @@ trait ShopOrderHelper
         return $validatedData;
     }
 
+    public static function sendPushNotifications($orderItems)
+    {
+        // self::sendAdminPushNotifications();
+        // self::sendVendorPushNotifications($orderItems);
+    }
+
     public static function sendAdminPushNotifications()
     {
         $admins = User::whereHas('roles', function ($query) {
@@ -319,7 +325,14 @@ trait ShopOrderHelper
         $appId = config('one-signal.vendor_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
 
-        return OneSignalHelper::sendPush($fields, 'vendor');
+        OneSignalHelper::sendPush($fields, 'vendor');
+    }
+
+    public static function sendSmsNotifications($orderItems, $customerPhoneNumber)
+    {
+        // self::sendAdminSms();
+        self::sendVendorSms($orderItems);
+        self::sendCustomerSms($customerPhoneNumber);
     }
 
     public static function sendAdminSms()
@@ -351,5 +364,14 @@ trait ShopOrderHelper
         if ($vendors->count() > 0) {
             SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
         }
+    }
+
+    public static function sendCustomerSms($phoneNumber)
+    {
+        $message = 'Your order has successfully been created.';
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
     }
 }
