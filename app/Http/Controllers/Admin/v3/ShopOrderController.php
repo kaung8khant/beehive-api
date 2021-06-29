@@ -31,13 +31,34 @@ class ShopOrderController extends Controller
     {
         $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $shopOrders = ShopOrder::with('contact')
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10)
-            ->map(function ($shopOrder) {
-                return $shopOrder->makeHidden('vendors');
-            });
+        // $shopOrders = ShopOrder::with('contact')
+        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        //     ->paginate(10)
+        //     ->map(function ($shopOrder) {
+        //         return $shopOrder->makeHidden('vendors');
+        //     });
+        // dd(ltrim($request->filter, '0'));
 
+        if ($request->filter) {
+            $shopOrders = ShopOrder::with('contact')
+                ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->orWhereHas('contact', function ($query) use ($request) {
+                    $query->where('phone_number', $request->filter)->orWhere('customer_name', 'LIKE', '%' . $request->filter . '%');
+                })
+                ->orWhere('id', ltrim($request->filter, '0'))
+                ->get()
+                ->map(function ($shopOrder) {
+                    return $shopOrder->makeHidden('vendors');
+                });
+        } else {
+            $shopOrders = ShopOrder::with('contact')
+                ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->whereBetween('order_date', array($request->from, $request->to))
+                ->get()
+                ->map(function ($shopOrder) {
+                    return $shopOrder->makeHidden('vendors');
+                });
+        }
         return $this->generateResponse($shopOrders, 200);
     }
 
@@ -101,18 +122,9 @@ class ShopOrderController extends Controller
             ]
         );
 
-        // OrderHelper::sendAdminPushNotifications();
-        // OrderHelper::sendVendorPushNotifications($validatedData['order_items']);
-
-        OrderHelper::sendAdminSms();
-        OrderHelper::sendVendorSms($validatedData['order_items']);
-
-        $message = 'Your order has successfully been created.';
-        $smsData = SmsHelper::prepareSmsData($message);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
-
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+        OrderHelper::sendPushNotifications($validatedData['order_items']);
+        OrderHelper::sendSmsNotifications($validatedData['order_items'], $phoneNumber);
 
         return $this->generateShopOrderResponse($order->refresh(), 201);
     }
@@ -191,12 +203,28 @@ class ShopOrderController extends Controller
             abort(404);
         }
 
-        $sorting = CollectionHelper::getSorting('shop_order_vendors', 'id', $request->by ? $request->by : 'desc', $request->order);
+        // $sorting = CollectionHelper::getSorting('shop_order_vendors', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $vendorOrders = ShopOrderVendor::where('shop_id', $shop->id)
+        // $vendorOrders = ShopOrderVendor::where('shop_id', $shop->id)
+        //     ->where(function ($query) use ($request) {
+        //         $query->whereHas('shopOrder', function ($q) use ($request) {
+        //             $q->where('slug', $request->filter);
+        //         })
+        //             ->orWhereHas('shopOrder.contact', function ($q) use ($request) {
+        //                 $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+        //                     ->orWhere('phone_number', $request->filter);
+        //             });
+        //     })
+        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        //     ->paginate(10);
+
+        $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        if ($request->filter) {
+            $vendorOrders =ShopOrderVendor::where('shop_id', $shop->id)
             ->where(function ($query) use ($request) {
                 $query->whereHas('shopOrder', function ($q) use ($request) {
-                    $q->where('slug', $request->filter);
+                    $q->where('id', ltrim($request->filter, '0'));
                 })
                     ->orWhereHas('shopOrder.contact', function ($q) use ($request) {
                         $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
@@ -204,7 +232,15 @@ class ShopOrderController extends Controller
                     });
             })
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+            ->get();
+        } else {
+            $vendorOrders = ShopOrderVendor::where('shop_id', $shop->id)
+            ->whereHas('shopOrder', function ($query) use ($request) {
+                $query->whereBetween('order_date', array($request->from, $request->to));
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->get();
+        }
 
         $result = $vendorOrders->map(function ($order) {
             $shopOrder = ShopOrder::find($order->shop_order_id)->toArray();

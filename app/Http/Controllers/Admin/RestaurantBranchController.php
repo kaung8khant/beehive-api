@@ -124,7 +124,7 @@ class RestaurantBranchController extends Controller
         $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
         $validatedData['restaurant_id'] = Restaurant::where('slug', $validatedData['restaurant_slug'])->first()->id;
 
-        if ($validatedData['notify_numbers']) {
+        if (isset($validatedData['notify_numbers'])) {
             $validatedData['notify_numbers'] = $this->makeNotifyNumbers($validatedData['notify_numbers']);
         }
 

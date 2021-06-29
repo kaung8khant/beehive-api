@@ -26,6 +26,7 @@ class RestaurantsExport implements FromQuery, WithHeadings, WithMapping, WithSty
             $restaurant->slug,
             $restaurant->name,
             $restaurant->is_enable ? '1' : '0',
+            $restaurant->commission ?  $restaurant->commission  : 0,
         ];
     }
 
@@ -35,6 +36,7 @@ class RestaurantsExport implements FromQuery, WithHeadings, WithMapping, WithSty
             'id',
             'name',
             'is_enable',
+            'commission',
         ];
     }
 
@@ -46,6 +48,7 @@ class RestaurantsExport implements FromQuery, WithHeadings, WithMapping, WithSty
             'A' => ['alignment' => ['horizontal' => 'center']],
             'B' => ['alignment' => ['horizontal' => 'center']],
             'C' => ['alignment' => ['horizontal' => 'center']],
+            'D' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -55,6 +58,7 @@ class RestaurantsExport implements FromQuery, WithHeadings, WithMapping, WithSty
             'A' => 15,
             'B' => 40,
             'C' => 20,
+            'D' => 20,
         ];
     }
 }

@@ -29,16 +29,33 @@ class RestaurantOrderController extends Controller
     {
         $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
-            ->whereHas('restaurantOrderContact', function ($q) use ($request) {
-                $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('phone_number', $request->filter);
-            })
-            ->orWhere('slug', $request->filter)
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate($request->size)
-            ->items();
-
+        // $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
+        //     ->whereHas('restaurantOrderContact', function ($q) use ($request) {
+        //         $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+        //             ->orWhere('phone_number', $request->filter);
+        //     })
+        //     ->orWhere('slug', $request->filter)
+        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        //     ->paginate($request->size)
+        //     ->items();
+        if ($request->filter) {
+            $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
+                    ->whereHas('restaurantOrderContact', function ($q) use ($request) {
+                        $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                            ->orWhere('phone_number', $request->filter);
+                    })
+                    ->orWhereHas('restaurant', function ($query) use ($request) {
+                        $query->where('name', $request->filter);
+                    })
+                    ->orWhere('id', ltrim($request->filter, '0'))
+                    ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                    ->get();
+        } else {
+            $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
+                    ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                    ->whereBetween('order_date', array($request->from, $request->to))
+                    ->get();
+        }
         return $this->generateResponse($restaurantOrders, 200);
     }
 
@@ -90,18 +107,9 @@ class RestaurantOrderController extends Controller
 
         $this->notifySystem($request->satus, $order->slug);
 
-        // OrderHelper::sendAdminPushNotifications();
-        // OrderHelper::sendVendorPushNotifications($validatedData['restaurant_branch_id']);
-
-        OrderHelper::sendAdminSms();
-        OrderHelper::sendVendorSms($validatedData['restaurant_branch_id']);
-
-        $message = 'Your order has successfully been created.';
-        $smsData = SmsHelper::prepareSmsData($message);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-        $phoneNumber = Customer::where('id', $order->customer_id)->first()->phone_number;
-
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+        OrderHelper::sendPushNotifications($validatedData['restaurant_branch_id']);
+        OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $phoneNumber);
 
         return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
     }
@@ -209,21 +217,42 @@ class RestaurantOrderController extends Controller
             abort(404);
         }
 
+        // $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        // $restaurantOrders = RestaurantOrder::with('restaurantOrderContact', 'RestaurantOrderItems')
+        //     ->where('restaurant_branch_id', $restaurantBranch->id)
+        //     ->where(function ($query) use ($request) {
+        //         return $query->whereHas('restaurantOrderContact', function ($q) use ($request) {
+        //             $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+        //                 ->orWhere('phone_number', $request->filter);
+        //         })
+        //             ->orWhere('slug', $request->filter);
+        //     })
+        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        //     ->paginate(10)
+        //     ->items();
+
+        // return $this->generateResponse($restaurantOrders, 200);
+
+
         $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        $restaurantOrders = RestaurantOrder::with('restaurantOrderContact', 'RestaurantOrderItems')
-            ->where('restaurant_branch_id', $restaurantBranch->id)
-            ->where(function ($query) use ($request) {
-                return $query->whereHas('restaurantOrderContact', function ($q) use ($request) {
-                    $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
-                        ->orWhere('phone_number', $request->filter);
-                })
-                    ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10)
-            ->items();
-
+        if ($request->filter) {
+            $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
+                    ->where('restaurant_branch_id', $restaurantBranch->id)
+                    ->whereHas('restaurantOrderContact', function ($q) use ($request) {
+                        $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                            ->orWhere('phone_number', $request->filter);
+                    })
+                    ->orWhere('id', ltrim($request->filter, '0'))
+                    ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                    ->get();
+        } else {
+            $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
+                    ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                    ->where('restaurant_branch_id', $restaurantBranch->id)
+                    ->whereBetween('order_date', array($request->from, $request->to))
+                    ->get();
+        }
         return $this->generateResponse($restaurantOrders, 200);
     }
 }
