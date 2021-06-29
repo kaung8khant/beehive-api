@@ -48,6 +48,21 @@ pipelines:
                 - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
                 - chmod +x dotenv
                 - >
+                  cat <<EOF >>/var/app/current/storage/firebase/firebase_credentials.json
+                  {
+                    "type": "service_account",
+                    "project_id": "beehive-production",
+                    "private_key_id": "${FIREBASE_PRIVATE_EKY_ID}",
+                    "private_key": "${FIREBASE_PRIVATE_KEY}",
+                    "client_email": "firebase-adminsdk-auuby@beehive-production.iam.gserviceaccount.com",
+                    "client_id": "${FIREBASE_CLIENT_ID}",
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-auuby%40beehive-production.iam.gserviceaccount.com"
+                  }
+                  EOF
+                - >
                   ./dotenv -f .env set AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                   AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
                   APP_KEY=${APP_KEY}
@@ -62,7 +77,6 @@ pipelines:
                   AWS_BUCKET=${AWS_BUCKET}
                   BOOMSMS_API_KEY=${BOOMSMS_API_KEY}
                   FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}
-                  FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}
                   SENTRY_LARAVEL_DSN=${SENTRY_LARAVEL_DSN}
                   SENTRY_TRACES_SAMPLE_RATE=1
                   APP_DEBUG=false
