@@ -375,7 +375,7 @@ trait RestaurantOrderHelper
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        if ($admins->count() > 0) {
+        if (count($admins) > 0) {
             SendSms::dispatch($uniqueKey, $admins, $message, 'order', $smsData);
         }
     }
@@ -388,7 +388,7 @@ trait RestaurantOrderHelper
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        if ($vendors !== null && $vendors->count() > 0) {
+        if ($vendors !== null && count($vendors) > 0) {
             SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
         }
     }
