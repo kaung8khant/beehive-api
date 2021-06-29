@@ -130,7 +130,7 @@ class ShopController extends Controller
         $validatedData = $request->validate($rules, $messages);
         $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
 
-        if ($validatedData['notify_numbers']) {
+        if (isset($validatedData['notify_numbers'])) {
             $validatedData['notify_numbers'] = $this->makeNotifyNumbers($validatedData['notify_numbers']);
         }
 
