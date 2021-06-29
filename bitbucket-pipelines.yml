@@ -79,6 +79,7 @@ pipelines:
                   CACHE_DRIVER=${CACHE_DRIVER}
                   QUEUE_CONNECTION=${QUEUE_CONNECTION}
                   REDIS_HOST=${REDIS_HOST}
+                  REDIS_PASSWORD=${REDIS_PASSWORD}
 
                 # add firebase credentials
                 - echo ${FIREBASE_CREDENTIALS} > storage/firebase/firebase_credentials.json
