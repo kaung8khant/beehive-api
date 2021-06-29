@@ -16,6 +16,7 @@ use Ladumor\OneSignal\OneSignal;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
 use Illuminate\Http\Request;
 
+
 trait OrderAssignHelper
 {
 
@@ -25,9 +26,10 @@ trait OrderAssignHelper
     {
         $driverList = self::getdriver();
         $driverSlug = "";
+
         $order = null;
         if (isset($driverList) && count($driverList) > 0) {
-            $driverSlug =  key($driverList);
+            $driverSlug =  self::checkdriver($driverList);
 
             if ($type == "shop") {
                 $order = ShopOrder::where('slug', $slug)->first();
@@ -38,7 +40,15 @@ trait OrderAssignHelper
 
         self::assignAndAlert($driverSlug, $order);
     }
-
+    private static function checkdriver($driverList)
+    {
+        foreach ($driverList as $key => $dl) {
+            $driver = User::where('slug', $key)->first();
+            if (isset($driver)) {
+                return $key;
+            }
+        }
+    }
 
 
     public static function assignOrderToOther()
@@ -81,6 +91,7 @@ trait OrderAssignHelper
                 $appId = config('one-signal.admin_app_id');
 
                 $fields = OneSignalHelper::prepareNotification($request, $appId);
+
                 $response = OneSignalHelper::sendPush($fields, 'admin');
             }
         }
@@ -88,12 +99,14 @@ trait OrderAssignHelper
 
     private static function assignAndAlert($driverSlug, $order)
     {
-        if (isset($order) && !empty($driverSlug)) {
+        if (!isset($order) && empty($driverSlug)) {
+
             return false;
         }
         $driver = User::where('slug', $driverSlug)->first();
 
         if (isset($driver)) {
+
             $driverID = $driver->id;
             $resOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $order->id)->where('user_id', $driverID)->first();
             if (empty($resOrderDriver)) {
