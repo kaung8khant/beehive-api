@@ -39,7 +39,7 @@ trait RestaurantOrderHelper
             'address' => 'required',
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer|min:0|max:50',
-            'address.street_name' => 'required|string',
+            'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
             'order_items' => 'required|array',
