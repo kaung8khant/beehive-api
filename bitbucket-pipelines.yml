@@ -44,6 +44,7 @@ pipelines:
                 # - apt-get install -y zlib1g-dev
                 - docker-php-ext-install -j$(nproc) gd
                 # testing credentials
+                - mkdir -p /var/app/current/storage/firebase
                 - echo ${FIREBASE_CREDENTIALS} > /var/app/current/storage/firebase/firebase_credentials.json
                 # copy env file
                 - cp .env.example .env
