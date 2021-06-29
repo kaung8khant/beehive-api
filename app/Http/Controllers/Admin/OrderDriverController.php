@@ -20,18 +20,18 @@ class OrderDriverController extends Controller
 
     public function jobAccept($slug)
     {
-        
+
         $userId = Auth::guard('users')->user()->id;
-        
+
         $restaurantOrder = RestaurantOrder::where('slug', $slug)->first();
 
-        $restaurantOrderDriver = RestaurantOrderDriver::where('restaurant_order_id',$restaurantOrder->id)->where('user_id',$userId)->first();
-       
+        $restaurantOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $restaurantOrder->id)->where('user_id', $userId)->first();
+
         RestaurantOrderDriverStatus::create([
             'restaurant_order_driver_id' => $restaurantOrderDriver->id,
             'status' => "accepted",
         ]);
-      
+
 
         return response()->json(['message' => 'created'], 201);
     }
@@ -45,14 +45,14 @@ class OrderDriverController extends Controller
         $restaurantOrder = RestaurantOrder::where('slug', $slug)->first();
 
         if (!empty($shopOrder) && isset($shopOrder)) {
-            $shopOrderDriver = ShopOrderDriver::where('shop_order_id',$shopOrder->id)->where('user_id',$userId)->first();
-          
+            $shopOrderDriver = ShopOrderDriver::where('shop_order_id', $shopOrder->id)->where('user_id', $userId)->first();
+
             ShopOrderDriverStatus::create([
                 'shop_order_driver_id' => $shopOrderDriver->id,
                 'status' => "rejected",
             ]);
         } else {
-            $restaurantOrder = RestaurantOrderDriver::where('restaurant_order_id',$shopOrder)->where('user_id',$userId)->first();
+            $restaurantOrder = RestaurantOrderDriver::where('restaurant_order_id', $shopOrder)->where('user_id', $userId)->first();
             RestaurantOrderDriverStatus::create([
                 'restaurant_order_driver_id' => $restaurantOrder->id,
                 'status' => "rejected ",
@@ -64,42 +64,25 @@ class OrderDriverController extends Controller
 
     public function jobDetail($slug)
     {
-        
-        $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status','restaurantOrderContact')->where('slug', $slug)->first();
 
-     
+        $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact')->where('slug', $slug)->first();
+
+
         return $this->generateResponse($restaurantOrder, 200);
-        
-
     }
 
     public function jobList(Request $request)
     {
         $driver =  Auth::guard('users')->user()->id;
-        $shopOrder = ShopOrder::with('drivers', 'drivers.status', 'contact')->whereHas('drivers.status', function ($q) use ($driver) {
-            $q->where('status', 'accepted');
-        })->whereHas('drivers', function ($q) use ($driver) {
-            $q->where('user_id', $driver);
-        })->get();
-        $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact')->whereHas('drivers.status', function ($q) use ($driver) {
-            $q->where('status', 'accepted');
+
+        $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact')->where('order_status', '!=', 'cancelled')->orderByDesc('id')->whereHas('drivers.status', function ($q) use ($driver) {
+            $q->where('status', '!=', 'rejected');
+            $q->where('status', '!=', 'no_response');
         })->whereHas('drivers', function ($q) use ($driver) {
             $q->where('user_id', $driver);
         })->get();
 
-        $response = null;
-        if (!empty($shopOrder) && isset($shopOrder)) {
-            foreach ($shopOrder as $order) {
-                $order['type'] = "shop";
-            }
-        }
-        if (!empty($restaurantOrder) && isset($restaurantOrder)) {
-            foreach ($restaurantOrder as $order) {
-                $order['type'] = "restaurant";
-            }
-        }
-        $response = $shopOrder->merge($restaurantOrder);
-        return response()->json($response, 200);
 
+        return response()->json($restaurantOrder, 200);
     }
 }
