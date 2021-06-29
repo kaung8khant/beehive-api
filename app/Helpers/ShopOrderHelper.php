@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Exceptions\BadRequestException;
 use App\Helpers\StringHelper;
+use App\Jobs\SendPushNotification;
 use App\Jobs\SendSms;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -288,8 +289,8 @@ trait ShopOrderHelper
 
     public static function sendPushNotifications($orderItems)
     {
-        // self::sendAdminPushNotifications();
-        // self::sendVendorPushNotifications($orderItems);
+        self::sendAdminPushNotifications();
+        self::sendVendorPushNotifications($orderItems);
     }
 
     public static function sendAdminPushNotifications()
@@ -304,8 +305,9 @@ trait ShopOrderHelper
 
         $appId = config('one-signal.admin_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
+        $uniqueKey = StringHelper::generateUniqueSlug();
 
-        OneSignalHelper::sendPush($fields, 'admin');
+        SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
     }
 
     public static function sendVendorPushNotifications($orderItems)
@@ -315,7 +317,6 @@ trait ShopOrderHelper
         }, $orderItems);
 
         $shopIds = array_values(array_unique($shopIds));
-
         $vendors = User::whereIn('shop_id', $shopIds)->pluck('slug');
 
         $request = new Request();
@@ -324,8 +325,9 @@ trait ShopOrderHelper
 
         $appId = config('one-signal.vendor_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
+        $uniqueKey = StringHelper::generateUniqueSlug();
 
-        OneSignalHelper::sendPush($fields, 'vendor');
+        SendPushNotification::dispatch($uniqueKey, $fields, 'vendor');
     }
 
     public static function sendSmsNotifications($orderItems, $customerPhoneNumber)

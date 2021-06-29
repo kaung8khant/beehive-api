@@ -97,7 +97,6 @@ trait OneSignalHelper
         return Validator::make($request->all(), $rules);
     }
 
-
     public static function validateVendorsAndAdmins($request)
     {
         return Validator::make($request->all(), [
@@ -121,7 +120,8 @@ trait OneSignalHelper
         if ($request->url) {
             $fields['url'] = $request->url;
         }
-        if($request->data){
+
+        if ($request->data) {
             $fields['data'] = $request->data;
         }
 
