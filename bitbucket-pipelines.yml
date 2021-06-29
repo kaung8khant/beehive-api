@@ -43,9 +43,6 @@ pipelines:
                 - docker-php-ext-configure gd --with-freetype --with-jpeg
                 # - apt-get install -y zlib1g-dev
                 - docker-php-ext-install -j$(nproc) gd
-                # testing credentials
-                - mkdir -p /var/app/current/storage/firebase
-                - echo ${FIREBASE_CREDENTIALS} > /var/app/current/storage/firebase/firebase_credentials.json
                 # copy env file
                 - cp .env.example .env
                 - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
@@ -80,6 +77,8 @@ pipelines:
                   KBZ_PAY_APP_KEY=${KBZ_PAY_APP_KEY}
                   KBZ_PAY_CREATE_URL=${KBZ_PAY_CREATE_URL}
 
+                # add firebase credentials
+                - echo ${FIREBASE_CREDENTIALS} > /var/app/current/storage/firebase/firebase_credentials.json
                 # install composer
                 - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
                 # install dependencies
