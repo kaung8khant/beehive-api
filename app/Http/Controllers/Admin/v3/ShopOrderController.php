@@ -43,7 +43,7 @@ class ShopOrderController extends Controller
             $shopOrders = ShopOrder::with('contact')
                 ->orderBy($sorting['orderBy'], $sorting['sortBy'])
                 ->orWhereHas('contact', function ($query) use ($request) {
-                    $query->where('phone_number', $request->filter)->orWhere('customer_name', $request->filter);
+                    $query->where('phone_number', $request->filter)->orWhere('customer_name', 'LIKE', '%' . $request->filter . '%');
                 })
                 ->orWhere('id', ltrim($request->filter, '0'))
                 ->get()
@@ -228,14 +228,6 @@ class ShopOrderController extends Controller
         //     ->paginate(10);
 
         $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        // $shopOrders = ShopOrder::with('contact')
-        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-        //     ->paginate(10)
-        //     ->map(function ($shopOrder) {
-        //         return $shopOrder->makeHidden('vendors');
-        //     });
-        // dd(ltrim($request->filter, '0'));
 
         if ($request->filter) {
             $vendorOrders =ShopOrderVendor::where('shop_id', $shop->id)
