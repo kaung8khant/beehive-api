@@ -41,7 +41,7 @@ class RestaurantBranchOrdersExport implements FromQuery, WithHeadings, WithMappi
         return [
             $restaurantBranchOrder->slug,
             $restaurantBranchOrder->invoice_id,
-            Carbon::parse($restaurantBranchOrder->order_date)->format('M d Y'),
+            Carbon::parse($restaurantBranchOrder->order_date)->format('M d Y  h:i a'),
             Restaurant::where('id', $restaurantBranchOrder->restaurant_id)->value('name'),
             RestaurantBranch::where('id', $restaurantBranchOrder->restaurant_branch_id)->value('name'),
             RestaurantBranch::where('id', $restaurantBranchOrder->restaurant_branch_id)->value('contact_number'),
