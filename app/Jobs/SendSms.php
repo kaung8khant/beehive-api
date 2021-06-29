@@ -61,30 +61,32 @@ class SendSms implements ShouldQueue, ShouldBeUnique
      */
     public function handle()
     {
-        foreach ($this->phoneNumbers as $number) {
-            $validator = $this->validateNumber($number);
+        if (count($this->phoneNumbers) > 0) {
+            foreach ($this->phoneNumbers as $number) {
+                $validator = $this->validateNumber($number);
 
-            if (!$validator->fails()) {
-                $phoneNumber = PhoneNumber::make($number, 'MM');
-                if (config('app.env') === 'production' || config('app.env') === 'staging') {
-                    try {
-                        $smsResponse = SmsHelper::sendSms($phoneNumber, $this->message);
-                        $status = 'Success';
+                if (!$validator->fails()) {
+                    $phoneNumber = PhoneNumber::make($number, 'MM');
+                    if (config('app.env') === 'production' || config('app.env') === 'staging') {
+                        try {
+                            $smsResponse = SmsHelper::sendSms($phoneNumber, $this->message);
+                            $status = 'Success';
 
-                        if ($smsResponse['status'] !== 0) {
-                            $status = 'Failed';
+                            if ($smsResponse['status'] !== 0) {
+                                $status = 'Failed';
+                            }
+
+                            SmsHelper::storeSmsLog($this->smsData, $smsResponse, $phoneNumber, $this->type, $status);
+                        } catch (\Exception $e) {
+                            Log::critical($e);
+                            SmsHelper::storeSmsLog($this->smsData, null, $phoneNumber, $this->type, 'Error');
                         }
-
-                        SmsHelper::storeSmsLog($this->smsData, $smsResponse, $phoneNumber, $this->type, $status);
-                    } catch (\Exception $e) {
-                        Log::critical($e);
-                        SmsHelper::storeSmsLog($this->smsData, null, $phoneNumber, $this->type, 'Error');
+                    } else {
+                        Log::info('phoneNumber: ' . $phoneNumber . ', message: ' . $this->message);
                     }
                 } else {
-                    Log::info('phoneNumber: ' . $phoneNumber . ', message: ' . $this->message);
+                    SmsHelper::storeSmsLog($this->smsData, null, $number, $this->type, 'Rejected');
                 }
-            } else {
-                SmsHelper::storeSmsLog($this->smsData, null, $number, $this->type, 'Rejected');
             }
         }
     }

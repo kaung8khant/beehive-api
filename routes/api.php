@@ -214,7 +214,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
     /* KBZ Pay Notify */
     Route::post('kbz/notify', 'Payment\KbzPayController@notify');
 
-    Route::post('calculate-driver', 'FirebaseController@index');
+    // Route::post('calculate-driver', 'FirebaseController@index');
 });
 
 Route::group([
