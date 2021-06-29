@@ -138,6 +138,7 @@ class CommissionController extends Controller
 
         // $order = DB::table('restaurant_orders')
         // ->join('restaurants', 'restaurants.id', '=', 'restaurant_orders.restaurant_id')
+        // ->where('restaurant_orders.commission', '>', 0)
         // ->whereBetween('order_date', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
         // ->select('restaurants.name', 'restaurant_orders.commission', 'restaurant_orders.slug', 'restaurant_orders.id', 'restaurants.slug as restaurant_slug')
         // ->get()
