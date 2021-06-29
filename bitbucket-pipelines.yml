@@ -43,6 +43,8 @@ pipelines:
                 - docker-php-ext-configure gd --with-freetype --with-jpeg
                 # - apt-get install -y zlib1g-dev
                 - docker-php-ext-install -j$(nproc) gd
+                # testing credentials
+                - echo ${FIREBASE_CREDENTIALS} > testing.txt
                 # copy env file
                 - cp .env.example .env
                 - curl -o dotenv https://raw.githubusercontent.com/bashup/dotenv/master/dotenv
@@ -62,7 +64,6 @@ pipelines:
                   AWS_BUCKET=${AWS_BUCKET}
                   BOOMSMS_API_KEY=${BOOMSMS_API_KEY}
                   FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}
-                  FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}
                   SENTRY_LARAVEL_DSN=${SENTRY_LARAVEL_DSN}
                   SENTRY_TRACES_SAMPLE_RATE=1
                   APP_DEBUG=false
