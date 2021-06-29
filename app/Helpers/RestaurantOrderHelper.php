@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Exceptions\BadRequestException;
+use App\Jobs\SendPushNotification;
 use App\Jobs\SendSms;
 use App\Models\Menu;
 use App\Models\MenuTopping;
@@ -321,8 +322,8 @@ trait RestaurantOrderHelper
 
     public static function sendPushNotifications($branchId)
     {
-        // self::sendAdminPushNotifications();
-        // self::sendVendorPushNotifications($branchId);
+        self::sendAdminPushNotifications();
+        self::sendVendorPushNotifications($branchId);
     }
 
     public static function sendAdminPushNotifications()
@@ -337,8 +338,9 @@ trait RestaurantOrderHelper
 
         $appId = config('one-signal.admin_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
+        $uniqueKey = StringHelper::generateUniqueSlug();
 
-        OneSignalHelper::sendPush($fields, 'admin');
+        SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
     }
 
     public static function sendVendorPushNotifications($branchId)
@@ -351,8 +353,9 @@ trait RestaurantOrderHelper
 
         $appId = config('one-signal.vendor_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
+        $uniqueKey = StringHelper::generateUniqueSlug();
 
-        OneSignalHelper::sendPush($fields, 'vendor');
+        SendPushNotification::dispatch($uniqueKey, $fields, 'vendor');
     }
 
     public static function sendSmsNotifications($branchId, $customerPhoneNumber)

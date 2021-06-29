@@ -42,7 +42,7 @@ class VendorShopOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
         return [
             $vendorShopOrder->slug,
             $vendorShopOrder->invoice_id,
-            Carbon::parse($vendorShopOrder->order_date)->format('M d Y'),
+            Carbon::parse($vendorShopOrder->order_date)->format('M d Y  h:i a'),
             $contact->value('customer_name'),
             $contact->value('phone_number'),
             $address,
