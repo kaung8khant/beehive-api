@@ -78,6 +78,7 @@ pipelines:
                   KBZ_PAY_CREATE_URL=${KBZ_PAY_CREATE_URL}
 
                 # add firebase credentials
+                - mkdir -p /var/app/current/storage/firebase
                 - echo ${FIREBASE_CREDENTIALS} > /var/app/current/storage/firebase/firebase_credentials.json
                 # install composer
                 - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
