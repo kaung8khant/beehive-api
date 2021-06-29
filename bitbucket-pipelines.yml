@@ -62,7 +62,7 @@ pipelines:
                   AWS_BUCKET=${AWS_BUCKET}
                   BOOMSMS_API_KEY=${BOOMSMS_API_KEY}
                   FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}
-                  FIREBASE_CREDENTIALS='${FIREBASE_CREDENTIALS}'
+                  FIREBASE_CREDENTIALS=\'${FIREBASE_CREDENTIALS}\'
                   SENTRY_LARAVEL_DSN=${SENTRY_LARAVEL_DSN}
                   SENTRY_TRACES_SAMPLE_RATE=1
                   APP_DEBUG=false
