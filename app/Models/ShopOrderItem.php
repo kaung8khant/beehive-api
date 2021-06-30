@@ -30,7 +30,7 @@ class ShopOrderItem extends Model
 
     public function vendor()
     {
-        return $this->belongsTo(ShopOrderVendor::class);
+        return $this->belongsTo(ShopOrderVendor::class, 'shop_order_vendor_id');
     }
 
     public function shop()

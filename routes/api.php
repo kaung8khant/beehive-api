@@ -6,6 +6,7 @@ use Kreait\Firebase\ServiceAccount;
 
 Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () {
     Route::group(['prefix' => 'admin'], function () {
+        Route::get('test/{slug}', 'Customer\ShopController@test');
         Route::post('login', 'Auth\UserAuthController@login');
         Route::post('forgot-password', 'Auth\OtpController@forgotPassword');
         Route::post('reset-password', 'Auth\UserAuthController@resetPassword');
@@ -160,6 +161,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
 
             Route::post('excels/import/{type}', 'Excel\ExportImportController@import');
             Route::get('excels/export/{type}', 'Excel\ExportImportController@export');
+            Route::get('excels/export/{type}/{params}', 'Excel\ExportImportController@exportWithParams');
 
             Route::get('pages', 'Admin\PageController@index');
             Route::get('pages/{page}', 'Admin\PageController@show');

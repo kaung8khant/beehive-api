@@ -69,21 +69,20 @@ class CustomerAuthController extends Controller
 
     public function register(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-        $request['phone_number'] = PhoneNumber::make($request->phone_number, 'MM');
-
-        $customer = Customer::where('phone_number', $request['phone_number'])->first();
-        if ($customer && $customer->created_by === 'customer') {
-            return $this->generateResponse('The phone number has already been taken.', 422, true);
-        }
-
         $validator = $this->validateRegister($request);
-
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
         $validatedData = $validator->validated();
+
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
+        $customer = Customer::where('phone_number', $validatedData['phone_number'])->first();
+
+        if ($customer && $customer->created_by === 'customer') {
+            return $this->generateResponse('The phone number has already been taken.', 422, true);
+        }
+
         $validatedData['password'] = Hash::make($validatedData['password']);
         $validatedData['created_by'] = 'customer';
 
@@ -175,6 +174,8 @@ class CustomerAuthController extends Controller
 
     private function validateRegister($request)
     {
+        $request['slug'] = $this->generateUniqueSlug();
+
         return Validator::make(
             $request->all(),
             [

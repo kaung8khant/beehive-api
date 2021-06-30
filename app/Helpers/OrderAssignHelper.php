@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Ladumor\OneSignal\OneSignal;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Log;
 
 trait OrderAssignHelper
 {
@@ -24,7 +24,7 @@ trait OrderAssignHelper
 
     public static function assignOrder($type, $slug)
     {
-        $driverList = self::getdriver();
+        $driverList = self::getdriver($slug);
         $driverSlug = "";
 
         $order = null;
@@ -53,7 +53,6 @@ trait OrderAssignHelper
 
     public static function assignOrderToOther()
     {
-        $driverList = self::getdriver();
 
         $restaurant_orders = DB::select('Select od.id,od.restaurant_order_id,od.user_id,ods.status from (SELECT sod1.* FROM restaurant_order_drivers sod1
         JOIN (SELECT restaurant_order_id, MAX(created_at) created_at FROM restaurant_order_drivers GROUP BY restaurant_order_id) sod2
@@ -63,6 +62,8 @@ trait OrderAssignHelper
             $reOrder = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $order->id)->get();
 
             $assignedDriver = User::where('id', $order->user_id)->first()->slug;
+            $resSlug = RestaurantOrder::where('id', $order->id)->first()->slug;
+            $driverList = self::getdriver($resSlug);
             $drivers = $driverList;
 
             unset($drivers[$assignedDriver]);
@@ -122,10 +123,14 @@ trait OrderAssignHelper
 
 
             $request = new Request();
+
+            $order = RestaurantOrder::where('id', $order->id)->first();
+
             $request['slugs'] = array($driverSlug);
             $request['message'] = "You have received new order. Accept Now!";
+            $request['app_url'] = "http://www.beehivedriver.com/job?&slug=" . $order->slug . "&price=" . $order->total_amount;
+
             $appId = config('one-signal.admin_app_id');
-            $order = RestaurantOrder::where('id', $order->id)->first();
             $request['data'] = ["slug" => $order->slug, 'price' => $order->total_amount];
             $fields = OneSignalHelper::prepareNotification($request, $appId);
 
@@ -134,16 +139,16 @@ trait OrderAssignHelper
         }
     }
 
-    private static function getdriver()
+    private static function getdriver($slug)
     {
         $database = app('firebase.database');
         $driverlist = $database->getReference('/driver')->getSnapshot()->getValue();
-
+        $branch = RestaurantOrder::with('restaurantBranch')->where('slug', $slug)->first()->restaurant_branch_info;
         $driverlist = self::getActiveDriver($driverlist);
 
         if (isset($dirvers) && count($drivers) > 0) {
             foreach ($driverlist as $key => $driver) {
-                $driverlist[$key]['distance'] = self::calculateDistance(16.811289, 96.1696837, $driver['location']['lat'], $driver['location']['lng']);
+                $driverlist[$key]['distance'] = self::calculateDistance($branch['latitude'], $branch['longitude'], $driver['location']['lat'], $driver['location']['lng']);
             }
             array_multisort(array_column($driverlist, 'distance'), SORT_ASC, $driverlist);
         }

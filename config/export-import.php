@@ -42,5 +42,6 @@ return [
         'restaurant-branch-order' => 'RestaurantBranchOrdersExport',
         'vendor-shop-order' => 'VendorShopOrdersExport',
         'restaurant-branch-menu' => 'RestaurantBranchMenusExport',
+        'restaurant-menu' => 'RestaurantMenuExport',
     ],
 ];
