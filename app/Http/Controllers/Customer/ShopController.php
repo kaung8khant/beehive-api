@@ -6,6 +6,7 @@ use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\RestaurantOrder;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
@@ -25,7 +26,11 @@ class ShopController extends Controller
             $this->customer = Auth::guard('customers')->user();
         }
     }
-
+    public function test($slug)
+    {
+        $branch = RestaurantOrder::with('restaurantBranch')->where('slug', $slug)->first()->restaurant_branch_info;
+        return response()->json($branch['longitude']);
+    }
     public function index(Request $request)
     {
         $shop = Shop::with('availableCategories', 'availableTags')
