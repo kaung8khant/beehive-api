@@ -12,7 +12,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
         Route::post('reset-password', 'Auth\UserAuthController@resetPassword');
 
         Route::middleware(['auth:users', 'user.enable'])->group(function () {
-
             Route::get('profile', 'Auth\UserAuthController@getProfile');
             Route::put('profile/update', 'Auth\UserAuthController@updateProfile');
             Route::patch('password/update', 'Auth\UserAuthController@updatePassword');
@@ -161,6 +160,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
 
             Route::post('excels/import/{type}', 'Excel\ExportImportController@import');
             Route::get('excels/export/{type}', 'Excel\ExportImportController@export');
+            Route::get('excels/export/{type}/{params}', 'Excel\ExportImportController@exportWithParams');
 
             Route::get('pages', 'Admin\PageController@index');
             Route::get('pages/{page}', 'Admin\PageController@show');
