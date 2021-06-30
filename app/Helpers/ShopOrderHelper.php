@@ -347,7 +347,7 @@ trait ShopOrderHelper
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        if ($admins->count() > 0) {
+        if (count($admins) > 0) {
             SendSms::dispatch($uniqueKey, $admins, $message, 'order', $smsData);
         }
     }
@@ -363,7 +363,7 @@ trait ShopOrderHelper
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        if ($vendors->count() > 0) {
+        if (count($vendors) > 0) {
             SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
         }
     }
