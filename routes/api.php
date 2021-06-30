@@ -6,11 +6,13 @@ use Kreait\Firebase\ServiceAccount;
 
 Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () {
     Route::group(['prefix' => 'admin'], function () {
+        Route::get('test/{slug}', 'Customer\ShopController@test');
         Route::post('login', 'Auth\UserAuthController@login');
         Route::post('forgot-password', 'Auth\OtpController@forgotPassword');
         Route::post('reset-password', 'Auth\UserAuthController@resetPassword');
 
         Route::middleware(['auth:users', 'user.enable'])->group(function () {
+
             Route::get('profile', 'Auth\UserAuthController@getProfile');
             Route::put('profile/update', 'Auth\UserAuthController@updateProfile');
             Route::patch('password/update', 'Auth\UserAuthController@updatePassword');
