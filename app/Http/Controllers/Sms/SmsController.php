@@ -6,6 +6,7 @@ use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
+use App\Models\CustomerGroup;
 use App\Models\SmsCampaign;
 use App\Models\SmsLog;
 use Carbon\Carbon;
@@ -21,6 +22,37 @@ class SmsController extends Controller
     public function __construct()
     {
         $this->phonesPerWorker = 200;
+    }
+
+    public function createCampaigns(Request $request)
+    {
+        $request->validate([
+            'name' => 'nullable|string',
+            'description' => 'nullable',
+            'group_slugs' => 'required|array',
+            'group_slugs.*' => 'required|exists:App\Models\CustomerGroup,slug',
+            'message' => 'required',
+            'type' => 'required|in:otp,marketing',
+        ]);
+
+        $request['phone_numbers'] = collect($request->group_slugs)->map(function ($groupSlug) {
+            $customerGroup = CustomerGroup::where('slug', $groupSlug)->first();
+            return $customerGroup->customers()->pluck('phone_number');
+        })->collapse()->unique()->values()->toArray();
+
+        $userId = Auth::guard('users')->user()->id;
+        $message = trim(SmsHelper::removeEmoji($request->message));
+        $smsData = SmsHelper::prepareSmsData($message, $userId);
+        $workerCount = $this->calculateWorkerCount($request->phone_numbers);
+        $this->createSmsCampaign($request, $smsData['batchId']);
+
+        for ($i = 0; $i < $workerCount; $i++) {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            $phoneNumbers = array_slice($request->phone_numbers, $i * $this->phonesPerWorker, $this->phonesPerWorker);
+            SendSms::dispatch($uniqueKey, $phoneNumbers, $message, $request->type, $smsData);
+        }
+
+        return response()->json(['Your sms is preparing and being sent to users.'], 200);
     }
 
     public function send(Request $request)
