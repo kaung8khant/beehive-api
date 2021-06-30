@@ -32,6 +32,7 @@ class OrderDriverController extends Controller
             ->whereHas('drivers.status', function ($q) {
                 $q->where('status', '!=', 'rejected');
                 $q->where('status', '!=', 'no_response');
+                $q->where('status', '!=', 'pending');
             })
             ->orderByDesc('id')
             ->get();
@@ -87,12 +88,14 @@ class OrderDriverController extends Controller
                 if (in_array($driverStatus, ['rejected', 'no-response', 'pickup', 'delivered'])) {
                     return ['status' => 'failed', 'message' => 'Already ' . $driverStatus, 'code' => 406];
                 }
+                return true;
                 break;
 
             case 'rejected':
                 if (in_array($driverStatus, ['no-response', 'pickup', 'delivered'])) {
                     return ['status' => 'failed', 'message' => 'Already ' . $driverStatus, 'code' => 406];
                 }
+                return true;
                 break;
 
             case 'pickup':
@@ -103,6 +106,7 @@ class OrderDriverController extends Controller
                 if ($orderStatus !== 'pickUp') {
                     return ['status' => 'failed', 'message' => 'The order is not ready to pick up yet.', 'code' => 406];
                 }
+                return true;
                 break;
 
             case 'delivered':
@@ -113,6 +117,7 @@ class OrderDriverController extends Controller
                 if ($orderStatus !== 'onRoute') {
                     return ['status' => 'failed', 'message' => 'The order is not on route yet.', 'code' => 406];
                 }
+                return true;
                 break;
 
             default:

@@ -120,9 +120,7 @@ trait OneSignalHelper
         if ($request->url) {
             $fields['url'] = $request->url;
         }
-        if ($request->url) {
-            $fields['app_url'] = $request->app_url;
-        }
+
 
         if ($request->data) {
             $fields['data'] = $request->data;

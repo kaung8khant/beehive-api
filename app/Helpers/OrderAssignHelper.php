@@ -72,10 +72,13 @@ trait OrderAssignHelper
 
 
             $resOrderDriver = RestaurantOrderDriver::where('user_id', $order->user_id)->where('restaurant_order_id', $order->restaurant_order_id)->first();
+
             RestaurantOrderDriverStatus::create([
                 'restaurant_order_driver_id' => $resOrderDriver->id,
                 'status' => "no-response",
             ]);
+
+
             $restaurantOrder = RestaurantOrder::where('id', $order->restaurant_order_id)->first();
             if (count($reOrder) < 2) {
                 self::assignAndAlert($driverSlug, $restaurantOrder);
@@ -128,10 +131,10 @@ trait OrderAssignHelper
 
             $request['slugs'] = array($driverSlug);
             $request['message'] = "You have received new order. Accept Now!";
-            $request['app_url'] = "http://www.beehivedriver.com/job?&slug=" . $order->slug . "&price=" . $order->total_amount;
+            $request['url'] = "http://www.beehivedriver.com/job?&slug=" . $order->slug . "&price=" . $order->total_amount . "&invoice_id=" . $order->invoice_id;
 
             $appId = config('one-signal.admin_app_id');
-            $request['data'] = ["slug" => $order->slug, 'price' => $order->total_amount];
+            $request['data'] = ["slug" => $order->slug, 'price' => $order->total_amount, 'invoice_id' => $order->invoice_id];
             $fields = OneSignalHelper::prepareNotification($request, $appId);
 
 
@@ -146,7 +149,7 @@ trait OrderAssignHelper
         $branch = RestaurantOrder::with('restaurantBranch')->where('slug', $slug)->first()->restaurant_branch_info;
         $driverlist = self::getActiveDriver($driverlist);
 
-        if (isset($dirvers) && count($drivers) > 0) {
+        if (isset($driverlist) && count($driverlist) > 0) {
             foreach ($driverlist as $key => $driver) {
                 $driverlist[$key]['distance'] = self::calculateDistance($branch['latitude'], $branch['longitude'], $driver['location']['lat'], $driver['location']['lng']);
             }
@@ -161,15 +164,16 @@ trait OrderAssignHelper
 
     private static function getActiveDriver($drivers)
     {
-        if (isset($dirvers) && count($drivers) > 0) {
+        if (isset($drivers) && count($drivers) > 0) {
+
             foreach ($drivers as $key => $driver) {
 
-                if (Carbon::parse($driver['updated_at']) < Carbon::now()->subMinutes(1)) {
+                if (Carbon::parse($driver['updated_at']) < Carbon::now()->subMinutes(1) || $driver['last_order'] !== "delivered") {
+
                     unset($drivers[$key]);
                 }
             }
         }
-
         return $drivers;
     }
 
