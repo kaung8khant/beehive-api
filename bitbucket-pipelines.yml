@@ -62,7 +62,6 @@ pipelines:
                   AWS_BUCKET=${AWS_BUCKET}
                   BOOMSMS_API_KEY=${BOOMSMS_API_KEY}
                   FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}
-                  FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}
                   SENTRY_LARAVEL_DSN=${SENTRY_LARAVEL_DSN}
                   SENTRY_TRACES_SAMPLE_RATE=1
                   APP_DEBUG=false
@@ -77,7 +76,13 @@ pipelines:
                   KBZ_PAY_APP_ID=${KBZ_PAY_APP_ID}
                   KBZ_PAY_APP_KEY=${KBZ_PAY_APP_KEY}
                   KBZ_PAY_CREATE_URL=${KBZ_PAY_CREATE_URL}
+                  CACHE_DRIVER=${CACHE_DRIVER}
+                  QUEUE_CONNECTION=${QUEUE_CONNECTION}
+                  REDIS_HOST=${REDIS_HOST}
+                  REDIS_PASSWORD=${REDIS_PASSWORD}
 
+                # add firebase credentials
+                - echo ${FIREBASE_CREDENTIALS} > storage/firebase/firebase_credentials.json
                 # install composer
                 - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
                 # install dependencies
