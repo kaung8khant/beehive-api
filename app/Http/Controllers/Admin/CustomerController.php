@@ -12,7 +12,6 @@ use App\Models\RestaurantOrder;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class CustomerController extends Controller
@@ -33,24 +32,21 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-        $request['phone_number'] = PhoneNumber::make($request->phone_number, 'MM');
+        $validatedData = $this->validateCustomer($request, true);
 
-        $validatedData = $request->validate(
-            [
-                'slug' => 'required|unique:customers',
-                'email' => 'nullable|email|unique:customers',
-                'name' => 'required|max:255',
-                'phone_number' => 'required|phone:MM|unique:customers',
-                'password' => 'nullable|string|min:6',
-                'gender' => 'required|in:Male,Female',
-                'customer_groups' => 'nullable|array',
-                'customer_groups.*' => 'exists:App\Models\CustomerGroup,slug',
-            ],
-            [
-                'phone_number.phone' => 'Invalid phone number.',
-            ]
-        );
+        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
+        $checkPhone = Customer::where('phone_number', $validatedData['phone_number'])->first();
+
+        if ($checkPhone) {
+            return [
+                'message' => 'The given data was invalid.',
+                'errors' => [
+                    'phone_number' => [
+                        'The phone number has already been taken.',
+                    ],
+                ],
+            ];
+        }
 
         $password = $validatedData['password'] ? $validatedData['password'] : $this->generateRandomPassword();
         $validatedData['password'] = Hash::make($password);
@@ -76,11 +72,7 @@ class CustomerController extends Controller
         $validatedData = $request->validate(
             [
                 'name' => 'required',
-                'phone_number' => [
-                    'required',
-                    'phone:MM',
-                    Rule::unique('customers')->ignore($customer->id),
-                ],
+                'phone_number' => 'required|phone:MM',
                 'gender' => 'required|in:Male,Female',
                 'customer_groups' => 'nullable|array',
                 'customer_groups.*' => 'exists:App\Models\CustomerGroup,slug',
@@ -91,8 +83,20 @@ class CustomerController extends Controller
         );
 
         $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-        $validatedData['customer_groups'] = isset($validatedData['customer_groups']) ? $validatedData['customer_groups'] : [];
+        $checkPhone = Customer::where('phone_number', $validatedData['phone_number'])->where('id', '<>', $customer->id)->first();
 
+        if ($checkPhone) {
+            return [
+                'message' => 'The given data was invalid.',
+                'errors' => [
+                    'phone_number' => [
+                        'The phone number has already been taken.',
+                    ],
+                ],
+            ];
+        }
+
+        $validatedData['customer_groups'] = isset($validatedData['customer_groups']) ? $validatedData['customer_groups'] : [];
         $customerGroups = CustomerGroup::whereIn('slug', $validatedData['customer_groups'])->pluck('id');
         $customer->customerGroups()->detach();
         $customer->customerGroups()->attach($customerGroups);
@@ -105,6 +109,30 @@ class CustomerController extends Controller
     {
         $customer->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
+    }
+
+    private function validateCustomer($request, $slug = false)
+    {
+        $rules = [
+            'email' => 'nullable|email|unique:customers',
+            'name' => 'required|max:255',
+            'phone_number' => 'required|phone:MM',
+            'password' => 'nullable|string|min:6',
+            'gender' => 'required|in:Male,Female',
+            'customer_groups' => 'nullable|array',
+            'customer_groups.*' => 'exists:App\Models\CustomerGroup,slug',
+        ];
+
+        $messages = [
+            'phone_number.phone' => 'Invalid phone number.',
+        ];
+
+        if ($slug) {
+            $request['slug'] = $this->generateUniqueSlug();
+            $rules['slug'] = 'required|unique:customers';
+        }
+
+        return $request->validate($rules, $messages);
     }
 
     public function toggleEnable(Customer $customer)
