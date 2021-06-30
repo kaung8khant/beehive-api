@@ -27,6 +27,26 @@ class Product extends BaseModel
 
     protected $appends = ['rating', 'images', 'covers'];
 
+    public function getPriceAttribute()
+    {
+        return $this->cheapestVariant()->price;
+    }
+
+    public function getTaxAttribute()
+    {
+        return $this->cheapestVariant()->tax;
+    }
+
+    public function getDiscountAttribute()
+    {
+        return $this->cheapestVariant()->discount;
+    }
+
+    private function cheapestVariant()
+    {
+        return $this->productVariants()->orderBy('price', 'asc')->first();
+    }
+
     public function getRatingAttribute()
     {
         $rating = ShopRating::where('target_id', $this->id)

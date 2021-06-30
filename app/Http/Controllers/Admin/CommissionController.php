@@ -107,6 +107,12 @@ class CommissionController extends Controller
 
         // dd($order);
 
+        // foreach ($order as $key => $value) {
+        //     foreach ($value as $key => $v) {
+        //         dd($value[$key]->commission);
+        //     }
+        // }
+
         $result = RestaurantOrder::where('commission', '>', 0)
             ->whereBetween('order_date', array($request->from, $request->to))
             ->get();
