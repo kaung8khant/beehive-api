@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Kreait\Firebase\Factory;
-use Kreait\Firebase\ServiceAccount;
 
 Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () {
     Route::group(['prefix' => 'admin'], function () {
@@ -51,8 +49,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::resource('customers', 'Admin\CustomerController', ['except' => ['create', 'edit']]);
             Route::patch('customers/toggle-enable/{customer}', 'Admin\CustomerController@toggleEnable');
 
-            Route::resource('drivers', 'Admin\DriverController', ['except' => ['create', 'edit']]);
-            Route::patch('drivers/toggle-enable/{user}', 'Admin\DriverController@toggleEnable');
+            Route::resource('drivers', 'Admin\Driver\DriverController', ['except' => ['create', 'edit']]);
+            Route::patch('drivers/toggle-enable/{user}', 'Admin\Driver\DriverController@toggleEnable');
 
             Route::resource('collectors', 'Admin\CollectorController', ['except' => ['create', 'edit']]);
             Route::patch('collectors/toggle-enable/{user}', 'Admin\CollectorController@toggleEnable');
@@ -174,8 +172,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::resource('contents', 'Admin\ContentController', ['except' => ['create', 'edit']]);
             Route::resource('promotions', 'Admin\PromotionController', ['except' => ['create', 'edit']]);
 
-            Route::get('jobs', 'Admin\OrderDriverController@jobList');
-
             // Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
             // Route::post('devices/send', 'OneSignal\OneSignalController@sendPushNotification');
             Route::post('devices/{playerId}', 'OneSignal\OneSignalController@registerAdminPlayerID');
@@ -183,13 +179,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::post('devices/send/admins', 'OneSignal\OneSignalController@sendAdmins');
             Route::post('devices/send/vendors', 'OneSignal\OneSignalController@sendVendors');
 
-            Route::post('job/accept/{slug}', 'Admin\OrderDriverController@jobAccept');
-            Route::post('job/reject/{slug}', 'Admin\OrderDriverController@jobReject');
-            Route::get('job/{slug}', 'Admin\OrderDriverController@jobDetail');
+            Route::get('jobs', 'Admin\Driver\OrderDriverController@jobList');
+            Route::post('jobs/{restaurantOrder}/status', 'Admin\Driver\OrderDriverController@changeStatus');
+            Route::get('jobs/{restaurantOrder}', 'Admin\Driver\OrderDriverController@jobDetail');
 
-            Route::post('attendances', 'Admin\DriverController@attendance');
-            Route::get('attendances', 'Admin\DriverController@getCheckin');
-
+            Route::post('attendances', 'Admin\Driver\DriverController@attendance');
+            Route::get('attendances', 'Admin\Driver\DriverController@getCheckin');
 
             Route::get('shop-commissions', 'Admin\CommissionController@getShopOrderCommissions');
             Route::get('shops/{shop}/commissions', 'Admin\CommissionController@getOneShopOrderCommissions');
