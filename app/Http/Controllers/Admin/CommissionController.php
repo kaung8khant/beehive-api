@@ -42,35 +42,36 @@ class CommissionController extends Controller
     //     return response()->json($result);
     // }
 
+    // $startDate=null;
+    // $endDate=null;
+    // if ($request->type === 'today') {
+    //     $startDate = Carbon::now()->startOfDay();
+    //     $endDate = Carbon::now();
+    // } elseif ($request->type === 'yesterday') {
+    //     $startDate = Carbon::now()->subDays(1)->startOfDay();
+    //     $endDate = Carbon::now()->subDays(1);
+    // } elseif ($request->type === 'thisweek') {
+    //     // $startDate = Carbon::now()->subDays(6)->startOfDay();
+    //     $startDate = Carbon::now()->startOfWeek();
+    //     $endDate = Carbon::now()->endOfWeek();
+    // } elseif ($request->type === 'thismonth') {
+    //     $startDate = Carbon::now()->startOfMonth();
+    //     $endDate = Carbon::now()->endOfMonth();
+    // } elseif ($request->type === 'lastmonth') {
+    //     $startDate = Carbon::now()->subMonth()->startOfMonth();
+    //     $endDate = Carbon::now()->subMonth()->endOfMonth();
+    // } elseif ($request->type === 'thisyear') {
+    //     $startDate = Carbon::now()->startOfYear();
+    //     $endDate = Carbon::now()->endOfYear();
+    // }
+
     public function getShopOrderCommissions(Request $request)
     {
-        $startDate=null;
-        $endDate=null;
-        if ($request->type === 'today') {
-            $startDate = Carbon::now()->startOfDay();
-            $endDate = Carbon::now();
-        } elseif ($request->type === 'yesterday') {
-            $startDate = Carbon::now()->subDays(1)->startOfDay();
-            $endDate = Carbon::now()->subDays(1);
-        } elseif ($request->type === 'thisweek') {
-            // $startDate = Carbon::now()->subDays(6)->startOfDay();
-            $startDate = Carbon::now()->startOfWeek();
-            $endDate = Carbon::now()->endOfWeek();
-        } elseif ($request->type === 'thismonth') {
-            $startDate = Carbon::now()->startOfMonth();
-            $endDate = Carbon::now()->endOfMonth();
-        } elseif ($request->type === 'lastmonth') {
-            $startDate = Carbon::now()->subMonth()->startOfMonth();
-            $endDate = Carbon::now()->subMonth()->endOfMonth();
-        } elseif ($request->type === 'thisyear') {
-            $startDate = Carbon::now()->startOfYear();
-            $endDate = Carbon::now()->endOfYear();
-        }
-        $result= ShopOrderVendor::with('shopOrder', 'shop')
-        ->whereHas('shopOrder', function ($query) use ($startDate, $endDate) {
-            $query->where('commission', '>', 0)
-            ->whereBetween('order_date', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'));
-        })->get();
+        $result = ShopOrderVendor::with('shopOrder', 'shop')
+            ->whereHas('shopOrder', function ($query) use ($request) {
+                $query->where('commission', '>', 0)
+                    ->whereBetween('order_date', array($request->from, $request->to));
+            })->get();
 
         return response()->json($result);
     }
@@ -79,63 +80,22 @@ class CommissionController extends Controller
 
     public function getOneShopOrderCommissions(Request $request, Shop $shop)
     {
-        $startDate=null;
-        $endDate=null;
-        if ($request->type === 'today') {
-            $startDate = Carbon::now()->startOfDay();
-            $endDate = Carbon::now();
-        } elseif ($request->type === 'yesterday') {
-            $startDate = Carbon::now()->subDays(1)->startOfDay();
-            $endDate = Carbon::now()->subDays(1);
-        } elseif ($request->type === 'thisweek') {
-            // $startDate = Carbon::now()->subDays(6)->startOfDay();
-            $startDate = Carbon::now()->startOfWeek();
-            $endDate = Carbon::now()->endOfWeek();
-        } elseif ($request->type === 'thismonth') {
-            $startDate = Carbon::now()->startOfMonth();
-            $endDate = Carbon::now()->endOfMonth();
-        } elseif ($request->type === 'lastmonth') {
-            $startDate = Carbon::now()->subMonth()->startOfMonth();
-            $endDate = Carbon::now()->subMonth()->endOfMonth();
-        } elseif ($request->type === 'thisyear') {
-            $startDate = Carbon::now()->startOfYear();
-            $endDate = Carbon::now()->endOfYear();
-        }
-        $result= ShopOrderItem::with('shop', 'product')->whereHas('shop', function ($query) use ($shop) {
-            $query->where('slug', $shop->slug);
-        })
-        ->where('commission', '>', 0)
-        ->whereBetween('created_at', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))->get();
-
+        $result = ShopOrderItem::with('shop', 'product')
+            ->where(function ($query) use ($request, $shop) {
+                $query->whereHas('shop', function ($query) use ($shop) {
+                    $query->where('slug', $shop->slug);
+                })
+                    ->whereHas('vendor.shopOrder', function ($query) use ($request) {
+                        $query->whereBetween('order_date', array($request->from, $request->to));
+                    });
+            })
+            ->where('commission', '>', 0)->get();
         return response()->json($result);
     }
 
 
     public function getRestaurantOrderCommissions(Request $request)
     {
-        $startDate=null;
-        $endDate=null;
-        if ($request->type === 'today') {
-            $startDate = Carbon::now()->startOfDay();
-            $endDate = Carbon::now();
-        } elseif ($request->type === 'yesterday') {
-            $startDate = Carbon::now()->subDays(1)->startOfDay();
-            $endDate = Carbon::now()->subDays(1);
-        } elseif ($request->type === 'thisweek') {
-            // $startDate = Carbon::now()->subDays(6)->startOfDay();
-            $startDate = Carbon::now()->startOfWeek();
-            $endDate = Carbon::now()->endOfWeek();
-        } elseif ($request->type === 'thismonth') {
-            $startDate = Carbon::now()->startOfMonth();
-            $endDate = Carbon::now()->endOfMonth();
-        } elseif ($request->type === 'lastmonth') {
-            $startDate = Carbon::now()->subMonth()->startOfMonth();
-            $endDate = Carbon::now()->subMonth()->endOfMonth();
-        } elseif ($request->type === 'thisyear') {
-            $startDate = Carbon::now()->startOfYear();
-            $endDate = Carbon::now()->endOfYear();
-        }
-
         // $order = DB::table('restaurant_orders')
         // ->join('restaurants', 'restaurants.id', '=', 'restaurant_orders.restaurant_id')
         // ->where('restaurant_orders.commission', '>', 0)
@@ -147,8 +107,8 @@ class CommissionController extends Controller
 
         // dd($order);
 
-        $result= RestaurantOrder::where('commission', '>', 0)
-            ->whereBetween('order_date', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+        $result = RestaurantOrder::where('commission', '>', 0)
+            ->whereBetween('order_date', array($request->from, $request->to))
             ->get();
 
         return response()->json($result);
@@ -157,33 +117,11 @@ class CommissionController extends Controller
 
     public function getRestaurantBranchOrderCommissions(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $startDate=null;
-        $endDate=null;
-        if ($request->type === 'today') {
-            $startDate = Carbon::now()->startOfDay();
-            $endDate = Carbon::now();
-        } elseif ($request->type === 'yesterday') {
-            $startDate = Carbon::now()->subDays(1)->startOfDay();
-            $endDate = Carbon::now()->subDays(1);
-        } elseif ($request->type === 'thisweek') {
-            // $startDate = Carbon::now()->subDays(6)->startOfDay();
-            $startDate = Carbon::now()->startOfWeek();
-            $endDate = Carbon::now()->endOfWeek();
-        } elseif ($request->type === 'thismonth') {
-            $startDate = Carbon::now()->startOfMonth();
-            $endDate = Carbon::now()->endOfMonth();
-        } elseif ($request->type === 'lastmonth') {
-            $startDate = Carbon::now()->subMonth()->startOfMonth();
-            $endDate = Carbon::now()->subMonth()->endOfMonth();
-        } elseif ($request->type === 'thisyear') {
-            $startDate = Carbon::now()->startOfYear();
-            $endDate = Carbon::now()->endOfYear();
-        }
-        $result= RestaurantOrder::whereHas('restaurantBranch', function ($query) use ($restaurantBranch) {
+        $result = RestaurantOrder::whereHas('restaurantBranch', function ($query) use ($restaurantBranch) {
             $query->where('slug', $restaurantBranch->slug);
         })
             ->where('commission', '>', 0)
-            ->whereBetween('order_date', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->whereBetween('order_date', array($request->from, $request->to))
             ->get();
 
         return response()->json($result);
@@ -191,33 +129,11 @@ class CommissionController extends Controller
 
     public function getOneRestaurantOrderCommissions(Request $request, Restaurant $restaurant)
     {
-        $startDate=null;
-        $endDate=null;
-        if ($request->type === 'today') {
-            $startDate = Carbon::now()->startOfDay();
-            $endDate = Carbon::now();
-        } elseif ($request->type === 'yesterday') {
-            $startDate = Carbon::now()->subDays(1)->startOfDay();
-            $endDate = Carbon::now()->subDays(1);
-        } elseif ($request->type === 'thisweek') {
-            // $startDate = Carbon::now()->subDays(6)->startOfDay();
-            $startDate = Carbon::now()->startOfWeek();
-            $endDate = Carbon::now()->endOfWeek();
-        } elseif ($request->type === 'thismonth') {
-            $startDate = Carbon::now()->startOfMonth();
-            $endDate = Carbon::now()->endOfMonth();
-        } elseif ($request->type === 'lastmonth') {
-            $startDate = Carbon::now()->subMonth()->startOfMonth();
-            $endDate = Carbon::now()->subMonth()->endOfMonth();
-        } elseif ($request->type === 'thisyear') {
-            $startDate = Carbon::now()->startOfYear();
-            $endDate = Carbon::now()->endOfYear();
-        }
-        $result= RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurant) {
+        $result = RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurant) {
             $query->where('slug', $restaurant->slug);
         })
             ->where('commission', '>', 0)
-            ->whereBetween('order_date', array($startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d') . ' 23:59:59'))
+            ->whereBetween('order_date', array($request->from, $request->to))
             ->get();
 
         return response()->json($result);
