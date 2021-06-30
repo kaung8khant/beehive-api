@@ -24,7 +24,7 @@ class SmsController extends Controller
         $this->phonesPerWorker = 200;
     }
 
-    public function createCampaings(Request $request)
+    public function createCampaigns(Request $request)
     {
         $request->validate([
             'name' => 'nullable|string',
