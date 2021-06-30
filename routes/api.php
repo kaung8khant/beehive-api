@@ -151,6 +151,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('customer-groups/{slug}/customers', 'Group\CustomerGroupController@getCustomersByGroup');
 
             Route::post('sms/send', 'Sms\SmsController@send');
+            Route::post('sms/campaings', 'Sms\SmsController@createCampaings');
             Route::get('sms/campaigns', 'Sms\SmsController@getSmsCampaigns');
             Route::get('sms/logs', 'Sms\SmsController@getLogs');
             Route::get('sms/logs/batch/{batchId}', 'Sms\SmsController@getLogsByBatchId');
