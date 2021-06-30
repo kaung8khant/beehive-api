@@ -131,10 +131,10 @@ trait OrderAssignHelper
 
             $request['slugs'] = array($driverSlug);
             $request['message'] = "You have received new order. Accept Now!";
-            $request['url'] = "http://www.beehivedriver.com/job?&slug=" . $order->slug . "&price=" . $order->total_amount;
+            $request['url'] = "http://www.beehivedriver.com/job?&slug=" . $order->slug . "&price=" . $order->total_amount . "&invoice_id=" . $order->invoice_id;
 
             $appId = config('one-signal.admin_app_id');
-            $request['data'] = ["slug" => $order->slug, 'price' => $order->total_amount];
+            $request['data'] = ["slug" => $order->slug, 'price' => $order->total_amount, 'invoice_id' => $order->invoice_id];
             $fields = OneSignalHelper::prepareNotification($request, $appId);
 
 
@@ -164,15 +164,16 @@ trait OrderAssignHelper
 
     private static function getActiveDriver($drivers)
     {
-        if (isset($dirvers) && count($drivers) > 0) {
+        if (isset($drivers) && count($drivers) > 0) {
+
             foreach ($drivers as $key => $driver) {
 
-                if (Carbon::parse($driver['updated_at']) < Carbon::now()->subMinutes(1)) {
+                if (Carbon::parse($driver['updated_at']) < Carbon::now()->subMinutes(1) || $driver['last_order'] !== "delivered") {
+
                     unset($drivers[$key]);
                 }
             }
         }
-
         return $drivers;
     }
 
