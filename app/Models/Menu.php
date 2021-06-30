@@ -26,6 +26,26 @@ class Menu extends BaseModel
 
     protected $appends = ['images'];
 
+    public function getPriceAttribute()
+    {
+        return $this->cheapestVariant()->price;
+    }
+
+    public function getTaxAttribute()
+    {
+        return $this->cheapestVariant()->tax;
+    }
+
+    public function getDiscountAttribute()
+    {
+        return $this->cheapestVariant()->discount;
+    }
+
+    private function cheapestVariant()
+    {
+        return $this->menuVariants()->orderBy('price', 'asc')->first();
+    }
+
     public function getImagesAttribute()
     {
         return File::where('source', 'menus')
