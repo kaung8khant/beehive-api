@@ -67,12 +67,21 @@ class CommissionController extends Controller
 
     public function getShopOrderCommissions(Request $request)
     {
-        $result = ShopOrderVendor::with('shopOrder', 'shop')
-            ->whereHas('shopOrder', function ($query) use ($request) {
-                $query->where('commission', '>', 0)
-                    ->whereBetween('order_date', array($request->from, $request->to));
-            })->get();
+        // $result = ShopOrderVendor::with('shopOrder', 'shop')
+        //     ->whereHas('shopOrder', function ($query) use ($request) {
+        //         $query->where('commission', '>', 0)
+        //             ->whereBetween('order_date', array($request->from, $request->to));
+        //     })->get();
 
+        // return response()->json($result);
+
+        $result = ShopOrderItem::with('shop', 'vendor.shopOrder')
+            ->where(function ($query) use ($request) {
+                $query->whereHas('vendor.shopOrder', function ($query) use ($request) {
+                    $query->whereBetween('order_date', array($request->from, $request->to));
+                });
+            })
+            ->where('commission', '>', 0)->get();
         return response()->json($result);
     }
 

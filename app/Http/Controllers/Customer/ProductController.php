@@ -45,7 +45,7 @@ class ProductController extends Controller
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
-            ->orderBy('id', 'desc')
+            ->orderBy('name', 'asc')
             ->paginate($request->size);
 
         return $this->generateProductResponse($products, 200, 'array', $products->lastPage());
@@ -173,7 +173,7 @@ class ProductController extends Controller
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
-            ->orderBy('id', 'desc')
+            ->inRandomOrder()
             ->paginate($request->size)
             ->items();
 
