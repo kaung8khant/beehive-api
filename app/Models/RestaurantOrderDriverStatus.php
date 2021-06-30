@@ -17,7 +17,6 @@ class RestaurantOrderDriverStatus extends Model
         'status',
     ];
 
-
     public function shopOrderDriver()
     {
         return $this->belongsTo(RestaurantOrderDriver::class);
