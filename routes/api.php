@@ -213,6 +213,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
     /* KBZ Pay Notify */
     Route::post('kbz/notify', 'Payment\KbzPayController@notify');
 
+    Route::get('test', 'SlugFixController@test');
+
     // Route::post('calculate-driver', 'FirebaseController@index');
 });
 
