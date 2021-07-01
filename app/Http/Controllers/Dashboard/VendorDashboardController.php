@@ -277,6 +277,9 @@ class VendorDashboardController extends Controller
         if ($this->userRole === 'Restaurant') {
             $result = $this->getRestaurantRecentOrders();
         } elseif ($this->userRole === 'Shop') {
+            // dd($this->userRole);
+
+            // return "ff";
             $result = $this->getShopRecentOrders();
         }
 
@@ -332,10 +335,10 @@ class VendorDashboardController extends Controller
             ->limit(10)
             ->get();
 
-
         $result = [];
         foreach ($orders as $key) {
-            $orderSlug=ShopOrder::where('id', $key->id)->firstOrFail()->slug;
+            $orderSlug=ShopOrder::where('id', $key->shop_order_id)->firstOrFail()->slug;
+
             $order = [
                 'order_id' => $orderSlug,
                 // 'location' => $this->getShopContactLocation($key->shop_order_id),
