@@ -176,13 +176,15 @@ class CustomerController extends Controller
             ->map(function ($shopOrder) {
                 return $shopOrder->makeHidden('vendors');
             });
+
         $restaurantOrder = RestaurantOrder::with('restaurantOrderContact')
             ->where('customer_id', $customer->id)
-            ->get()
-            ->map(function ($shopOrder) {
-                return $shopOrder->makeHidden('vendors');
-            });
-        $orderList = $shopOrder->merge($restaurantOrder);
+            ->get();
+        if ($request->filter) {
+            $orderList = $shopOrder->merge($restaurantOrder)->where('id', ltrim($request->filter, '0'));
+        } else {
+            $orderList = $shopOrder->merge($restaurantOrder);
+        }
         $orderList = CollectionHelper::paginate(collect($orderList), $request->size);
 
         return response()->json($orderList, 200);
