@@ -132,7 +132,7 @@ trait OrderAssignHelper
             $request['slugs'] = array($driverSlug);
             $request['message'] = "You have received new order. Accept Now!";
             $request['url'] = "http://www.beehivedriver.com/job?&slug=" . $order->slug . "&price=" . $order->total_amount . "&invoice_id=" . $order->invoice_id;
-
+            $request['android_channel_id'] = config('one-singal.android_channel_id');
             $appId = config('one-signal.admin_app_id');
             $request['data'] = ["slug" => $order->slug, 'price' => $order->total_amount, 'invoice_id' => $order->invoice_id];
             $fields = OneSignalHelper::prepareNotification($request, $appId);
