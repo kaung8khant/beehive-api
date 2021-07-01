@@ -29,6 +29,7 @@ class MenuToppingController extends Controller
     {
         $validatedData = $request->validate([
             'menu_slug' => 'required|exists:App\Models\Menu,slug',
+            'menu_toppings' => 'required|array',
             'menu_toppings.*.name' => 'required|string',
             'menu_toppings.*.price' => 'required|numeric',
             'menu_toppings.*.is_incremental' => 'required|boolean',
