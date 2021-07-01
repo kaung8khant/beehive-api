@@ -59,5 +59,7 @@ return [
     'admin_api_key' => env('ONE_SIGNAL_ADMIN_API_KEY'),
 
     'vendor_app_id' => env('ONE_SIGNAL_VENDOR_APP_ID'),
-    'vendor_api_key' => env('ONE_SIGNAL_VENDOR_API_KEY'),    
+    'vendor_api_key' => env('ONE_SIGNAL_VENDOR_API_KEY'),
+
+    'android_channel_id' => env('ONE_SIGNAL_ANDROID_CHANNEL_ID'),
 ];

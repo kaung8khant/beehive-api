@@ -120,7 +120,9 @@ trait OneSignalHelper
         if ($request->url) {
             $fields['url'] = $request->url;
         }
-
+        if ($request->android_channel_id) {
+            $fields['android_channel_id'] = $request->android_channel_id;
+        }
 
         if ($request->data) {
             $fields['data'] = $request->data;
