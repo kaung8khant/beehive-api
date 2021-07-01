@@ -27,19 +27,31 @@ class Product extends BaseModel
 
     protected $appends = ['rating', 'images', 'covers'];
 
-    public function getPriceAttribute()
+    public function getPriceAttribute($value)
     {
-        return $this->cheapestVariant()->price;
+        if ($this->cheapestVariant()) {
+            return $this->cheapestVariant()->price;
+        }
+
+        return $value;
     }
 
-    public function getTaxAttribute()
+    public function getTaxAttribute($value)
     {
-        return $this->cheapestVariant()->tax;
+        if ($this->cheapestVariant()) {
+            return $this->cheapestVariant()->tax;
+        }
+
+        return $value;
     }
 
-    public function getDiscountAttribute()
+    public function getDiscountAttribute($value)
     {
-        return $this->cheapestVariant()->discount;
+        if ($this->cheapestVariant()) {
+            return $this->cheapestVariant()->discount;
+        }
+
+        return $value;
     }
 
     private function cheapestVariant()

@@ -165,4 +165,28 @@ class CustomerController extends Controller
 
         return response()->json($customerlist, 200);
     }
+
+    public function getOrdersByCustomer(Request $request, $slug)
+    {
+        $customer = Customer::where('slug', $slug)->firstOrFail();
+
+        $shopOrder = ShopOrder::with('contact')
+            ->where('customer_id', $customer->id)
+            ->get()
+            ->map(function ($shopOrder) {
+                return $shopOrder->makeHidden('vendors');
+            });
+
+        $restaurantOrder = RestaurantOrder::with('restaurantOrderContact')
+            ->where('customer_id', $customer->id)
+            ->get();
+        if ($request->filter) {
+            $orderList = $shopOrder->merge($restaurantOrder)->where('id', ltrim($request->filter, '0'));
+        } else {
+            $orderList = $shopOrder->merge($restaurantOrder);
+        }
+        $orderList = CollectionHelper::paginate(collect($orderList), $request->size);
+
+        return response()->json($orderList, 200);
+    }
 }

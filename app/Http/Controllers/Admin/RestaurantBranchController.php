@@ -105,10 +105,10 @@ class RestaurantBranchController extends Controller
         }
 
         if ($tagsCategories) {
-            $rules['name'] = [
-                'required',
-                Rule::unique('restaurant_branches')->ignore($branchId),
-            ];
+            // $rules['name'] = [
+            //     'required',
+            //     Rule::unique('restaurant_branches')->ignore($branchId),
+            // ];
             $rules['restaurant_tags'] = 'required|array';
             $rules['restaurant_tags.*'] = 'exists:App\Models\RestaurantTag,slug';
             $rules['available_categories'] = 'nullable|array';

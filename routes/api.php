@@ -47,6 +47,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::put('logistics-users/{user}', 'Admin\UserController@updateLogisticsUser');
 
             Route::resource('customers', 'Admin\CustomerController', ['except' => ['create', 'edit']]);
+            Route::get('customers/{slug}/orders', 'Admin\CustomerController@getOrdersByCustomer');
             Route::patch('customers/toggle-enable/{customer}', 'Admin\CustomerController@toggleEnable');
 
             Route::resource('drivers', 'Admin\Driver\DriverController', ['except' => ['create', 'edit']]);
@@ -211,6 +212,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
 
     /* KBZ Pay Notify */
     Route::post('kbz/notify', 'Payment\KbzPayController@notify');
+
+    Route::get('test', 'SlugFixController@test');
 
     // Route::post('calculate-driver', 'FirebaseController@index');
 });

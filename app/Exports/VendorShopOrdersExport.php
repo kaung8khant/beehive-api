@@ -58,7 +58,6 @@ class VendorShopOrdersExport implements FromCollection, WithHeadings, WithStyles
             'discount'=> $shopOrderItem->discount ? $shopOrderItem->discount : '0',
             'quantity'=> $shopOrderItem->quantity,
             'subTotal'=>$subTotal,
-            'total'=>$shopOrderItem['shop_order']['total_amount'],
             'payment_mode'=>$shopOrderItem['shop_order']['payment_mode'],
             'type'=>$shopOrderItem['shop_order']['delivery_mode'],
             'special_instructions'=>$shopOrderItem['shop_order']['special_instruction'],
@@ -86,7 +85,6 @@ class VendorShopOrdersExport implements FromCollection, WithHeadings, WithStyles
             'discount',
             'quantity',
             'subTotal',
-            'total',
             'payment_mode',
             'type',
             'special_instructions',
@@ -114,7 +112,6 @@ class VendorShopOrdersExport implements FromCollection, WithHeadings, WithStyles
             'N' => ['alignment' => ['horizontal' => 'center']],
             'O' => ['alignment' => ['horizontal' => 'center']],
             'P' => ['alignment' => ['horizontal' => 'center']],
-            'Q' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -136,8 +133,7 @@ class VendorShopOrdersExport implements FromCollection, WithHeadings, WithStyles
             'M' => 15,
             'N' => 15,
             'O' => 15,
-            'P' => 15,
-            'Q' => 30,
+            'P' => 30,
         ];
     }
 }
