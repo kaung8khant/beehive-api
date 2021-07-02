@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Customer\v3;
 
-use App\Helpers\NotificationHelper;
 use App\Helpers\KbzPayHelper;
+use App\Helpers\NotificationHelper;
+use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
@@ -17,7 +18,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Helpers\OrderAssignHelper;
 
 class RestaurantOrderController extends Controller
 {
@@ -54,8 +54,8 @@ class RestaurantOrderController extends Controller
         }
 
         $checkTime = OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
-        if (!$checkTime) {
-            return $this->generateResponse('Ordering is not available yet at this hour. Thank you for shopping with Beehive.', 403, true);
+        if ($checkTime) {
+            return $this->generateResponse("Ordering is not available yet at this hour, Please place your order @ ${$checkTime['open']} am - ${$checkTime['open']} pm. Thank you for shopping with Beehive.", 403, true);
         }
 
         $validatedData['customer_id'] = $this->customer->id;
@@ -80,10 +80,10 @@ class RestaurantOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        $this->assignOrder('restaurant', $order->slug);
-
-        OrderHelper::sendPushNotifications($validatedData['restaurant_branch_id']);
+        OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $this->customer->phone_number);
+
+        $this->assignOrder('restaurant', $order->slug);
 
         return $this->generateResponse($order, 201);
     }

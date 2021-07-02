@@ -112,7 +112,7 @@ class RestaurantOrderController extends Controller
         $this->assignOrder('restaurant', $order->slug);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::sendPushNotifications($validatedData['restaurant_branch_id']);
+        OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $phoneNumber);
 
         return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
