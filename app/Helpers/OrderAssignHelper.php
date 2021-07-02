@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\DB;
 use Ladumor\OneSignal\OneSignal;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 trait OrderAssignHelper
 {
@@ -132,10 +131,12 @@ trait OrderAssignHelper
             $request['slugs'] = array($driverSlug);
             $request['message'] = "You have received new order. Accept Now!";
             $request['url'] = "http://www.beehivedriver.com/job?&slug=" . $order->slug . "&price=" . $order->total_amount . "&invoice_id=" . $order->invoice_id;
-            $request['android_channel_id'] = config('one-singal.android_channel_id');
+            $request['android_channel_id'] = config('one-signal.android_channel_id');
+
             $appId = config('one-signal.admin_app_id');
             $request['data'] = ["slug" => $order->slug, 'price' => $order->total_amount, 'invoice_id' => $order->invoice_id];
             $fields = OneSignalHelper::prepareNotification($request, $appId);
+
 
 
             $response = OneSignalHelper::sendPush($fields, 'admin');
