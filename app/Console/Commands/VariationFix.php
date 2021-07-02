@@ -7,7 +7,6 @@ use App\Models\Menu;
 use App\Models\MenuVariation;
 use App\Models\MenuVariationValue;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class VariationFix extends Command
 {
@@ -48,8 +47,6 @@ class VariationFix extends Command
             ->orderBy('id', 'asc')
             ->get();
 
-        Log::critical('invoking variation fix scheduler!');
-
         foreach ($menus as $menu) {
             $menuVariants = $menu->menuVariants->filter(function ($variant) {
                 return count($variant->variant) === 1;
@@ -86,5 +83,7 @@ class VariationFix extends Command
                 }
             }
         }
+
+        throw new \Exception('invoking variation fix scheduler!');
     }
 }
