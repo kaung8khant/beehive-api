@@ -167,7 +167,6 @@ trait RestaurantOrderHelper
             $item['menu_id'] = $menu->id;
             $item['restaurant_id'] = $menu->restaurant_id;
             $item['category'] = $menu->restaurantCategory->name;
-            $item['discount'] = 0;
 
             RestaurantOrderItem::create($item);
         }
