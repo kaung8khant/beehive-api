@@ -15,6 +15,7 @@ use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
+use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -252,5 +253,34 @@ class ShopOrderController extends Controller
         });
 
         return $this->generateResponse($result, 200);
+    }
+
+    public function cancelOrderItem(ShopOrderItem $shopOrderItem)
+    {
+        $shopOrderVendor=ShopOrderVendor::where('id', $shopOrderItem->shop_order_vendor_id)->first();
+        if ($shopOrderVendor->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $shopOrderVendor->order_status . '.', 406, true);
+        }
+        $shopOrderItem->delete();
+
+        $shopOrder=ShopOrder::where('id', $shopOrderVendor->shop_order_id)->first();
+        $promocode=Promocode::where('code', $shopOrderVendor->promocode)->first();
+
+        if ($promocode->type === 'fix') {
+            $shopOrder->update(['promocode_amount'=>$promocode->amount]);
+        } else {
+            $vendors = $shopOrder->vendors;
+            $subTotal = 0;
+
+            foreach ($vendors as $vendor) {
+                foreach ($vendor->items as $item) {
+                    $subTotal += ($item->amount - $item->discount) * $item->quantity;
+                }
+            }
+
+            $shopOrder->update(['promocode_amount'=>$subTotal * $promocode->amount * 0.01]);
+        }
+
+        return response()->json(['message' => 'Successfully cancelled.'], 200);
     }
 }

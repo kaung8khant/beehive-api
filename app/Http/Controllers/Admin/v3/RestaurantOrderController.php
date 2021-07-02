@@ -16,6 +16,7 @@ use App\Models\Promocode;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
+use App\Models\RestaurantOrderItem;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -254,5 +255,30 @@ class RestaurantOrderController extends Controller
                     ->get();
         }
         return $this->generateResponse($restaurantOrders, 200);
+    }
+
+    public function cancelOrderItem(RestaurantOrderItem $restaurantOrderItem)
+    {
+        $restaurantOrder=RestaurantOrder::where('id', $restaurantOrderItem->restaurant_order_id)->first();
+        if ($restaurantOrder->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
+        }
+        $restaurantOrderItem->delete();
+
+        $promocode=Promocode::where('code', $restaurantOrder->promocode)->first();
+
+        if ($promocode->type === 'fix') {
+            $restaurantOrder->update(['promocode_amount'=>$promocode->amount]);
+        } else {
+            $orderItems = $restaurantOrder->restaurantOrderItems;
+            $subTotal = 0;
+
+            foreach ($orderItems as $item) {
+                $amount = ($item->amount  - $item->discount) * $item->quantity;
+                $subTotal += $amount;
+            }
+            $restaurantOrder->update(['promocode_amount'=>$subTotal * $promocode->amount * 0.01]);
+        }
+        return response()->json(['message' => 'Successfully cancelled.'], 200);
     }
 }
