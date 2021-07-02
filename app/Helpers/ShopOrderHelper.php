@@ -16,6 +16,7 @@ use App\Models\ShopOrderItem;
 use App\Models\ShopOrderStatus;
 use App\Models\ShopOrderVendor;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -49,6 +50,8 @@ trait ShopOrderHelper
         if ($customerSlug) {
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
+
+        $request['order_date'] = Carbon::now();
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
@@ -236,6 +239,8 @@ trait ShopOrderHelper
         if ($customerSlug) {
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
+
+        $request['order_date'] = Carbon::now();
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {

@@ -2,9 +2,9 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\BadRequestException;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
-use App\Exceptions\BadRequestException;
 use App\Jobs\SendPushNotification;
 use App\Jobs\SendSms;
 use App\Models\Menu;
@@ -18,6 +18,7 @@ use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use App\Models\Setting;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -56,10 +57,13 @@ trait RestaurantOrderHelper
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
 
+        $request['order_date'] = Carbon::now();
+
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             return $validator->errors()->first();
         }
+
         return $validator->validated();
     }
 
@@ -264,6 +268,8 @@ trait RestaurantOrderHelper
         if ($customerSlug) {
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
+
+        $request['order_date'] = Carbon::now();
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
