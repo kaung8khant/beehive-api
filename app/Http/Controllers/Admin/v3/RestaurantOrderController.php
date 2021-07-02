@@ -266,18 +266,19 @@ class RestaurantOrderController extends Controller
         $restaurantOrderItem->delete();
 
         $promocode=Promocode::where('code', $restaurantOrder->promocode)->first();
+        $orderItems = $restaurantOrder->restaurantOrderItems;
+        $subTotal = 0;
+        $commission=0;
 
+        foreach ($orderItems as $item) {
+            $amount = ($item->amount  - $item->discount) * $item->quantity;
+            $subTotal += $amount;
+            $commission += $item->commission;
+        }
         if ($promocode->type === 'fix') {
-            $restaurantOrder->update(['promocode_amount'=>$promocode->amount]);
+            $restaurantOrder->update(['promocode_amount'=>$promocode->amount,'commission'=>$commission]);
         } else {
-            $orderItems = $restaurantOrder->restaurantOrderItems;
-            $subTotal = 0;
-
-            foreach ($orderItems as $item) {
-                $amount = ($item->amount  - $item->discount) * $item->quantity;
-                $subTotal += $amount;
-            }
-            $restaurantOrder->update(['promocode_amount'=>$subTotal * $promocode->amount * 0.01]);
+            $restaurantOrder->update(['promocode_amount'=>$subTotal * $promocode->amount * 0.01,'commission'=>$commission]);
         }
         return response()->json(['message' => 'Successfully cancelled.'], 200);
     }

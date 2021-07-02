@@ -266,19 +266,21 @@ class ShopOrderController extends Controller
         $shopOrder=ShopOrder::where('id', $shopOrderVendor->shop_order_id)->first();
         $promocode=Promocode::where('code', $shopOrderVendor->promocode)->first();
 
-        if ($promocode->type === 'fix') {
-            $shopOrder->update(['promocode_amount'=>$promocode->amount]);
-        } else {
-            $vendors = $shopOrder->vendors;
-            $subTotal = 0;
+        $vendors = $shopOrder->vendors;
+        $subTotal = 0;
+        $commission=0;
 
-            foreach ($vendors as $vendor) {
-                foreach ($vendor->items as $item) {
-                    $subTotal += ($item->amount - $item->discount) * $item->quantity;
-                }
+        foreach ($vendors as $vendor) {
+            foreach ($vendor->items as $item) {
+                $commission += $item->commission;
+
+                $subTotal += ($item->amount - $item->discount) * $item->quantity;
             }
-
-            $shopOrder->update(['promocode_amount'=>$subTotal * $promocode->amount * 0.01]);
+        }
+        if ($promocode->type === 'fix') {
+            $shopOrder->update(['promocode_amount'=>$promocode->amount,'commission'=>$commission]);
+        } else {
+            $shopOrder->update(['promocode_amount'=>$subTotal * $promocode->amount * 0.01,'commission'=>$commission]);
         }
 
         return response()->json(['message' => 'Successfully cancelled.'], 200);
