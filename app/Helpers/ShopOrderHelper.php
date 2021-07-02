@@ -51,8 +51,6 @@ trait ShopOrderHelper
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
 
-        $request['order_date'] = Carbon::now();
-
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             return $validator->errors()->first();
@@ -67,9 +65,11 @@ trait ShopOrderHelper
             ->with('productVariations')
             ->with('productVariations.productVariationValues')
             ->first();
+
         if ($product->productVariations()->count() > 0 && empty($value['variation_value_slugs'])) {
             throw new BadRequestException('The order_items.' . $key . '.variation_value_slugs is required.', 400);
         }
+
         return $product;
     }
 
@@ -78,13 +78,10 @@ trait ShopOrderHelper
         $orderItems = [];
         $subTotal = 0;
         $tax = 0;
-        foreach ($validatedData['order_items'] as $key => $value) {
 
-            // validate variation
+        foreach ($validatedData['order_items'] as $key => $value) {
             $product = self::validateProductVariations($key, $value);
-            // prepare variations for calculation
             $variations = collect(self::prepareVariations($value['variation_value_slugs']));
-            // calculate amount, subTotal and tax
             $amount = $product->price + $variations->sum('price');
 
             $subTotal += ($amount - $product->discount) * $value['quantity'];
@@ -94,13 +91,15 @@ trait ShopOrderHelper
             $product['variations'] = $variations;
             $product['quantity'] = $value['quantity'];
             $product['tax'] = ($amount - $product->discount) * $product->tax * 0.01;
+
             array_push($orderItems, $product->toArray());
         }
+
         $validatedData['product_id'] = $product['id'];
         $validatedData['order_items'] = $orderItems;
         $validatedData['subTotal'] = $subTotal;
         $validatedData['tax'] = $tax;
-        // Log::debug('validatedData => ' . json_encode($validatedData));
+
         return $validatedData;
     }
 
@@ -239,8 +238,6 @@ trait ShopOrderHelper
         if ($customerSlug) {
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
-
-        $request['order_date'] = Carbon::now();
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {

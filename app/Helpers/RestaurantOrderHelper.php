@@ -57,8 +57,6 @@ trait RestaurantOrderHelper
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
 
-        $request['order_date'] = Carbon::now();
-
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             return $validator->errors()->first();
@@ -88,6 +86,7 @@ trait RestaurantOrderHelper
             $menu['variations'] = $variations;
             $menu['toppings'] = $toppings;
             $menu['tax'] = ($amount - $menu->discount) * $menu->tax * 0.01;
+
             array_push($orderItems, $menu->toArray());
         }
 
@@ -96,14 +95,12 @@ trait RestaurantOrderHelper
         $validatedData['subTotal'] = $subTotal;
         $validatedData['tax'] = $tax;
 
-        //prepare restuarantbranch info
         $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
 
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
 
-        // Log::debug('validatedData => ' . json_encode($validatedData));
         return $validatedData;
     }
 
@@ -154,7 +151,6 @@ trait RestaurantOrderHelper
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
             $item['restaurant_id'] = $menu->restaurant_id;
-            $item['discount'] = 0;
 
             RestaurantOrderItem::create($item);
         }
@@ -268,8 +264,6 @@ trait RestaurantOrderHelper
         if ($customerSlug) {
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
-
-        $request['order_date'] = Carbon::now();
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
