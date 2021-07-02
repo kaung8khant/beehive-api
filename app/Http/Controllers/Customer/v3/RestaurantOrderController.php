@@ -17,10 +17,11 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\OrderAssignHelper;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     protected $customer;
 
@@ -78,6 +79,8 @@ class RestaurantOrderController extends Controller
         if ($validatedData['payment_mode'] === 'KPay') {
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
+
+        $this->assignOrder('restaurant', $order->slug);
 
         OrderHelper::sendPushNotifications($validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $this->customer->phone_number);
