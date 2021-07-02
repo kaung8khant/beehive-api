@@ -12,7 +12,7 @@ class ShopOrderItem extends Model
     protected $guarded = ['id'];
 
     protected $hidden = [
-        'id',
+        // 'id',
         'is_deleted',
         'shop_order_vendor_id',
         'product_id',

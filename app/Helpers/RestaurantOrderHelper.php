@@ -166,6 +166,8 @@ trait RestaurantOrderHelper
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
             $item['restaurant_id'] = $menu->restaurant_id;
+            $item['category'] = $menu->restaurantCategory->name;
+            $item['discount'] = 0;
 
             RestaurantOrderItem::create($item);
         }
@@ -211,7 +213,7 @@ trait RestaurantOrderHelper
 
     private static function getMenu($slug)
     {
-        return Menu::where('slug', $slug)->first();
+        return Menu::with('restaurantCategory')->where('slug', $slug)->first();
     }
 
     private static function getMenuVariationValue($slug)
