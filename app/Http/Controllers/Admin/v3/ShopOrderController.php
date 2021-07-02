@@ -122,7 +122,7 @@ class ShopOrderController extends Controller
         );
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::sendPushNotifications($validatedData['order_items']);
+        OrderHelper::sendPushNotifications($order, $validatedData['order_items']);
         OrderHelper::sendSmsNotifications($validatedData['order_items'], $phoneNumber);
 
         return $this->generateShopOrderResponse($order->refresh(), 201);
@@ -255,16 +255,12 @@ class ShopOrderController extends Controller
         return $this->generateResponse($result, 200);
     }
 
-    public function cancelOrderItem(ShopOrderItem $shopOrderItem)
+    public function cancelOrderItem(ShopOrder $shopOrder, ShopOrderItem $shopOrderItem)
     {
-        $shopOrderVendor=ShopOrderVendor::where('id', $shopOrderItem->shop_order_vendor_id)->first();
-        if ($shopOrderVendor->order_status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $shopOrderVendor->order_status . '.', 406, true);
-        }
         $shopOrderItem->delete();
 
-        $shopOrder=ShopOrder::where('id', $shopOrderVendor->shop_order_id)->first();
-        $promocode=Promocode::where('code', $shopOrderVendor->promocode)->first();
+        $shopOrder=ShopOrder::where('slug', $shopOrder->slug)->first();
+        $promocode=Promocode::where('code', $shopOrder->promocode)->first();
 
         $vendors = $shopOrder->vendors;
         $subTotal = 0;

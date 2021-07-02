@@ -21,10 +21,11 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\OrderAssignHelper;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     public function index(Request $request)
     {
@@ -41,21 +42,21 @@ class RestaurantOrderController extends Controller
         //     ->items();
         if ($request->filter) {
             $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
-                    ->whereHas('restaurantOrderContact', function ($q) use ($request) {
-                        $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
-                            ->orWhere('phone_number', $request->filter);
-                    })
-                    ->orWhereHas('restaurant', function ($query) use ($request) {
-                        $query->where('name', $request->filter);
-                    })
-                    ->orWhere('id', ltrim($request->filter, '0'))
-                    ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-                    ->get();
+                ->whereHas('restaurantOrderContact', function ($q) use ($request) {
+                    $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                        ->orWhere('phone_number', $request->filter);
+                })
+                ->orWhereHas('restaurant', function ($query) use ($request) {
+                    $query->where('name', $request->filter);
+                })
+                ->orWhere('id', ltrim($request->filter, '0'))
+                ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->get();
         } else {
             $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
-                    ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-                    ->whereBetween('order_date', array($request->from, $request->to))
-                    ->get();
+                ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->whereBetween('order_date', array($request->from, $request->to))
+                ->get();
         }
         return $this->generateResponse($restaurantOrders, 200);
     }
@@ -108,8 +109,10 @@ class RestaurantOrderController extends Controller
 
         $this->notifySystem($request->satus, $order->slug);
 
+        $this->assignOrder('restaurant', $order->slug);
+
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::sendPushNotifications($validatedData['restaurant_branch_id']);
+        OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $phoneNumber);
 
         return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
@@ -239,31 +242,28 @@ class RestaurantOrderController extends Controller
         $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
         if ($request->filter) {
             $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
-                    ->where('restaurant_branch_id', $restaurantBranch->id)
-                    ->whereHas('restaurantOrderContact', function ($q) use ($request) {
-                        $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
-                            ->orWhere('phone_number', $request->filter);
-                    })
-                    ->orWhere('id', ltrim($request->filter, '0'))
-                    ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-                    ->get();
+                ->where('restaurant_branch_id', $restaurantBranch->id)
+                ->whereHas('restaurantOrderContact', function ($q) use ($request) {
+                    $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                        ->orWhere('phone_number', $request->filter);
+                })
+                ->orWhere('id', ltrim($request->filter, '0'))
+                ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->get();
         } else {
             $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
-                    ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-                    ->where('restaurant_branch_id', $restaurantBranch->id)
-                    ->whereBetween('order_date', array($request->from, $request->to))
-                    ->get();
+                ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->where('restaurant_branch_id', $restaurantBranch->id)
+                ->whereBetween('order_date', array($request->from, $request->to))
+                ->get();
         }
         return $this->generateResponse($restaurantOrders, 200);
     }
 
-    public function cancelOrderItem(RestaurantOrderItem $restaurantOrderItem)
+    public function cancelOrderItem(RestaurantOrder $restaurantOrder, RestaurantOrderItem $restaurantOrderItem)
     {
-        $restaurantOrder=RestaurantOrder::where('id', $restaurantOrderItem->restaurant_order_id)->first();
-        if ($restaurantOrder->order_status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
-        }
         $restaurantOrderItem->delete();
+        $restaurantOrder=RestaurantOrder::where('slug', $restaurantOrder->slug)->first();
 
         $promocode=Promocode::where('code', $restaurantOrder->promocode)->first();
         $orderItems = $restaurantOrder->restaurantOrderItems;
@@ -275,6 +275,8 @@ class RestaurantOrderController extends Controller
             $subTotal += $amount;
             $commission += $item->commission;
         }
+        $commission = $subTotal * $restaurantOrder->restaurant->commission * 0.01;
+
         if ($promocode->type === 'fix') {
             $restaurantOrder->update(['promocode_amount'=>$promocode->amount,'commission'=>$commission]);
         } else {

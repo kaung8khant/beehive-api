@@ -7,6 +7,7 @@ use App\Models\Menu;
 use App\Models\MenuVariation;
 use App\Models\MenuVariationValue;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class VariationFix extends Command
 {
