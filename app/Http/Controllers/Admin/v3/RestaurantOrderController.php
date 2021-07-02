@@ -257,13 +257,10 @@ class RestaurantOrderController extends Controller
         return $this->generateResponse($restaurantOrders, 200);
     }
 
-    public function cancelOrderItem(RestaurantOrderItem $restaurantOrderItem)
+    public function cancelOrderItem(RestaurantOrder $restaurantOrder, RestaurantOrderItem $restaurantOrderItem)
     {
-        $restaurantOrder=RestaurantOrder::where('id', $restaurantOrderItem->restaurant_order_id)->first();
-        if ($restaurantOrder->order_status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
-        }
         $restaurantOrderItem->delete();
+        $restaurantOrder=RestaurantOrder::where('slug', $restaurantOrder->slug)->first();
 
         $promocode=Promocode::where('code', $restaurantOrder->promocode)->first();
         $orderItems = $restaurantOrder->restaurantOrderItems;
@@ -275,6 +272,8 @@ class RestaurantOrderController extends Controller
             $subTotal += $amount;
             $commission += $item->commission;
         }
+        $commission = $subTotal * $restaurantOrder->restaurant->commission * 0.01;
+
         if ($promocode->type === 'fix') {
             $restaurantOrder->update(['promocode_amount'=>$promocode->amount,'commission'=>$commission]);
         } else {
