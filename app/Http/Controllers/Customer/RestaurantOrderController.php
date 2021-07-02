@@ -96,7 +96,7 @@ class RestaurantOrderController extends Controller
         OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $this->customer->phone_number);
 
-        // $this->assignOrder('restaurant', $order->slug);
+        $this->assignOrder('restaurant', $order->slug);
 
         return $this->generateResponse($order, 201);
     }

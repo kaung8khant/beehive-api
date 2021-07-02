@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Customer\v3;
 
-use App\Helpers\NotificationHelper;
 use App\Helpers\KbzPayHelper;
+use App\Helpers\NotificationHelper;
+use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     protected $customer;
 
@@ -81,6 +82,8 @@ class RestaurantOrderController extends Controller
 
         OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $this->customer->phone_number);
+
+        $this->assignOrder('restaurant', $order->slug);
 
         return $this->generateResponse($order, 201);
     }
