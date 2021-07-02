@@ -13,7 +13,7 @@ class RestaurantOrderItem extends Model
     protected $guarded = ['id'];
 
     protected $hidden = [
-        'id',
+        // 'id',
         'restaurant_order_id',
         'menu_id',
         'restaurant_id',
