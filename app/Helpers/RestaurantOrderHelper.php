@@ -336,13 +336,13 @@ trait RestaurantOrderHelper
         return $validatedData;
     }
 
-    public static function sendPushNotifications($branchId)
+    public static function sendPushNotifications($order, $branchId)
     {
-        self::sendAdminPushNotifications();
-        self::sendVendorPushNotifications($branchId);
+        self::sendAdminPushNotifications($order);
+        self::sendVendorPushNotifications($order, $branchId);
     }
 
-    public static function sendAdminPushNotifications()
+    public static function sendAdminPushNotifications($order)
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -351,6 +351,10 @@ trait RestaurantOrderHelper
         $request = new Request();
         $request['slugs'] = $admins;
         $request['message'] = 'A restaurant order has been received.';
+        $request['data'] = [
+            'type' => 'restaurant_order',
+            'body' => $order,
+        ];
 
         $appId = config('one-signal.admin_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
@@ -359,13 +363,17 @@ trait RestaurantOrderHelper
         SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
     }
 
-    public static function sendVendorPushNotifications($branchId)
+    public static function sendVendorPushNotifications($order, $branchId)
     {
         $vendors = User::where('restaurant_branch_id', $branchId)->pluck('slug');
 
         $request = new Request();
         $request['slugs'] = $vendors;
         $request['message'] = 'An order has been received.';
+        $request['data'] = [
+            'type' => 'restaurant_order',
+            'body' => $order,
+        ];
 
         $appId = config('one-signal.vendor_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
