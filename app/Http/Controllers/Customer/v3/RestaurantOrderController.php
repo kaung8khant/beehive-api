@@ -53,7 +53,7 @@ class RestaurantOrderController extends Controller
         }
 
         $validatedData['customer_id'] = $this->customer->id;
-        $validatedData['order_date'] = Carbon::now()->format('Y-m-d H:i');
+        $validatedData['order_date'] = Carbon::now();
         $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
 
         if ($validatedData['promo_code']) {

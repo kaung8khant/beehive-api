@@ -48,6 +48,8 @@ class VariationFix extends Command
             ->orderBy('id', 'asc')
             ->get();
 
+        Log::critical('invoking variation fix scheduler!');
+
         foreach ($menus as $menu) {
             $menuVariants = $menu->menuVariants->filter(function ($variant) {
                 return count($variant->variant) === 1;
