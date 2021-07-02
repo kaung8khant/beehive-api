@@ -43,8 +43,8 @@ class ProductsImport implements ToCollection, WithHeadingRow
             $rules = [
                 'name' => 'required',
                 'description' => 'nullable|string',
-                'price' => 'required|max:99999999',
-                'vendor_price' => 'required|max:99999999',
+                'price' => 'required|numeric|max:99999999',
+                'vendor_price' => 'required|numeric|max:99999999',
                 'tax' => 'required|numeric',
                 'discount' => 'required|numeric',
                 'is_enable' => 'required|boolean',

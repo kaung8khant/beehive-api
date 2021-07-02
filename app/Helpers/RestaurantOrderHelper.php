@@ -65,6 +65,21 @@ trait RestaurantOrderHelper
         return $validator->validated();
     }
 
+    public static function checkOpeningTime($slug)
+    {
+        $restaurantBranch = RestaurantBranch::where('slug', $slug)->first();
+
+        $openingTime = Carbon::parse($restaurantBranch->opening_time);
+        $closingTime = Carbon::parse($restaurantBranch->closing_time);
+        $now = Carbon::now();
+
+        if ($now->lt($openingTime) || $now->gt($closingTime)) {
+            return false;
+        }
+
+        return true;
+    }
+
     public static function prepareRestaurantVariations($validatedData)
     {
         $orderItems = [];
@@ -152,7 +167,6 @@ trait RestaurantOrderHelper
             $item['menu_id'] = $menu->id;
             $item['restaurant_id'] = $menu->restaurant_id;
             $item['category'] = $menu->restaurantCategory->name;
-            $item['discount'] = 0;
 
             RestaurantOrderItem::create($item);
         }

@@ -66,6 +66,11 @@ class RestaurantOrderController extends Controller
             return $this->generateResponse($validatedData, 422, true);
         }
 
+        $checkTime = OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
+        if (!$checkTime) {
+            return $this->generateResponse('Ordering is not available yet at this hour. Thank you for shopping with Beehive.', 403, true);
+        }
+
         $validatedData['customer_id'] = $this->customer->id;
         $validatedData['order_date'] = Carbon::now();
         $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
