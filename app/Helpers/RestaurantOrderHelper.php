@@ -74,10 +74,10 @@ trait RestaurantOrderHelper
         $now = Carbon::now();
 
         if ($now->lt($openingTime) || $now->gt($closingTime)) {
-            return false;
+            return ['open' => $openingTime->format('H:i'), 'close' => $closingTime->format('h:i')];
         }
 
-        return true;
+        return false;
     }
 
     public static function prepareRestaurantVariations($validatedData)

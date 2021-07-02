@@ -67,8 +67,8 @@ class RestaurantOrderController extends Controller
         }
 
         $checkTime = OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
-        if (!$checkTime) {
-            return $this->generateResponse('Ordering is not available yet at this hour. Thank you for shopping with Beehive.', 403, true);
+        if ($checkTime) {
+            return $this->generateResponse("Ordering is not available yet at this hour, Please place your order @ {$checkTime['open']} am - {$checkTime['close']} pm. Thank you for shopping with Beehive.", 403, true);
         }
 
         $validatedData['customer_id'] = $this->customer->id;
@@ -96,7 +96,7 @@ class RestaurantOrderController extends Controller
         OrderHelper::sendPushNotifications($validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $this->customer->phone_number);
 
-        $this->assignOrder('restaurant', $order->slug);
+        // $this->assignOrder('restaurant', $order->slug);
 
         return $this->generateResponse($order, 201);
     }
