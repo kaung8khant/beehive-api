@@ -2,9 +2,9 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\BadRequestException;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
-use App\Exceptions\BadRequestException;
 use App\Jobs\SendPushNotification;
 use App\Jobs\SendSms;
 use App\Models\Menu;
@@ -18,6 +18,7 @@ use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use App\Models\Setting;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -60,7 +61,23 @@ trait RestaurantOrderHelper
         if ($validator->fails()) {
             return $validator->errors()->first();
         }
+
         return $validator->validated();
+    }
+
+    public static function checkOpeningTime($slug)
+    {
+        $restaurantBranch = RestaurantBranch::where('slug', $slug)->first();
+
+        $openingTime = Carbon::parse($restaurantBranch->opening_time);
+        $closingTime = Carbon::parse($restaurantBranch->closing_time);
+        $now = Carbon::now();
+
+        if ($now->lt($openingTime) || $now->gt($closingTime)) {
+            return false;
+        }
+
+        return true;
     }
 
     public static function prepareRestaurantVariations($validatedData)
@@ -84,6 +101,7 @@ trait RestaurantOrderHelper
             $menu['variations'] = $variations;
             $menu['toppings'] = $toppings;
             $menu['tax'] = ($amount - $menu->discount) * $menu->tax * 0.01;
+
             array_push($orderItems, $menu->toArray());
         }
 
@@ -92,14 +110,12 @@ trait RestaurantOrderHelper
         $validatedData['subTotal'] = $subTotal;
         $validatedData['tax'] = $tax;
 
-        //prepare restuarantbranch info
         $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
 
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
 
-        // Log::debug('validatedData => ' . json_encode($validatedData));
         return $validatedData;
     }
 
@@ -150,7 +166,7 @@ trait RestaurantOrderHelper
             $item['restaurant_order_id'] = $orderId;
             $item['menu_id'] = $menu->id;
             $item['restaurant_id'] = $menu->restaurant_id;
-            $item['discount'] = 0;
+            $item['category'] = $menu->restaurantCategory->name;
 
             RestaurantOrderItem::create($item);
         }
@@ -196,7 +212,7 @@ trait RestaurantOrderHelper
 
     private static function getMenu($slug)
     {
-        return Menu::where('slug', $slug)->first();
+        return Menu::with('restaurantCategory')->where('slug', $slug)->first();
     }
 
     private static function getMenuVariationValue($slug)

@@ -138,8 +138,12 @@ Route::group([
     Route::resource('shop-orders', 'ShopOrderController', ['as' => 'vendor-v3-shop', 'except' => ['create', 'edit']]);
     Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
     Route::get('shops/{shop}/orders', 'ShopOrderController@getVendorOrders');
+    Route::delete('shop-order-items/{shopOrderItem}/cancel', 'ShopOrderController@cancelOrderItem');
+    Route::delete('shop-orders/{shopOrder}/shop-order-items/{shopOrderItem}/cancel', 'ShopOrderController@cancelOrderItem');
 
     Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor-v3-restaurant', 'except' => ['create', 'edit']]);
     Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
     Route::get('restaurant-branches/{restaurantBranch}/orders', 'RestaurantOrderController@getBranchOrders');
+    Route::delete('restaurant-order-items/{restaurantOrderItem}/cancel', 'RestaurantOrderController@cancelOrderItem');
+    Route::delete('restaurant-orders/{restaurantOrder}/restaurant-order-items/{restaurantOrderItem}/cancel', 'RestaurantOrderController@cancelOrderItem');
 });

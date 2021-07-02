@@ -15,6 +15,7 @@ use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
+use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -252,5 +253,32 @@ class ShopOrderController extends Controller
         });
 
         return $this->generateResponse($result, 200);
+    }
+
+    public function cancelOrderItem(ShopOrder $shopOrder, ShopOrderItem $shopOrderItem)
+    {
+        $shopOrderItem->delete();
+
+        $shopOrder=ShopOrder::where('slug', $shopOrder->slug)->first();
+        $promocode=Promocode::where('code', $shopOrder->promocode)->first();
+
+        $vendors = $shopOrder->vendors;
+        $subTotal = 0;
+        $commission=0;
+
+        foreach ($vendors as $vendor) {
+            foreach ($vendor->items as $item) {
+                $commission += $item->commission;
+
+                $subTotal += ($item->amount - $item->discount) * $item->quantity;
+            }
+        }
+        if ($promocode->type === 'fix') {
+            $shopOrder->update(['promocode_amount'=>$promocode->amount,'commission'=>$commission]);
+        } else {
+            $shopOrder->update(['promocode_amount'=>$subTotal * $promocode->amount * 0.01,'commission'=>$commission]);
+        }
+
+        return response()->json(['message' => 'Successfully cancelled.'], 200);
     }
 }

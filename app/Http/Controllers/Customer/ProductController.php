@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
@@ -11,6 +12,7 @@ use App\Models\Shop;
 use App\Models\ShopCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -25,7 +27,19 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $products = Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants')
+        $sorting = CollectionHelper::getSorting('products', 'name', $request->by ? $request->by : 'asc', $request->order);
+
+        if ($sorting['orderBy'] === 'price') {
+            $sorting['orderBy'] = 'pv.price';
+        } else {
+            $sorting['orderBy'] = 'products.' . $sorting['orderBy'];
+        }
+
+        $products = Product::select('products.*')
+            ->join('product_variants as pv', function ($query) {
+                $query->on('pv.id', '=', DB::raw('(SELECT id FROM product_variants WHERE product_variants.product_id = products.id ORDER BY price ASC LIMIT 1)'));
+            })
+            ->with('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants')
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhereHas('shop', function ($q) use ($request) {
@@ -44,8 +58,9 @@ class ProductController extends Controller
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
-            ->where('is_enable', 1)
-            ->orderBy('name', 'asc')
+            ->where('products.is_enable', 1)
+            ->whereNotNull('pv.price')
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate($request->size);
 
         return $this->generateProductResponse($products, 200, 'array', $products->lastPage());

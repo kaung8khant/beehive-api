@@ -1,34 +1,45 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Console\Commands;
 
 use App\Helpers\StringHelper;
 use App\Models\Menu;
 use App\Models\MenuVariation;
 use App\Models\MenuVariationValue;
+use Illuminate\Console\Command;
 
-class SlugFixController
+class VariationFix extends Command
 {
-    public function fix($table)
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'fix:variation';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Fix variation';
+
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
     {
-        $model = '\App\Models\\' . $table;
-        $data = $model::all();
-
-        foreach ($data as $key) {
-            if (is_numeric(substr($key->slug, 0, 6)) && substr($key->slug, 6, 1) == 'E') {
-                do {
-                    $randomString = strtoupper(substr(str_shuffle(MD5(microtime())), 0, 8));
-                } while (is_numeric(substr($randomString, 0, 6)) && substr($randomString, 6, 1) == 'E');
-
-                $key->slug = $randomString;
-                $key->save();
-            }
-        }
-
-        return ['status' => 'success'];
+        parent::__construct();
     }
 
-    public function test()
+    /**
+     * Execute the console command.
+     *
+     * @return int
+     */
+    public function handle()
     {
         $menus = Menu::with(['menuVariants' => function ($query) {
             $query->orderBy('price', 'asc');
@@ -49,7 +60,7 @@ class SlugFixController
                         'discount' => $menuVariants[0]->discount,
                     ]);
                 } catch (\Exception $e) {
-                    return $menu;
+                    Log::critical('This menu failed at fixing variation ----- ' . $menu);
                 }
 
                 if ($menuVariants[0]->variant[0]['name'] !== 'default') {
@@ -72,5 +83,7 @@ class SlugFixController
                 }
             }
         }
+
+        throw new \Exception('invoking variation fix scheduler!');
     }
 }
