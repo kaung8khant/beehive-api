@@ -79,24 +79,24 @@ trait OrderAssignHelper
 
 
             $restaurantOrder = RestaurantOrder::where('id', $order->restaurant_order_id)->first();
-            if (count($reOrder) < 2) {
-                self::assignAndAlert($driverSlug, $restaurantOrder);
-            } else {
-                OrderHelper::createOrderStatus($restaurantOrder->id, "cancelled");
+            // if (count($reOrder) < 4) {
+            self::assignAndAlert($driverSlug, $restaurantOrder);
+            // } else {
+            //     OrderHelper::createOrderStatus($restaurantOrder->id, "cancelled");
 
-                $request = new Request();
-                $request['slugs'] = User::with('roles')->whereHas('roles', function ($query) {
-                    return $query->where('name', "Admin");
-                })->get()->pluck('slug');
+            //     $request = new Request();
+            //     $request['slugs'] = User::with('roles')->whereHas('roles', function ($query) {
+            //         return $query->where('name', "Admin");
+            //     })->get()->pluck('slug');
 
-                $request['message'] = "No driver has been assigned to order " . $restaurantOrder->slug . " and has been cancelled";
+            //     $request['message'] = "No driver has been assigned to order " . $restaurantOrder->slug . " and has been cancelled";
 
-                $appId = config('one-signal.admin_app_id');
+            //     $appId = config('one-signal.admin_app_id');
 
-                $fields = OneSignalHelper::prepareNotification($request, $appId);
+            //     $fields = OneSignalHelper::prepareNotification($request, $appId);
 
-                $response = OneSignalHelper::sendPush($fields, 'admin');
-            }
+            //     $response = OneSignalHelper::sendPush($fields, 'admin');
+            // }
         }
     }
 
