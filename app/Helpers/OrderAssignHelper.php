@@ -53,6 +53,10 @@ trait OrderAssignHelper
     public static function assignOrderToOther()
     {
 
+        /*
+         Getting order with last assign driver where assign driver status is pending
+         Add no_response as well if required!
+        */
         $restaurant_orders = DB::select('Select od.id,od.restaurant_order_id,od.user_id,ods.status from (SELECT sod1.* FROM restaurant_order_drivers sod1
         JOIN (SELECT restaurant_order_id, MAX(created_at) created_at FROM restaurant_order_drivers GROUP BY restaurant_order_id) sod2
             ON sod1.restaurant_order_id = sod2.restaurant_order_id AND sod1.created_at = sod2.created_at) od left join restaurant_order_driver_statuses ods on od.id=ods.restaurant_order_driver_id where ods.status="pending"');
@@ -63,11 +67,10 @@ trait OrderAssignHelper
             $assignedDriver = User::where('id', $order->user_id)->first()->slug;
             $resSlug = RestaurantOrder::where('id', $order->id)->first()->slug;
             $driverList = self::getdriver($resSlug);
-            $drivers = $driverList;
 
-            unset($drivers[$assignedDriver]);
+            unset($driverList[$assignedDriver]);
 
-            $driverSlug =  key($drivers);
+            $driverSlug = self::checkdriver($driverList);
 
 
             $resOrderDriver = RestaurantOrderDriver::where('user_id', $order->user_id)->where('restaurant_order_id', $order->restaurant_order_id)->first();
@@ -81,6 +84,8 @@ trait OrderAssignHelper
             $restaurantOrder = RestaurantOrder::where('id', $order->restaurant_order_id)->first();
             // if (count($reOrder) < 4) {
             self::assignAndAlert($driverSlug, $restaurantOrder);
+            // Changing order status to cancelled if more than 4 drivers do not accept
+
             // } else {
             //     OrderHelper::createOrderStatus($restaurantOrder->id, "cancelled");
 
@@ -121,25 +126,32 @@ trait OrderAssignHelper
                     'restaurant_order_driver_id' => $resOrderDriver->id,
                     'status' => "pending",
                 ]);
+
+                /* 
+                    Creating alert and sending to one signal
+                    
+                    url (required for deep linking to app from notification)
+                    data (notification data for handling notification)
+                    android_channel_id (required for making sound) (under one signal category -> CHANNEL-ID)
+                */
+
+                $request = new Request();
+
+                $order = RestaurantOrder::where('id', $order->id)->first();
+
+                $request['slugs'] = array($driverSlug);
+                $request['message'] = "You have received new order. Accept Now!";
+                $request['url'] = "http://www.beehivedriver.com/job?&slug=" . $order->slug . "&price=" . $order->total_amount . "&invoice_id=" . $order->invoice_id;
+                $request['android_channel_id'] = config('one-signal.android_channel_id');
+
+                $appId = config('one-signal.admin_app_id');
+                $request['data'] = ["slug" => $order->slug, 'price' => $order->total_amount, 'invoice_id' => $order->invoice_id];
+                $fields = OneSignalHelper::prepareNotification($request, $appId);
+
+
+
+                $response = OneSignalHelper::sendPush($fields, 'admin');
             }
-
-
-            $request = new Request();
-
-            $order = RestaurantOrder::where('id', $order->id)->first();
-
-            $request['slugs'] = array($driverSlug);
-            $request['message'] = "You have received new order. Accept Now!";
-            $request['url'] = "http://www.beehivedriver.com/job?&slug=" . $order->slug . "&price=" . $order->total_amount . "&invoice_id=" . $order->invoice_id;
-            $request['android_channel_id'] = config('one-signal.android_channel_id');
-
-            $appId = config('one-signal.admin_app_id');
-            $request['data'] = ["slug" => $order->slug, 'price' => $order->total_amount, 'invoice_id' => $order->invoice_id];
-            $fields = OneSignalHelper::prepareNotification($request, $appId);
-
-
-
-            $response = OneSignalHelper::sendPush($fields, 'admin');
         }
     }
 
