@@ -42,7 +42,7 @@ class OrderDriverController extends Controller
 
     public function jobDetail(RestaurantOrder $restaurantOrder)
     {
-        return $this->generateResponse($restaurantOrder->load('drivers', 'drivers.status', 'restaurantOrderContact'), 200);
+        return $this->generateResponse($restaurantOrder->load('drivers', 'drivers.status', 'restaurantOrderContact', 'RestaurantOrderItems'), 200);
     }
 
     public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
