@@ -69,7 +69,7 @@ trait SmsHelper
         if ($status === 'Failed') {
             $params['error_message'] = $smsResponse['error-text'];
         } else if ($status === 'Error') {
-            $params['error_message'] = 'Internal Server Error';
+            $params['error_message'] = 'error connecting the sms api';
         }
 
         SmsLog::create($params);
