@@ -16,7 +16,6 @@ use App\Models\ShopOrderItem;
 use App\Models\ShopOrderStatus;
 use App\Models\ShopOrderVendor;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -306,7 +305,19 @@ trait ShopOrderHelper
         $request['message'] = 'A shop order has been received.';
         $request['data'] = [
             'type' => 'shop_order',
-            'body' => $order,
+            'body' => [
+                'invoice_id' => $order->invoice_id,
+                'total_amount' => $order->total_amount,
+                'order_date' => $order->order_date,
+                'customer_name' => $order->restaurant_order_contact['customer_name'],
+                'customer_slug' => $order->restaurant_order_contact['customer_slug'],
+                'phone_number' => $order->restaurant_order_contact['phone_number'],
+                'house_number' => $order->restaurant_order_contact['house_number'],
+                'floor' => $order->restaurant_order_contact['floor'],
+                'street_name' => $order->restaurant_order_contact['street_name'],
+                'latitude' => $order->restaurant_order_contact['latitude'],
+                'longitude' => $order->restaurant_order_contact['longitude'],
+            ],
         ];
 
         $appId = config('one-signal.admin_app_id');
@@ -330,7 +341,19 @@ trait ShopOrderHelper
         $request['message'] = 'An order has been received.';
         $request['data'] = [
             'type' => 'shop_order',
-            'body' => $order,
+            'body' => [
+                'invoice_id' => $order->invoice_id,
+                'total_amount' => $order->total_amount,
+                'order_date' => $order->order_date,
+                'customer_name' => $order->restaurant_order_contact['customer_name'],
+                'customer_slug' => $order->restaurant_order_contact['customer_slug'],
+                'phone_number' => $order->restaurant_order_contact['phone_number'],
+                'house_number' => $order->restaurant_order_contact['house_number'],
+                'floor' => $order->restaurant_order_contact['floor'],
+                'street_name' => $order->restaurant_order_contact['street_name'],
+                'latitude' => $order->restaurant_order_contact['latitude'],
+                'longitude' => $order->restaurant_order_contact['longitude'],
+            ],
         ];
 
         $appId = config('one-signal.vendor_app_id');
