@@ -147,6 +147,7 @@ class RestaurantOrderController extends Controller
         }
 
         OrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
+        $restaurantOrder['order_status'] = $request->status;
         OrderHelper::sendPushNotifications($restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);
 
         $this->notify([
