@@ -104,7 +104,7 @@ class RestaurantOrderController extends Controller
             OrderHelper::createOrderStatus($order->id);
             OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
-            return $order;
+            return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
 
         $this->notifySystem($request->satus, $order->slug);
@@ -115,7 +115,7 @@ class RestaurantOrderController extends Controller
         OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $phoneNumber);
 
-        return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
+        return $this->generateResponse($order, 201);
     }
 
     public function show(RestaurantOrder $restaurantOrder)

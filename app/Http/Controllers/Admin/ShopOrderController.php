@@ -130,7 +130,7 @@ class ShopOrderController extends Controller
             OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createShopOrderItem($orderId, $validatedData['order_items']);
             OrderHelper::createOrderStatus($orderId);
-            return $order;
+            return $order->refresh();
         });
 
         $this->notifyAdmin(
@@ -153,7 +153,7 @@ class ShopOrderController extends Controller
         OrderHelper::sendPushNotifications($order, $validatedData['order_items']);
         OrderHelper::sendSmsNotifications($validatedData['order_items'], $phoneNumber);
 
-        return $this->generateShopOrderResponse($order->refresh(), 201);
+        return $this->generateShopOrderResponse($order, 201);
     }
 
     public function changeStatus(Request $request, ShopOrder $shopOrder)
