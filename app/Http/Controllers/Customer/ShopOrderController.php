@@ -165,12 +165,12 @@ class ShopOrderController extends Controller
             OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
             OrderHelper::createOrderStatus($order->id);
-            return $order;
+            return $order->refresh()->load('contact');
         });
 
         $this->notifySystem($validatedData['order_items'], $order->slug);
 
-        return $order->refresh()->load('contact');
+        return $order;
     }
 
     private function notifySystem($orderItems, $slug)
