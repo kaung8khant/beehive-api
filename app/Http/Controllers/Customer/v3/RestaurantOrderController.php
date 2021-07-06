@@ -163,12 +163,12 @@ class RestaurantOrderController extends Controller
             OrderHelper::createOrderStatus($order->id);
             OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
-            return $order;
+            return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
 
         $this->notifySystem($validatedData['restaurant_branch_slug'], $order->slug);
 
-        return $order->refresh();
+        return $order;
     }
 
     private function notifySystem($branchSlug, $slug)

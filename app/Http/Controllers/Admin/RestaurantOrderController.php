@@ -115,7 +115,7 @@ class RestaurantOrderController extends Controller
 
             OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createOrderItems($orderId, $validatedData['order_items']);
-            return $order;
+            return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
 
         $this->notify([
@@ -134,7 +134,7 @@ class RestaurantOrderController extends Controller
         OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $phoneNumber);
 
-        return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
+        return $this->generateResponse($order, 201);
     }
 
     public function destroy(RestaurantOrder $restaurantOrder)
