@@ -80,7 +80,7 @@ class RestaurantOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
+        OrderHelper::sendPushNotifications($order, $this->customer->slug, $validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $this->customer->phone_number);
 
         $this->assignOrder('restaurant', $order->slug);
