@@ -336,14 +336,14 @@ trait RestaurantOrderHelper
         return $validatedData;
     }
 
-    public static function sendPushNotifications($order, $customerSlug, $branchId)
+    public static function sendPushNotifications($order, $branchId, $message = null)
     {
         $order = json_decode(json_encode($order), true);
-        self::sendAdminPushNotifications($order, $customerSlug);
-        self::sendVendorPushNotifications($order, $customerSlug, $branchId);
+        self::sendAdminPushNotifications($order, $message);
+        self::sendVendorPushNotifications($order, $branchId, $message);
     }
 
-    public static function sendAdminPushNotifications($order, $customerSlug)
+    public static function sendAdminPushNotifications($order, $message = null)
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -351,8 +351,8 @@ trait RestaurantOrderHelper
 
         $request = new Request();
         $request['slugs'] = $admins;
-        $request['message'] = 'A restaurant order has been received.';
-        $request['data'] = self::preparePushData($order, $customerSlug);
+        $request['message'] = $message ? $message : 'A restaurant order has been received.';
+        $request['data'] = self::preparePushData($order);
 
         $appId = config('one-signal.admin_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
@@ -361,14 +361,14 @@ trait RestaurantOrderHelper
         SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
     }
 
-    public static function sendVendorPushNotifications($order, $customerSlug, $branchId)
+    public static function sendVendorPushNotifications($order, $branchId, $message = null)
     {
         $vendors = User::where('restaurant_branch_id', $branchId)->pluck('slug');
 
         $request = new Request();
         $request['slugs'] = $vendors;
-        $request['message'] = 'An order has been received.';
-        $request['data'] = self::preparePushData($order, $customerSlug);
+        $request['message'] = $message ? $message : 'An order has been received.';
+        $request['data'] = self::preparePushData($order);
 
         $appId = config('one-signal.vendor_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
@@ -377,7 +377,7 @@ trait RestaurantOrderHelper
         SendPushNotification::dispatch($uniqueKey, $fields, 'vendor');
     }
 
-    private static function preparePushData($order, $customerSlug)
+    private static function preparePushData($order)
     {
         unset($order['created_by']);
         unset($order['updated_by']);

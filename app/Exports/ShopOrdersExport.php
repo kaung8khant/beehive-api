@@ -15,9 +15,18 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ShopOrdersExport implements FromCollection, WithHeadings, WithStyles, WithColumnWidths
 {
+    public function __construct($from, $to)
+    {
+        $this->from = $from;
+        $this->to = $to;
+        ini_set('memory_limit', '256M');
+    }
+
     public function collection()
     {
-        $shopOrderItems= ShopOrderItem::get();
+        $shopOrderItems= ShopOrderItem::whereHas('vendor.shopOrder', function ($query) {
+            $query->whereBetween('order_date', array($this->from, $this->to));
+        })->get();
 
         $result= $shopOrderItems->map(function ($item) {
             $shopOrderVendor = ShopOrderVendor::where('id', $item->shop_order_vendor_id)->first();

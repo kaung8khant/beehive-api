@@ -53,4 +53,9 @@ class ShopOrderVendor extends Model
     {
         return $this->belongsTo(ShopOrder::class);
     }
+
+    public function shopOrderStatuses()
+    {
+        return $this->hasMany(ShopOrderStatus::class);
+    }
 }
