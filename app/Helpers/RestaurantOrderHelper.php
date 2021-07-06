@@ -379,24 +379,12 @@ trait RestaurantOrderHelper
 
     private static function preparePushData($order, $customerSlug)
     {
+        unset($order['created_by']);
+        unset($order['updated_by']);
+        unset($order['restaurant_order_items']);
         return [
             'type' => 'restaurant_order',
-            'body' => [
-                'invoice_id' => $order['invoice_id'],
-                'total_amount' => $order['total_amount'],
-                'order_date' => $order['order_date'],
-                'restaurant_name' => $order['restaurant_branch_info']['restaurant']['name'],
-                'restaurant_branch_name' => $order['restaurant_branch_info']['name'],
-                'restaurant_branch_slug' => $order['restaurant_branch_info']['slug'],
-                'customer_name' => $order['restaurant_order_contact']['customer_name'],
-                'customer_slug' => $customerSlug,
-                'phone_number' => $order['restaurant_order_contact']['phone_number'],
-                'house_number' => $order['restaurant_order_contact']['house_number'],
-                'floor' => $order['restaurant_order_contact']['floor'],
-                'street_name' => $order['restaurant_order_contact']['street_name'],
-                'latitude' => $order['restaurant_order_contact']['latitude'],
-                'longitude' => $order['restaurant_order_contact']['longitude'],
-            ]
+            'body' => $order,
         ];
     }
 
