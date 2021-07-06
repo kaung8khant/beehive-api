@@ -41,27 +41,38 @@ class ExportImportController extends Controller
         return response()->json(['message' => 'failed'], 406);
     }
 
-    public function export($type)
+    public function export(Request $request, $type)
     {
         try {
             $_class = '\App\Exports\\' . config("export-import.export.{$type}");
-            return Excel::download(new $_class, $type . '-export.xlsx');
+            return Excel::download(new $_class($request->from, $request->to), $type . '-export.xlsx');
         } catch (\Exception $e) {
             $this->deleteTmpFilesWhenFailed();
             return response()->json(['message' => 'failed'], 400);
         }
     }
 
-    public function exportWithParams($type, $params)
+    public function exportWithParams(Request $request, $type, $params)
     {
         try {
             $_class = '\App\Exports\\' . config("export-import.export.{$type}");
-            return Excel::download(new $_class($params), $type . '-export.xlsx');
+            return Excel::download(new $_class($params, $request->from, $request->to), $type . '-export.xlsx');
         } catch (\Exception $e) {
             $this->deleteTmpFilesWhenFailed();
             return response()->json(['message' => 'failed'], 400);
         }
     }
+
+    // public function exportWithDate($type, $from, $to)
+    // {
+    //     try {
+    //         $_class = '\App\Exports\\' . config("export-import.export.{$type}");
+    //         return Excel::download(new $_class($from, $to), $type . '-export.xlsx');
+    //     } catch (\Exception $e) {
+    //         $this->deleteTmpFilesWhenFailed();
+    //         return response()->json(['message' => 'failed'], 400);
+    //     }
+    // }
 
     private function deleteTmpFilesWhenFailed()
     {
