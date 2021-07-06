@@ -109,10 +109,10 @@ class RestaurantOrderController extends Controller
 
         $this->notifySystem($request->satus, $order->slug);
 
-        $this->assignOrder('restaurant', $order->slug);
+        // $this->assignOrder('restaurant', $order->slug);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
+        OrderHelper::sendPushNotifications($order, $validatedData['customer_slug'], $validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $phoneNumber);
 
         return $this->generateResponse($order, 201);

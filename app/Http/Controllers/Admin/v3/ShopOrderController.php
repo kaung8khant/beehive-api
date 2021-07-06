@@ -122,7 +122,7 @@ class ShopOrderController extends Controller
         );
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::sendPushNotifications($order, $validatedData['order_items']);
+        OrderHelper::sendPushNotifications($order, $validatedData['customer_slug'], $validatedData['order_items']);
         OrderHelper::sendSmsNotifications($validatedData['order_items'], $phoneNumber);
 
         return $this->generateShopOrderResponse($order, 201);
