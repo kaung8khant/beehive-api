@@ -122,7 +122,7 @@ class ShopOrderController extends Controller
         );
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::sendPushNotifications($order, $validatedData['customer_slug'], $validatedData['order_items']);
+        OrderHelper::sendPushNotifications($order, $validatedData['order_items']);
         OrderHelper::sendSmsNotifications($validatedData['order_items'], $phoneNumber);
 
         return $this->generateShopOrderResponse($order, 201);
@@ -220,25 +220,25 @@ class ShopOrderController extends Controller
         $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
         if ($request->filter) {
-            $vendorOrders =ShopOrderVendor::where('shop_id', $shop->id)
-            ->where(function ($query) use ($request) {
-                $query->whereHas('shopOrder', function ($q) use ($request) {
-                    $q->where('id', ltrim($request->filter, '0'));
+            $vendorOrders = ShopOrderVendor::where('shop_id', $shop->id)
+                ->where(function ($query) use ($request) {
+                    $query->whereHas('shopOrder', function ($q) use ($request) {
+                        $q->where('id', ltrim($request->filter, '0'));
+                    })
+                        ->orWhereHas('shopOrder.contact', function ($q) use ($request) {
+                            $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                                ->orWhere('phone_number', $request->filter);
+                        });
                 })
-                    ->orWhereHas('shopOrder.contact', function ($q) use ($request) {
-                        $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
-                            ->orWhere('phone_number', $request->filter);
-                    });
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->get();
+                ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->get();
         } else {
             $vendorOrders = ShopOrderVendor::where('shop_id', $shop->id)
-            ->whereHas('shopOrder', function ($query) use ($request) {
-                $query->whereBetween('order_date', array($request->from, $request->to));
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->get();
+                ->whereHas('shopOrder', function ($query) use ($request) {
+                    $query->whereBetween('order_date', array($request->from, $request->to));
+                })
+                ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->get();
         }
 
         $result = $vendorOrders->map(function ($order) {
@@ -259,12 +259,12 @@ class ShopOrderController extends Controller
     {
         $shopOrderItem->delete();
 
-        $shopOrder=ShopOrder::where('slug', $shopOrder->slug)->first();
-        $promocode=Promocode::where('code', $shopOrder->promocode)->first();
+        $shopOrder = ShopOrder::where('slug', $shopOrder->slug)->first();
+        $promocode = Promocode::where('code', $shopOrder->promocode)->first();
 
         $vendors = $shopOrder->vendors;
         $subTotal = 0;
-        $commission=0;
+        $commission = 0;
 
         foreach ($vendors as $vendor) {
             foreach ($vendor->items as $item) {
@@ -274,9 +274,9 @@ class ShopOrderController extends Controller
             }
         }
         if ($promocode->type === 'fix') {
-            $shopOrder->update(['promocode_amount'=>$promocode->amount,'commission'=>$commission]);
+            $shopOrder->update(['promocode_amount' => $promocode->amount, 'commission' => $commission]);
         } else {
-            $shopOrder->update(['promocode_amount'=>$subTotal * $promocode->amount * 0.01,'commission'=>$commission]);
+            $shopOrder->update(['promocode_amount' => $subTotal * $promocode->amount * 0.01, 'commission' => $commission]);
         }
 
         return response()->json(['message' => 'Successfully cancelled.'], 200);
