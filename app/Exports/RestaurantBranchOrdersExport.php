@@ -17,9 +17,11 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class RestaurantBranchOrdersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    public function __construct(string $params)
+    public function __construct(string $params, $from, $to)
     {
         $this->params = $params;
+        $this->from = $from;
+        $this->to = $to;
         ini_set('memory_limit', '256M');
     }
 
@@ -27,7 +29,8 @@ class RestaurantBranchOrdersExport implements FromQuery, WithHeadings, WithMappi
     {
         $restaurantBranch = RestaurantBranch::where('slug', $this->params)->firstOrFail();
 
-        return RestaurantOrder::query()->where('restaurant_branch_id', $restaurantBranch->id);
+        return RestaurantOrder::query()->where('restaurant_branch_id', $restaurantBranch->id)
+            ->whereBetween('order_date', array($this->from, $this->to));
     }
 
     /**

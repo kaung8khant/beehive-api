@@ -16,9 +16,11 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class VendorShopOrdersExport implements FromCollection, WithHeadings, WithStyles, WithColumnWidths
 {
-    public function __construct(string $params)
+    public function __construct(string $params, $from, $to)
     {
         $this->params = $params;
+        $this->from = $from;
+        $this->to = $to;
         ini_set('memory_limit', '256M');
     }
 
@@ -26,47 +28,49 @@ class VendorShopOrdersExport implements FromCollection, WithHeadings, WithStyles
     {
         $shop = Shop::where('slug', $this->params)->firstOrFail();
 
-        $shopOrderItems= ShopOrderItem::where('shop_id', $shop ->id)->get();
-
-        $result= $shopOrderItems->map(function ($item) {
+        $shopOrderItems = ShopOrderItem::where('shop_id', $shop->id)
+            ->whereHas('vendor.shopOrder', function ($query) {
+                $query->whereBetween('order_date', array($this->from, $this->to));
+            })->get();
+        $result = $shopOrderItems->map(function ($item) {
             $shopOrderVendor = ShopOrderVendor::where('id', $item->shop_order_vendor_id)->first();
             $shopOrder = ShopOrder::find($shopOrderVendor->shop_order_id)->toArray();
-            $shopOrder['id']=$shopOrderVendor->shop_order_id;
+            $shopOrder['id'] = $shopOrderVendor->shop_order_id;
             unset($shopOrder['vendors']);
             $item->shop_order = $shopOrder;
             return $item;
         });
 
-        $exportData=[];
+        $exportData = [];
 
         foreach ($result as $shopOrderItem) {
             $contact = ShopOrderContact::where('shop_order_id', $shopOrderItem['shop_order']['id']);
             $floor = $contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
             $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name');
-            $subTotal=($shopOrderItem->amount -  $shopOrderItem->discount) *  $shopOrderItem->quantity;
-            $data=[
-            'id'=>$shopOrderItem['shop_order']['slug'],
-            'invoice_id'=>$shopOrderItem['shop_order']['invoice_id'],
-            'order_date'=>Carbon::parse($shopOrderItem['shop_order']['order_date'])->format('M d Y h:i a'),
-            'customer'=>$contact->value('customer_name'),
-            'customer_phone_number'=>$contact->value('phone_number'),
-            'address'=> $address,
-            'product_name'=> $shopOrderItem->product_name,
-            'price'=> $shopOrderItem->amount ? $shopOrderItem->amount : '0',
-            'vendor_price'=>$shopOrderItem->vendor_price ? $shopOrderItem->vendor_price : '0',
-            'tax'=> $shopOrderItem->tax ? $shopOrderItem->tax : '0',
-            'discount'=> $shopOrderItem->discount ? $shopOrderItem->discount : '0',
-            'quantity'=> $shopOrderItem->quantity,
-            'subTotal'=>$subTotal,
-            'payment_mode'=>$shopOrderItem['shop_order']['payment_mode'],
-            'type'=>$shopOrderItem['shop_order']['delivery_mode'],
-            'special_instructions'=>$shopOrderItem['shop_order']['special_instruction'],
-        ];
+            $subTotal = ($shopOrderItem->amount -  $shopOrderItem->discount) *  $shopOrderItem->quantity;
+            $data = [
+                'id' => $shopOrderItem['shop_order']['slug'],
+                'invoice_id' => $shopOrderItem['shop_order']['invoice_id'],
+                'order_date' => Carbon::parse($shopOrderItem['shop_order']['order_date'])->format('M d Y h:i a'),
+                'customer' => $contact->value('customer_name'),
+                'customer_phone_number' => $contact->value('phone_number'),
+                'address' => $address,
+                'product_name' => $shopOrderItem->product_name,
+                'price' => $shopOrderItem->amount ? $shopOrderItem->amount : '0',
+                'vendor_price' => $shopOrderItem->vendor_price ? $shopOrderItem->vendor_price : '0',
+                'tax' => $shopOrderItem->tax ? $shopOrderItem->tax : '0',
+                'discount' => $shopOrderItem->discount ? $shopOrderItem->discount : '0',
+                'quantity' => $shopOrderItem->quantity,
+                'subTotal' => $subTotal,
+                'payment_mode' => $shopOrderItem['shop_order']['payment_mode'],
+                'type' => $shopOrderItem['shop_order']['delivery_mode'],
+                'special_instructions' => $shopOrderItem['shop_order']['special_instruction'],
+            ];
             array_push($exportData, $data);
         }
 
         return collect([
-                $exportData
+            $exportData
         ]);
     }
     public function headings(): array

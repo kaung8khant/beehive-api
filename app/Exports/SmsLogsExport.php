@@ -22,8 +22,6 @@ class SmsLogsExport implements FromQuery, WithHeadings, WithMapping, WithStyles,
 
     public function query()
     {
-        // return SmsLog::query();
-
         $from = Carbon::parse($this->from);
         $to = Carbon::parse($this->to);
 
