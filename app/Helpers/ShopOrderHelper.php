@@ -288,14 +288,14 @@ trait ShopOrderHelper
         return $validatedData;
     }
 
-    public static function sendPushNotifications($order, $customerSlug, $orderItems)
+    public static function sendPushNotifications($order, $orderItems)
     {
         $order = json_decode(json_encode($order), true);
-        self::sendAdminPushNotifications($order, $customerSlug);
-        self::sendVendorPushNotifications($order, $customerSlug, $orderItems);
+        self::sendAdminPushNotifications($order);
+        self::sendVendorPushNotifications($order, $orderItems);
     }
 
-    public static function sendAdminPushNotifications($order, $customerSlug)
+    public static function sendAdminPushNotifications($order)
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -304,7 +304,7 @@ trait ShopOrderHelper
         $request = new Request();
         $request['slugs'] = $admins;
         $request['message'] = 'A shop order has been received.';
-        $request['data'] = self::preparePushData($order, $customerSlug);
+        $request['data'] = self::preparePushData($order);
 
         $appId = config('one-signal.admin_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
@@ -313,7 +313,7 @@ trait ShopOrderHelper
         SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
     }
 
-    public static function sendVendorPushNotifications($order, $customerSlug, $orderItems)
+    public static function sendVendorPushNotifications($order, $orderItems)
     {
         $shopIds = array_map(function ($item) {
             return Product::where('slug', $item['slug'])->value('shop_id');
@@ -325,7 +325,7 @@ trait ShopOrderHelper
         $request = new Request();
         $request['slugs'] = $vendors;
         $request['message'] = 'An order has been received.';
-        $request['data'] = self::preparePushData($order, $customerSlug);
+        $request['data'] = self::preparePushData($order);
 
         $appId = config('one-signal.vendor_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
@@ -334,7 +334,7 @@ trait ShopOrderHelper
         SendPushNotification::dispatch($uniqueKey, $fields, 'vendor');
     }
 
-    private static function preparePushData($order, $customerSlug)
+    private static function preparePushData($order)
     {
         return [
             'type' => 'shop_order',
@@ -343,7 +343,6 @@ trait ShopOrderHelper
                 'total_amount' => $order['total_amount'],
                 'order_date' => $order['order_date'],
                 'customer_name' => $order['restaurant_order_contact']['customer_name'],
-                'customer_slug' => $customerSlug,
                 'phone_number' => $order['restaurant_order_contact']['phone_number'],
                 'house_number' => $order['restaurant_order_contact']['house_number'],
                 'floor' => $order['restaurant_order_contact']['floor'],

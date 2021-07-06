@@ -112,7 +112,7 @@ class RestaurantOrderController extends Controller
         $this->assignOrder('restaurant', $order->slug);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::sendPushNotifications($order, $validatedData['customer_slug'], $validatedData['restaurant_branch_id']);
+        OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $phoneNumber);
 
         return $this->generateResponse($order, 201);
@@ -120,7 +120,7 @@ class RestaurantOrderController extends Controller
 
     public function show(RestaurantOrder $restaurantOrder)
     {
-        return $this->generateResponse($restaurantOrder->load('RestaurantOrderContact', 'RestaurantOrderItems'), 200);
+        return $this->generateResponse($restaurantOrder->load('RestaurantOrderContact', 'RestaurantOrderItems', 'restaurantOrderStatuses'), 200);
     }
 
     public function destroy(RestaurantOrder $restaurantOrder)
@@ -147,6 +147,8 @@ class RestaurantOrderController extends Controller
         }
 
         OrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
+        $restaurantOrder['order_status'] = $request->status;
+        OrderHelper::sendPushNotifications($restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);
 
         $this->notify([
             'title' => 'Restaurant order updated',
@@ -263,12 +265,12 @@ class RestaurantOrderController extends Controller
     public function cancelOrderItem(RestaurantOrder $restaurantOrder, RestaurantOrderItem $restaurantOrderItem)
     {
         $restaurantOrderItem->delete();
-        $restaurantOrder=RestaurantOrder::where('slug', $restaurantOrder->slug)->first();
+        $restaurantOrder = RestaurantOrder::where('slug', $restaurantOrder->slug)->first();
 
-        $promocode=Promocode::where('code', $restaurantOrder->promocode)->first();
+        $promocode = Promocode::where('code', $restaurantOrder->promocode)->first();
         $orderItems = $restaurantOrder->restaurantOrderItems;
         $subTotal = 0;
-        $commission=0;
+        $commission = 0;
 
         foreach ($orderItems as $item) {
             $amount = ($item->amount  - $item->discount) * $item->quantity;
@@ -278,9 +280,9 @@ class RestaurantOrderController extends Controller
         $commission = $subTotal * $restaurantOrder->restaurant->commission * 0.01;
 
         if ($promocode->type === 'fix') {
-            $restaurantOrder->update(['promocode_amount'=>$promocode->amount,'commission'=>$commission]);
+            $restaurantOrder->update(['promocode_amount' => $promocode->amount, 'commission' => $commission]);
         } else {
-            $restaurantOrder->update(['promocode_amount'=>$subTotal * $promocode->amount * 0.01,'commission'=>$commission]);
+            $restaurantOrder->update(['promocode_amount' => $subTotal * $promocode->amount * 0.01, 'commission' => $commission]);
         }
         return response()->json(['message' => 'Successfully cancelled.'], 200);
     }
