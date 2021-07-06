@@ -72,8 +72,7 @@ class ShopOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        OrderHelper::sendPushNotifications($order, $validatedData['order_items']);
-        OrderHelper::sendSmsNotifications($validatedData['order_items'], $this->customer->phone_number);
+        OrderHelper::notifySystem($order, $validatedData['order_items'], $this->customer->phone_number);
 
         return $this->generateShopOrderResponse($order, 201);
     }
@@ -168,7 +167,7 @@ class ShopOrderController extends Controller
             OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
             OrderHelper::createOrderStatus($order->id);
-            return $order->refresh();
+            return $order->refresh()->load('contact');
         });
 
         $this->notifySystem($validatedData['order_items'], $order->slug);

@@ -75,55 +75,13 @@ class ShopOrderController extends Controller
         $validatedData = OrderHelper::prepareProductVariants($validatedData);
 
         if ($validatedData['promo_code']) {
-            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest()->first();
-            if (!$promocode) {
-                return $this->generateResponse('Promocode not found', 422, true);
-            }
-
-            $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
-            if (!$validUsage) {
-                return $this->generateResponse('Invalid promocode usage for shop.', 422, true);
-            }
-
-            $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'shop');
-            if (!$validRule) {
-                return $this->generateResponse('Invalid promocode.', 422, true);
-            }
-
-            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
-
-            $validatedData['promocode_id'] = $promocode->id;
-            $validatedData['promocode'] = $promocode->code;
-            $validatedData['promocode_amount'] = $promocodeAmount;
+            $validatedData = $this->getPromoData($validatedData, $customer);
         }
 
-        $order = DB::transaction(function () use ($validatedData) {
-            $order = ShopOrder::create($validatedData);
-            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
-            OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
-            OrderHelper::createOrderStatus($order->id);
-            return $order->refresh();
-        });
-
-        $this->notifyAdmin(
-            [
-                'title' => 'New Order',
-                'body' => 'New Order has been received. Check now!',
-                'data' => [
-                    'action' => 'create',
-                    'type' => 'shopOrder',
-                    'status' => 'pending',
-                    'shopOrder' => ShopOrder::with('contact')
-                        ->with('vendors')
-                        ->where('slug', $order->slug)
-                        ->firstOrFail(),
-                ],
-            ]
-        );
+        $order = $this->shopOrderTransaction($validatedData);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::sendPushNotifications($order, $validatedData['order_items']);
-        OrderHelper::sendSmsNotifications($validatedData['order_items'], $phoneNumber);
+        OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber);
 
         return $this->generateShopOrderResponse($order, 201);
     }
@@ -141,6 +99,43 @@ class ShopOrderController extends Controller
         return $this->generateResponse($shopOrder->load('contact', 'vendors', 'vendors.shopOrderStatuses', 'drivers', 'drivers.status'), 200);
     }
 
+    private function getPromoData($validatedData, $customer)
+    {
+        $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest()->first();
+        if (!$promocode) {
+            return $this->generateResponse('Promocode not found', 422, true);
+        }
+
+        $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
+        if (!$validUsage) {
+            return $this->generateResponse('Invalid promocode usage for shop.', 422, true);
+        }
+
+        $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'shop');
+        if (!$validRule) {
+            return $this->generateResponse('Invalid promocode.', 422, true);
+        }
+
+        $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
+
+        $validatedData['promocode_id'] = $promocode->id;
+        $validatedData['promocode'] = $promocode->code;
+        $validatedData['promocode_amount'] = $promocodeAmount;
+
+        return $validatedData;
+    }
+
+    private function shopOrderTransaction($validatedData)
+    {
+        return DB::transaction(function () use ($validatedData) {
+            $order = ShopOrder::create($validatedData);
+            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
+            OrderHelper::createOrderStatus($order->id);
+            return $order->refresh()->load('contact');
+        });
+    }
+
     public function changeStatus(Request $request, ShopOrder $shopOrder)
     {
         if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
@@ -155,17 +150,6 @@ class ShopOrderController extends Controller
             'status' => $request->status,
             'slug' => $shopOrder->slug,
         ]);
-
-        $this->notifyAdmin(
-            $notificaitonData
-        );
-
-        foreach ($shopOrder->vendors as $vendor) {
-            $this->notifyShop(
-                $vendor->shop->slug,
-                $notificaitonData
-            );
-        }
 
         if ($request->status === 'cancelled') {
             $message = 'Your order has successfully been ' . $request->status . '.';

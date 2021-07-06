@@ -14,10 +14,10 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class RestaurantOrderController extends Controller
 {
@@ -93,10 +93,7 @@ class RestaurantOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
-        OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $this->customer->phone_number);
-
-        $this->assignOrder('restaurant', $order->slug);
+        OrderHelper::notifySystem($order, $this->customer->phone_number);
 
         return $this->generateResponse($order, 201);
     }

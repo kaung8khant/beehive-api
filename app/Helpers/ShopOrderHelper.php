@@ -288,6 +288,12 @@ trait ShopOrderHelper
         return $validatedData;
     }
 
+    public static function notifySystem($order, $orderItems, $phoneNumber)
+    {
+        self::sendPushNotifications($order, $orderItems);
+        self::sendSmsNotifications($orderItems, $phoneNumber);
+    }
+
     public static function sendPushNotifications($order, $orderItems)
     {
         $order = json_decode(json_encode($order), true);
@@ -295,7 +301,7 @@ trait ShopOrderHelper
         self::sendVendorPushNotifications($order, $orderItems);
     }
 
-    public static function sendAdminPushNotifications($order)
+    private static function sendAdminPushNotifications($order)
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -313,7 +319,7 @@ trait ShopOrderHelper
         SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
     }
 
-    public static function sendVendorPushNotifications($order, $orderItems)
+    private static function sendVendorPushNotifications($order, $orderItems)
     {
         $shopIds = array_map(function ($item) {
             return Product::where('slug', $item['slug'])->value('shop_id');
@@ -342,13 +348,13 @@ trait ShopOrderHelper
                 'invoice_id' => $order['invoice_id'],
                 'total_amount' => $order['total_amount'],
                 'order_date' => $order['order_date'],
-                'customer_name' => $order['restaurant_order_contact']['customer_name'],
-                'phone_number' => $order['restaurant_order_contact']['phone_number'],
-                'house_number' => $order['restaurant_order_contact']['house_number'],
-                'floor' => $order['restaurant_order_contact']['floor'],
-                'street_name' => $order['restaurant_order_contact']['street_name'],
-                'latitude' => $order['restaurant_order_contact']['latitude'],
-                'longitude' => $order['restaurant_order_contact']['longitude'],
+                'customer_name' => $order['contact']['customer_name'],
+                'phone_number' => $order['contact']['phone_number'],
+                'house_number' => $order['contact']['house_number'],
+                'floor' => $order['contact']['floor'],
+                'street_name' => $order['contact']['street_name'],
+                'latitude' => $order['contact']['latitude'],
+                'longitude' => $order['contact']['longitude'],
             ],
         ];
     }
@@ -360,7 +366,7 @@ trait ShopOrderHelper
         self::sendCustomerSms($customerPhoneNumber);
     }
 
-    public static function sendAdminSms()
+    private static function sendAdminSms()
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -375,7 +381,7 @@ trait ShopOrderHelper
         }
     }
 
-    public static function sendVendorSms($orderItems)
+    private static function sendVendorSms($orderItems)
     {
         $vendors = collect($orderItems)->map(function ($item) {
             $shopId = Product::where('slug', $item['slug'])->value('shop_id');
@@ -391,7 +397,7 @@ trait ShopOrderHelper
         }
     }
 
-    public static function sendCustomerSms($phoneNumber)
+    private static function sendCustomerSms($phoneNumber)
     {
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
