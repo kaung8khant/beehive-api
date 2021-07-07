@@ -68,10 +68,9 @@ class RestaurantController extends Controller
 
         $recommendedBranches = RestaurantOrderHelper::getBranches($request)
             ->orderBy('distance', 'asc')
-            ->paginate($request->size)
-            ->items();
+            ->paginate($request->size);
 
-        return $this->generateBranchResponse($recommendedBranches, 200);
+        return $this->generateBranchResponse($recommendedBranches, 200, 'array', $recommendedBranches->lastPage());
     }
 
     public function getNewArrivals(Request $request)

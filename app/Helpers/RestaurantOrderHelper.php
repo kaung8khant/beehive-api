@@ -5,6 +5,7 @@ namespace App\Helpers;
 use App\Exceptions\BadRequestException;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
+use App\Jobs\AssignOrder;
 use App\Jobs\SendPushNotification;
 use App\Jobs\SendSms;
 use App\Models\Menu;
@@ -336,6 +337,13 @@ trait RestaurantOrderHelper
         return $validatedData;
     }
 
+    public static function notifySystem($order, $phoneNumber)
+    {
+        self::sendPushNotifications($order, $order->restaurant_branch_id);
+        self::sendSmsNotifications($order->restaurant_branch_id, $phoneNumber);
+        self::assignBiker($order->slug);
+    }
+
     public static function sendPushNotifications($order, $branchId, $message = null)
     {
         $order = json_decode(json_encode($order), true);
@@ -343,7 +351,7 @@ trait RestaurantOrderHelper
         self::sendVendorPushNotifications($order, $branchId, $message);
     }
 
-    public static function sendAdminPushNotifications($order, $message = null)
+    private static function sendAdminPushNotifications($order, $message = null)
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -361,7 +369,7 @@ trait RestaurantOrderHelper
         SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
     }
 
-    public static function sendVendorPushNotifications($order, $branchId, $message = null)
+    private static function sendVendorPushNotifications($order, $branchId, $message = null)
     {
         $vendors = User::where('restaurant_branch_id', $branchId)->pluck('slug');
 
@@ -382,6 +390,7 @@ trait RestaurantOrderHelper
         unset($order['created_by']);
         unset($order['updated_by']);
         unset($order['restaurant_order_items']);
+
         return [
             'type' => 'restaurant_order',
             'body' => $order,
@@ -391,11 +400,11 @@ trait RestaurantOrderHelper
     public static function sendSmsNotifications($branchId, $customerPhoneNumber)
     {
         // self::sendAdminSms();
-        // self::sendVendorSms($branchId);
-        // self::sendCustomerSms($customerPhoneNumber);
+        self::sendVendorSms($branchId);
+        self::sendCustomerSms($customerPhoneNumber);
     }
 
-    public static function sendAdminSms()
+    private static function sendAdminSms()
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -410,7 +419,7 @@ trait RestaurantOrderHelper
         }
     }
 
-    public static function sendVendorSms($branchId)
+    private static function sendVendorSms($branchId)
     {
         $vendors = RestaurantBranch::where('id', $branchId)->value('notify_numbers');
 
@@ -423,12 +432,18 @@ trait RestaurantOrderHelper
         }
     }
 
-    public static function sendCustomerSms($phoneNumber)
+    private static function sendCustomerSms($phoneNumber)
     {
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+    }
+
+    private static function assignBiker($orderSlug)
+    {
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        AssignOrder::dispatch($uniqueKey, $orderSlug, 'restaurant');
     }
 }
