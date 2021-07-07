@@ -63,17 +63,6 @@ class ExportImportController extends Controller
         }
     }
 
-    // public function exportWithDate($type, $from, $to)
-    // {
-    //     try {
-    //         $_class = '\App\Exports\\' . config("export-import.export.{$type}");
-    //         return Excel::download(new $_class($from, $to), $type . '-export.xlsx');
-    //     } catch (\Exception $e) {
-    //         $this->deleteTmpFilesWhenFailed();
-    //         return response()->json(['message' => 'failed'], 400);
-    //     }
-    // }
-
     private function deleteTmpFilesWhenFailed()
     {
         $files = Storage::disk('excel')->files();

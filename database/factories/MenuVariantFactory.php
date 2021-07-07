@@ -31,7 +31,7 @@ class MenuVariantFactory extends Factory
             'price' => $this->faker->numberBetween(1000, 10000),
             'tax' => $this->faker->numberBetween(0, 50),
             'discount'=>$this->faker->numberBetween(0, 50),
-            'variant' =>json_decode('[{"value":"Standard"}]'),
+            'variant' =>json_decode('[{"name":"default","value":"Standard"}]'),
         ];
     }
 }
