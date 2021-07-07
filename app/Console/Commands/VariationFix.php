@@ -84,7 +84,5 @@ class VariationFix extends Command
                 }
             }
         }
-
-        throw new \Exception('invoking variation fix scheduler!');
     }
 }
