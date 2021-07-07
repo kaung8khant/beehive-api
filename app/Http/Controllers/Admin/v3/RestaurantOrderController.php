@@ -209,13 +209,17 @@ class RestaurantOrderController extends Controller
             $subTotal += $amount;
             $commission += $item->commission;
         }
+
         $commission = $subTotal * $restaurantOrder->restaurant->commission * 0.01;
 
-        if ($promocode->type === 'fix') {
-            $restaurantOrder->update(['promocode_amount' => $promocode->amount, 'commission' => $commission]);
-        } else {
-            $restaurantOrder->update(['promocode_amount' => $subTotal * $promocode->amount * 0.01, 'commission' => $commission]);
+        if ($promocode) {
+            if ($promocode->type === 'fix') {
+                $restaurantOrder->update(['promocode_amount' => $promocode->amount, 'commission' => $commission]);
+            } else {
+                $restaurantOrder->update(['promocode_amount' => $subTotal * $promocode->amount * 0.01, 'commission' => $commission]);
+            }
         }
+
         return response()->json(['message' => 'Successfully cancelled.'], 200);
     }
 }
