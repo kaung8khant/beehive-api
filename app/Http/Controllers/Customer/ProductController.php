@@ -183,15 +183,14 @@ class ProductController extends Controller
 
     public function getRecommendations(Request $request)
     {
-        $product = Product::with('shop')
+        $products = Product::with('shop')
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
             ->inRandomOrder()
-            ->paginate($request->size)
-            ->items();
+            ->paginate($request->size);
 
-        return $this->generateProductResponse($product, 200);
+        return $this->generateProductResponse($products, 200, 'array', $products->lastPage());
     }
 }

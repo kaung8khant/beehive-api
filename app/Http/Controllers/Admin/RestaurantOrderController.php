@@ -67,72 +67,24 @@ class RestaurantOrderController extends Controller
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
-        // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
 
         if (gettype($validatedData) == 'string') {
             return $this->generateResponse($validatedData, 422, true);
         }
 
-        // get Customer Info
         $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
-
-        // append customer data
-        $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
-
-        // validate and prepare variation
+        $validatedData['customer_id'] = $customer->id;
         $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
 
         if ($validatedData['promo_code']) {
-            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
-            if (!$promocode) {
-                return $this->generateResponse('Promocode not found', 422, true);
-            }
-
-            $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
-            if (!$validUsage) {
-                return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
-            }
-
-            $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
-            if (!$validRule) {
-                return $this->generateResponse('Invalid promocode.', 422, true);
-            }
-
-            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
-
-            $validatedData['promocode_id'] = $promocode->id;
-            $validatedData['promocode'] = $promocode->code;
-            $validatedData['promocode_amount'] = $promocodeAmount;
+            $validatedData = $this->getPromoData($validatedData, $customer);
         }
 
-        // try catch and rollback if failed.
-        $order = DB::transaction(function () use ($validatedData) {
-            $order = RestaurantOrder::create($validatedData);
-            $orderId = $order->id;
-
-            OrderHelper::createOrderStatus($orderId);
-
-            OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-            OrderHelper::createOrderItems($orderId, $validatedData['order_items']);
-            return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
-        });
-
-        $this->notify([
-            'title' => 'Restaurant order updated',
-            'body' => 'Restaurant order just has been updated',
-            'status' => $request->status,
-            'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
-                ->with('RestaurantOrderItems')
-                ->where('slug', $order->slug)
-                ->firstOrFail(),
-            'action' => 'create',
-            'slug' => $order->slug,
-        ]);
+        $order = $this->restaurantOrderTransaction($validatedData);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
-        OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $phoneNumber);
+        OrderHelper::notifySystem($order, $phoneNumber);
 
         return $this->generateResponse($order, 201);
     }
@@ -154,6 +106,43 @@ class RestaurantOrderController extends Controller
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
 
+    private function getPromoData($validatedData, $customer)
+    {
+        $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
+        if (!$promocode) {
+            return $this->generateResponse('Promocode not found', 422, true);
+        }
+
+        $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
+        if (!$validUsage) {
+            return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
+        }
+
+        $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
+        if (!$validRule) {
+            return $this->generateResponse('Invalid promocode.', 422, true);
+        }
+
+        $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
+
+        $validatedData['promocode_id'] = $promocode->id;
+        $validatedData['promocode'] = $promocode->code;
+        $validatedData['promocode_amount'] = $promocodeAmount;
+
+        return $validatedData;
+    }
+
+    private function restaurantOrderTransaction($validatedData)
+    {
+        return DB::transaction(function () use ($validatedData) {
+            $order = RestaurantOrder::create($validatedData);
+            OrderHelper::createOrderStatus($order->id);
+            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
+            return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
+        });
+    }
+
     public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
     {
         if ($restaurantOrder->order_status === 'delivered' || $restaurantOrder->order_status === 'cancelled') {
@@ -163,14 +152,6 @@ class RestaurantOrderController extends Controller
         OrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
         $restaurantOrder['order_status'] = $request->status;
         OrderHelper::sendPushNotifications($restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);
-
-        $this->notify([
-            'title' => 'Restaurant order updated',
-            'body' => 'Restaurant order just has been updated',
-            'status' => $request->status,
-            'slug' => $restaurantOrder->slug,
-            'action' => 'update',
-        ]);
 
         if ($request->status === 'cancelled') {
             $message = 'Your order has been cancelled.';
@@ -182,41 +163,5 @@ class RestaurantOrderController extends Controller
         }
 
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
-    }
-
-    private function getCustomerId($slug)
-    {
-        return Customer::where('slug', $slug)->first()->id;
-    }
-
-    private function notify($data)
-    {
-        $this->notifyAdmin(
-            [
-                'title' => $data['title'],
-                'body' => $data['body'],
-                'data' => [
-                    'action' => $data['action'],
-                    'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
-                ],
-            ]
-        );
-        $this->notifyRestaurant(
-            $data['slug'],
-            [
-                'title' => $data['title'],
-                'body' => $data['body'],
-                'data' => [
-                    'action' => $data['action'],
-                    'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
-                ],
-            ]
-        );
     }
 }

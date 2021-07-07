@@ -74,8 +74,7 @@ class ShopOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        OrderHelper::sendPushNotifications($order, $validatedData['order_items']);
-        OrderHelper::sendSmsNotifications($validatedData['order_items'], $this->customer->phone_number);
+        OrderHelper::notifySystem($order, $validatedData['order_items'], $this->customer->phone_number);
 
         return $this->generateShopOrderResponse($order, 201);
     }
@@ -146,7 +145,7 @@ class ShopOrderController extends Controller
 
         $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'shop');
         if (!$validRule) {
-            return $this->generateResponse('Invalid promocode rule.', 422, true);
+            return $this->generateResponse('Invalid promocode.', 422, true);
         }
 
         $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
