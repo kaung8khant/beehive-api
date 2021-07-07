@@ -1,6 +1,6 @@
 # How to run this project
 
-## copy env file
+## copy env file.
 
 copy .env.example and rename to .env
 
