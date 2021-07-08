@@ -10,6 +10,7 @@ use App\Models\File;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -129,7 +130,7 @@ class ProductController extends Controller
         $data = new stdClass();
         $data->products = $products->items();
         $data->total = $products->total();
-        $data->join_date = $shop->created_at;
+        $data->join_date = Carbon::parse($shop->created_at)->format('Y-m-d');
 
         return $this->generateProductResponse($data, 200, 'cattag', $products->lastPage());
     }
