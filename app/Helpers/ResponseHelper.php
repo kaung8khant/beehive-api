@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\Auth;
+use stdClass;
 
 trait ResponseHelper
 {
@@ -20,14 +21,16 @@ trait ResponseHelper
             $response['last_page'] = $paginate;
         }
 
-        if ($data->total) {
-            $response['total'] = $data->total;
-            unset($data->total);
+        $data = (array) $data;
+
+        if (isset($data['total'])) {
+            $response['total'] = $data['total'];
+            unset($data['total']);
         }
 
-        if ($data->join_date) {
-            $response['join_date'] = $data->join_date;
-            unset($data->join_date);
+        if (isset($data['join_date'])) {
+            $response['join_date'] = $data['join_date'];
+            unset($data['join_date']);
         }
 
         return response()->json($response, $status);
