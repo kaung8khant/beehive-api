@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
-use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
@@ -20,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use PromocodeHelper, ResponseHelper, StringHelper;
 
     public function index(Request $request)
     {
@@ -83,9 +82,6 @@ class RestaurantOrderController extends Controller
 
         $order = $this->restaurantOrderTransaction($validatedData);
 
-        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::notifySystem($order, $phoneNumber);
-
         return $this->generateResponse($order, 201);
     }
 
@@ -134,13 +130,18 @@ class RestaurantOrderController extends Controller
 
     private function restaurantOrderTransaction($validatedData)
     {
-        return DB::transaction(function () use ($validatedData) {
+        $order = DB::transaction(function () use ($validatedData) {
             $order = RestaurantOrder::create($validatedData);
             OrderHelper::createOrderStatus($order->id);
             OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
+
+        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+        OrderHelper::notifySystem($order, $phoneNumber);
+
+        return $order;
     }
 
     public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
