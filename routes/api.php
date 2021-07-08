@@ -29,6 +29,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('dashboard/restaurant-orders', 'Dashboard\AdminDashboardController@getRestaurantOrders');
             Route::get('dashboard/shop-orders', 'Dashboard\AdminDashboardController@getShopOrders');
             Route::get('dashboard/order-data', 'Dashboard\AdminDashboardController@getOrderChartData');
+            Route::get('dashboard/top-customers', 'Dashboard\AdminDashboardController@getTopCustomers');
             /* Dashboard */
 
             Route::resource('roles', 'Admin\RoleController', ['except' => ['create', 'edit']]);
