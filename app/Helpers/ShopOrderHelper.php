@@ -80,7 +80,8 @@ trait ShopOrderHelper
 
         foreach ($validatedData['order_items'] as $key => $value) {
             $product = self::validateProductVariations($key, $value);
-            $variations = collect(self::prepareVariations($value['variation_value_slugs']));
+            $variations = self::prepareVariations($value);
+
             $amount = $product->price + $variations->sum('price');
 
             $subTotal += ($amount - $product->discount) * $value['quantity'];
@@ -154,23 +155,27 @@ trait ShopOrderHelper
         }
     }
 
-    private static function prepareVariations($variationValueSlugs)
+    private static function prepareVariations($orderItem)
     {
         $variations = [];
 
-        foreach ($variationValueSlugs as $variationValueSlug) {
-            $variationValue = self::getProductVariationValue($variationValueSlug);
+        if (isset($orderItem['variation_value_slugs'])) {
+            $variationValueSlugs = $orderItem['variation_value_slugs'];
 
-            $variation = [
-                'name' => $variationValue->productVariation->name,
-                'value' => $variationValue->value,
-                'price' => $variationValue->price,
-            ];
+            foreach ($variationValueSlugs as $variationValueSlug) {
+                $variationValue = self::getProductVariationValue($variationValueSlug);
 
-            array_push($variations, $variation);
+                $variation = [
+                    'name' => $variationValue->productVariation->name,
+                    'value' => $variationValue->value,
+                    'price' => $variationValue->price,
+                ];
+
+                array_push($variations, $variation);
+            }
         }
 
-        return $variations;
+        return collect($variations);
     }
 
     private static function createShopOrderVendor($orderId, $shopId)

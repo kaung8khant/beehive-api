@@ -100,7 +100,7 @@ trait RestaurantOrderHelper
 
         foreach ($validatedData['order_items'] as $key => $value) {
             $menu = self::getMenu($value['slug']);
-            $variations = collect(self::prepareVariations($value['variation_value_slugs']));
+            $variations = self::prepareVariations($value);
             $toppings = collect(self::prepareToppings($value['topping_slugs']));
             $amount = $menu->price + $variations->sum('price') + $toppings->sum('price');
 
@@ -184,23 +184,27 @@ trait RestaurantOrderHelper
         }
     }
 
-    private static function prepareVariations($variationValueSlugs)
+    private static function prepareVariations($orderItem)
     {
         $variations = [];
 
-        foreach ($variationValueSlugs as $variationValueSlug) {
-            $variationValue = self::getMenuVariationValue($variationValueSlug);
+        if (isset($orderItem['variation_value_slugs'])) {
+            $variationValueSlugs = $orderItem['variation_value_slugs'];
 
-            $variation = [
-                'name' => $variationValue->menuVariation->name,
-                'value' => $variationValue->value,
-                'price' => (int) $variationValue->price,
-            ];
+            foreach ($variationValueSlugs as $variationValueSlug) {
+                $variationValue = self::getMenuVariationValue($variationValueSlug);
 
-            array_push($variations, $variation);
+                $variation = [
+                    'name' => $variationValue->menuVariation->name,
+                    'value' => $variationValue->value,
+                    'price' => (int) $variationValue->price,
+                ];
+
+                array_push($variations, $variation);
+            }
         }
 
-        return $variations;
+        return collect($variations);
     }
 
     private static function prepareToppings($toppingSlugs)
