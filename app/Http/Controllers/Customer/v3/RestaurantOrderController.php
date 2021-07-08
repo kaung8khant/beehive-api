@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Customer\v3;
 
 use App\Helpers\KbzPayHelper;
-use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
@@ -13,14 +12,13 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use PromocodeHelper, ResponseHelper, StringHelper;
 
     protected $customer;
 
@@ -52,14 +50,7 @@ class RestaurantOrderController extends Controller
             return $this->generateResponse($validatedData, 422, true);
         }
 
-        $checkTime = OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
-        if ($checkTime) {
-            return $this->generateResponse("Ordering is not available yet at this hour, Please place your order @ {$checkTime['open']} am - {$checkTime['close']} pm. Thank you for shopping with Beehive.", 403, true);
-        }
-
-        $validatedData['customer_id'] = $this->customer->id;
-        $validatedData['order_date'] = Carbon::now();
-        $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
+        OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
 
         if ($validatedData['promo_code']) {
             $validatedData = $this->getPromoData($validatedData);
@@ -78,8 +69,6 @@ class RestaurantOrderController extends Controller
         if ($validatedData['payment_mode'] === 'KPay') {
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
-
-        OrderHelper::notifySystem($order, $this->customer->phone_number);
 
         return $this->generateResponse($order, 201);
     }
@@ -104,17 +93,6 @@ class RestaurantOrderController extends Controller
         if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
             return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
         }
-
-        $this->notify(
-            $order->restaurantBranch->slug,
-            [
-                'title' => 'Order cancelled',
-                'body' => "Restaurant order just has been updated",
-                'type' => 'update',
-                'slug' => $order->slug,
-                'status' => 'cancelled',
-            ]
-        );
 
         $message = 'Your order has been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
@@ -162,56 +140,8 @@ class RestaurantOrderController extends Controller
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
 
-        $this->notifySystem($validatedData['restaurant_branch_slug'], $order->slug);
+        OrderHelper::notifySystem($order, $this->customer->phone_number);
 
         return $order;
-    }
-
-    private function notifySystem($branchSlug, $slug)
-    {
-        $this->notify(
-            $branchSlug,
-            [
-                'title' => 'New Order',
-                'body' => "You've just recevied new order. Check now!",
-                'type' => 'create',
-                'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
-                    ->with('RestaurantOrderItems')
-                    ->where('slug', $slug)
-                    ->firstOrFail(),
-            ]
-        );
-    }
-
-    private function notify($slug, $data)
-    {
-        $this->notifyRestaurant(
-            $slug,
-            [
-                'title' => $data['title'] . 'client',
-                'body' => $data['body'],
-                'data' => [
-                    'action' => $data['type'],
-                    'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
-                ],
-            ]
-        );
-
-        $this->notifyAdmin(
-            [
-                'title' => $data['title'] . 'client',
-                'body' => $data['body'],
-                'data' => [
-                    'action' => $data['type'],
-                    'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
-                ],
-            ]
-        );
     }
 }
