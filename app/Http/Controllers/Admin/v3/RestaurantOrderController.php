@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin\v3;
 
 use App\Helpers\CollectionHelper;
-use App\Helpers\NotificationHelper;
 use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -14,7 +13,6 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Customer;
 use App\Models\Promocode;
-use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderItem;
@@ -24,21 +22,12 @@ use Illuminate\Support\Facades\DB;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
+    use PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        // $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
-        //     ->whereHas('restaurantOrderContact', function ($q) use ($request) {
-        //         $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
-        //             ->orWhere('phone_number', $request->filter);
-        //     })
-        //     ->orWhere('slug', $request->filter)
-        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-        //     ->paginate($request->size)
-        //     ->items();
         if ($request->filter) {
             $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
                 ->whereHas('restaurantOrderContact', function ($q) use ($request) {
@@ -57,6 +46,7 @@ class RestaurantOrderController extends Controller
                 ->whereBetween('order_date', array($request->from, $request->to))
                 ->get();
         }
+
         return $this->generateResponse($restaurantOrders, 200);
     }
 
@@ -70,17 +60,12 @@ class RestaurantOrderController extends Controller
         }
 
         $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
-        $validatedData['customer_id'] = $customer->id;
-        $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
 
         if ($validatedData['promo_code']) {
             $validatedData = $this->getPromoData($validatedData, $customer);
         }
 
         $order = $this->restaurantOrderTransaction($validatedData);
-
-        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::notifySystem($order, $phoneNumber);
 
         return $this->generateResponse($order, 201);
     }
@@ -135,13 +120,18 @@ class RestaurantOrderController extends Controller
 
     private function restaurantOrderTransaction($validatedData)
     {
-        return DB::transaction(function () use ($validatedData) {
+        $order = DB::transaction(function () use ($validatedData) {
             $order = RestaurantOrder::create($validatedData);
             OrderHelper::createOrderStatus($order->id);
             OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
+
+        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+        OrderHelper::notifySystem($order, $phoneNumber);
+
+        return $order;
     }
 
     public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
@@ -174,6 +164,7 @@ class RestaurantOrderController extends Controller
         }
 
         $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
+
         if ($request->filter) {
             $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
                 ->where('restaurant_branch_id', $restaurantBranch->id)

@@ -13,6 +13,7 @@ use App\Models\ShopCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 
 class ProductController extends Controller
 {
@@ -117,16 +118,20 @@ class ProductController extends Controller
 
     public function getByShop(Request $request, Shop $shop)
     {
-        $product = Product::where('shop_id', $shop->id)
+        $products = Product::where('shop_id', $shop->id)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
             ->orderBy('id', 'desc')
-            ->paginate($request->size)
-            ->items();
+            ->paginate($request->size);
 
-        return $this->generateProductResponse($product, 200);
+        $data = new stdClass();
+        $data->products = $products->items();
+        $data->total = $products->total();
+        $data->join_date = $shop->created_at;
+
+        return $this->generateProductResponse($data, 200, 'cattag', $products->lastPage());
     }
 
     public function getAllBrand()
