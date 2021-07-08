@@ -20,6 +20,16 @@ trait ResponseHelper
             $response['last_page'] = $paginate;
         }
 
+        if ($data->total) {
+            $response['total'] = $data->total;
+            unset($data->total);
+        }
+
+        if ($data->join_date) {
+            $response['join_date'] = $data->join_date;
+            unset($data->join_date);
+        }
+
         return response()->json($response, $status);
     }
 
@@ -71,7 +81,7 @@ trait ResponseHelper
             $data = $paginate ? $data->items() : $data;
 
             foreach ($data as $product) {
-                $product['is_favorite'] = $this->checkFavoriteProduct($product->id);
+                $product->is_favorite = $this->checkFavoriteProduct($product->id);
                 unset($product->customers);
             }
 
@@ -90,8 +100,8 @@ trait ResponseHelper
                 $product->is_favorite = $this->checkFavoriteProduct($product->id);
             }
         } else {
-            $data['is_favorite'] = $this->checkFavoriteProduct($data->id);
-            unset($data['customers']);
+            $data->is_favorite = $this->checkFavoriteProduct($data->id);
+            unset($data->customers);
         }
 
         return $this->generateResponse($data, $status, false, $paginate);
