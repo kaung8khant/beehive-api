@@ -56,7 +56,7 @@ trait OrderAssignHelper
 
         foreach ($restaurant_orders as $order) {
             $reOrder = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $order->id)->get();
-            if ($reOrder->created_at > Carbon::now()->subSecond(58)) {
+            if ($reOrder[0]->created_at > Carbon::now()->subSecond(58)) {
                 $assignedDriver = User::where('id', $order->user_id)->first()->slug;
                 $resSlug = RestaurantOrder::where('id', $order->id)->first()->slug;
                 $driverList = self::getdriver($resSlug);
