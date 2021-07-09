@@ -10,9 +10,11 @@ use App\Models\File;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 
 class ProductController extends Controller
 {
@@ -117,16 +119,20 @@ class ProductController extends Controller
 
     public function getByShop(Request $request, Shop $shop)
     {
-        $product = Product::where('shop_id', $shop->id)
+        $products = Product::where('shop_id', $shop->id)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
             ->orderBy('id', 'desc')
-            ->paginate($request->size)
-            ->items();
+            ->paginate($request->size);
 
-        return $this->generateProductResponse($product, 200);
+        $data = new stdClass();
+        $data->products = $products->items();
+        $data->total = $products->total();
+        $data->join_date = Carbon::parse($shop->created_at)->format('Y-m-d');
+
+        return $this->generateProductResponse($data, 200, 'cattag', $products->lastPage());
     }
 
     public function getAllBrand()
@@ -183,15 +189,14 @@ class ProductController extends Controller
 
     public function getRecommendations(Request $request)
     {
-        $product = Product::with('shop')
+        $products = Product::with('shop')
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
             ->inRandomOrder()
-            ->paginate($request->size)
-            ->items();
+            ->paginate($request->size);
 
-        return $this->generateProductResponse($product, 200);
+        return $this->generateProductResponse($products, 200, 'array', $products->lastPage());
     }
 }

@@ -13,8 +13,8 @@ class AdminDashboardController extends Controller
     public function getCountData()
     {
         $result = [
-            'restaurants' => DB::table('restaurants')->count(),
-            'shops' => DB::table('shops')->count(),
+            'restaurants' => DB::table('restaurants')->where('restaurants.is_enable', 1)->count(),
+            'shops' => DB::table('shops')->where('shops.is_enable', 1)->count(),
             'customers' => DB::table('customers')->count(),
             'drivers' => $this->getDriversCount(),
             'promo_codes' => DB::table('promocodes')->count(),
@@ -110,7 +110,7 @@ class AdminDashboardController extends Controller
     {
         if ($request->type === 'weekly') {
             $result = $this->getWeeklyOrders();
-        } else if ($request->type === 'monthly') {
+        } elseif ($request->type === 'monthly') {
             $result = $this->getMonthlyOrders();
         } else {
             $result = $this->getYearlyOrders();
@@ -209,5 +209,44 @@ class AdminDashboardController extends Controller
         return User::whereHas('roles', function ($query) {
             $query->where('name', 'Driver');
         })->count();
+    }
+
+    public function getTopCustomers()
+    {
+        $restaurantCustomers = DB::table('restaurant_orders as ro')
+            ->join('customers as c', 'c.id', '=', 'ro.customer_id')
+            ->join('restaurant_order_items as roi', 'roi.restaurant_order_id', '=', 'ro.id')
+            ->select('c.id', DB::raw('SUM((amount + tax - discount) * quantity) as total'))
+            ->where('ro.order_status', 'delivered')
+            ->groupBy('c.id')
+            ->orderBy('total', 'DESC')
+            ->limit(10)
+            ->get()
+            ->map(function ($data) {
+                $customer = DB::table('customers')->select('slug', 'name', 'phone_number')->where('id', $data->id)->first();
+                $customer->total = $data->total;
+                return $customer;
+            });
+
+        $shopCustomers = DB::table('shop_orders as so')
+            ->join('customers as c', 'c.id', '=', 'so.customer_id')
+            ->join('shop_order_vendors as sov', 'sov.shop_order_id', '=', 'so.id')
+            ->join('shop_order_items as soi', 'soi.shop_order_vendor_id', '=', 'sov.id')
+            ->select('c.id', DB::raw('SUM((amount + tax - discount) * quantity) as total'))
+            ->where('so.order_status', 'delivered')
+            ->groupBy('c.id')
+            ->orderBy('total', 'DESC')
+            ->limit(10)
+            ->get()
+            ->map(function ($data) {
+                $customer = DB::table('customers')->select('slug', 'name', 'phone_number')->where('id', $data->id)->first();
+                $customer->total = $data->total;
+                return $customer;
+            });
+
+        return [
+            'restaurant_top_customers' => $restaurantCustomers,
+            'shop_top_customers' => $shopCustomers,
+        ];
     }
 }

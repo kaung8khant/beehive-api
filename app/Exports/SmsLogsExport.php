@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\SmsLog;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -12,9 +13,22 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class SmsLogsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
+    public function __construct($from, $to)
+    {
+        $this->from = $from;
+        $this->to = $to;
+        ini_set('memory_limit', '256M');
+    }
+
     public function query()
     {
-        return SmsLog::query();
+        $from = Carbon::parse($this->from);
+        $to = Carbon::parse($this->to);
+
+        $from = $from->format('Y-m-d 00:00:00');
+        $to = $to->format('Y-m-d 23:59:59');
+
+        return SmsLog::query()->whereBetween('created_at', [$from, $to]);
     }
 
     /**

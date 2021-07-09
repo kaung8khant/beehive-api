@@ -13,14 +13,14 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class RestaurantOrderController extends Controller
 {
-    use  PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
+    use PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     protected $customer;
 
@@ -65,10 +65,7 @@ class RestaurantOrderController extends Controller
             return $this->generateResponse($validatedData, 422, true);
         }
 
-        $checkTime = OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
-        if ($checkTime) {
-            return $this->generateResponse("Ordering is not available yet at this hour, Please place your order @ {$checkTime['open']} am - {$checkTime['close']} pm. Thank you for shopping with Beehive.", 403, true);
-        }
+        OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
 
         $validatedData['customer_id'] = $this->customer->id;
         $validatedData['order_date'] = Carbon::now();
@@ -92,11 +89,6 @@ class RestaurantOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
-        OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $this->customer->phone_number);
-
-        $this->assignOrder('restaurant', $order->slug);
-
         return $this->generateResponse($order, 201);
     }
 
@@ -109,17 +101,6 @@ class RestaurantOrderController extends Controller
         if ($order->order_status === 'delivered' || $order->order_status === 'cancelled') {
             return $this->generateResponse('The order has already been ' . $order->order_status . '.', 406, true);
         }
-
-        $this->notify(
-            $order->restaurantBranch->slug,
-            [
-                'title' => 'Order cancelled',
-                'body' => 'Restaurant order just has been updated',
-                'type' => 'update',
-                'slug' => $order->slug,
-                'status' => 'cancelled',
-            ]
-        );
 
         $message = 'Your order has been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
@@ -163,9 +144,12 @@ class RestaurantOrderController extends Controller
             OrderHelper::createOrderStatus($order->id);
             OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
-            return $order;
+            return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
+        $this->assignOrder('restaurant', $order->slug);
 
-        return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
+        OrderHelper::notifySystem($order, $this->customer->phone_number);
+
+        return $order;
     }
 }

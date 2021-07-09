@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
-    use  PromocodeHelper, ResponseHelper, StringHelper;
+    use PromocodeHelper, ResponseHelper, StringHelper;
 
     protected $customer;
 
@@ -73,8 +73,7 @@ class ShopOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        OrderHelper::sendPushNotifications($order, $validatedData['order_items']);
-        OrderHelper::sendSmsNotifications($validatedData['order_items'], $this->customer->phone_number);
+        OrderHelper::notifySystem($order, $validatedData['order_items'], $this->customer->phone_number);
 
         return $this->generateShopOrderResponse($order, 201);
     }
@@ -105,29 +104,6 @@ class ShopOrderController extends Controller
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
         OrderHelper::createOrderStatus($shopOrder->id, 'cancelled');
 
-        foreach ($shopOrder->vendors as $vendor) {
-            $this->notify($vendor->shop->slug, [
-                'title' => 'Order cancelled',
-                'body' => 'Your order been cancelled!',
-                'action' => 'update',
-                'status' => 'cancelled',
-                'slug' => $shopOrder->slug,
-            ]);
-        }
-
-        $this->notifyAdmin(
-            [
-                'title' => 'Order cancelled',
-                'body' => 'Shop order just has been updated',
-                'data' => [
-                    'action' => 'update',
-                    'type' => 'shopOrder',
-                    'status' => 'cancelled',
-                    'slug' => $shopOrder->slug,
-                ],
-            ]
-        );
-
         return $this->generateResponse($shopOrder->order_status, 200);
     }
 
@@ -145,7 +121,7 @@ class ShopOrderController extends Controller
 
         $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'shop');
         if (!$validRule) {
-            return $this->generateResponse('Invalid promocode rule.', 422, true);
+            return $this->generateResponse('Invalid promocode.', 422, true);
         }
 
         $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
@@ -164,9 +140,9 @@ class ShopOrderController extends Controller
             OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
             OrderHelper::createOrderStatus($order->id);
-            return $order;
+            return $order->refresh()->load('contact');
         });
 
-        return $order->refresh()->load('contact');
+        return $order;
     }
 }

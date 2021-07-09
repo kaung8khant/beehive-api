@@ -3,10 +3,13 @@
 namespace App\Helpers;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenException;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
+use App\Jobs\AssignOrder;
 use App\Jobs\SendPushNotification;
 use App\Jobs\SendSms;
+use App\Models\Customer;
 use App\Models\Menu;
 use App\Models\MenuTopping;
 use App\Models\MenuVariant;
@@ -20,6 +23,7 @@ use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 trait RestaurantOrderHelper
@@ -28,12 +32,13 @@ trait RestaurantOrderHelper
     {
         $rules = [
             'slug' => 'required|unique:restaurant_orders',
-            'order_date' => 'nullable',
+            'required_if:order_type,schedule',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
+            'order_type' => 'nullable|in:instant,schedule,pickup',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
@@ -62,7 +67,16 @@ trait RestaurantOrderHelper
             return $validator->errors()->first();
         }
 
-        return $validator->validated();
+        $validatedData = $validator->validated();
+        $validatedData['order_type'] = $request->order_type ? $request->order_type : 'instant';
+
+        if ($validatedData['order_type'] === 'instant') {
+            $validatedData['order_date'] = Carbon::now();
+        } elseif ($validatedData['order_type'] === 'schedule') {
+            $validatedData['order_date'] = $request->order_date;
+        }
+
+        return $validatedData;
     }
 
     public static function checkOpeningTime($slug)
@@ -74,10 +88,8 @@ trait RestaurantOrderHelper
         $now = Carbon::now();
 
         if ($now->lt($openingTime) || $now->gt($closingTime)) {
-            return ['open' => $openingTime->format('H:i'), 'close' => $closingTime->format('h:i')];
+            throw new ForbiddenException("Ordering is not available yet at this hour, Please place your order @ {$openingTime->format('H:i')} am - {$closingTime->format('h:i')} pm. Thank you for shopping with Beehive.", 403);
         }
-
-        return false;
     }
 
     public static function prepareRestaurantVariations($validatedData)
@@ -88,7 +100,7 @@ trait RestaurantOrderHelper
 
         foreach ($validatedData['order_items'] as $key => $value) {
             $menu = self::getMenu($value['slug']);
-            $variations = collect(self::prepareVariations($value['variation_value_slugs']));
+            $variations = self::prepareVariations($value);
             $toppings = collect(self::prepareToppings($value['topping_slugs']));
             $amount = $menu->price + $variations->sum('price') + $toppings->sum('price');
 
@@ -172,23 +184,27 @@ trait RestaurantOrderHelper
         }
     }
 
-    private static function prepareVariations($variationValueSlugs)
+    private static function prepareVariations($orderItem)
     {
         $variations = [];
 
-        foreach ($variationValueSlugs as $variationValueSlug) {
-            $variationValue = self::getMenuVariationValue($variationValueSlug);
+        if (isset($orderItem['variation_value_slugs'])) {
+            $variationValueSlugs = $orderItem['variation_value_slugs'];
 
-            $variation = [
-                'name' => $variationValue->menuVariation->name,
-                'value' => $variationValue->value,
-                'price' => (int) $variationValue->price,
-            ];
+            foreach ($variationValueSlugs as $variationValueSlug) {
+                $variationValue = self::getMenuVariationValue($variationValueSlug);
 
-            array_push($variations, $variation);
+                $variation = [
+                    'name' => $variationValue->menuVariation->name,
+                    'value' => $variationValue->value,
+                    'price' => (int) $variationValue->price,
+                ];
+
+                array_push($variations, $variation);
+            }
         }
 
-        return $variations;
+        return collect($variations);
     }
 
     private static function prepareToppings($toppingSlugs)
@@ -251,14 +267,44 @@ trait RestaurantOrderHelper
 
     public static function validateOrderV3($request, $customerSlug = false)
     {
+        $rules = self::getRulesV3($customerSlug);
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return $validator->errors()->first();
+        }
+
+        $validatedData = $validator->validated();
+        $validatedData['order_type'] = $request->order_type ? $request->order_type : 'instant';
+
+        if ($validatedData['order_type'] === 'schedule') {
+            $validatedData['order_date'] = $request->order_date;
+        } else {
+            $validatedData['order_date'] = Carbon::now();
+        }
+
+        if (Auth::guard('customers')->check()) {
+            $validatedData['customer_id'] = Auth::guard('customers')->user()->id;
+        } else {
+            $validatedData['customer_id'] = Customer::where('slug', $validatedData['customer_slug'])->first()->id;
+        }
+
+        $validatedData = self::prepareRestaurantVariants($validatedData);
+
+        return $validatedData;
+    }
+
+    private static function getRulesV3($customerSlug = false)
+    {
         $rules = [
             'slug' => 'required|unique:restaurant_orders',
-            'order_date' => 'nullable',
+            'order_date' => 'required_if:order_type,schedule',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
             'delivery_mode' => 'required|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
+            'order_type' => 'nullable|in:instant,schedule,pickup',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
@@ -281,11 +327,7 @@ trait RestaurantOrderHelper
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
 
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return $validator->errors()->first();
-        }
-        return $validator->validated();
+        return $rules;
     }
 
     public static function prepareRestaurantVariants($validatedData)
@@ -336,13 +378,21 @@ trait RestaurantOrderHelper
         return $validatedData;
     }
 
-    public static function sendPushNotifications($order, $branchId)
+    public static function notifySystem($order, $phoneNumber)
     {
-        self::sendAdminPushNotifications($order);
-        self::sendVendorPushNotifications($order, $branchId);
+        self::sendPushNotifications($order, $order->restaurant_branch_id);
+        self::sendSmsNotifications($order->restaurant_branch_id, $phoneNumber);
+        self::assignBiker($order->order_type, $order->slug);
     }
 
-    public static function sendAdminPushNotifications($order)
+    public static function sendPushNotifications($order, $branchId, $message = null)
+    {
+        $order = json_decode(json_encode($order), true);
+        self::sendAdminPushNotifications($order, $message);
+        self::sendVendorPushNotifications($order, $branchId, $message);
+    }
+
+    private static function sendAdminPushNotifications($order, $message = null)
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -350,11 +400,8 @@ trait RestaurantOrderHelper
 
         $request = new Request();
         $request['slugs'] = $admins;
-        $request['message'] = 'A restaurant order has been received.';
-        $request['data'] = [
-            'type' => 'restaurant_order',
-            'body' => $order,
-        ];
+        $request['message'] = $message ? $message : 'A restaurant order has been received.';
+        $request['data'] = self::preparePushData($order);
 
         $appId = config('one-signal.admin_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
@@ -363,23 +410,32 @@ trait RestaurantOrderHelper
         SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
     }
 
-    public static function sendVendorPushNotifications($order, $branchId)
+    private static function sendVendorPushNotifications($order, $branchId, $message = null)
     {
         $vendors = User::where('restaurant_branch_id', $branchId)->pluck('slug');
 
         $request = new Request();
         $request['slugs'] = $vendors;
-        $request['message'] = 'An order has been received.';
-        $request['data'] = [
-            'type' => 'restaurant_order',
-            'body' => $order,
-        ];
+        $request['message'] = $message ? $message : 'An order has been received.';
+        $request['data'] = self::preparePushData($order);
 
         $appId = config('one-signal.vendor_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
         SendPushNotification::dispatch($uniqueKey, $fields, 'vendor');
+    }
+
+    private static function preparePushData($order)
+    {
+        unset($order['created_by']);
+        unset($order['updated_by']);
+        unset($order['restaurant_order_items']);
+
+        return [
+            'type' => 'restaurant_order',
+            'body' => $order,
+        ];
     }
 
     public static function sendSmsNotifications($branchId, $customerPhoneNumber)
@@ -389,7 +445,7 @@ trait RestaurantOrderHelper
         self::sendCustomerSms($customerPhoneNumber);
     }
 
-    public static function sendAdminSms()
+    private static function sendAdminSms()
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -404,7 +460,7 @@ trait RestaurantOrderHelper
         }
     }
 
-    public static function sendVendorSms($branchId)
+    private static function sendVendorSms($branchId)
     {
         $vendors = RestaurantBranch::where('id', $branchId)->value('notify_numbers');
 
@@ -417,12 +473,20 @@ trait RestaurantOrderHelper
         }
     }
 
-    public static function sendCustomerSms($phoneNumber)
+    private static function sendCustomerSms($phoneNumber)
     {
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+    }
+
+    private static function assignBiker($orderType, $orderSlug)
+    {
+        if ($orderType === 'instant') {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            AssignOrder::dispatch($uniqueKey, $orderSlug, 'restaurant');
+        }
     }
 }

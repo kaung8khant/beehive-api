@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
+use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 
 class RestaurantOrderController extends Controller
 {
-    use  PromocodeHelper, ResponseHelper, StringHelper;
+    use PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     public function index(Request $request)
     {
@@ -66,62 +67,23 @@ class RestaurantOrderController extends Controller
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
-        // validate order
         $validatedData = OrderHelper::validateOrder($request, true);
 
         if (gettype($validatedData) == 'string') {
             return $this->generateResponse($validatedData, 422, true);
         }
 
-        // get Customer Info
         $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
-
-        // append customer data
-        $validatedData['customer_id'] = $this->getCustomerId($validatedData['customer_slug']);
-
-        // validate and prepare variation
+        $validatedData['customer_id'] = $customer->id;
         $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
 
         if ($validatedData['promo_code']) {
-            $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
-            if (!$promocode) {
-                return $this->generateResponse('Promocode not found', 422, true);
-            }
-
-            $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
-            if (!$validUsage) {
-                return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
-            }
-
-            $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
-            if (!$validRule) {
-                return $this->generateResponse('Invalid promocode.', 422, true);
-            }
-
-            $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
-
-            $validatedData['promocode_id'] = $promocode->id;
-            $validatedData['promocode'] = $promocode->code;
-            $validatedData['promocode_amount'] = $promocodeAmount;
+            $validatedData = $this->getPromoData($validatedData, $customer);
         }
 
-        // try catch and rollback if failed.
-        $order = DB::transaction(function () use ($validatedData) {
-            $order = RestaurantOrder::create($validatedData);
-            $orderId = $order->id;
+        $order = $this->restaurantOrderTransaction($validatedData);
 
-            OrderHelper::createOrderStatus($orderId);
-
-            OrderHelper::createOrderContact($orderId, $validatedData['customer_info'], $validatedData['address']);
-            OrderHelper::createOrderItems($orderId, $validatedData['order_items']);
-            return $order;
-        });
-
-        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
-        OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $phoneNumber);
-
-        return $this->generateResponse($order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems'), 201);
+        return $this->generateResponse($order, 201);
     }
 
     public function destroy(RestaurantOrder $restaurantOrder)
@@ -141,6 +103,50 @@ class RestaurantOrderController extends Controller
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
 
+    private function getPromoData($validatedData, $customer)
+    {
+        $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
+        if (!$promocode) {
+            return $this->generateResponse('Promocode not found', 422, true);
+        }
+
+        $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
+        if (!$validUsage) {
+            return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
+        }
+
+        $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
+        if (!$validRule) {
+            return $this->generateResponse('Invalid promocode.', 422, true);
+        }
+
+        $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
+
+        $validatedData['promocode_id'] = $promocode->id;
+        $validatedData['promocode'] = $promocode->code;
+        $validatedData['promocode_amount'] = $promocodeAmount;
+
+        return $validatedData;
+    }
+
+    private function restaurantOrderTransaction($validatedData)
+    {
+        $order = DB::transaction(function () use ($validatedData) {
+            $order = RestaurantOrder::create($validatedData);
+            OrderHelper::createOrderStatus($order->id);
+            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
+            return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
+        });
+
+        $this->assignOrder('restaurant', $order->slug);
+
+        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+        OrderHelper::notifySystem($order, $phoneNumber);
+
+        return $order;
+    }
+
     public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
     {
         if ($restaurantOrder->order_status === 'delivered' || $restaurantOrder->order_status === 'cancelled') {
@@ -148,6 +154,8 @@ class RestaurantOrderController extends Controller
         }
 
         OrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
+        $restaurantOrder['order_status'] = $request->status;
+        OrderHelper::sendPushNotifications($restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);
 
         if ($request->status === 'cancelled') {
             $message = 'Your order has been cancelled.';
@@ -159,10 +167,5 @@ class RestaurantOrderController extends Controller
         }
 
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
-    }
-
-    private function getCustomerId($slug)
-    {
-        return Customer::where('slug', $slug)->first()->id;
     }
 }

@@ -99,7 +99,7 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
                     $standardMenuVariant = [
                         'menu_id' => $menu->id,
                         'slug' => StringHelper::generateUniqueSlug(),
-                        'variant' => json_decode('[{"value":"Standard"}]'),
+                        'variant' => json_decode('[{"name":"default","value":"Standard"}]'),
                         'price' => $row['price'],
                         'tax' => $row['tax'],
                         'discount' => $row['discount'],

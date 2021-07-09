@@ -6,7 +6,6 @@ use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderContact;
-use App\Models\Township;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
@@ -17,9 +16,16 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
+    public function __construct($from, $to)
+    {
+        $this->from = $from;
+        $this->to = $to;
+        ini_set('memory_limit', '256M');
+    }
+
     public function query()
     {
-        return RestaurantOrder::query();
+        return RestaurantOrder::query()->whereBetween('order_date', array($this->from, $this->to));
     }
 
     /**

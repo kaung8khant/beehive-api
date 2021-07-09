@@ -114,9 +114,33 @@ class SmsController extends Controller
         return SmsCampaign::paginate(10);
     }
 
-    public function getLogs()
+    public function getLogs(Request $request)
     {
-        return SmsLog::with('user')->paginate(10);
+        $log = SmsLog::with('user');
+        if ($request->status) {
+            $log = $log->whereIn('status', $request->status);
+        }
+        if ($request->type) {
+            $log = $log->whereIn('type', $request->type);
+        }
+        if ($request->phone_number) {
+            $log = $log->whereIn('phone_number', $request->phone_number);
+        }
+        if ($request->from && $request->to) {
+            $from = Carbon::parse($request->from);
+            $to = Carbon::parse($request->to);
+
+            if ($from->gt($to)) {
+                $temp = $to;
+                $to = $from;
+                $from = $temp;
+            }
+
+            $from = $from->format('Y-m-d 00:00:00');
+            $to = $to->format('Y-m-d 23:59:59');
+            $log = $log->whereBetween('created_at', [$from, $to]);
+        }
+        return $log->paginate(10);
     }
 
     public function getLogsByBatchId($batchId)

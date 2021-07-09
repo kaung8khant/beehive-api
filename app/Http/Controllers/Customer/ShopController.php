@@ -26,24 +26,25 @@ class ShopController extends Controller
             $this->customer = Auth::guard('customers')->user();
         }
     }
+
     public function test($slug)
     {
         $branch = RestaurantOrder::with('restaurantBranch')->where('slug', $slug)->first()->restaurant_branch_info;
         return response()->json($branch['longitude']);
     }
+
     public function index(Request $request)
     {
-        $shop = Shop::with('availableCategories', 'availableTags')
+        $shops = Shop::with('availableCategories', 'availableTags')
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })
             ->where('is_enable', 1)
             ->orderBy('id', 'desc')
-            ->paginate(10)
-            ->items();
+            ->paginate(10);
 
-        return $this->generateResponse($shop, 200);
+        return $this->generateResponse($shops->items(), 200, false, $shops->lastPage());
     }
 
     public function show(Shop $shop)

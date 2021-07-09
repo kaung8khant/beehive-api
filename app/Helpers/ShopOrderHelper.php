@@ -16,7 +16,6 @@ use App\Models\ShopOrderItem;
 use App\Models\ShopOrderStatus;
 use App\Models\ShopOrderVendor;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -81,7 +80,8 @@ trait ShopOrderHelper
 
         foreach ($validatedData['order_items'] as $key => $value) {
             $product = self::validateProductVariations($key, $value);
-            $variations = collect(self::prepareVariations($value['variation_value_slugs']));
+            $variations = self::prepareVariations($value);
+
             $amount = $product->price + $variations->sum('price');
 
             $subTotal += ($amount - $product->discount) * $value['quantity'];
@@ -155,23 +155,27 @@ trait ShopOrderHelper
         }
     }
 
-    private static function prepareVariations($variationValueSlugs)
+    private static function prepareVariations($orderItem)
     {
         $variations = [];
 
-        foreach ($variationValueSlugs as $variationValueSlug) {
-            $variationValue = self::getProductVariationValue($variationValueSlug);
+        if (isset($orderItem['variation_value_slugs'])) {
+            $variationValueSlugs = $orderItem['variation_value_slugs'];
 
-            $variation = [
-                'name' => $variationValue->productVariation->name,
-                'value' => $variationValue->value,
-                'price' => $variationValue->price,
-            ];
+            foreach ($variationValueSlugs as $variationValueSlug) {
+                $variationValue = self::getProductVariationValue($variationValueSlug);
 
-            array_push($variations, $variation);
+                $variation = [
+                    'name' => $variationValue->productVariation->name,
+                    'value' => $variationValue->value,
+                    'price' => $variationValue->price,
+                ];
+
+                array_push($variations, $variation);
+            }
         }
 
-        return $variations;
+        return collect($variations);
     }
 
     private static function createShopOrderVendor($orderId, $shopId)
@@ -289,13 +293,20 @@ trait ShopOrderHelper
         return $validatedData;
     }
 
+    public static function notifySystem($order, $orderItems, $phoneNumber)
+    {
+        self::sendPushNotifications($order, $orderItems);
+        self::sendSmsNotifications($orderItems, $phoneNumber);
+    }
+
     public static function sendPushNotifications($order, $orderItems)
     {
+        $order = json_decode(json_encode($order), true);
         self::sendAdminPushNotifications($order);
         self::sendVendorPushNotifications($order, $orderItems);
     }
 
-    public static function sendAdminPushNotifications($order)
+    private static function sendAdminPushNotifications($order)
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -304,10 +315,7 @@ trait ShopOrderHelper
         $request = new Request();
         $request['slugs'] = $admins;
         $request['message'] = 'A shop order has been received.';
-        $request['data'] = [
-            'type' => 'shop_order',
-            'body' => $order,
-        ];
+        $request['data'] = self::preparePushData($order);
 
         $appId = config('one-signal.admin_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
@@ -316,7 +324,7 @@ trait ShopOrderHelper
         SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
     }
 
-    public static function sendVendorPushNotifications($order, $orderItems)
+    private static function sendVendorPushNotifications($order, $orderItems)
     {
         $shopIds = array_map(function ($item) {
             return Product::where('slug', $item['slug'])->value('shop_id');
@@ -328,16 +336,32 @@ trait ShopOrderHelper
         $request = new Request();
         $request['slugs'] = $vendors;
         $request['message'] = 'An order has been received.';
-        $request['data'] = [
-            'type' => 'shop_order',
-            'body' => $order,
-        ];
+        $request['data'] = self::preparePushData($order);
 
         $appId = config('one-signal.vendor_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
         SendPushNotification::dispatch($uniqueKey, $fields, 'vendor');
+    }
+
+    private static function preparePushData($order)
+    {
+        return [
+            'type' => 'shop_order',
+            'body' => [
+                'invoice_id' => $order['invoice_id'],
+                'total_amount' => $order['total_amount'],
+                'order_date' => $order['order_date'],
+                'customer_name' => $order['contact']['customer_name'],
+                'phone_number' => $order['contact']['phone_number'],
+                'house_number' => $order['contact']['house_number'],
+                'floor' => $order['contact']['floor'],
+                'street_name' => $order['contact']['street_name'],
+                'latitude' => $order['contact']['latitude'],
+                'longitude' => $order['contact']['longitude'],
+            ],
+        ];
     }
 
     public static function sendSmsNotifications($orderItems, $customerPhoneNumber)
@@ -347,7 +371,7 @@ trait ShopOrderHelper
         self::sendCustomerSms($customerPhoneNumber);
     }
 
-    public static function sendAdminSms()
+    private static function sendAdminSms()
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -362,7 +386,7 @@ trait ShopOrderHelper
         }
     }
 
-    public static function sendVendorSms($orderItems)
+    private static function sendVendorSms($orderItems)
     {
         $vendors = collect($orderItems)->map(function ($item) {
             $shopId = Product::where('slug', $item['slug'])->value('shop_id');
@@ -378,7 +402,7 @@ trait ShopOrderHelper
         }
     }
 
-    public static function sendCustomerSms($phoneNumber)
+    private static function sendCustomerSms($phoneNumber)
     {
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
