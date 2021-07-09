@@ -146,6 +146,7 @@ class RestaurantOrderController extends Controller
             OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
+        $this->assignOrder('restaurant', $order->slug);
 
         OrderHelper::notifySystem($order, $this->customer->phone_number);
 
