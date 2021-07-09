@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Driver;
 
 use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
+use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\DriverAttendance;
@@ -19,7 +20,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class DriverController extends Controller
 {
-    use FileHelper, StringHelper;
+    use ResponseHelper, FileHelper, StringHelper;
 
     public function index(Request $request)
     {
@@ -43,46 +44,41 @@ class DriverController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $request->validate(
-            [
-                'slug' => 'required|unique:users',
-                'username' => 'required|unique:users',
-                'name' => 'required|string',
-                'phone_number' => 'required|phone:MM|unique:users',
-                'password' => 'required|min:6',
-                'image_slug' => 'nullable|exists:App\Models\File,slug',
-            ],
-            [
-                'phone_number.phone' => 'Invalid phone number.',
-            ]
-        );
+        $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
+        $driver = User::where('phone_number', $phoneNumber)->first();
+        $driverRoleId = Role::where('name', 'Driver')->value('id');
 
-        $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-
-        $checkPhone = User::where('phone_number', $validatedData['phone_number'])->first();
-
-        if ($checkPhone) {
-            return [
-                'message' => 'The given data was invalid.',
-                'errors' => [
-                    'phone_number' => [
-                        'The phone number has already been taken.',
-                    ],
+        if ($driver) {
+            if ($driver->roles->contains('name', 'Driver')) {
+                return $this->generateResponse('The phone number has already been taken.', 422, true);
+            } else {
+                $driver->roles()->attach($driverRoleId);
+            }
+        } else {
+            $validatedData = $request->validate(
+                [
+                    'slug' => 'required|unique:users',
+                    'username' => 'required|unique:users',
+                    'name' => 'required|string',
+                    'phone_number' => 'required|phone:MM|unique:users',
+                    'password' => 'required|min:6',
+                    'image_slug' => 'nullable|exists:App\Models\File,slug',
                 ],
-            ];
+                [
+                    'phone_number.phone' => 'Invalid phone number.',
+                ]
+            );
+
+            $validatedData['phone_number'] = $phoneNumber;
+            $validatedData['password'] = Hash::make($validatedData['password']);
+            $driver = User::create($validatedData);
+            $driver->roles()->attach($driverRoleId);
         }
-
-        $validatedData['password'] = Hash::make($validatedData['password']);
-        $validatedData['created_by'] = Auth::guard('users')->user()->id;
-
-        $driver = User::create($validatedData);
-
-        $driverRoleId = Role::where('name', 'Driver')->first()->id;
-        $driver->roles()->attach($driverRoleId);
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'users', $driver->slug);
         }
+
         return response()->json($driver->refresh()->load('roles'), 201);
     }
 
@@ -91,10 +87,8 @@ class DriverController extends Controller
         return User::with('roles')->where('slug', $slug)->firstOrFail();
     }
 
-    public function update(Request $request, $slug)
+    public function update(Request $request, User $driver)
     {
-        $driver = User::where('slug', $slug)->firstOrFail();
-
         $validatedData = $request->validate(
             [
                 'username' => [
@@ -118,25 +112,20 @@ class DriverController extends Controller
         $checkPhone = User::where('phone_number', $validatedData['phone_number'])->where('id', '<>', $driver->id)->first();
 
         if ($checkPhone) {
-            return [
-                'message' => 'The given data was invalid.',
-                'errors' => [
-                    'phone_number' => [
-                        'The phone number has already been taken.',
-                    ],
-                ],
-            ];
+            return $this->generateResponse('The phone number has already been taken.', 422, true);
         }
 
         $driver->update($validatedData);
 
-        $driverRoleId = Role::where('name', 'Driver')->first()->id;
-        $driver->roles()->detach();
-        $driver->roles()->attach($driverRoleId);
+        if (!$driver->roles->contains('name', 'Driver')) {
+            $driverRoleId = Role::where('name', 'Driver')->value('id');
+            $driver->roles()->attach($driverRoleId);
+        }
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'users', $driver->slug);
         }
+
         return response()->json($driver->refresh()->load('roles'), 200);
     }
 
