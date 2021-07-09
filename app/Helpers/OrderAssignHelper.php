@@ -56,25 +56,26 @@ trait OrderAssignHelper
 
         foreach ($restaurant_orders as $order) {
             $reOrder = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $order->id)->get();
+            if ($reOrder[0]->created_at > Carbon::now()->subSecond(58)) {
+                $assignedDriver = User::where('id', $order->user_id)->first()->slug;
+                $resSlug = RestaurantOrder::where('id', $order->id)->first()->slug;
+                $driverList = self::getdriver($resSlug);
 
-            $assignedDriver = User::where('id', $order->user_id)->first()->slug;
-            $resSlug = RestaurantOrder::where('id', $order->id)->first()->slug;
-            $driverList = self::getdriver($resSlug);
+                unset($driverList[$assignedDriver]);
 
-            unset($driverList[$assignedDriver]);
+                $driverSlug = self::checkdriver($driverList);
 
-            $driverSlug = self::checkdriver($driverList);
+                $resOrderDriver = RestaurantOrderDriver::where('user_id', $order->user_id)->where('restaurant_order_id', $order->restaurant_order_id)->first();
 
-            $resOrderDriver = RestaurantOrderDriver::where('user_id', $order->user_id)->where('restaurant_order_id', $order->restaurant_order_id)->first();
+                RestaurantOrderDriverStatus::create([
+                    'restaurant_order_driver_id' => $resOrderDriver->id,
+                    'status' => 'no-response',
+                ]);
 
-            RestaurantOrderDriverStatus::create([
-                'restaurant_order_driver_id' => $resOrderDriver->id,
-                'status' => 'no-response',
-            ]);
-
-            $restaurantOrder = RestaurantOrder::where('id', $order->restaurant_order_id)->first();
-            // if (count($reOrder) < 4) {
-            self::assignAndAlert($driverSlug, $restaurantOrder);
+                $restaurantOrder = RestaurantOrder::where('id', $order->restaurant_order_id)->first();
+                // if (count($reOrder) < 4) {
+                self::assignAndAlert($driverSlug, $restaurantOrder);
+            }
             // Changing order status to cancelled if more than 4 drivers do not accept
 
             // } else {
@@ -186,7 +187,7 @@ trait OrderAssignHelper
 
         $lonDelta = $lonTo - $lonFrom;
         $a = pow(cos($latTo) * sin($lonDelta), 2) +
-        pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
+            pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
         $b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
 
         $angle = atan2(sqrt($a), $b);

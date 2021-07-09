@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
-use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper as OrderHelper;
@@ -22,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use  PromocodeHelper, ResponseHelper, StringHelper;
 
     public function index(Request $request)
     {

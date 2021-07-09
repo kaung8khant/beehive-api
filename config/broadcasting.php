@@ -27,8 +27,6 @@ return [
     | each available type of connection are provided inside this array.
     |
      */
-    'firebase' =>
-    env('FIREBASE_SERVER_KEY'),
 
     'connections' => [
 

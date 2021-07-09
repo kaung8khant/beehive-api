@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\DB;
 
 class RestaurantOrderController extends Controller
 {
-    use PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
+    use  PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     public function index(Request $request)
     {
@@ -127,6 +127,8 @@ class RestaurantOrderController extends Controller
             OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
+
+        $this->assignOrder('restaurant', $order->slug);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
         OrderHelper::notifySystem($order, $phoneNumber);

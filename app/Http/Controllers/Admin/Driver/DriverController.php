@@ -176,7 +176,6 @@ class DriverController extends Controller
             return response()->json(['message' => 'Success.'], 200);
         }
         return response()->json(['message' => 'Already ' . $request->type], 409);
-
     }
 
     public function getCheckin()
@@ -185,5 +184,11 @@ class DriverController extends Controller
         $data = DriverAttendance::where('user_id', $user_id)->get();
 
         return response()->json(['data' => $data], 200);
+    }
+
+    public function profile()
+    {
+        $profile = Auth::guard('users')->user();
+        return response()->json(Auth::guard('users')->user());
     }
 }

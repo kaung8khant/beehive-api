@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin\v3;
 
 use App\Helpers\CollectionHelper;
-use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper as OrderHelper;
@@ -24,7 +23,7 @@ use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use  PromocodeHelper, ResponseHelper, StringHelper;
 
     public function index(Request $request)
     {
@@ -161,22 +160,6 @@ class ShopOrderController extends Controller
         }
 
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
-    }
-
-    private function notificationData($data)
-    {
-        return [
-            'title' => $data['title'],
-            'body' => $data['body'],
-            'img' => '',
-            'data' => [
-                'action' => 'update',
-                'type' => 'shopOrder',
-                'status' => $data['status'],
-                'slug' => $data['slug'],
-
-            ],
-        ];
     }
 
     public function getVendorOrders(Request $request, Shop $shop)
