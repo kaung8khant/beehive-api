@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
-use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper as OrderHelper;
@@ -22,7 +21,7 @@ use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use  PromocodeHelper, ResponseHelper, StringHelper;
 
     public function index(Request $request)
     {
@@ -133,22 +132,6 @@ class ShopOrderController extends Controller
             return $order;
         });
 
-        $this->notifyAdmin(
-            [
-                'title' => "New Order",
-                'body' => "New Order has been received. Check now!",
-                'data' => [
-                    'action' => 'create',
-                    'type' => 'shopOrder',
-                    'status' => 'pending',
-                    'shopOrder' => ShopOrder::with('contact')
-                        ->with('vendors')
-                        ->where('slug', $order->slug)
-                        ->firstOrFail(),
-                ],
-            ]
-        );
-
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
         OrderHelper::sendPushNotifications($order, $validatedData['order_items']);
         OrderHelper::sendSmsNotifications($validatedData['order_items'], $phoneNumber);
@@ -163,24 +146,6 @@ class ShopOrderController extends Controller
         }
 
         OrderHelper::createOrderStatus($shopOrder->id, $request->status);
-
-        $notificaitonData = $this->notificationData([
-            'title' => 'Shop order updated',
-            'body' => 'Shop order just has been updated',
-            'status' => $request->status,
-            'slug' => $shopOrder->slug,
-        ]);
-
-        $this->notifyAdmin(
-            $notificaitonData
-        );
-
-        foreach ($shopOrder->vendors as $vendor) {
-            $this->notifyShop(
-                $vendor->shop->slug,
-                $notificaitonData
-            );
-        }
 
         if ($request->status === 'cancelled') {
             $message = 'Your order has been cancelled.';
@@ -199,40 +164,8 @@ class ShopOrderController extends Controller
         return Customer::where('slug', $slug)->first()->id;
     }
 
-    private function notificationData($data)
-    {
-        return [
-            'title' => $data['title'],
-            'body' => $data['body'],
-            'img' => '',
-            'data' => [
-                'action' => 'update',
-                'type' => 'shopOrder',
-                'status' => $data['status'],
-                'slug' => $data['slug'],
-
-            ],
-        ];
-    }
-
     private function getShop($slug)
     {
         return Shop::where('slug', $slug)->firstOrFail();
-    }
-
-    private function notify($slug, $data)
-    {
-        $this->notifyShop(
-            $slug,
-            [
-                'title' => $data['title'],
-                'body' => $data['body'],
-                'img' => '',
-                'data' => [
-                    'action' => '',
-                    'type' => 'notification',
-                ],
-            ]
-        );
     }
 }

@@ -8,8 +8,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Ads;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\RestaurantOrderDriverStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class HomeController extends Controller
@@ -22,6 +24,16 @@ class HomeController extends Controller
     {
         if (Auth::guard('customers')->check()) {
             $this->customer = Auth::guard('customers')->user();
+        }
+    }
+    public function test()
+    {
+        $restaurant_orders = DB::select('Select od.id,od.restaurant_order_id,od.user_id,ods.status from (SELECT sod1.* FROM restaurant_order_drivers sod1
+        JOIN (SELECT restaurant_order_id, MAX(created_at) created_at FROM restaurant_order_drivers GROUP BY restaurant_order_id) sod2
+            ON sod1.restaurant_order_id = sod2.restaurant_order_id AND sod1.created_at = sod2.created_at) od left join restaurant_order_driver_statuses ods on od.id=ods.restaurant_order_driver_id where ods.status="pending"');
+        foreach ($restaurant_orders as $order) {
+            $reOrder = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $order->id)->get();
+            return response()->json(["res" => $reOrder, "order" => $order]);
         }
     }
 

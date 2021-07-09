@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
-use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
@@ -20,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use  PromocodeHelper, ResponseHelper, StringHelper;
 
     public function index(Request $request)
     {
@@ -118,18 +117,6 @@ class RestaurantOrderController extends Controller
             return $order;
         });
 
-        $this->notify([
-            'title' => 'Restaurant order updated',
-            'body' => 'Restaurant order just has been updated',
-            'status' => $request->status,
-            'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
-                ->with('RestaurantOrderItems')
-                ->where('slug', $order->slug)
-                ->firstOrFail(),
-            'action' => 'create',
-            'slug' => $order->slug,
-        ]);
-
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
         OrderHelper::sendPushNotifications($order, $validatedData['restaurant_branch_id']);
         OrderHelper::sendSmsNotifications($validatedData['restaurant_branch_id'], $phoneNumber);
@@ -162,14 +149,6 @@ class RestaurantOrderController extends Controller
 
         OrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
 
-        $this->notify([
-            'title' => 'Restaurant order updated',
-            'body' => 'Restaurant order just has been updated',
-            'status' => $request->status,
-            'slug' => $restaurantOrder->slug,
-            'action' => 'update',
-        ]);
-
         if ($request->status === 'cancelled') {
             $message = 'Your order has been cancelled.';
             $smsData = SmsHelper::prepareSmsData($message);
@@ -185,36 +164,5 @@ class RestaurantOrderController extends Controller
     private function getCustomerId($slug)
     {
         return Customer::where('slug', $slug)->first()->id;
-    }
-
-    private function notify($data)
-    {
-        $this->notifyAdmin(
-            [
-                'title' => $data['title'],
-                'body' => $data['body'],
-                'data' => [
-                    'action' => $data['action'],
-                    'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
-                ],
-            ]
-        );
-        $this->notifyRestaurant(
-            $data['slug'],
-            [
-                'title' => $data['title'],
-                'body' => $data['body'],
-                'data' => [
-                    'action' => $data['action'],
-                    'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
-                ],
-            ]
-        );
     }
 }

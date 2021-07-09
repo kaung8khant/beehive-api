@@ -10,6 +10,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
         Route::post('reset-password', 'Auth\UserAuthController@resetPassword');
 
         Route::middleware(['auth:users', 'user.enable'])->group(function () {
+
             Route::get('profile', 'Auth\UserAuthController@getProfile');
             Route::put('profile/update', 'Auth\UserAuthController@updateProfile');
             Route::patch('password/update', 'Auth\UserAuthController@updatePassword');
@@ -180,12 +181,18 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::post('devices/send/admins', 'OneSignal\OneSignalController@sendAdmins');
             Route::post('devices/send/vendors', 'OneSignal\OneSignalController@sendVendors');
 
+            /* Driver */
+
+            Route::get('profile/driver', 'Admin\Driver\DriverController@profile');
+
             Route::get('jobs', 'Admin\Driver\OrderDriverController@jobList');
             Route::post('jobs/{restaurantOrder}/status', 'Admin\Driver\OrderDriverController@changeStatus');
             Route::get('jobs/{restaurantOrder}', 'Admin\Driver\OrderDriverController@jobDetail');
 
             Route::post('attendances', 'Admin\Driver\DriverController@attendance');
             Route::get('attendances', 'Admin\Driver\DriverController@getCheckin');
+
+            /* End Driver */
 
             Route::get('shop-commissions', 'Admin\CommissionController@getShopOrderCommissions');
             Route::get('shops/{shop}/commissions', 'Admin\CommissionController@getOneShopOrderCommissions');

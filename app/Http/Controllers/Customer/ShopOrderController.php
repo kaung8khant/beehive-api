@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Helpers\KbzPayHelper;
-use App\Helpers\NotificationHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper as OrderHelper;
@@ -20,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper;
+    use  PromocodeHelper, ResponseHelper, StringHelper;
 
     protected $customer;
 
@@ -168,69 +167,6 @@ class ShopOrderController extends Controller
             return $order;
         });
 
-        $this->notifySystem($validatedData['order_items'], $order->slug);
-
         return $order->refresh()->load('contact');
-    }
-
-    private function notifySystem($orderItems, $slug)
-    {
-        foreach ($orderItems as $item) {
-            $this->notify(
-                OrderHelper::getShopByProduct($item['slug'])->slug,
-                [
-                    'title' => 'New Order',
-                    'body' => "You've just recevied new order. Check now!",
-                    'action' => 'create',
-                    'status' => 'pending',
-                    'shopOrder' => [
-                        'slug' => OrderHelper::getShopByProduct($item['slug'])->slug,
-                        'order_status' => 'pending',
-                        'total_amount' => ShopOrder::with('contact')
-                            ->with('vendors')
-                            ->where('slug', $slug)
-                            ->firstOrFail()->total_amount,
-                        'shop_order' => ShopOrder::with('contact')
-                            ->with('vendors')
-                            ->where('slug', $slug)
-                            ->firstOrFail(),
-                    ],
-                ]
-            );
-        }
-
-        $this->notifyAdmin(
-            [
-                'title' => 'New Order',
-                'body' => 'New Order has been received. Check now!',
-                'data' => [
-                    'action' => 'create',
-                    'type' => 'shopOrder',
-                    'status' => 'pending',
-                    'shopOrder' => ShopOrder::with('contact')
-                        ->with('vendors')
-                        ->where('slug', $slug)
-                        ->firstOrFail(),
-                ],
-            ]
-        );
-    }
-
-    private function notify($slug, $data)
-    {
-        $this->notifyShop(
-            $slug,
-            [
-                'title' => $data['title'],
-                'body' => $data['body'],
-                'data' => [
-                    'action' => $data['action'],
-                    'type' => 'shopOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : '',
-                    'shopOrder' => !empty($data['shopOrder']) ? $data['shopOrder'] : '',
-                    'slug' => !empty($data['slug']) ? $data['slug'] : '',
-                ],
-            ]
-        );
     }
 }

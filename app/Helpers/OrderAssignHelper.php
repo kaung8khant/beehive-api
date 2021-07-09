@@ -169,9 +169,6 @@ trait OrderAssignHelper
             array_multisort(array_column($driverlist, 'distance'), SORT_ASC, $driverlist);
         }
 
-
-
-
         return $driverlist;
     }
 

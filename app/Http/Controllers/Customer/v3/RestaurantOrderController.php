@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Customer\v3;
 
 use App\Helpers\KbzPayHelper;
-use App\Helpers\NotificationHelper;
 use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -21,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 
 class RestaurantOrderController extends Controller
 {
-    use NotificationHelper, PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
+    use PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     protected $customer;
 
@@ -166,56 +165,6 @@ class RestaurantOrderController extends Controller
             return $order;
         });
 
-        $this->notifySystem($validatedData['restaurant_branch_slug'], $order->slug);
-
         return $order->refresh();
-    }
-
-    private function notifySystem($branchSlug, $slug)
-    {
-        $this->notify(
-            $branchSlug,
-            [
-                'title' => 'New Order',
-                'body' => "You've just recevied new order. Check now!",
-                'type' => 'create',
-                'restaurantOrder' => RestaurantOrder::with('RestaurantOrderContact')
-                    ->with('RestaurantOrderItems')
-                    ->where('slug', $slug)
-                    ->firstOrFail(),
-            ]
-        );
-    }
-
-    private function notify($slug, $data)
-    {
-        $this->notifyRestaurant(
-            $slug,
-            [
-                'title' => $data['title'] . 'client',
-                'body' => $data['body'],
-                'data' => [
-                    'action' => $data['type'],
-                    'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
-                ],
-            ]
-        );
-
-        $this->notifyAdmin(
-            [
-                'title' => $data['title'] . 'client',
-                'body' => $data['body'],
-                'data' => [
-                    'action' => $data['type'],
-                    'type' => 'restaurantOrder',
-                    'status' => !empty($data['status']) ? $data['status'] : "",
-                    'restaurantOrder' => !empty($data['restaurantOrder']) ? $data['restaurantOrder'] : "",
-                    'slug' => !empty($data['slug']) ? $data['slug'] : "",
-                ],
-            ]
-        );
     }
 }
