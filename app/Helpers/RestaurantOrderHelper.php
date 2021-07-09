@@ -72,7 +72,7 @@ trait RestaurantOrderHelper
 
         if ($validatedData['order_type'] === 'instant') {
             $validatedData['order_date'] = Carbon::now();
-        } elseif ($validatedData['order_type'] === 'schedule') {
+        } else {
             $validatedData['order_date'] = $request->order_date;
         }
 
@@ -277,10 +277,10 @@ trait RestaurantOrderHelper
         $validatedData = $validator->validated();
         $validatedData['order_type'] = $request->order_type ? $request->order_type : 'instant';
 
-        if ($validatedData['order_type'] === 'schedule') {
-            $validatedData['order_date'] = $request->order_date;
-        } else {
+        if ($validatedData['order_type'] === 'instant') {
             $validatedData['order_date'] = Carbon::now();
+        } else {
+            $validatedData['order_date'] = $request->order_date;
         }
 
         if (Auth::guard('customers')->check()) {

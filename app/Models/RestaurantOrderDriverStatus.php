@@ -13,8 +13,7 @@ class RestaurantOrderDriverStatus extends Model
 
     protected $hidden = [
         'id',
-        'shop_order_driver_id',
-        'status',
+        'shop_order_driver_id'
     ];
 
     public function shopOrderDriver()

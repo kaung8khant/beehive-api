@@ -126,7 +126,7 @@ class UserAuthController extends Controller
 
         if (Hash::check($request->old_password, $user->password)) {
             $user->update(['password' => Hash::make($request->new_password)]);
-            return $this->generateResponse('Your password has been successfully updated.', 200, true);
+            return $this->generateResponse(['token' => Auth::guard('users')->refresh()], 200);
         }
 
         return $this->generateResponse('Your old password is incorrect.', 403, true);

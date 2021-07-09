@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
-use App\Helpers\OneSignalHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
@@ -13,14 +12,11 @@ use App\Models\RestaurantBranch;
 use App\Models\Role;
 use App\Models\Shop;
 use App\Models\User;
-use App\Models\UserDevice;
 use App\Models\UserSession;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use Ladumor\OneSignal\OneSignal;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserController extends Controller
