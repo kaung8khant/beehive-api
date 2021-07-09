@@ -27,6 +27,18 @@ class HomeController extends Controller
             $this->customer = Auth::guard('customers')->user();
         }
     }
+    public function test()
+    {
+        $restaurant_orders = DB::select('Select od.id,od.restaurant_order_id,od.user_id,ods.status from (SELECT sod1.* FROM restaurant_order_drivers sod1
+        JOIN (SELECT restaurant_order_id, MAX(created_at) created_at FROM restaurant_order_drivers GROUP BY restaurant_order_id) sod2
+            ON sod1.restaurant_order_id = sod2.restaurant_order_id AND sod1.created_at = sod2.created_at) od left join restaurant_order_driver_statuses ods on od.id=ods.restaurant_order_driver_id where ods.status="pending"');
+        $orderDriverStatus = [];
+        foreach ($restaurant_orders as $order) {
+            $reOrder = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $order->id)->get();
+            array_push($orderDriverStatus, $reOrder);
+        }
+        return response()->json(['all_pending' => $restaurant_orders, "res_order_driver_status" => $orderDriverStatus]);
+    }
 
     public function getSuggestions(Request $request)
     {
