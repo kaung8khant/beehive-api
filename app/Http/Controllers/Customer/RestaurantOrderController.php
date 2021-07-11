@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Exceptions\ForbiddenException;
 use App\Helpers\KbzPayHelper;
 use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
@@ -65,7 +66,11 @@ class RestaurantOrderController extends Controller
             return $this->generateResponse($validatedData, 422, true);
         }
 
-        OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
+        try {
+            OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
+        } catch (ForbiddenException $e) {
+            return $this->generateResponse($e->getMessage(), 403, true);
+        }
 
         $validatedData['customer_id'] = $this->customer->id;
         $validatedData['order_date'] = Carbon::now();
