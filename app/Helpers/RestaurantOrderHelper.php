@@ -88,7 +88,7 @@ trait RestaurantOrderHelper
         $now = Carbon::now();
 
         if ($now->lt($openingTime) || $now->gt($closingTime)) {
-            throw new ForbiddenException("Ordering is not available yet at this hour, Please place your order @ {$openingTime->format('H:i')} am - {$closingTime->format('h:i')} pm. Thank you for shopping with Beehive.", 403);
+            throw new ForbiddenException("Ordering is not available yet at this hour, Please place your order @ {$openingTime->format('H:i')} am - {$closingTime->format('h:i')} pm. Thank you for shopping with Beehive.");
         }
     }
 
