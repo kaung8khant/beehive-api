@@ -42,6 +42,7 @@ trait OrderAssignHelper
                 return $key;
             }
         }
+        return null;
     }
 
     public static function assignOrderToOther()
@@ -52,29 +53,36 @@ trait OrderAssignHelper
          */
         $restaurant_orders = DB::select('Select od.id,od.restaurant_order_id,od.user_id,ods.status from (SELECT sod1.* FROM restaurant_order_drivers sod1
         JOIN (SELECT restaurant_order_id, MAX(created_at) created_at FROM restaurant_order_drivers GROUP BY restaurant_order_id) sod2
-            ON sod1.restaurant_order_id = sod2.restaurant_order_id AND sod1.created_at = sod2.created_at) od left join restaurant_order_driver_statuses ods on od.id=ods.restaurant_order_driver_id where ods.status="pending"');
+            ON sod1.restaurant_order_id = sod2.restaurant_order_id AND sod1.created_at = sod2.created_at) od left join restaurant_order_driver_statuses ods on od.id=ods.restaurant_order_driver_id where ods.status="pending" or ods.status="no_response"');
 
         foreach ($restaurant_orders as $order) {
             $reOrder = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $order->id)->get();
             if ($reOrder[0]->created_at > Carbon::now()->subSecond(58)) {
-                $assignedDriver = User::where('id', $order->user_id)->first()->slug;
+
+                $resOrderDriver = RestaurantOrderDriver::with('driver')->where('restaurant_order_id', $order->restaurant_order_id)->get()->pluck('driver.slug');
+
                 $resSlug = RestaurantOrder::where('id', $order->id)->first()->slug;
                 $driverList = self::getdriver($resSlug);
 
-                unset($driverList[$assignedDriver]);
+                /* remove assigned drivers */
+                foreach ($resOrderDriver as $key => $driver) {
+                    unset($driverList[$driver]);
+                }
+
 
                 $driverSlug = self::checkdriver($driverList);
+                if ($driverSlug) {
+                    $resOrderDriver = RestaurantOrderDriver::where('user_id', $order->user_id)->where('restaurant_order_id', $order->restaurant_order_id)->first();
 
-                $resOrderDriver = RestaurantOrderDriver::where('user_id', $order->user_id)->where('restaurant_order_id', $order->restaurant_order_id)->first();
+                    RestaurantOrderDriverStatus::create([
+                        'restaurant_order_driver_id' => $resOrderDriver->id,
+                        'status' => 'no-response',
+                    ]);
 
-                RestaurantOrderDriverStatus::create([
-                    'restaurant_order_driver_id' => $resOrderDriver->id,
-                    'status' => 'no-response',
-                ]);
-
-                $restaurantOrder = RestaurantOrder::where('id', $order->restaurant_order_id)->first();
-                // if (count($reOrder) < 4) {
-                self::assignAndAlert($driverSlug, $restaurantOrder);
+                    $restaurantOrder = RestaurantOrder::where('id', $order->restaurant_order_id)->first();
+                    // if (count($reOrder) < 4) {
+                    self::assignAndAlert($driverSlug, $restaurantOrder);
+                }
             }
             // Changing order status to cancelled if more than 4 drivers do not accept
 
