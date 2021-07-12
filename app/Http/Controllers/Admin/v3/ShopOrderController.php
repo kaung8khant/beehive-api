@@ -11,6 +11,7 @@ use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Customer;
+use App\Models\Product;
 use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
@@ -142,9 +143,17 @@ class ShopOrderController extends Controller
         }
 
         OrderHelper::createOrderStatus($shopOrder->id, $request->status);
+
+        $orderItems = $shopOrder->vendors->map(function ($vendor) {
+            return $vendor->items;
+        })->collapse()->values()->map(function ($item) {
+            unset($item->shop);
+            $item->slug = Product::where('id', $item->id)->value('slug');
+            return $item;
+        })->toArray();
+
         $shopOrder['order_status'] = $request->status;
-        // NOTE:: check this
-        OrderHelper::sendPushNotifications($shopOrder, $shopOrder->order_items, 'Order Number:' . $shopOrder->invoice_id . ', is now ' . $request->status);
+        OrderHelper::sendPushNotifications($shopOrder, $orderItems, 'Order Number:' . $shopOrder->invoice_id . ', is now ' . $request->status);
 
         if ($request->status === 'cancelled') {
             $message = 'Your order has successfully been ' . $request->status . '.';
