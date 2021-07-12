@@ -22,7 +22,7 @@ class RestaurantOrderDriver extends Model
 
     public function driver()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function status()

@@ -143,13 +143,9 @@ class ShopOrderController extends Controller
         }
 
         OrderHelper::createOrderStatus($shopOrder->id, $request->status);
-
-        $notificaitonData = $this->notificationData([
-            'title' => 'Shop order updated',
-            'body' => 'Shop order just has been updated',
-            'status' => $request->status,
-            'slug' => $shopOrder->slug,
-        ]);
+        $shopOrder['order_status'] = $request->status;
+        // NOTE:: check this
+        OrderHelper::sendPushNotifications($shopOrder, $shopOrder->order_items, 'Order Number:' . $shopOrder->invoice_id . ', is now ' . $request->status);
 
         if ($request->status === 'cancelled') {
             $message = 'Your order has successfully been ' . $request->status . '.';

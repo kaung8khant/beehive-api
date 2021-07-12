@@ -46,8 +46,8 @@ trait RestaurantOrderHelper
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer|min:0|max:50',
             'address.street_name' => 'nullable|string',
-            'address.latitude' => 'nullable|numeric',
-            'address.longitude' => 'nullable|numeric',
+            'address.latitude' => 'required|numeric',
+            'address.longitude' => 'required|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -72,7 +72,7 @@ trait RestaurantOrderHelper
 
         if ($validatedData['order_type'] === 'instant') {
             $validatedData['order_date'] = Carbon::now();
-        } elseif ($validatedData['order_type'] === 'schedule') {
+        } else {
             $validatedData['order_date'] = $request->order_date;
         }
 
@@ -88,7 +88,7 @@ trait RestaurantOrderHelper
         $now = Carbon::now();
 
         if ($now->lt($openingTime) || $now->gt($closingTime)) {
-            throw new ForbiddenException("Ordering is not available yet at this hour, Please place your order @ {$openingTime->format('H:i')} am - {$closingTime->format('h:i')} pm. Thank you for shopping with Beehive.", 403);
+            throw new ForbiddenException("Ordering is not available yet at this hour, Please place your order @ {$openingTime->format('H:i')} am - {$closingTime->format('h:i')} pm. Thank you for shopping with Beehive.");
         }
     }
 
@@ -277,10 +277,10 @@ trait RestaurantOrderHelper
         $validatedData = $validator->validated();
         $validatedData['order_type'] = $request->order_type ? $request->order_type : 'instant';
 
-        if ($validatedData['order_type'] === 'schedule') {
-            $validatedData['order_date'] = $request->order_date;
-        } else {
+        if ($validatedData['order_type'] === 'instant') {
             $validatedData['order_date'] = Carbon::now();
+        } else {
+            $validatedData['order_date'] = $request->order_date;
         }
 
         if (Auth::guard('customers')->check()) {
@@ -312,8 +312,8 @@ trait RestaurantOrderHelper
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer|min:0|max:50',
             'address.street_name' => 'nullable|string',
-            'address.latitude' => 'nullable|numeric',
-            'address.longitude' => 'nullable|numeric',
+            'address.latitude' => 'required|numeric',
+            'address.longitude' => 'required|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',

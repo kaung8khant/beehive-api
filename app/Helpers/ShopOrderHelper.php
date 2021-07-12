@@ -37,8 +37,8 @@ trait ShopOrderHelper
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer|min:0|max:50',
             'address.street_name' => 'nullable|string',
-            'address.latitude' => 'nullable|numeric',
-            'address.longitude' => 'nullable|numeric',
+            'address.latitude' => 'required|numeric',
+            'address.longitude' => 'required|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -79,7 +79,7 @@ trait ShopOrderHelper
         $tax = 0;
 
         foreach ($validatedData['order_items'] as $key => $value) {
-            $product = self::validateProductVariations($key, $value);
+            $product = self::getProduct($value['slug']);
             $variations = self::prepareVariations($value);
 
             $amount = $product->price + $variations->sum('price');
@@ -206,7 +206,10 @@ trait ShopOrderHelper
 
     private static function getProduct($slug)
     {
-        return Product::where('slug', $slug)->first();
+        return Product::where('slug', $slug)
+            ->with('productVariations')
+            ->with('productVariations.productVariationValues')
+            ->first();
     }
 
     public static function getShopByProduct($slug)
@@ -231,8 +234,8 @@ trait ShopOrderHelper
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer|min:0|max:50',
             'address.street_name' => 'nullable|string',
-            'address.latitude' => 'nullable|numeric',
-            'address.longitude' => 'nullable|numeric',
+            'address.latitude' => 'required|numeric',
+            'address.longitude' => 'required|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -299,14 +302,14 @@ trait ShopOrderHelper
         self::sendSmsNotifications($orderItems, $phoneNumber);
     }
 
-    public static function sendPushNotifications($order, $orderItems)
+    public static function sendPushNotifications($order, $orderItems, $message = null)
     {
         $order = json_decode(json_encode($order), true);
-        self::sendAdminPushNotifications($order);
-        self::sendVendorPushNotifications($order, $orderItems);
+        self::sendAdminPushNotifications($order, $message);
+        self::sendVendorPushNotifications($order, $orderItems, $message);
     }
 
-    private static function sendAdminPushNotifications($order)
+    private static function sendAdminPushNotifications($order, $message = null)
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
@@ -314,7 +317,7 @@ trait ShopOrderHelper
 
         $request = new Request();
         $request['slugs'] = $admins;
-        $request['message'] = 'A shop order has been received.';
+        $request['message'] = $message ? $message : 'A shop order has been received.';
         $request['data'] = self::preparePushData($order);
 
         $appId = config('one-signal.admin_app_id');
@@ -324,7 +327,7 @@ trait ShopOrderHelper
         SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
     }
 
-    private static function sendVendorPushNotifications($order, $orderItems)
+    private static function sendVendorPushNotifications($order, $orderItems, $message = null)
     {
         $shopIds = array_map(function ($item) {
             return Product::where('slug', $item['slug'])->value('shop_id');
@@ -335,7 +338,7 @@ trait ShopOrderHelper
 
         $request = new Request();
         $request['slugs'] = $vendors;
-        $request['message'] = 'An order has been received.';
+        $request['message'] = $message ? $message : 'An order has been received.';
         $request['data'] = self::preparePushData($order);
 
         $appId = config('one-signal.vendor_app_id');
@@ -347,20 +350,13 @@ trait ShopOrderHelper
 
     private static function preparePushData($order)
     {
+        unset($order['created_by']);
+        unset($order['updated_by']);
+        unset($order['shop_order_items']);
+
         return [
             'type' => 'shop_order',
-            'body' => [
-                'invoice_id' => $order['invoice_id'],
-                'total_amount' => $order['total_amount'],
-                'order_date' => $order['order_date'],
-                'customer_name' => $order['contact']['customer_name'],
-                'phone_number' => $order['contact']['phone_number'],
-                'house_number' => $order['contact']['house_number'],
-                'floor' => $order['contact']['floor'],
-                'street_name' => $order['contact']['street_name'],
-                'latitude' => $order['contact']['latitude'],
-                'longitude' => $order['contact']['longitude'],
-            ],
+            'body' => $order,
         ];
     }
 
