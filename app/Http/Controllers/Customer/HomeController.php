@@ -8,6 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Ads;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\RestaurantOrder;
+use App\Models\RestaurantOrderDriver;
 use App\Models\RestaurantOrderDriverStatus;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -36,8 +38,11 @@ class HomeController extends Controller
         foreach ($restaurant_orders as $order) {
             $reOrder = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $order->id)->get();
             array_push($orderDriverStatus, $reOrder);
+            $resOrderDriver = RestaurantOrderDriver::with('driver')->where('restaurant_order_id', $order->restaurant_order_id)->get()->pluck('driver.slug');
+            $order->{'drivers'} = $resOrderDriver;
         }
-        return response()->json(['all_pending' => $restaurant_orders, "res_order_driver_status" => $orderDriverStatus]);
+
+        return response()->json(['all_pending' => $restaurant_orders, "res_order_driver_status" => $orderDriverStatus, "drivers" => $resOrderDriver]);
     }
 
     public function getSuggestions(Request $request)
