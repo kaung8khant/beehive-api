@@ -105,7 +105,7 @@ class RestaurantOrderController extends Controller
         $uniqueKey = StringHelper::generateUniqueSlug();
         $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
         OrderHelper::createOrderStatus($restaurantOrder->id, 'cancelled');
 
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
@@ -162,6 +162,7 @@ class RestaurantOrderController extends Controller
         }
 
         OrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
+
         $restaurantOrder['order_status'] = $request->status;
         OrderHelper::sendPushNotifications($restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);
 
@@ -171,7 +172,7 @@ class RestaurantOrderController extends Controller
             $uniqueKey = StringHelper::generateUniqueSlug();
             $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
-            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
         }
 
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);

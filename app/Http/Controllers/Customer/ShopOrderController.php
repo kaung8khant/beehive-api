@@ -105,7 +105,7 @@ class ShopOrderController extends Controller
         $uniqueKey = StringHelper::generateUniqueSlug();
         $phoneNumber = $this->customer->phone_number;
 
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
         OrderHelper::createOrderStatus($shopOrder->id, 'cancelled');
 
         return $this->generateResponse($shopOrder->order_status, 200);

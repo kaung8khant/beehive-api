@@ -115,7 +115,7 @@ class RestaurantOrderController extends Controller
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        SendSms::dispatch($uniqueKey, [$customer->phone_number], $message, 'order', $smsData);
+        SendSms::dispatch($uniqueKey, [$customer->phone_number], $message, 'order', $smsData, $this->messageService);
         OrderHelper::createOrderStatus($order->id, 'cancelled');
 
         return $this->generateResponse($message, 200, true);
