@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Services\BoomSmsService;
+use App\Services\MessagingService;
+use App\Services\SlackMessagingService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,7 +16,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        if ($this->app->environment('production')) {
+            $this->app->singleton(MessagingService::class, function ($app) {
+                return new BoomSmsService();
+            });
+        } else {
+            $this->app->singleton(MessagingService::class, function ($app) {
+                return new SlackMessagingService();
+            });
+        }
     }
 
     /**
