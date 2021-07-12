@@ -46,8 +46,8 @@ trait RestaurantOrderHelper
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer|min:0|max:50',
             'address.street_name' => 'nullable|string',
-            'address.latitude' => 'required|numeric',
-            'address.longitude' => 'required|numeric',
+            'address.latitude' => 'nullable|numeric',
+            'address.longitude' => 'nullable|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -312,8 +312,8 @@ trait RestaurantOrderHelper
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer|min:0|max:50',
             'address.street_name' => 'nullable|string',
-            'address.latitude' => 'required|numeric',
-            'address.longitude' => 'required|numeric',
+            'address.latitude' => 'nullable|numeric',
+            'address.longitude' => 'nullable|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -378,10 +378,10 @@ trait RestaurantOrderHelper
         return $validatedData;
     }
 
-    public static function notifySystem($order, $phoneNumber)
+    public static function notifySystem($order, $phoneNumber, $messageService)
     {
         self::sendPushNotifications($order, $order->restaurant_branch_id);
-        self::sendSmsNotifications($order->restaurant_branch_id, $phoneNumber);
+        self::sendSmsNotifications($order->restaurant_branch_id, $phoneNumber, $messageService);
         self::assignBiker($order->order_type, $order->slug);
     }
 
@@ -438,11 +438,11 @@ trait RestaurantOrderHelper
         ];
     }
 
-    public static function sendSmsNotifications($branchId, $customerPhoneNumber)
+    public static function sendSmsNotifications($branchId, $customerPhoneNumber, $messageService)
     {
         // self::sendAdminSms();
-        self::sendVendorSms($branchId);
-        self::sendCustomerSms($customerPhoneNumber);
+        self::sendVendorSms($branchId, $messageService);
+        self::sendCustomerSms($customerPhoneNumber, $messageService);
     }
 
     private static function sendAdminSms()
@@ -460,7 +460,7 @@ trait RestaurantOrderHelper
         }
     }
 
-    private static function sendVendorSms($branchId)
+    private static function sendVendorSms($branchId, $messageService)
     {
         $vendors = RestaurantBranch::where('id', $branchId)->value('notify_numbers');
 
@@ -469,17 +469,17 @@ trait RestaurantOrderHelper
         $uniqueKey = StringHelper::generateUniqueSlug();
 
         if ($vendors !== null && count($vendors) > 0) {
-            SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData, $messageService);
         }
     }
 
-    private static function sendCustomerSms($phoneNumber)
+    private static function sendCustomerSms($phoneNumber, $messageService)
     {
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $messageService);
     }
 
     private static function assignBiker($orderType, $orderSlug)

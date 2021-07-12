@@ -16,6 +16,7 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
+use App\Services\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -23,19 +24,18 @@ use Illuminate\Support\Facades\DB;
 
 class ShopOrderController extends Controller
 {
-    use  PromocodeHelper, ResponseHelper, StringHelper;
+    use PromocodeHelper, ResponseHelper, StringHelper;
+
+    protected $messageService;
+
+    public function __construct(MessagingService $messageService)
+    {
+        $this->messageService = $messageService;
+    }
 
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        // $shopOrders = ShopOrder::with('contact')
-        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-        //     ->paginate(10)
-        //     ->map(function ($shopOrder) {
-        //         return $shopOrder->makeHidden('vendors');
-        //     });
-        // dd(ltrim($request->filter, '0'));
 
         if ($request->filter) {
             $shopOrders = ShopOrder::with('contact')
@@ -80,7 +80,7 @@ class ShopOrderController extends Controller
         $order = $this->shopOrderTransaction($validatedData);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber);
+        OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber, $this->messageService);
 
         return $this->generateShopOrderResponse($order, 201);
     }

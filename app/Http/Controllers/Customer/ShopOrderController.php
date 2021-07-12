@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
+use App\Services\MessagingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,12 +23,15 @@ class ShopOrderController extends Controller
     use PromocodeHelper, ResponseHelper, StringHelper;
 
     protected $customer;
+    protected $messageService;
 
-    public function __construct()
+    public function __construct(MessagingService $messageService)
     {
         if (Auth::guard('customers')->check()) {
             $this->customer = Auth::guard('customers')->user();
         }
+
+        $this->messageService = $messageService;
     }
 
     public function index(Request $request)
@@ -73,7 +77,7 @@ class ShopOrderController extends Controller
             $order['prepay_id'] = $kPayData['Response']['prepay_id'];
         }
 
-        OrderHelper::notifySystem($order, $validatedData['order_items'], $this->customer->phone_number);
+        OrderHelper::notifySystem($order, $validatedData['order_items'], $this->customer->phone_number, $this->messageService);
 
         return $this->generateShopOrderResponse($order, 201);
     }

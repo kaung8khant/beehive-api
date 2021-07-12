@@ -9,6 +9,7 @@ use App\Jobs\SendSms;
 use App\Models\CustomerGroup;
 use App\Models\SmsCampaign;
 use App\Models\SmsLog;
+use App\Services\MessagingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,47 +19,55 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 class SmsController extends Controller
 {
     protected $phonesPerWorker;
+    protected $messageService;
 
-    public function __construct()
+    public function __construct(MessagingService $messageService)
     {
+        $this->messageService = $messageService;
         $this->phonesPerWorker = 200;
     }
 
     public function createCampaigns(Request $request)
     {
-        $request->validate([
-            'name' => 'nullable|string',
-            'description' => 'nullable',
-            'group_slugs' => 'required|array',
-            'group_slugs.*' => 'required|exists:App\Models\CustomerGroup,slug',
-            'message' => 'required',
-            'type' => 'required|in:otp,marketing',
-        ]);
+        $this->validateRequest($request, true);
 
         $request['phone_numbers'] = collect($request->group_slugs)->map(function ($groupSlug) {
             $customerGroup = CustomerGroup::where('slug', $groupSlug)->first();
             return $customerGroup->customers()->pluck('phone_number');
         })->collapse()->unique()->values()->toArray();
 
-        $userId = Auth::guard('users')->user()->id;
-        $message = trim(SmsHelper::removeEmoji($request->message));
-        $smsData = SmsHelper::prepareSmsData($message, $userId);
-        $workerCount = $this->calculateWorkerCount($request->phone_numbers);
-        $this->createSmsCampaign($request, $smsData['batchId']);
-
-        for ($i = 0; $i < $workerCount; $i++) {
-            $uniqueKey = StringHelper::generateUniqueSlug();
-            $phoneNumbers = array_slice($request->phone_numbers, $i * $this->phonesPerWorker, $this->phonesPerWorker);
-            SendSms::dispatch($uniqueKey, $phoneNumbers, $message, $request->type, $smsData);
-        }
-
+        $this->prepareAndSend($request);
         return response()->json(['Your sms is preparing and being sent to users.'], 200);
     }
 
     public function send(Request $request)
     {
         $this->validateRequest($request);
+        $this->prepareAndSend($request);
+        return response()->json(['Your sms is preparing and being sent to users.'], 200);
+    }
 
+    private function validateRequest($request, $campaign = false)
+    {
+        $rules = [
+            'name' => 'nullable|string',
+            'description' => 'nullable',
+            'message' => 'required',
+            'type' => 'required|in:otp,marketing',
+        ];
+
+        if ($campaign) {
+            $rules['group_slugs'] = 'required|array';
+            $rules['group_slugs.*'] = 'required|exists:App\Models\CustomerGroup,slug';
+        } else {
+            $rules['phone_numbers'] = 'required|array|max:10000';
+        }
+
+        $request->validate($rules);
+    }
+
+    private function prepareAndSend($request)
+    {
         $userId = Auth::guard('users')->user()->id;
         $message = trim(SmsHelper::removeEmoji($request->message));
         $smsData = SmsHelper::prepareSmsData($message, $userId);
@@ -68,21 +77,8 @@ class SmsController extends Controller
         for ($i = 0; $i < $workerCount; $i++) {
             $uniqueKey = StringHelper::generateUniqueSlug();
             $phoneNumbers = array_slice($request->phone_numbers, $i * $this->phonesPerWorker, $this->phonesPerWorker);
-            SendSms::dispatch($uniqueKey, $phoneNumbers, $message, $request->type, $smsData);
+            SendSms::dispatch($uniqueKey, $phoneNumbers, $message, $request->type, $smsData, $this->messageService);
         }
-
-        return response()->json(['Your sms is preparing and being sent to users.'], 200);
-    }
-
-    private function validateRequest($request)
-    {
-        $request->validate([
-            'name' => 'nullable|string',
-            'description' => 'nullable',
-            'phone_numbers' => 'required|array|max:10000',
-            'message' => 'required',
-            'type' => 'required|in:otp,marketing',
-        ]);
     }
 
     private function calculateWorkerCount($phoneNumbers)

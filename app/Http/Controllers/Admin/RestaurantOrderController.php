@@ -15,12 +15,20 @@ use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
+use App\Services\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class RestaurantOrderController extends Controller
 {
     use PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
+
+    protected $messageService;
+
+    public function __construct(MessagingService $messageService)
+    {
+        $this->messageService = $messageService;
+    }
 
     public function index(Request $request)
     {
@@ -142,7 +150,7 @@ class RestaurantOrderController extends Controller
         $this->assignOrder('restaurant', $order->slug);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::notifySystem($order, $phoneNumber);
+        OrderHelper::notifySystem($order, $phoneNumber, $this->messageService);
 
         return $order;
     }
