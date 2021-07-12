@@ -157,43 +157,15 @@ class ShopOrderController extends Controller
 
         OrderHelper::createOrderStatus($shopOrder->id, $request->status);
 
-        $notificaitonData = $this->notificationData([
-            'title' => 'Shop order updated',
-            'body' => 'Shop order just has been updated',
-            'status' => $request->status,
-            'slug' => $shopOrder->slug,
-        ]);
-
         if ($request->status === 'cancelled') {
             $message = 'Your order has been cancelled.';
             $smsData = SmsHelper::prepareSmsData($message);
             $uniqueKey = StringHelper::generateUniqueSlug();
             $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
 
-            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
         }
 
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
-    }
-
-    private function notificationData($data)
-    {
-        return [
-            'title' => $data['title'],
-            'body' => $data['body'],
-            'img' => '',
-            'data' => [
-                'action' => 'update',
-                'type' => 'shopOrder',
-                'status' => $data['status'],
-                'slug' => $data['slug'],
-
-            ],
-        ];
-    }
-
-    private function getShop($slug)
-    {
-        return Shop::where('slug', $slug)->firstOrFail();
     }
 }
