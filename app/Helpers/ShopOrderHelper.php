@@ -37,8 +37,8 @@ trait ShopOrderHelper
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer|min:0|max:50',
             'address.street_name' => 'nullable|string',
-            'address.latitude' => 'nullable|numeric',
-            'address.longitude' => 'nullable|numeric',
+            'address.latitude' => 'required|numeric',
+            'address.longitude' => 'required|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -79,7 +79,7 @@ trait ShopOrderHelper
         $tax = 0;
 
         foreach ($validatedData['order_items'] as $key => $value) {
-            $product = self::validateProductVariations($key, $value);
+            $product = self::getProduct($value['slug']);
             $variations = self::prepareVariations($value);
 
             $amount = $product->price + $variations->sum('price');
@@ -206,7 +206,10 @@ trait ShopOrderHelper
 
     private static function getProduct($slug)
     {
-        return Product::where('slug', $slug)->first();
+        return Product::where('slug', $slug)
+            ->with('productVariations')
+            ->with('productVariations.productVariationValues')
+            ->first();
     }
 
     public static function getShopByProduct($slug)
@@ -231,8 +234,8 @@ trait ShopOrderHelper
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer|min:0|max:50',
             'address.street_name' => 'nullable|string',
-            'address.latitude' => 'nullable|numeric',
-            'address.longitude' => 'nullable|numeric',
+            'address.latitude' => 'required|numeric',
+            'address.longitude' => 'required|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
             'order_items.*.quantity' => 'required|integer',
