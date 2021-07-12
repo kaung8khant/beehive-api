@@ -38,7 +38,7 @@ class SlugFixController
 
     public function test()
     {
-        return $this->messagingService->sendMessage('09962009512', 'hello testing');
+        // return $this->messagingService->sendMessage('09962009512', 'hello testing');
         $menus = Menu::with(['menuVariants' => function ($query) {
             $query->orderBy('price', 'asc');
         }])
