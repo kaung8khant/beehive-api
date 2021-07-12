@@ -6,9 +6,17 @@ use App\Helpers\StringHelper;
 use App\Models\Menu;
 use App\Models\MenuVariation;
 use App\Models\MenuVariationValue;
+use App\Services\MessagingService;
 
 class SlugFixController
 {
+    protected $messagingService;
+
+    public function __construct(MessagingService $messagingService)
+    {
+        $this->messagingService = $messagingService;
+    }
+
     public function fix($table)
     {
         $model = '\App\Models\\' . $table;
@@ -30,6 +38,7 @@ class SlugFixController
 
     public function test()
     {
+        // return $this->messagingService->sendMessage('09962009512', 'hello testing');
         $menus = Menu::with(['menuVariants' => function ($query) {
             $query->orderBy('price', 'asc');
         }])

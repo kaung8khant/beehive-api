@@ -37,8 +37,8 @@ trait ShopOrderHelper
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer|min:0|max:50',
             'address.street_name' => 'nullable|string',
-            'address.latitude' => 'required|numeric',
-            'address.longitude' => 'required|numeric',
+            'address.latitude' => 'nullable|numeric',
+            'address.longitude' => 'nullable|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -234,8 +234,8 @@ trait ShopOrderHelper
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer|min:0|max:50',
             'address.street_name' => 'nullable|string',
-            'address.latitude' => 'required|numeric',
-            'address.longitude' => 'required|numeric',
+            'address.latitude' => 'nullable|numeric',
+            'address.longitude' => 'nullable|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -296,10 +296,10 @@ trait ShopOrderHelper
         return $validatedData;
     }
 
-    public static function notifySystem($order, $orderItems, $phoneNumber)
+    public static function notifySystem($order, $orderItems, $phoneNumber, $messageService)
     {
         self::sendPushNotifications($order, $orderItems);
-        self::sendSmsNotifications($orderItems, $phoneNumber);
+        self::sendSmsNotifications($orderItems, $phoneNumber, $messageService);
     }
 
     public static function sendPushNotifications($order, $orderItems, $message = null)
@@ -360,11 +360,11 @@ trait ShopOrderHelper
         ];
     }
 
-    public static function sendSmsNotifications($orderItems, $customerPhoneNumber)
+    public static function sendSmsNotifications($orderItems, $customerPhoneNumber, $messageService)
     {
         // self::sendAdminSms();
-        self::sendVendorSms($orderItems);
-        self::sendCustomerSms($customerPhoneNumber);
+        self::sendVendorSms($orderItems, $messageService);
+        self::sendCustomerSms($customerPhoneNumber, $messageService);
     }
 
     private static function sendAdminSms()
@@ -382,7 +382,7 @@ trait ShopOrderHelper
         }
     }
 
-    private static function sendVendorSms($orderItems)
+    private static function sendVendorSms($orderItems, $messageService)
     {
         $vendors = collect($orderItems)->map(function ($item) {
             $shopId = Product::where('slug', $item['slug'])->value('shop_id');
@@ -394,16 +394,16 @@ trait ShopOrderHelper
         $uniqueKey = StringHelper::generateUniqueSlug();
 
         if (count($vendors) > 0) {
-            SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData, $messageService);
         }
     }
 
-    private static function sendCustomerSms($phoneNumber)
+    private static function sendCustomerSms($phoneNumber, $messageService)
     {
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $messageService);
     }
 }
