@@ -79,7 +79,7 @@ trait ShopOrderHelper
         $tax = 0;
 
         foreach ($validatedData['order_items'] as $key => $value) {
-            $product = self::validateProductVariations($key, $value);
+            $product = self::getProduct($value['slug']);
             $variations = self::prepareVariations($value);
 
             $amount = $product->price + $variations->sum('price');
@@ -206,7 +206,10 @@ trait ShopOrderHelper
 
     private static function getProduct($slug)
     {
-        return Product::where('slug', $slug)->first();
+        return Product::where('slug', $slug)
+            ->with('productVariations')
+            ->with('productVariations.productVariationValues')
+            ->first();
     }
 
     public static function getShopByProduct($slug)
