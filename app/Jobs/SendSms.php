@@ -22,6 +22,7 @@ class SendSms implements ShouldQueue, ShouldBeUnique
     protected $message;
     protected $type;
     protected $smsData;
+    protected $messageService;
 
     /**
      * The number of seconds after which the job's unique lock will be released.
@@ -35,13 +36,14 @@ class SendSms implements ShouldQueue, ShouldBeUnique
      *
      * @return void
      */
-    public function __construct($uniqueKey, $phoneNumbers, $message, $type, $smsData)
+    public function __construct($uniqueKey, $phoneNumbers, $message, $type, $smsData, $messageService)
     {
         $this->uniqueKey = $uniqueKey;
         $this->phoneNumbers = $phoneNumbers;
         $this->message = $message;
         $this->type = $type;
         $this->smsData = $smsData;
+        $this->messageService = $messageService;
     }
 
     /**
@@ -69,7 +71,8 @@ class SendSms implements ShouldQueue, ShouldBeUnique
                     $phoneNumber = PhoneNumber::make($number, 'MM');
                     if (config('app.env') === 'production' || config('app.env') === 'staging') {
                         try {
-                            $smsResponse = SmsHelper::sendSms($phoneNumber, $this->message);
+                            // $smsResponse = SmsHelper::sendSms($phoneNumber, $this->message);
+                            $smsResponse = $this->messageService->sendMessage($phoneNumber, $this->message);
                             $status = 'Success';
 
                             if ($smsResponse['status'] !== 0) {

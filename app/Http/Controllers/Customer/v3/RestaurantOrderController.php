@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
+use App\Services\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,12 +24,15 @@ class RestaurantOrderController extends Controller
     use PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     protected $customer;
+    protected $messageService;
 
-    public function __construct()
+    public function __construct(MessagingService $messageService)
     {
         if (Auth::guard('customers')->check()) {
             $this->customer = Auth::guard('customers')->user();
         }
+
+        $this->messageService = $messageService;
     }
 
     public function index(Request $request)
@@ -147,7 +151,7 @@ class RestaurantOrderController extends Controller
         });
         $this->assignOrder('restaurant', $order->slug);
 
-        OrderHelper::notifySystem($order, $this->customer->phone_number);
+        OrderHelper::notifySystem($order, $this->customer->phone_number, $this->messageService);
 
         return $order;
     }

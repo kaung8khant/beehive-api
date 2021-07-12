@@ -15,6 +15,7 @@ use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderVendor;
+use App\Services\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,13 @@ use Illuminate\Support\Facades\DB;
 class ShopOrderController extends Controller
 {
     use  PromocodeHelper, ResponseHelper, StringHelper;
+
+    protected $messageService;
+
+    public function __construct(MessagingService $messageService)
+    {
+        $this->messageService = $messageService;
+    }
 
     public function index(Request $request)
     {
@@ -99,7 +107,7 @@ class ShopOrderController extends Controller
         $order = $this->shopOrderTransaction($validatedData);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber);
+        OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber, $this->messageService);
 
         return $this->generateShopOrderResponse($order, 201);
     }
