@@ -120,5 +120,8 @@ Route::group([
     Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
         Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'customer-v3-restaurant', 'except' => ['create', 'edit']]);
         Route::resource('shop-orders', 'ShopOrderController', ['as' => 'customer-v3-shop', 'except' => ['create', 'edit']]);
+
+        //Promo code 
+        Route::post('promocode/validate', 'PromocodeController@validatePromoCode');
     });
 });
