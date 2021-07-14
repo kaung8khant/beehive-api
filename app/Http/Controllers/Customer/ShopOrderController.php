@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ShopOrderController extends Controller
 {
@@ -48,38 +49,43 @@ class ShopOrderController extends Controller
 
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-        $validatedData = OrderHelper::validateOrder($request);
+        try {
+            $request['slug'] = $this->generateUniqueSlug();
+            $validatedData = OrderHelper::validateOrder($request);
 
-        if (gettype($validatedData) == 'string') {
-            return $this->generateResponse($validatedData, 422, true);
-        }
-
-        $validatedData['customer_id'] = $this->customer->id;
-        $validatedData['order_date'] = Carbon::now();
-        $validatedData = OrderHelper::prepareProductVariations($validatedData);
-
-        if ($validatedData['promo_code']) {
-            $validatedData = $this->getPromoData($validatedData);
-        }
-
-        if ($validatedData['payment_mode'] === 'KPay') {
-            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'shop');
-
-            if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
-                return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            if (gettype($validatedData) == 'string') {
+                return $this->generateResponse($validatedData, 422, true);
             }
+
+            $validatedData['customer_id'] = $this->customer->id;
+            $validatedData['order_date'] = Carbon::now();
+            $validatedData = OrderHelper::prepareProductVariations($validatedData);
+
+            if ($validatedData['promo_code']) {
+                $validatedData = $this->getPromoData($validatedData);
+            }
+
+            if ($validatedData['payment_mode'] === 'KPay') {
+                $kPayData = KbzPayHelper::createKbzPay($validatedData, 'shop');
+
+                if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
+                    return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+                }
+            }
+
+            $order = $this->shopOrderTransaction($validatedData);
+
+            if ($validatedData['payment_mode'] === 'KPay') {
+                $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+            }
+
+            OrderHelper::notifySystem($order, $validatedData['order_items'], $this->customer->phone_number, $this->messageService);
+
+            return $this->generateShopOrderResponse($order, 201);
+        } catch (\Exception $e) {
+            Log::critical('Customer shop order v2 error: ' . Auth::guard('customers')->user()->phone_number);
+            throw $e;
         }
-
-        $order = $this->shopOrderTransaction($validatedData);
-
-        if ($validatedData['payment_mode'] === 'KPay') {
-            $order['prepay_id'] = $kPayData['Response']['prepay_id'];
-        }
-
-        OrderHelper::notifySystem($order, $validatedData['order_items'], $this->customer->phone_number, $this->messageService);
-
-        return $this->generateShopOrderResponse($order, 201);
     }
 
     public function show($slug)

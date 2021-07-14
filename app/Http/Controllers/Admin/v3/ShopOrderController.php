@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ShopOrderController extends Controller
 {
@@ -63,27 +64,36 @@ class ShopOrderController extends Controller
 
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-        $validatedData = OrderHelper::validateOrderV3($request, true);
+        try {
+            $request['slug'] = $this->generateUniqueSlug();
+            $validatedData = OrderHelper::validateOrderV3($request, true);
 
-        if (gettype($validatedData) == 'string') {
-            return $this->generateResponse($validatedData, 422, true);
+            if (gettype($validatedData) == 'string') {
+                return $this->generateResponse($validatedData, 422, true);
+            }
+
+            $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
+            $validatedData['customer_id'] = $customer->id;
+            $validatedData = OrderHelper::prepareProductVariants($validatedData);
+
+            if ($validatedData['promo_code']) {
+                $validatedData = $this->getPromoData($validatedData, $customer);
+            }
+
+            $order = $this->shopOrderTransaction($validatedData);
+
+            $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+            OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber, $this->messageService);
+
+            return $this->generateShopOrderResponse($order, 201);
+        } catch (\Exception $e) {
+            $url = explode('/', $request->path());
+            $auth = $url[2] === 'admin' ? 'Admin' : 'Vendor';
+            $phoneNumber = Customer::where('slug', $request->customer_slug)->value('phone_number');
+
+            Log::critical($auth . ' shop order ' . $url[1] . ' error: ' . $phoneNumber);
+            throw $e;
         }
-
-        $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
-        $validatedData['customer_id'] = $customer->id;
-        $validatedData = OrderHelper::prepareProductVariants($validatedData);
-
-        if ($validatedData['promo_code']) {
-            $validatedData = $this->getPromoData($validatedData, $customer);
-        }
-
-        $order = $this->shopOrderTransaction($validatedData);
-
-        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber, $this->messageService);
-
-        return $this->generateShopOrderResponse($order, 201);
     }
 
     public function show(ShopOrder $shopOrder)
