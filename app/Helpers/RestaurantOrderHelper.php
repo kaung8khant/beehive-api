@@ -289,8 +289,6 @@ trait RestaurantOrderHelper
             $validatedData['customer_id'] = Customer::where('slug', $validatedData['customer_slug'])->first()->id;
         }
 
-        $validatedData = self::prepareRestaurantVariants($validatedData);
-
         return $validatedData;
     }
 
@@ -339,6 +337,10 @@ trait RestaurantOrderHelper
         foreach ($validatedData['order_items'] as $key => $value) {
             $menuId = Menu::where('slug', $value['slug'])->value('id');
             $menuVariant = MenuVariant::with('menu')->where('slug', $value['variant_slug'])->where('is_enable', 1)->first();
+
+            if (!$menuVariant) {
+                throw new ForbiddenException('The order_items.' . $key . '.variant is disabled.');
+            }
 
             if ($menuId !== $menuVariant->menu->id) {
                 throw new BadRequestException('The order_items.' . $key . '.variant_slug must be part of the menu_slug.', 400);
