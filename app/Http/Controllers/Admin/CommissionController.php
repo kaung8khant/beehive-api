@@ -13,16 +13,6 @@ class CommissionController extends Controller
 {
     public function getShopOrderCommissions(Request $request)
     {
-        // $result = ShopOrderItem::with('shop', 'vendor.shopOrder')
-        //     ->where(function ($query) use ($request) {
-        //         $query->whereHas('vendor.shopOrder', function ($query) use ($request) {
-        //             $query->whereBetween('order_date', array($request->from, $request->to))
-        //                 ->where('order_status', 'delivered');
-        //         });
-        //     })
-        //     ->where('commission', '>', 0)->get();
-        // return response()->json($result);
-
         $result= DB::table('shop_orders as so')
         ->join('shop_order_vendors as sov', 'sov.shop_order_id', '=', 'so.id')
         ->join('shop_order_items as soi', 'soi.shop_order_vendor_id', '=', 'sov.id')
@@ -56,25 +46,12 @@ class CommissionController extends Controller
 
     public function getOneShopOrderCommissions(Request $request, Shop $shop)
     {
-        // $result = ShopOrderItem::with('shop', 'product')
-        //     ->where(function ($query) use ($request, $shop) {
-        //         $query->whereHas('shop', function ($query) use ($shop) {
-        //             $query->where('slug', $shop->slug);
-        //         })
-        //             ->whereHas('vendor.shopOrder', function ($query) use ($request) {
-        //                 $query->whereBetween('order_date', array($request->from, $request->to))
-        //                     ->where('order_status', 'delivered');
-        //             });
-        //     })
-        //     ->where('commission', '>', 0)->get();
-        // return response()->json($result);
-
         $result= DB::table('shop_orders as so')
         ->join('shop_order_vendors as sov', 'sov.shop_order_id', '=', 'so.id')
         ->join('shop_order_items as soi', 'soi.shop_order_vendor_id', '=', 'sov.id')
         ->where('sov.shop_id', $shop->id)
         ->where('soi.commission', '>', 0)
-        // ->where('so.order_status', 'delivered')
+        ->where('so.order_status', 'delivered')
         ->whereBetween('so.order_date', array($request->from, $request->to))
         ->select('soi.product_name', 'soi.product_id', 'soi.vendor_price', 'soi.discount', 'soi.amount', 'soi.variant', DB::raw('SUM(soi.quantity) as quantity'), DB::raw('SUM(soi.commission) as commission'))
         ->groupBy(['soi.product_name', 'soi.product_id','soi.variant', 'soi.vendor_price','soi.discount','soi.amount'])
@@ -91,13 +68,6 @@ class CommissionController extends Controller
 
     public function getRestaurantOrderCommissions(Request $request)
     {
-        // $result = RestaurantOrder::where('commission', '>', 0)
-        //     ->where('order_status', 'delivered')
-        //     ->whereBetween('order_date', array($request->from, $request->to))
-        //     ->get();
-
-        // return response()->json($result);
-
         $result= DB::table('restaurant_orders as ro')
         ->join('restaurants as r', 'r.id', '=', 'ro.restaurant_id')
         ->where('ro.commission', '>', 0)
@@ -130,17 +100,6 @@ class CommissionController extends Controller
 
     public function getRestaurantBranchOrderCommissions(Request $request, RestaurantBranch $restaurantBranch)
     {
-        // $result = RestaurantOrder::whereHas('restaurantBranch', function ($query) use ($restaurantBranch) {
-        //     $query->where('slug', $restaurantBranch->slug);
-        // })
-        //     ->where('commission', '>', 0)
-        //     ->where('order_status', 'delivered')
-        //     ->whereBetween('order_date', array($request->from, $request->to))
-        //     ->get();
-
-        // return response()->json($result);
-
-
         $result= DB::table('restaurant_orders as ro')
                 ->join('restaurants as r', 'r.id', '=', 'ro.restaurant_id')
         ->where('ro.restaurant_branch_id', $restaurantBranch->id)
@@ -166,16 +125,6 @@ class CommissionController extends Controller
 
     public function getOneRestaurantOrderCommissions(Request $request, Restaurant $restaurant)
     {
-        // $result = RestaurantOrder::whereHas('restaurant', function ($query) use ($restaurant) {
-        //     $query->where('slug', $restaurant->slug);
-        // })
-        //     ->where('commission', '>', 0)
-        //     ->where('order_status', 'delivered')
-        //     ->whereBetween('order_date', array($request->from, $request->to))
-        //     ->get();
-
-        // return response()->json($result);
-
         $result= DB::table('restaurant_orders as ro')
                 ->join('restaurant_branches as rb', 'rb.id', '=', 'ro.restaurant_branch_id')
         ->where('ro.restaurant_id', $restaurant->id)
