@@ -94,6 +94,8 @@ class ShopOrderController extends Controller
 
     public function destroy($slug)
     {
+        return $this->generateResponse('You cannot cancel order at the moment. Please contact support.', 200, true);
+
         $shopOrder = ShopOrder::with('vendors')->where('slug', $slug)->where('customer_id', $this->customer->id)->firstOrFail();
 
         if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {

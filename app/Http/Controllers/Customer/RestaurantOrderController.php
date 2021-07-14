@@ -103,6 +103,8 @@ class RestaurantOrderController extends Controller
 
     public function destroy($slug)
     {
+        return $this->generateResponse('You cannot cancel order at the moment. Please contact support.', 200, true);
+
         $customer = Auth::guard('customers')->user();
         $customerId = $customer->id;
         $order = RestaurantOrder::where('customer_id', $customerId)->where('slug', $slug)->firstOrFail();
