@@ -92,7 +92,7 @@ class ShopOrderController extends Controller
 
     public function destroy($slug)
     {
-        return $this->generateResponse('You cannot cancel order at the moment. Please contact support.', 200, true);
+        return $this->generateResponse('You cannot cancel order at the moment. Please contact support.', 403, true);
 
         $shopOrder = ShopOrder::with('vendors')
             ->where('customer_id', $this->customer->id)
