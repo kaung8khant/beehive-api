@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenException;
 use App\Helpers\StringHelper;
 use App\Jobs\SendPushNotification;
 use App\Jobs\SendSms;
@@ -264,6 +265,10 @@ trait ShopOrderHelper
         foreach ($validatedData['order_items'] as $key => $value) {
             $productId = Product::where('slug', $value['slug'])->value('id');
             $productVariant = ProductVariant::with('product')->where('slug', $value['variant_slug'])->where('is_enable', 1)->first();
+
+            if (!$productVariant) {
+                throw new ForbiddenException('The order_items.' . $key . '.variant is disabled.');
+            }
 
             if ($productId !== $productVariant->product->id) {
                 throw new BadRequestException('The order_items.' . $key . '.variant_slug must be part of the product_slug.', 400);

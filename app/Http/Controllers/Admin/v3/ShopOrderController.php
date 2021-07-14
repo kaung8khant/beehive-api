@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
+use App\Exceptions\ForbiddenException;
 use App\Helpers\CollectionHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -74,7 +75,12 @@ class ShopOrderController extends Controller
 
             $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
             $validatedData['customer_id'] = $customer->id;
-            $validatedData = OrderHelper::prepareProductVariants($validatedData);
+
+            try {
+                $validatedData = OrderHelper::prepareProductVariants($validatedData);
+            } catch (ForbiddenException $e) {
+                return $this->generateResponse($e->getMessage(), 403, true);
+            }
 
             if ($validatedData['promo_code']) {
                 $validatedData = $this->getPromoData($validatedData, $customer);

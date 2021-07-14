@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer\v3;
 
+use App\Exceptions\ForbiddenException;
 use App\Helpers\KbzPayHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -57,7 +58,12 @@ class ShopOrderController extends Controller
 
             $validatedData['customer_id'] = $this->customer->id;
             $validatedData['order_date'] = Carbon::now();
-            $validatedData = OrderHelper::prepareProductVariants($validatedData);
+
+            try {
+                $validatedData = OrderHelper::prepareProductVariants($validatedData);
+            } catch (ForbiddenException $e) {
+                return $this->generateResponse($e->getMessage(), 403, true);
+            }
 
             if ($validatedData['promo_code']) {
                 $validatedData = $this->getPromoData($validatedData);
