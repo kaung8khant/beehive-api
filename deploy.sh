@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install composer dependencies
-php /home/beehive/composer.phar install --optimize-autoloader --no-dev
+composer install --optimize-autoloader --no-dev
 
 # Run database migration
 php artisan migrate --force
