@@ -59,6 +59,12 @@ class RestaurantOrderController extends Controller
             }
 
             try {
+                $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
+            } catch (ForbiddenException $e) {
+                return $this->generateResponse($e->getMessage(), 403, true);
+            }
+
+            try {
                 OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
             } catch (ForbiddenException $e) {
                 return $this->generateResponse($e->getMessage(), 403, true);
@@ -157,6 +163,7 @@ class RestaurantOrderController extends Controller
             OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
+
         $this->assignOrder('restaurant', $order->slug);
 
         OrderHelper::notifySystem($order, $this->customer->phone_number, $this->messageService);

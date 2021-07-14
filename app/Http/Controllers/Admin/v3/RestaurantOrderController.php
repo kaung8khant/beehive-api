@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
+use App\Exceptions\ForbiddenException;
 use App\Helpers\CollectionHelper;
 use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
@@ -67,6 +68,12 @@ class RestaurantOrderController extends Controller
 
             if (gettype($validatedData) == 'string') {
                 return $this->generateResponse($validatedData, 422, true);
+            }
+
+            try {
+                $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
+            } catch (ForbiddenException $e) {
+                return $this->generateResponse($e->getMessage(), 403, true);
             }
 
             $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
