@@ -42,7 +42,10 @@ class FileController extends Controller
     public function getFile(File $file)
     {
         $path = 'images/large/';
-        return Storage::download($path . $file->file_name);
+
+        if (Storage::exists($path . $file->file_name)) {
+            return Storage::download($path . $file->file_name);
+        }
 
         // if ($file->extension === 'png' || $file->extension === 'jpg' || $file->extension === 'jpeg') {
         //     $path = 'images/large/';
@@ -62,7 +65,7 @@ class FileController extends Controller
             $request->size = 'large';
         }
 
-        if (in_array($request->size, $imageSizes)) {
+        if (in_array($request->size, $imageSizes) && Storage::exists($imageData[$request->size]['path'] . $file->file_name)) {
             return Storage::download($imageData[$request->size]['path'] . $file->file_name);
         }
 
