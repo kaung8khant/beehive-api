@@ -19,6 +19,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RestaurantOrderController extends Controller
 {
@@ -63,42 +64,47 @@ class RestaurantOrderController extends Controller
 
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-        $validatedData = OrderHelper::validateOrder($request);
-
-        if (gettype($validatedData) == 'string') {
-            return $this->generateResponse($validatedData, 422, true);
-        }
-
         try {
-            OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
-        } catch (ForbiddenException $e) {
-            return $this->generateResponse($e->getMessage(), 403, true);
-        }
+            $request['slug'] = $this->generateUniqueSlug();
+            $validatedData = OrderHelper::validateOrder($request);
 
-        $validatedData['customer_id'] = $this->customer->id;
-        $validatedData['order_date'] = Carbon::now();
-        $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
-
-        if ($validatedData['promo_code']) {
-            $validatedData = $this->getPromoData($validatedData);
-        }
-
-        if ($validatedData['payment_mode'] === 'KPay') {
-            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'restaurant');
-
-            if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
-                return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            if (gettype($validatedData) == 'string') {
+                return $this->generateResponse($validatedData, 422, true);
             }
+
+            try {
+                OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
+            } catch (ForbiddenException $e) {
+                return $this->generateResponse($e->getMessage(), 403, true);
+            }
+
+            $validatedData['customer_id'] = $this->customer->id;
+            $validatedData['order_date'] = Carbon::now();
+            $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
+
+            if ($validatedData['promo_code']) {
+                $validatedData = $this->getPromoData($validatedData);
+            }
+
+            if ($validatedData['payment_mode'] === 'KPay') {
+                $kPayData = KbzPayHelper::createKbzPay($validatedData, 'restaurant');
+
+                if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
+                    return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+                }
+            }
+
+            $order = $this->restaurantOrderTransaction($validatedData);
+
+            if ($validatedData['payment_mode'] === 'KPay') {
+                $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+            }
+
+            return $this->generateResponse($order, 201);
+        } catch (\Exception $e) {
+            Log::critical('Customer restaurant order v2 error: ' . Auth::guard('customers')->user()->phone_number);
+            throw $e;
         }
-
-        $order = $this->restaurantOrderTransaction($validatedData);
-
-        if ($validatedData['payment_mode'] === 'KPay') {
-            $order['prepay_id'] = $kPayData['Response']['prepay_id'];
-        }
-
-        return $this->generateResponse($order, 201);
     }
 
     public function destroy($slug)

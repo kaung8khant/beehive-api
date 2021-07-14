@@ -18,6 +18,7 @@ use App\Models\RestaurantOrder;
 use App\Services\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RestaurantOrderController extends Controller
 {
@@ -74,24 +75,33 @@ class RestaurantOrderController extends Controller
 
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-        $validatedData = OrderHelper::validateOrder($request, true);
+        try {
+            $request['slug'] = $this->generateUniqueSlug();
+            $validatedData = OrderHelper::validateOrder($request, true);
 
-        if (gettype($validatedData) == 'string') {
-            return $this->generateResponse($validatedData, 422, true);
+            if (gettype($validatedData) == 'string') {
+                return $this->generateResponse($validatedData, 422, true);
+            }
+
+            $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
+            $validatedData['customer_id'] = $customer->id;
+            $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
+
+            if ($validatedData['promo_code']) {
+                $validatedData = $this->getPromoData($validatedData, $customer);
+            }
+
+            $order = $this->restaurantOrderTransaction($validatedData);
+
+            return $this->generateResponse($order, 201);
+        } catch (\Exception $e) {
+            $url = explode('/', $request->path());
+            $auth = $url[2] === 'admin' ? 'Admin' : 'Vendor';
+            $phoneNumber = Customer::where('slug', $request->customer_slug)->value('phone_number');
+
+            Log::critical($auth . ' restaurant order ' . $url[1] . ' error: ' . $phoneNumber);
+            throw $e;
         }
-
-        $customer = Customer::where('slug', $validatedData['customer_slug'])->firstOrFail();
-        $validatedData['customer_id'] = $customer->id;
-        $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
-
-        if ($validatedData['promo_code']) {
-            $validatedData = $this->getPromoData($validatedData, $customer);
-        }
-
-        $order = $this->restaurantOrderTransaction($validatedData);
-
-        return $this->generateResponse($order, 201);
     }
 
     public function destroy(RestaurantOrder $restaurantOrder)
