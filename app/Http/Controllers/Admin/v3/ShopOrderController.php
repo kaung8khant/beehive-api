@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
+use App\Exceptions\ForbiddenException;
 use App\Helpers\CollectionHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -11,31 +12,33 @@ use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Customer;
+use App\Models\Product;
 use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
+use App\Services\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ShopOrderController extends Controller
 {
-    use  PromocodeHelper, ResponseHelper, StringHelper;
+    use PromocodeHelper, ResponseHelper, StringHelper;
+
+    protected $messageService;
+
+    public function __construct(MessagingService $messageService)
+    {
+        $this->messageService = $messageService;
+    }
 
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        // $shopOrders = ShopOrder::with('contact')
-        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-        //     ->paginate(10)
-        //     ->map(function ($shopOrder) {
-        //         return $shopOrder->makeHidden('vendors');
-        //     });
-        // dd(ltrim($request->filter, '0'));
 
         if ($request->filter) {
             $shopOrders = ShopOrder::with('contact')
@@ -62,27 +65,41 @@ class ShopOrderController extends Controller
 
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-        $validatedData = OrderHelper::validateOrderV3($request, true);
+        try {
+            $request['slug'] = $this->generateUniqueSlug();
+            $validatedData = OrderHelper::validateOrderV3($request, true);
 
-        if (gettype($validatedData) == 'string') {
-            return $this->generateResponse($validatedData, 422, true);
+            if (gettype($validatedData) == 'string') {
+                return $this->generateResponse($validatedData, 422, true);
+            }
+
+            $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
+            $validatedData['customer_id'] = $customer->id;
+
+            try {
+                $validatedData = OrderHelper::prepareProductVariants($validatedData);
+            } catch (ForbiddenException $e) {
+                return $this->generateResponse($e->getMessage(), 403, true);
+            }
+
+            if ($validatedData['promo_code']) {
+                $validatedData = $this->getPromoData($validatedData, $customer);
+            }
+
+            $order = $this->shopOrderTransaction($validatedData);
+
+            $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+            OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber, $this->messageService);
+
+            return $this->generateShopOrderResponse($order, 201);
+        } catch (\Exception $e) {
+            $url = explode('/', $request->path());
+            $auth = $url[2] === 'admin' ? 'Admin' : 'Vendor';
+            $phoneNumber = Customer::where('slug', $request->customer_slug)->value('phone_number');
+
+            Log::critical($auth . ' shop order ' . $url[1] . ' error: ' . $phoneNumber);
+            throw $e;
         }
-
-        $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
-        $validatedData['customer_id'] = $customer->id;
-        $validatedData = OrderHelper::prepareProductVariants($validatedData);
-
-        if ($validatedData['promo_code']) {
-            $validatedData = $this->getPromoData($validatedData, $customer);
-        }
-
-        $order = $this->shopOrderTransaction($validatedData);
-
-        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber);
-
-        return $this->generateShopOrderResponse($order, 201);
     }
 
     public function show(ShopOrder $shopOrder)
@@ -142,9 +159,17 @@ class ShopOrderController extends Controller
         }
 
         OrderHelper::createOrderStatus($shopOrder->id, $request->status);
+
+        $orderItems = $shopOrder->vendors->map(function ($vendor) {
+            return $vendor->items;
+        })->collapse()->values()->map(function ($item) {
+            unset($item->shop);
+            $item->slug = Product::where('id', $item->id)->value('slug');
+            return $item;
+        })->toArray();
+
         $shopOrder['order_status'] = $request->status;
-        // NOTE:: check this
-        OrderHelper::sendPushNotifications($shopOrder, $shopOrder->order_items, 'Order Number:' . $shopOrder->invoice_id . ', is now ' . $request->status);
+        OrderHelper::sendPushNotifications($shopOrder, $orderItems, 'Order Number:' . $shopOrder->invoice_id . ', is now ' . $request->status);
 
         if ($request->status === 'cancelled') {
             $message = 'Your order has successfully been ' . $request->status . '.';
@@ -152,7 +177,7 @@ class ShopOrderController extends Controller
             $uniqueKey = StringHelper::generateUniqueSlug();
             $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
 
-            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
         }
 
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);

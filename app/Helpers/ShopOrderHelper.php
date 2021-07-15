@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenException;
 use App\Helpers\StringHelper;
 use App\Jobs\SendPushNotification;
 use App\Jobs\SendSms;
@@ -79,7 +80,7 @@ trait ShopOrderHelper
         $tax = 0;
 
         foreach ($validatedData['order_items'] as $key => $value) {
-            $product = self::validateProductVariations($key, $value);
+            $product = self::getProduct($value['slug']);
             $variations = self::prepareVariations($value);
 
             $amount = $product->price + $variations->sum('price');
@@ -206,7 +207,10 @@ trait ShopOrderHelper
 
     private static function getProduct($slug)
     {
-        return Product::where('slug', $slug)->first();
+        return Product::where('slug', $slug)
+            ->with('productVariations')
+            ->with('productVariations.productVariationValues')
+            ->first();
     }
 
     public static function getShopByProduct($slug)
@@ -262,6 +266,10 @@ trait ShopOrderHelper
             $productId = Product::where('slug', $value['slug'])->value('id');
             $productVariant = ProductVariant::with('product')->where('slug', $value['variant_slug'])->where('is_enable', 1)->first();
 
+            if (!$productVariant) {
+                throw new ForbiddenException('The order_items.' . $key . '.variant is disabled.');
+            }
+
             if ($productId !== $productVariant->product->id) {
                 throw new BadRequestException('The order_items.' . $key . '.variant_slug must be part of the product_slug.', 400);
             }
@@ -293,10 +301,10 @@ trait ShopOrderHelper
         return $validatedData;
     }
 
-    public static function notifySystem($order, $orderItems, $phoneNumber)
+    public static function notifySystem($order, $orderItems, $phoneNumber, $messageService)
     {
         self::sendPushNotifications($order, $orderItems);
-        self::sendSmsNotifications($orderItems, $phoneNumber);
+        self::sendSmsNotifications($orderItems, $phoneNumber, $messageService);
     }
 
     public static function sendPushNotifications($order, $orderItems, $message = null)
@@ -357,11 +365,11 @@ trait ShopOrderHelper
         ];
     }
 
-    public static function sendSmsNotifications($orderItems, $customerPhoneNumber)
+    public static function sendSmsNotifications($orderItems, $customerPhoneNumber, $messageService)
     {
         // self::sendAdminSms();
-        self::sendVendorSms($orderItems);
-        self::sendCustomerSms($customerPhoneNumber);
+        self::sendVendorSms($orderItems, $messageService);
+        self::sendCustomerSms($customerPhoneNumber, $messageService);
     }
 
     private static function sendAdminSms()
@@ -379,7 +387,7 @@ trait ShopOrderHelper
         }
     }
 
-    private static function sendVendorSms($orderItems)
+    private static function sendVendorSms($orderItems, $messageService)
     {
         $vendors = collect($orderItems)->map(function ($item) {
             $shopId = Product::where('slug', $item['slug'])->value('shop_id');
@@ -391,16 +399,16 @@ trait ShopOrderHelper
         $uniqueKey = StringHelper::generateUniqueSlug();
 
         if (count($vendors) > 0) {
-            SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, $vendors, $message, 'order', $smsData, $messageService);
         }
     }
 
-    private static function sendCustomerSms($phoneNumber)
+    private static function sendCustomerSms($phoneNumber, $messageService)
     {
         $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $messageService);
     }
 }

@@ -15,13 +15,22 @@ use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderVendor;
+use App\Services\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ShopOrderController extends Controller
 {
-    use  PromocodeHelper, ResponseHelper, StringHelper;
+    use PromocodeHelper, ResponseHelper, StringHelper;
+
+    protected $messageService;
+
+    public function __construct(MessagingService $messageService)
+    {
+        $this->messageService = $messageService;
+    }
 
     public function index(Request $request)
     {
@@ -81,27 +90,36 @@ class ShopOrderController extends Controller
 
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-        $validatedData = OrderHelper::validateOrder($request, true);
+        try {
+            $request['slug'] = $this->generateUniqueSlug();
+            $validatedData = OrderHelper::validateOrder($request, true);
 
-        if (gettype($validatedData) == 'string') {
-            return $this->generateResponse($validatedData, 422, true);
+            if (gettype($validatedData) == 'string') {
+                return $this->generateResponse($validatedData, 422, true);
+            }
+
+            $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
+            $validatedData['customer_id'] = $customer->id;
+            $validatedData = OrderHelper::prepareProductVariations($validatedData);
+
+            if ($validatedData['promo_code']) {
+                $validatedData = $this->getPromoData($validatedData, $customer);
+            }
+
+            $order = $this->shopOrderTransaction($validatedData);
+
+            $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+            OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber, $this->messageService);
+
+            return $this->generateShopOrderResponse($order, 201);
+        } catch (\Exception $e) {
+            $url = explode('/', $request->path());
+            $auth = $url[2] === 'admin' ? 'Admin' : 'Vendor';
+            $phoneNumber = Customer::where('slug', $request->customer_slug)->value('phone_number');
+
+            Log::critical($auth . ' shop order ' . $url[1] . ' error: ' . $phoneNumber);
+            throw $e;
         }
-
-        $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
-        $validatedData['customer_id'] = $customer->id;
-        $validatedData = OrderHelper::prepareProductVariations($validatedData);
-
-        if ($validatedData['promo_code']) {
-            $validatedData = $this->getPromoData($validatedData, $customer);
-        }
-
-        $order = $this->shopOrderTransaction($validatedData);
-
-        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber);
-
-        return $this->generateShopOrderResponse($order, 201);
     }
 
     private function getPromoData($validatedData, $customer)
@@ -149,43 +167,15 @@ class ShopOrderController extends Controller
 
         OrderHelper::createOrderStatus($shopOrder->id, $request->status);
 
-        $notificaitonData = $this->notificationData([
-            'title' => 'Shop order updated',
-            'body' => 'Shop order just has been updated',
-            'status' => $request->status,
-            'slug' => $shopOrder->slug,
-        ]);
-
         if ($request->status === 'cancelled') {
             $message = 'Your order has been cancelled.';
             $smsData = SmsHelper::prepareSmsData($message);
             $uniqueKey = StringHelper::generateUniqueSlug();
             $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
 
-            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
         }
 
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
-    }
-
-    private function notificationData($data)
-    {
-        return [
-            'title' => $data['title'],
-            'body' => $data['body'],
-            'img' => '',
-            'data' => [
-                'action' => 'update',
-                'type' => 'shopOrder',
-                'status' => $data['status'],
-                'slug' => $data['slug'],
-
-            ],
-        ];
-    }
-
-    private function getShop($slug)
-    {
-        return Shop::where('slug', $slug)->firstOrFail();
     }
 }

@@ -14,21 +14,26 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
+use App\Services\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RestaurantOrderController extends Controller
 {
     use PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     protected $customer;
+    protected $messageService;
 
-    public function __construct()
+    public function __construct(MessagingService $messageService)
     {
         if (Auth::guard('customers')->check()) {
             $this->customer = Auth::guard('customers')->user();
         }
+
+        $this->messageService = $messageService;
     }
 
     public function index(Request $request)
@@ -45,41 +50,49 @@ class RestaurantOrderController extends Controller
 
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-        $validatedData = OrderHelper::validateOrderV3($request);
-
-        if (gettype($validatedData) == 'string') {
-            return $this->generateResponse($validatedData, 422, true);
-        }
-
         try {
-            OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
-        } catch (ForbiddenException $e) {
-            return $this->generateResponse($e->getMessage(), 403, true);
-        }
+            $request['slug'] = $this->generateUniqueSlug();
+            $validatedData = OrderHelper::validateOrderV3($request);
 
-        if ($validatedData['promo_code']) {
+            if (gettype($validatedData) == 'string') {
+                return $this->generateResponse($validatedData, 422, true);
+            }
+
             try {
-                $validatedData = $this->getPromoData($validatedData);
+                $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
             } catch (ForbiddenException $e) {
-                return $this->generateResponse($e->getMessage(), 422, true);
+                return $this->generateResponse($e->getMessage(), 403, true);
             }
-        }
 
-        if ($validatedData['payment_mode'] === 'KPay') {
-            $kPayData = KbzPayHelper::createKbzPay($validatedData, 'restaurant');
-            if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
-                return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            try {
+                OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
+            } catch (ForbiddenException $e) {
+                return $this->generateResponse($e->getMessage(), 403, true);
             }
+
+            if ($validatedData['promo_code']) {
+                $validatedData = $this->getPromoData($validatedData);
+            }
+
+            if ($validatedData['payment_mode'] === 'KPay') {
+                $kPayData = KbzPayHelper::createKbzPay($validatedData, 'restaurant');
+
+                if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
+                    return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+                }
+            }
+
+            $order = $this->restaurantOrderTransaction($validatedData);
+
+            if ($validatedData['payment_mode'] === 'KPay') {
+                $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+            }
+
+            return $this->generateResponse($order, 201);
+        } catch (\Exception $e) {
+            Log::critical('Customer restaurant order v3 error: ' . Auth::guard('customers')->user()->phone_number);
+            throw $e;
         }
-
-        $order = $this->restaurantOrderTransaction($validatedData);
-
-        if ($validatedData['payment_mode'] === 'KPay') {
-            $order['prepay_id'] = $kPayData['Response']['prepay_id'];
-        }
-
-        return $this->generateResponse($order, 201);
     }
 
     public function show($slug)
@@ -95,6 +108,8 @@ class RestaurantOrderController extends Controller
 
     public function destroy($slug)
     {
+        return $this->generateResponse('You cannot cancel order at the moment. Please contact support.', 403, true);
+
         $order = RestaurantOrder::where('slug', $slug)
             ->where('customer_id', $this->customer->id)
             ->firstOrFail();
@@ -107,7 +122,7 @@ class RestaurantOrderController extends Controller
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
-        SendSms::dispatch($uniqueKey, [$this->customer->phone_number], $message, 'order', $smsData);
+        SendSms::dispatch($uniqueKey, [$this->customer->phone_number], $message, 'order', $smsData, $this->messageService);
         OrderHelper::createOrderStatus($order->id, 'cancelled');
 
         return $this->generateResponse($message, 200, true);
@@ -148,9 +163,10 @@ class RestaurantOrderController extends Controller
             OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
+
         $this->assignOrder('restaurant', $order->slug);
 
-        OrderHelper::notifySystem($order, $this->customer->phone_number);
+        OrderHelper::notifySystem($order, $this->customer->phone_number, $this->messageService);
 
         return $order;
     }

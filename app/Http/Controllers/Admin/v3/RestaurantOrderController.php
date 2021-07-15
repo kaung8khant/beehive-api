@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
+use App\Exceptions\ForbiddenException;
 use App\Helpers\CollectionHelper;
 use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
@@ -16,13 +17,22 @@ use App\Models\Promocode;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderItem;
+use App\Services\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RestaurantOrderController extends Controller
 {
-    use  PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
+    use PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
+
+    protected $messageService;
+
+    public function __construct(MessagingService $messageService)
+    {
+        $this->messageService = $messageService;
+    }
 
     public function index(Request $request)
     {
@@ -52,22 +62,37 @@ class RestaurantOrderController extends Controller
 
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-        $validatedData = OrderHelper::validateOrderV3($request, true);
+        try {
+            $request['slug'] = $this->generateUniqueSlug();
+            $validatedData = OrderHelper::validateOrderV3($request, true);
 
-        if (gettype($validatedData) == 'string') {
-            return $this->generateResponse($validatedData, 422, true);
+            if (gettype($validatedData) == 'string') {
+                return $this->generateResponse($validatedData, 422, true);
+            }
+
+            try {
+                $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
+            } catch (ForbiddenException $e) {
+                return $this->generateResponse($e->getMessage(), 403, true);
+            }
+
+            $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
+
+            if ($validatedData['promo_code']) {
+                $validatedData = $this->getPromoData($validatedData, $customer);
+            }
+
+            $order = $this->restaurantOrderTransaction($validatedData);
+
+            return $this->generateResponse($order, 201);
+        } catch (\Exception $e) {
+            $url = explode('/', $request->path());
+            $auth = $url[2] === 'admin' ? 'Admin' : 'Vendor';
+            $phoneNumber = Customer::where('slug', $request->customer_slug)->value('phone_number');
+
+            Log::critical($auth . ' restaurant order ' . $url[1] . ' error: ' . $phoneNumber);
+            throw $e;
         }
-
-        $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
-
-        if ($validatedData['promo_code']) {
-            $validatedData = $this->getPromoData($validatedData, $customer);
-        }
-
-        $order = $this->restaurantOrderTransaction($validatedData);
-
-        return $this->generateResponse($order, 201);
     }
 
     public function show(RestaurantOrder $restaurantOrder)
@@ -86,7 +111,7 @@ class RestaurantOrderController extends Controller
         $uniqueKey = StringHelper::generateUniqueSlug();
         $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
-        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
         OrderHelper::createOrderStatus($restaurantOrder->id, 'cancelled');
 
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
@@ -131,7 +156,7 @@ class RestaurantOrderController extends Controller
         $this->assignOrder('restaurant', $order->slug);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::notifySystem($order, $phoneNumber);
+        OrderHelper::notifySystem($order, $phoneNumber, $this->messageService);
 
         return $order;
     }
@@ -152,7 +177,7 @@ class RestaurantOrderController extends Controller
             $uniqueKey = StringHelper::generateUniqueSlug();
             $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
-            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData);
+            SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
         }
 
         return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
