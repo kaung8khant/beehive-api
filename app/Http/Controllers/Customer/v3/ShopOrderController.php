@@ -71,7 +71,7 @@ class ShopOrderController extends Controller
             $paymentData = [];
             if ($validatedData['payment_mode'] !== 'COD') {
                 try {
-                    return $paymentData = $this->paymentService->createTransaction($validatedData, 'shop');
+                    $paymentData = $this->paymentService->createTransaction($validatedData, 'shop');
                 } catch (ServerException $e) {
                     return $this->generateResponse($e->getMessage(), 500, true);
                 }
