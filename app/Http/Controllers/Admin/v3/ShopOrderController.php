@@ -18,7 +18,6 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
-use App\Models\User;
 use App\Services\MessageService\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -156,17 +155,8 @@ class ShopOrderController extends Controller
 
     public function changeStatus(Request $request, ShopOrder $shopOrder)
     {
-        $super = User::with('roles')
-            ->where('slug', Auth::guard('users')->user()->slug)
-            ->whereHas('roles', function ($q) {
-                $q->where('name', 'SuperAdmin');
-            })
-            ->first();
-
-        if (!$super) {
-            if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
-                return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
-            }
+        if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
         }
 
         OrderHelper::createOrderStatus($shopOrder->id, $request->status);

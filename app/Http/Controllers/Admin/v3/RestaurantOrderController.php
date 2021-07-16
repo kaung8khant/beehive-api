@@ -17,7 +17,6 @@ use App\Models\Promocode;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderItem;
-use App\Models\User;
 use App\Services\MessageService\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -164,20 +163,12 @@ class RestaurantOrderController extends Controller
 
     public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
     {
-        $super = User::with('roles')
-            ->where('slug', Auth::guard('users')->user()->slug)
-            ->whereHas('roles', function ($q) {
-                $q->where('name', 'SuperAdmin');
-            })
-            ->first();
-
-        if (!$super) {
-            if ($restaurantOrder->order_status === 'delivered' || $restaurantOrder->order_status === 'cancelled' || !$super) {
-                return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
-            }
+        if ($restaurantOrder->order_status === 'delivered' || $restaurantOrder->order_status === 'cancelled') {
+            return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
         }
 
         OrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
+
         $restaurantOrder['order_status'] = $request->status;
         OrderHelper::sendPushNotifications($restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);
 
