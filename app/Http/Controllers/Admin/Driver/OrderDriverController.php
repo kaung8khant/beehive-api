@@ -8,6 +8,7 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderDriver;
 use App\Models\RestaurantOrderDriverStatus;
 use App\Models\RestaurantOrderStatus;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -143,5 +144,25 @@ class OrderDriverController extends Controller
         ]);
 
         $restaurantOrder->update(['order_status' => $status]);
+    }
+    public function manualAssignOrder($slug, $driverSlug)
+    {
+        $driverID = User::where('slug', $driverSlug)->first()->id;
+        $orderID = RestaurantOrder::where('slug', $slug)->first()->id;
+        $resOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $orderID)->where('user_id', $driverID)->first();
+
+        if (empty($resOrderDriver)) {
+            $resOrderDriver = RestaurantOrderDriver::create([
+                'restaurant_order_id' => $orderID,
+                'user_id' => $driverID,
+            ]);
+        }
+
+        $resOrderDriverStatus = RestaurantOrderDriverStatus::create([
+            'restaurant_order_driver_id' => $resOrderDriver->id,
+            'status' => 'accepted',
+        ]);
+
+        return $this->generateResponse($resOrderDriverStatus->refresh(), 201);
     }
 }

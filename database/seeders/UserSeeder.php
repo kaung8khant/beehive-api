@@ -22,6 +22,13 @@ class UserSeeder extends Seeder
         $users = [
             [
                 'slug' => $this->generateUniqueSlug(),
+                'username' => 'super',
+                'name' => 'Super',
+                'phone_number' => '09697876457',
+                'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
                 'username' => 'admin',
                 'name' => 'Admin',
                 'phone_number' => '09123456789',

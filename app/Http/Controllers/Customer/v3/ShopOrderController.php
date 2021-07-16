@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Customer\v3;
 
 use App\Exceptions\ForbiddenException;
-use App\Helpers\KbzPayHelper;
+use App\Exceptions\ServerException;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper as OrderHelper;
@@ -13,8 +13,8 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\ShopOrder;
-use App\Services\MessagingService;
-use Carbon\Carbon;
+use App\Services\MessageService\MessagingService;
+use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -26,14 +26,16 @@ class ShopOrderController extends Controller
 
     protected $customer;
     protected $messageService;
+    protected $paymentService;
 
-    public function __construct(MessagingService $messageService)
+    public function __construct(MessagingService $messageService, PaymentService $paymentService)
     {
         if (Auth::guard('customers')->check()) {
             $this->customer = Auth::guard('customers')->user();
         }
 
         $this->messageService = $messageService;
+        $this->paymentService = $paymentService;
     }
 
     public function index(Request $request)
@@ -56,9 +58,6 @@ class ShopOrderController extends Controller
                 return $this->generateResponse($validatedData, 422, true);
             }
 
-            $validatedData['customer_id'] = $this->customer->id;
-            $validatedData['order_date'] = Carbon::now();
-
             try {
                 $validatedData = OrderHelper::prepareProductVariants($validatedData);
             } catch (ForbiddenException $e) {
@@ -69,21 +68,20 @@ class ShopOrderController extends Controller
                 $validatedData = $this->getPromoData($validatedData);
             }
 
-            if ($validatedData['payment_mode'] === 'KPay') {
-                $kPayData = KbzPayHelper::createKbzPay($validatedData, 'shop');
-
-                if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
-                    return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            $paymentData = [];
+            if ($validatedData['payment_mode'] !== 'COD') {
+                try {
+                    return $paymentData = $this->paymentService->createTransaction($validatedData, 'shop');
+                } catch (ServerException $e) {
+                    return $this->generateResponse($e->getMessage(), 500, true);
                 }
             }
 
             $order = $this->shopOrderTransaction($validatedData);
 
             if ($validatedData['payment_mode'] === 'KPay') {
-                $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+                $order['prepay_id'] = $paymentData['Response']['prepay_id'];
             }
-
-            OrderHelper::notifySystem($order, $validatedData['order_items'], $this->customer->phone_number, $this->messageService);
 
             return $this->generateShopOrderResponse($order, 201);
         } catch (\Exception $e) {
@@ -160,6 +158,8 @@ class ShopOrderController extends Controller
             OrderHelper::createOrderStatus($order->id);
             return $order->refresh()->load('contact');
         });
+
+        OrderHelper::notifySystem($order, $validatedData['order_items'], $this->customer->phone_number, $this->messageService);
 
         return $order;
     }

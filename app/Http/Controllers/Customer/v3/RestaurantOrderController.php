@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Customer\v3;
 
 use App\Exceptions\ForbiddenException;
-use App\Helpers\KbzPayHelper;
+use App\Exceptions\ServerException;
 use App\Helpers\OrderAssignHelper;
-use App\Helpers\PromocodeHelper;
+use App\Helpers\v3\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
 use App\Helpers\SmsHelper;
@@ -14,7 +14,8 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
-use App\Services\MessagingService;
+use App\Services\MessageService\MessagingService;
+use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -26,14 +27,16 @@ class RestaurantOrderController extends Controller
 
     protected $customer;
     protected $messageService;
+    protected $paymentService;
 
-    public function __construct(MessagingService $messageService)
+    public function __construct(MessagingService $messageService, PaymentService $paymentService)
     {
         if (Auth::guard('customers')->check()) {
             $this->customer = Auth::guard('customers')->user();
         }
 
         $this->messageService = $messageService;
+        $this->paymentService = $paymentService;
     }
 
     public function index(Request $request)
@@ -74,18 +77,19 @@ class RestaurantOrderController extends Controller
                 $validatedData = $this->getPromoData($validatedData);
             }
 
-            if ($validatedData['payment_mode'] === 'KPay') {
-                $kPayData = KbzPayHelper::createKbzPay($validatedData, 'restaurant');
-
-                if (!$kPayData || $kPayData['Response']['code'] != '0' || $kPayData['Response']['result'] != 'SUCCESS') {
-                    return $this->generateResponse('Error connecting to KBZ Pay service.', 500, true);
+            $paymentData = [];
+            if ($validatedData['payment_mode'] !== 'COD') {
+                try {
+                    $paymentData = $this->paymentService->createTransaction($validatedData, 'restaurant');
+                } catch (ServerException $e) {
+                    return $this->generateResponse($e->getMessage(), 500, true);
                 }
             }
 
             $order = $this->restaurantOrderTransaction($validatedData);
 
             if ($validatedData['payment_mode'] === 'KPay') {
-                $order['prepay_id'] = $kPayData['Response']['prepay_id'];
+                $order['prepay_id'] = $paymentData['Response']['prepay_id'];
             }
 
             return $this->generateResponse($order, 201);
@@ -132,17 +136,17 @@ class RestaurantOrderController extends Controller
     {
         $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
         if (!$promocode) {
-            return $this->generateResponse('Promocode not found', 422, true);
+            throw new ForbiddenException("Promocode not found");
         }
 
         $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
         if (!$validUsage) {
-            return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
+            throw new ForbiddenException("Invalid promocode usage for restaurant.");
         }
 
         $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'restaurant');
         if (!$validRule) {
-            return $this->generateResponse('Invalid promocode.', 422, true);
+            throw new ForbiddenException("Invalid promocode.");
         }
 
         $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
