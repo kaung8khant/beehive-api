@@ -56,7 +56,7 @@ trait SmsHelper
         $params = [
             'batch_id' => $smsData['batchId'],
             'message_id' => isset($smsResponse['message_id']) ? $smsResponse['message_id'] : null,
-            'phone_number' => $phoneNumber,
+            'phone_number' => $phoneNumber ? $phoneNumber : 'unknown',
             'message' => $smsData['message'],
             'message_parts' => $smsData['messageParts'],
             'total_characters' => $smsData['totalCharacters'],
