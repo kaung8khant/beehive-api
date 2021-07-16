@@ -24,11 +24,23 @@ class RestaurantOrder extends BaseModel
         'restaurant_branch_info' => AsArrayObject::class,
     ];
 
-    protected $appends = ['invoice_id', 'total_amount'];
+    protected $appends = ['invoice_id', 'total_amount', 'driver_status'];
 
     public function getInvoiceIdAttribute()
     {
         return sprintf('%08d', $this->id);
+    }
+    public function getDriverStatusAttribute()
+    {
+
+        $restaurantOrderDriver = \App\Models\RestaurantOrderDriver::where('restaurant_order_id', $this->id)->latest()->first();
+        if (!empty($restaurantOrderDriver)) {
+            $driverStatus = \App\Models\RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $restaurantOrderDriver->id)->latest()->value('status');
+        } else {
+            $driverStatus = null;
+        }
+
+        return $driverStatus;
     }
 
     public function getTotalAmountAttribute()

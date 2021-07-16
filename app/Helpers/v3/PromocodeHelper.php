@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Helpers;
+namespace App\Helpers\v3;
 
 use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 trait PromocodeHelper
 {
@@ -36,13 +37,11 @@ trait PromocodeHelper
 
         $isItemRule = false;
         $total = 0;
+
         foreach ($promocode->rules as $data) {
-
-            if (in_array($data['data_type'], array("shop", "brand", "menu", "category"))) {
+            if (in_array($data['data_type'], array("shop", "brand", "menu", "category", "before_date", "after_date"))) {
                 $isItemRule = true;
-
                 foreach ($orderItems as $item) {
-
                     $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
                     $rule = new $_class($promocode, $usage);
 
@@ -51,12 +50,7 @@ trait PromocodeHelper
                         if ($promocode->type === 'fix') {
                             $total += $promocode->amount;
                         } else {
-
-                            $variation = $item['variations']->sum('price');
-                            if (isset($item['toppings'])) {
-                                $variation += $item['variations']->sum('price');
-                            }
-                            $total += ($item['price'] + $variation) * $promocode->amount * 0.01;
+                            $total += ($item['amount']) * $promocode->amount * 0.01;
                         }
                     }
                 }

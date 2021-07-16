@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\MessageService;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -29,6 +29,7 @@ class BoomSmsService extends MessagingService
 
             $response = json_decode($response->getBody(), true);
             $response['status'] = 'Success';
+
             return $response;
         } catch (RequestException $e) {
             throw $e;

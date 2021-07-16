@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\MessageService;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -20,8 +20,14 @@ class SlackMessagingService extends MessagingService
                     ],
                 ]
             );
-            $response = array('status' => 0, 'message_id' => rand(1000000, 9999999), 'to' => $phoneNumber, 'message_count' => 1);
-            // $response = json_decode($response->getBody(), true);
+
+            $response = [
+                'status' => 0,
+                'message_id' => rand(1000000, 9999999),
+                'to' => $phoneNumber,
+                'message_count' => 1,
+            ];
+
             return $response;
         } catch (RequestException $e) {
             throw $e;

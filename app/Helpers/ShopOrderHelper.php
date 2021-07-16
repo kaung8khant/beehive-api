@@ -7,6 +7,7 @@ use App\Exceptions\ForbiddenException;
 use App\Helpers\StringHelper;
 use App\Jobs\SendPushNotification;
 use App\Jobs\SendSms;
+use App\Models\Customer;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductVariationValue;
@@ -17,7 +18,9 @@ use App\Models\ShopOrderItem;
 use App\Models\ShopOrderStatus;
 use App\Models\ShopOrderVendor;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 trait ShopOrderHelper
@@ -221,6 +224,27 @@ trait ShopOrderHelper
 
     public static function validateOrderV3($request, $customerSlug = false)
     {
+        $rules = self::getRulesV3($customerSlug);
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return $validator->errors()->first();
+        }
+
+        $validatedData = $validator->validated();
+
+        if (Auth::guard('customers')->check()) {
+            $validatedData['customer_id'] = Auth::guard('customers')->user()->id;
+            $validatedData['order_date'] = Carbon::now();
+        } else {
+            $validatedData['customer_id'] = Customer::where('slug', $validatedData['customer_slug'])->first()->id;
+        }
+
+        return $validator->validated();
+    }
+
+    private static function getRulesV3($customerSlug)
+    {
         $rules = [
             'slug' => 'required|unique:products',
             'order_date' => 'nullable',
@@ -247,12 +271,7 @@ trait ShopOrderHelper
             $rules['customer_slug'] = 'required|string|exists:App\Models\Customer,slug';
         }
 
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return $validator->errors()->first();
-        }
-
-        return $validator->validated();
+        return $rules;
     }
 
     public static function prepareProductVariants($validatedData)

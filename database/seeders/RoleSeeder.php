@@ -20,6 +20,10 @@ class RoleSeeder extends Seeder
         $roles = [
             [
                 'slug' => $this->generateUniqueSlug(),
+                'name' => 'SuperAdmin',
+            ],
+            [
+                'slug' => $this->generateUniqueSlug(),
                 'name' => 'Admin',
             ],
             [

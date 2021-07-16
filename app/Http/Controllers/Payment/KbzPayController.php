@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers\Payment;
 
+use App\Exceptions\ServerException;
 use App\Helpers\KbzPayHelper;
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\RestaurantOrder;
 use App\Models\ShopOrder;
+use App\Services\PaymentService\KbzPayService;
 use Illuminate\Http\Request;
 
 class KbzPayController extends Controller
 {
+    use ResponseHelper;
+
     public function notify(Request $request)
     {
         $requestData = $request->all();
@@ -30,6 +35,29 @@ class KbzPayController extends Controller
             }
 
             return 'success';
+        }
+    }
+
+    public function pay($orderType, $slug)
+    {
+        if ($orderType === 'shop') {
+            $order = ShopOrder::where('slug', $slug)->firstOrFail();
+        } elseif ($orderType === 'restaurant') {
+            $order = RestaurantOrder::where('slug', $slug)->firstOrFail();
+        } else {
+            return $this->generateResponse('order type must be shop or restaurant', 422, true);
+        }
+
+        $requestData['slug'] = $slug;
+        $requestData['totalAmount'] = $order->total_amount;
+
+        try {
+            $kbzService = new KbzPayService();
+            $paymentData = $kbzService->createTransaction($requestData, $orderType);
+
+            return $this->generateResponse(['prepay_id' => $paymentData['Response']['prepay_id']], 200);
+        } catch (ServerException $e) {
+            return $this->generateResponse($e->getMessage(), 500, true);
         }
     }
 }
