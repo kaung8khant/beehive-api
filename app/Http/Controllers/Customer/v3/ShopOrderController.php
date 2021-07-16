@@ -50,6 +50,8 @@ class ShopOrderController extends Controller
 
     public function store(Request $request)
     {
+        return $this->generateResponse('We will be closed temporarily starting from 17.July.2021 due to the current coronavirus outbreak in Myanmar. Please stay safe and comply with the health advisory and guidelines.', 503, true);
+
         try {
             $request['slug'] = $this->generateUniqueSlug();
             $validatedData = OrderHelper::validateOrderV3($request);
