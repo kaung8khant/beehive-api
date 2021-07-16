@@ -252,7 +252,7 @@ trait ShopOrderHelper
             $validatedData['customer_id'] = Customer::where('slug', $validatedData['customer_slug'])->first()->id;
         }
 
-        return $validator->validated();
+        return $validatedData;
     }
 
     private static function getRulesV3($customerSlug)
