@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Customer\v3;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
 use App\Helpers\OrderAssignHelper;
-use App\Helpers\PromocodeHelper;
+use App\Helpers\v3\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
 use App\Helpers\SmsHelper;
@@ -136,17 +136,17 @@ class RestaurantOrderController extends Controller
     {
         $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
         if (!$promocode) {
-            return $this->generateResponse('Promocode not found', 422, true);
+            throw new ForbiddenException("Promocode not found");
         }
 
         $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
         if (!$validUsage) {
-            return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
+            throw new ForbiddenException("Invalid promocode usage for restaurant.");
         }
 
         $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'restaurant');
         if (!$validRule) {
-            return $this->generateResponse('Invalid promocode.', 422, true);
+            throw new ForbiddenException("Invalid promocode.");
         }
 
         $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');

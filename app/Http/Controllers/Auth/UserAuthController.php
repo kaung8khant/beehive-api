@@ -49,7 +49,7 @@ class UserAuthController extends Controller
             }
 
             $adminRole = $user->roles->contains(function ($role) {
-                return $role->name === 'Admin' || $role->name === "Logistics" || $role->name === "Driver";
+                return $role->name === 'Admin' || $role->name === 'SuperAdmin' || $role->name === "Logistics" || $role->name === "Driver";
             });
 
             if (!$adminRole) {
@@ -78,7 +78,7 @@ class UserAuthController extends Controller
 
     public function getProfile()
     {
-        return response()->json(Auth::guard('users')->user());
+        return response()->json(User::with('roles')->where('slug', Auth::guard('users')->user()->slug)->first());
     }
 
     public function updateProfile(Request $request)
