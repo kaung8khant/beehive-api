@@ -105,13 +105,11 @@ class UserController extends Controller
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'users', $user->slug);
         }
+
         if ($request->roles) {
             $roles = Role::whereIn('name', $request->roles)->pluck('id');
             $user->roles()->attach($roles);
         }
-
-        // $adminRoleId = Role::where('name', 'Admin')->first()->id;
-        // $user->roles()->attach($adminRoleId);
 
         return response()->json($user->refresh()->load('roles'), 201);
     }
@@ -193,7 +191,9 @@ class UserController extends Controller
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'users', $user->slug);
         }
+
         $user->roles()->detach();
+
         if ($request->roles) {
             $roles = Role::whereIn('name', $request->roles)->pluck('id');
             $user->roles()->attach($roles);

@@ -164,7 +164,10 @@ class RestaurantOrderController extends Controller
     public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
     {
         if ($restaurantOrder->order_status === 'delivered' || $restaurantOrder->order_status === 'cancelled') {
-            return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
+            $superUser = Auth::guard('users')->user()->roles->contains('name', 'SuperAdmin');
+            if (!$superUser) {
+                return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
+            }
         }
 
         OrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
