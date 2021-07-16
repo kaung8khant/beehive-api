@@ -120,18 +120,30 @@ trait ShopOrderHelper
         return false;
     }
 
-    public static function createOrderStatus($orderId, $status = 'pending')
+    public static function createOrderStatus($orderId, $orderStatus = 'pending')
     {
-        ShopOrder::where('id', $orderId)->update(['order_status' => $status]);
+        ShopOrder::where('id', $orderId)->update(['order_status' => $orderStatus]);
+
+        $paymentStatus = null;
+
+        if ($orderStatus === 'delivered') {
+            $paymentStatus = 'success';
+        } elseif ($orderStatus === 'cancelled') {
+            $paymentStatus = 'failed';
+        }
+
+        if ($paymentStatus) {
+            ShopOrder::where('id', $orderId)->update(['payment_status' => $paymentStatus]);
+        }
 
         $shopOrderVendor = ShopOrderVendor::where('shop_order_id', $orderId);
-        $shopOrderVendor->update(['order_status' => $status]);
+        $shopOrderVendor->update(['order_status' => $orderStatus]);
         $shopOrderVendor = $shopOrderVendor->get();
 
         foreach ($shopOrderVendor as $vendor) {
             ShopOrderStatus::create([
                 'shop_order_vendor_id' => $vendor->id,
-                'status' => $status,
+                'status' => $orderStatus,
             ]);
         }
     }
