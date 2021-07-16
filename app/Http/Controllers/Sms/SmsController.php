@@ -9,7 +9,7 @@ use App\Jobs\SendSms;
 use App\Models\CustomerGroup;
 use App\Models\SmsCampaign;
 use App\Models\SmsLog;
-use App\Services\MessagingService;
+use App\Services\MessageService\MessagingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

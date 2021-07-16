@@ -15,7 +15,7 @@ use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
-use App\Services\MessagingService;
+use App\Services\MessageService\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;

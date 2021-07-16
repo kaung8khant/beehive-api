@@ -18,7 +18,7 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
-use App\Services\MessagingService;
+use App\Services\MessageService\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -73,23 +73,19 @@ class ShopOrderController extends Controller
                 return $this->generateResponse($validatedData, 422, true);
             }
 
-            $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
-            $validatedData['customer_id'] = $customer->id;
-
             try {
                 $validatedData = OrderHelper::prepareProductVariants($validatedData);
             } catch (ForbiddenException $e) {
                 return $this->generateResponse($e->getMessage(), 403, true);
             }
 
+            $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
+
             if ($validatedData['promo_code']) {
                 $validatedData = $this->getPromoData($validatedData, $customer);
             }
 
             $order = $this->shopOrderTransaction($validatedData);
-
-            $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-            OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber, $this->messageService);
 
             return $this->generateShopOrderResponse($order, 201);
         } catch (\Exception $e) {
@@ -143,13 +139,18 @@ class ShopOrderController extends Controller
 
     private function shopOrderTransaction($validatedData)
     {
-        return DB::transaction(function () use ($validatedData) {
+        $order = DB::transaction(function () use ($validatedData) {
             $order = ShopOrder::create($validatedData);
             OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
             OrderHelper::createOrderStatus($order->id);
             return $order->refresh()->load('contact');
         });
+
+        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+        OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber, $this->messageService);
+
+        return $order;
     }
 
     public function changeStatus(Request $request, ShopOrder $shopOrder)
@@ -189,21 +190,6 @@ class ShopOrderController extends Controller
         if ($vendorShopId !== $shop->id) {
             abort(404);
         }
-
-        // $sorting = CollectionHelper::getSorting('shop_order_vendors', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        // $vendorOrders = ShopOrderVendor::where('shop_id', $shop->id)
-        //     ->where(function ($query) use ($request) {
-        //         $query->whereHas('shopOrder', function ($q) use ($request) {
-        //             $q->where('slug', $request->filter);
-        //         })
-        //             ->orWhereHas('shopOrder.contact', function ($q) use ($request) {
-        //                 $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
-        //                     ->orWhere('phone_number', $request->filter);
-        //             });
-        //     })
-        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-        //     ->paginate(10);
 
         $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 

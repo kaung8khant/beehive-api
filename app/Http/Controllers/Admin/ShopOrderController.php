@@ -15,7 +15,7 @@ use App\Models\Promocode;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderVendor;
-use App\Services\MessagingService;
+use App\Services\MessageService\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
