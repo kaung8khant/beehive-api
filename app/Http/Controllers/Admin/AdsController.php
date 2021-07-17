@@ -18,6 +18,7 @@ class AdsController extends Controller
     {
         $ads = Ads::where('label', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->orderBy('id')
             ->get();
         return $this->generateResponse($ads, 200);
     }
