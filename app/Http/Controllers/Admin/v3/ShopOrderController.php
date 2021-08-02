@@ -18,7 +18,6 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
-use App\Models\User;
 use App\Services\MessageService\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -220,7 +219,7 @@ class ShopOrderController extends Controller
         }
 
         $result = $vendorOrders->map(function ($order) {
-            $shopOrder = ShopOrder::find($order->shop_order_id)->toArray();
+            $shopOrder = ShopOrder::with('contact')->find($order->shop_order_id)->toArray();
             unset($shopOrder['vendors']);
 
             $order->shop_order = $shopOrder;
