@@ -32,7 +32,6 @@ class RestaurantOrder extends BaseModel
     }
     public function getDriverStatusAttribute()
     {
-
         $restaurantOrderDriver = \App\Models\RestaurantOrderDriver::where('restaurant_order_id', $this->id)->latest()->first();
         if (!empty($restaurantOrderDriver)) {
             $driverStatus = \App\Models\RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $restaurantOrderDriver->id)->latest()->value('status');
