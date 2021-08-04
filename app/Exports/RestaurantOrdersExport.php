@@ -20,7 +20,6 @@ class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
     {
         $this->from = $from;
         $this->to = $to;
-        ini_set('memory_limit', '256M');
     }
 
     public function query()
@@ -36,6 +35,7 @@ class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
         $contact = RestaurantOrderContact::where('restaurant_order_id', $restaurantOrder->id);
         $floor = $contact->value('floor') ? ', (' . $contact->value('floor') . ') ,' : ',';
         $address = 'No.' . $contact->value('house_number') . $floor . $contact->value('street_name');
+
         return [
             $restaurantOrder->slug,
             $restaurantOrder->invoice_id,
@@ -75,7 +75,6 @@ class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
     public function styles(Worksheet $sheet)
     {
         return [
-            // Style the first row as bold text.
             1 => ['font' => ['bold' => true]],
             'A' => ['alignment' => ['horizontal' => 'center']],
             'B' => ['alignment' => ['horizontal' => 'center']],

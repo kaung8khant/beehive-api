@@ -194,8 +194,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::post('attendances', 'Admin\Driver\DriverController@attendance');
             Route::get('attendances', 'Admin\Driver\DriverController@getCheckin');
 
-
-
             /* End Driver */
 
             Route::get('shop-commissions', 'Admin\CommissionController@getShopOrderCommissions');

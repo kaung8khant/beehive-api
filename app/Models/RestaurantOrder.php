@@ -43,6 +43,42 @@ class RestaurantOrder extends BaseModel
         return $driverStatus;
     }
 
+    public function getAmountAttribute()
+    {
+        $orderItems = $this->restaurantOrderItems;
+        $amount = 0;
+
+        foreach ($orderItems as $item) {
+            $amount += $item->amount * $item->quantity;
+        }
+
+        return $amount;
+    }
+
+    public function getTaxAttribute()
+    {
+        $orderItems = $this->restaurantOrderItems;
+        $tax = 0;
+
+        foreach ($orderItems as $item) {
+            $tax += $item->tax * $item->quantity;
+        }
+
+        return $tax;
+    }
+
+    public function getDiscountAttribute()
+    {
+        $orderItems = $this->restaurantOrderItems;
+        $discount = 0;
+
+        foreach ($orderItems as $item) {
+            $discount += $item->discount * $item->quantity;
+        }
+
+        return $discount;
+    }
+
     public function getTotalAmountAttribute()
     {
         $orderItems = $this->restaurantOrderItems;
