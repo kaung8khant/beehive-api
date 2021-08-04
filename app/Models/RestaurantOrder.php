@@ -28,14 +28,14 @@ class RestaurantOrder extends BaseModel
 
     public function getInvoiceIdAttribute()
     {
-        return sprintf('%08d', $this->id);
+        return 'BHR' . sprintf('%08d', $this->id);
     }
     public function getDriverStatusAttribute()
     {
+        $restaurantOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $this->id)->latest()->first();
 
-        $restaurantOrderDriver = \App\Models\RestaurantOrderDriver::where('restaurant_order_id', $this->id)->latest()->first();
         if (!empty($restaurantOrderDriver)) {
-            $driverStatus = \App\Models\RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $restaurantOrderDriver->id)->latest()->value('status');
+            $driverStatus = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $restaurantOrderDriver->id)->latest()->value('status');
         } else {
             $driverStatus = null;
         }
