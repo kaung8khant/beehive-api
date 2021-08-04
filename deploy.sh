@@ -11,3 +11,6 @@ php artisan config:cache
 
 # Optimize route loading
 php artisan route:cache
+
+# Optimize event cache
+php artisan event:cache
