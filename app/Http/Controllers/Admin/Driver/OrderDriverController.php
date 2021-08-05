@@ -50,7 +50,7 @@ class OrderDriverController extends Controller
 
     public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
     {
-        $request->validate(['status' => 'in:accepted,rejected,pickup,delivered']);
+        $request->validate(['status' => 'in:accepted,rejected,pickUp,delivered']);
 
         if (in_array($restaurantOrder->order_status, ['delivered', 'cancelled'])) {
             $message = 'The order is already ' . $restaurantOrder->order_status;
@@ -88,20 +88,20 @@ class OrderDriverController extends Controller
     {
         switch ($status) {
             case 'accepted':
-                if (in_array($driverStatus, ['rejected', 'no-response', 'pickup', 'delivered'])) {
+                if (in_array($driverStatus, ['rejected', 'no-response', 'pickUp', 'delivered'])) {
                     return ['status' => 'failed', 'message' => 'Already ' . $driverStatus, 'code' => 406];
                 }
                 return true;
                 break;
 
             case 'rejected':
-                if (in_array($driverStatus, ['no-response', 'pickup', 'delivered'])) {
+                if (in_array($driverStatus, ['no-response', 'pickUp', 'delivered'])) {
                     return ['status' => 'failed', 'message' => 'Already ' . $driverStatus, 'code' => 406];
                 }
                 return true;
                 break;
 
-            case 'pickup':
+            case 'pickUp':
                 if ($driverStatus !== 'accepted') {
                     return ['status' => 'failed', 'message' => 'Please accept first.', 'code' => 406];
                 }
@@ -113,7 +113,7 @@ class OrderDriverController extends Controller
                 break;
 
             case 'delivered':
-                if ($driverStatus !== 'pickup') {
+                if ($driverStatus !== 'pickUp') {
                     return ['status' => 'failed', 'message' => 'Please pick up first.', 'code' => 406];
                 }
 
@@ -130,7 +130,7 @@ class OrderDriverController extends Controller
 
     private function changeOrderStatus($driverStatus, $restaurantOrder)
     {
-        if ($driverStatus === 'pickup') {
+        if ($driverStatus === 'pickUp') {
             $this->createOrderStatus($restaurantOrder, 'onRoute');
         } elseif ($driverStatus === 'delivered') {
             $this->createOrderStatus($restaurantOrder, 'delivered');
