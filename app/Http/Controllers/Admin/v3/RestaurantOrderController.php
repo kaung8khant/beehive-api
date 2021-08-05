@@ -47,7 +47,8 @@ class RestaurantOrderController extends Controller
                 ->orWhereHas('restaurant', function ($query) use ($request) {
                     $query->where('name', $request->filter);
                 })
-                ->orWhere('id', ltrim($request->filter, '0'))
+
+                ->orWhere('id', ltrim(ltrim($request->filter, 'BHR'), '0'))
                 ->orderBy($sorting['orderBy'], $sorting['sortBy'])
                 ->get();
         } else {
@@ -203,7 +204,7 @@ class RestaurantOrderController extends Controller
                     $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
                         ->orWhere('phone_number', $request->filter);
                 })
-                ->orWhere('id', ltrim($request->filter, '0'))
+                ->orWhere('id', ltrim(ltrim($request->filter, 'BHR'), '0'))
                 ->orderBy($sorting['orderBy'], $sorting['sortBy'])
                 ->get();
         } else {
