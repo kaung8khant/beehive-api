@@ -11,6 +11,7 @@ use App\Models\RestaurantOrderStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class OrderDriverController extends Controller
 {
@@ -27,6 +28,7 @@ class OrderDriverController extends Controller
     {
         $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact')
             ->where('order_status', '!=', 'cancelled')
+            ->whereDate('created_at', '>=', Carbon::now()->subDays(3)->startOfDay())
             ->whereHas('drivers', function ($q) {
                 $q->where('user_id', $this->driver->id);
             })
