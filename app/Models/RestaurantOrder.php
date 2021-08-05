@@ -28,19 +28,55 @@ class RestaurantOrder extends BaseModel
 
     public function getInvoiceIdAttribute()
     {
-        return sprintf('%08d', $this->id);
+        return 'BHR' . sprintf('%08d', $this->id);
     }
     public function getDriverStatusAttribute()
     {
+        $restaurantOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $this->id)->latest()->first();
 
-        $restaurantOrderDriver = \App\Models\RestaurantOrderDriver::where('restaurant_order_id', $this->id)->latest()->first();
         if (!empty($restaurantOrderDriver)) {
-            $driverStatus = \App\Models\RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $restaurantOrderDriver->id)->latest()->value('status');
+            $driverStatus = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $restaurantOrderDriver->id)->latest()->value('status');
         } else {
             $driverStatus = null;
         }
 
         return $driverStatus;
+    }
+
+    public function getAmountAttribute()
+    {
+        $orderItems = $this->restaurantOrderItems;
+        $amount = 0;
+
+        foreach ($orderItems as $item) {
+            $amount += $item->amount * $item->quantity;
+        }
+
+        return $amount;
+    }
+
+    public function getTaxAttribute()
+    {
+        $orderItems = $this->restaurantOrderItems;
+        $tax = 0;
+
+        foreach ($orderItems as $item) {
+            $tax += $item->tax * $item->quantity;
+        }
+
+        return $tax;
+    }
+
+    public function getDiscountAttribute()
+    {
+        $orderItems = $this->restaurantOrderItems;
+        $discount = 0;
+
+        foreach ($orderItems as $item) {
+            $discount += $item->discount * $item->quantity;
+        }
+
+        return $discount;
     }
 
     public function getTotalAmountAttribute()

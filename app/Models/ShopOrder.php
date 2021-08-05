@@ -26,7 +26,7 @@ class ShopOrder extends BaseModel
 
     public function getInvoiceIdAttribute()
     {
-        return sprintf('%08d', $this->id);
+        return 'BHS' . sprintf('%08d', $this->id);
     }
 
     public function getTotalAmountAttribute()

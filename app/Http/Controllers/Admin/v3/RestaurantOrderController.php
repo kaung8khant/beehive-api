@@ -97,7 +97,7 @@ class RestaurantOrderController extends Controller
 
     public function show(RestaurantOrder $restaurantOrder)
     {
-        return $this->generateResponse($restaurantOrder->load('RestaurantOrderContact', 'RestaurantOrderItems', 'restaurantOrderStatuses'), 200);
+        return $this->generateResponse($restaurantOrder->load('RestaurantOrderContact', 'RestaurantOrderItems', 'restaurantOrderStatuses', 'drivers.driver'), 200);
     }
 
     public function destroy(RestaurantOrder $restaurantOrder)

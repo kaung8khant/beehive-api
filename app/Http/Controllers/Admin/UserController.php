@@ -29,7 +29,7 @@ class UserController extends Controller
 
         return User::with('roles')
             ->whereHas('roles', function ($q) {
-                $q->where('name', 'Admin')->orWhere('name', 'ShopAdmin');
+                $q->where('name', 'Admin')->orWhere('name', 'SuperAdmin');
             })
             ->where(function ($q) use ($request) {
                 $q->where('username', 'LIKE', '%' . $request->filter . '%')

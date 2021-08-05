@@ -43,5 +43,15 @@ return [
         'vendor-shop-order' => 'VendorShopOrdersExport',
         'restaurant-branch-menu' => 'RestaurantBranchMenusExport',
         'restaurant-menu' => 'RestaurantMenuExport',
+
+        'restaurant-sales' => 'Sales\RestaurantSalesExport',
+        'restaurant-vendor-sales' => 'Sales\RestaurantVendorSalesExport',
+        'restaurant-branch-sales' => 'Sales\RestaurantBranchSalesExport',
+        'restaurant-vendor-invoice' => 'Sales\RestaurantVendorInvoiceExport',
+    ],
+    'name' => [
+        'restaurant-vendor-sales',
+        'restaurant-branch-sales',
+        'restaurant-vendor-invoice',
     ],
 ];

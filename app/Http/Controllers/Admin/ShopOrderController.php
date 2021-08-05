@@ -85,7 +85,7 @@ class ShopOrderController extends Controller
         } else {
             $shopOrder['assign'] = null;
         }
-        return $this->generateResponse($shopOrder->load('contact', 'vendors', 'drivers', 'drivers.status'), 200);
+        return $this->generateResponse($shopOrder->load('contact', 'vendors', 'drivers', 'drivers.driver', 'drivers.status'), 200);
     }
 
     public function store(Request $request)
