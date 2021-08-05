@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Helpers\CollectionHelper;
 
 class Restaurant extends BaseModel
 {
@@ -22,12 +21,13 @@ class Restaurant extends BaseModel
         'is_enable' => 'boolean',
     ];
 
-    protected $appends = ['rating', 'images', 'covers','first_order_date'];
+    protected $appends = ['rating', 'images', 'covers', 'first_order_date'];
 
     public function getFirstOrderDateAttribute()
     {
         $restaurantOrder = RestaurantOrder::where('restaurant_id', $this->id)
-        ->orderByDesc('id')->first();
+            ->orderByDesc('id')
+            ->first();
 
         return $restaurantOrder ? $restaurantOrder->order_date : null;
     }
