@@ -18,7 +18,6 @@ class RestaurantMenuExport implements FromQuery, WithHeadings, WithMapping, With
     public function __construct(string $params)
     {
         $this->params = $params;
-        ini_set('memory_limit', '256M');
     }
 
     public function query()

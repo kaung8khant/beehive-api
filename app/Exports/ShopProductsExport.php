@@ -20,7 +20,6 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
     public function __construct(string $params)
     {
         $this->params = $params;
-        ini_set('memory_limit', '256M');
     }
 
     public function query()

@@ -17,7 +17,6 @@ class SmsLogsExport implements FromQuery, WithHeadings, WithMapping, WithStyles,
     {
         $this->from = $from;
         $this->to = $to;
-        ini_set('memory_limit', '256M');
     }
 
     public function query()

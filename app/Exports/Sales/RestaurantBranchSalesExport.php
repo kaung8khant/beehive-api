@@ -42,7 +42,7 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
         $restaurantBranch = RestaurantBranch::with('restaurant')->where('slug', $this->param)->first();
 
         $restaurantOrders = RestaurantOrder::where('restaurant_branch_id', $restaurantBranch->id)
-            ->whereBetween('order_date', array($this->from, $this->to))
+            ->whereBetween('order_date', [$this->from, $this->to])
             ->get();
 
         $this->result = $restaurantOrders->map(function ($order, $key) use ($restaurantBranch) {

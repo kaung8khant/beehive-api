@@ -123,6 +123,9 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::get('excels/export/{type}', 'Excel\ExportImportController@export');
         Route::get('excels/export/{type}/{params}', 'Excel\ExportImportController@exportWithParams');
 
+        Route::get('reports/restaurant-orders/vendor/{slug}', 'Report\RestaurantOrderController@getVendorOrders');
+        Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
+
         Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
 
         Route::get('shops/{shop}/commissions', 'Admin\CommissionController@getOneShopOrderCommissions');
