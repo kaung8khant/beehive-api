@@ -26,7 +26,7 @@ class Restaurant extends BaseModel
     public function getFirstOrderDateAttribute()
     {
         $restaurantOrder = RestaurantOrder::where('restaurant_id', $this->id)
-            ->first();
+        ->orderBy('order_date', 'ASC')->first();
 
         return $restaurantOrder ? $restaurantOrder->order_date : null;
     }
