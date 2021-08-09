@@ -111,7 +111,7 @@ class RestaurantOrderController extends Controller
                 'payment_mode' => $order->payment_mode,
                 'payment_status' => $order->payment_status,
                 'order_status' => $order->order_status,
-                'order_type' => $order->delivery_mode,
+                'order_type' => $order->order_type,
                 'special_instructions' => $order->special_instruction,
             ];
         }
@@ -123,7 +123,7 @@ class RestaurantOrderController extends Controller
             'commission_ct_sum' => $commissionCtSum,
             'balance_sum' => $balanceSum,
             'total' => $restaurantOrders->total(),
-            'data' => $data,
+            'invoice' => $data,
         ];
 
         return $result;
