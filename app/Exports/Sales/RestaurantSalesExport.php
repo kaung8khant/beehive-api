@@ -38,7 +38,7 @@ class RestaurantSalesExport implements FromCollection, WithColumnFormatting, Wit
 
     public function collection()
     {
-        $restaurantOrders = RestaurantOrder::whereBetween('order_date', array($this->from, $this->to))
+        $restaurantOrders = RestaurantOrder::whereBetween('order_date', [$this->from, $this->to])
             ->orderBy('restaurant_id')
             ->orderBy('restaurant_branch_id')
             ->orderBy('id')

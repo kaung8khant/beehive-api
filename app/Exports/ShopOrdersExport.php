@@ -19,7 +19,6 @@ class ShopOrdersExport implements FromCollection, WithHeadings, WithStyles, With
     {
         $this->from = $from;
         $this->to = $to;
-        ini_set('memory_limit', '256M');
     }
 
     public function collection()

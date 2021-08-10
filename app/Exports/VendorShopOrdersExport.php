@@ -21,7 +21,6 @@ class VendorShopOrdersExport implements FromCollection, WithHeadings, WithStyles
         $this->params = $params;
         $this->from = $from;
         $this->to = $to;
-        ini_set('memory_limit', '256M');
     }
 
     public function collection()

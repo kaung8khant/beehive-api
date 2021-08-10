@@ -42,7 +42,7 @@ class RestaurantVendorSalesExport implements FromCollection, WithColumnFormattin
     {
         $restaurant = Restaurant::where('slug', $this->param)->first();
         $restaurantOrders = RestaurantOrder::where('restaurant_id', $restaurant->id)
-            ->whereBetween('order_date', array($this->from, $this->to))
+            ->whereBetween('order_date', [$this->from, $this->to])
             ->orderBy('restaurant_branch_id')
             ->orderBy('id')
             ->get();

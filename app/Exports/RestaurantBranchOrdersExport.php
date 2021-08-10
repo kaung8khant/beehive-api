@@ -21,7 +21,6 @@ class RestaurantBranchOrdersExport implements FromQuery, WithHeadings, WithMappi
         $this->params = $params;
         $this->from = $from;
         $this->to = $to;
-        ini_set('memory_limit', '256M');
     }
 
     public function query()

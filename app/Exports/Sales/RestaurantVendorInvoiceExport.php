@@ -36,7 +36,7 @@ class RestaurantVendorInvoiceExport implements WithColumnFormatting, WithColumnW
         $restaurant = Restaurant::where('slug', $this->param)->first();
         $restaurantOrders = RestaurantOrder::where('restaurant_id', $restaurant->id)
             ->where('order_status', '<>', 'cancelled')
-            ->whereBetween('order_date', array($this->from, $this->to))
+            ->whereBetween('order_date', [$this->from, $this->to])
             ->get();
 
         $commissionSum = 0;

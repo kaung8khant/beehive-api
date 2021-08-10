@@ -164,6 +164,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('excels/export/{type}', 'Excel\ExportImportController@export');
             Route::get('excels/export/{type}/{params}', 'Excel\ExportImportController@exportWithParams');
 
+            Route::get('reports/restaurant-orders/all', 'Report\RestaurantOrderController@getAllOrders');
+            Route::get('reports/restaurant-orders/vendor/{slug}', 'Report\RestaurantOrderController@getVendorOrders');
+            Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
+
             Route::get('pages', 'Admin\PageController@index');
             Route::get('pages/{page}', 'Admin\PageController@show');
             Route::patch('pages/{page}', 'Admin\PageController@update');
