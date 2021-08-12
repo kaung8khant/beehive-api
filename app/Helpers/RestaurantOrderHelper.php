@@ -39,7 +39,7 @@ trait RestaurantOrderHelper
             'delivery_mode' => 'required|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
-            'order_type' => 'nullable|in:instant,schedule,pickup',
+            'order_type' => 'nullable|string',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
@@ -315,7 +315,7 @@ trait RestaurantOrderHelper
             'delivery_mode' => 'required|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
-            'order_type' => 'nullable|in:instant,schedule,pickup',
+            'order_type' => 'nullable|string',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
@@ -446,7 +446,6 @@ trait RestaurantOrderHelper
 
     private static function sendDriverPushNotifications($order, $branchId, $message = null)
     {
-
         $orderID = RestaurantOrder::where('slug', $order['slug'])->pluck('id');
         $driverID =  RestaurantOrderDriver::where('restaurant_order_id', $orderID)->whereHas('status', function ($q) {
             $q->where('status', '!=', 'accepted');

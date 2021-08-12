@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Customer\v3;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
 use App\Helpers\OrderAssignHelper;
-use App\Helpers\v3\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
+use App\Helpers\v3\PromocodeHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
@@ -90,6 +90,9 @@ class RestaurantOrderController extends Controller
 
             if ($validatedData['payment_mode'] === 'KPay') {
                 $order['prepay_id'] = $paymentData['Response']['prepay_id'];
+            } else if ($validatedData['payment_mode'] === 'CBPay') {
+                $order['mer_dqr_code'] = $paymentData['merDqrCode'];
+                $order['trans_ref'] = $paymentData['transRef'];
             }
 
             return $this->generateResponse($order, 201);
