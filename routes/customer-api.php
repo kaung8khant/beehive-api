@@ -122,6 +122,8 @@ Route::group([
         Route::resource('shop-orders', 'ShopOrderController', ['as' => 'customer-v3-shop', 'except' => ['create', 'edit']]);
 
         Route::post('kbz/pay/{orderType}/{slug}', '\App\Http\Controllers\Payment\KbzPayController@pay');
+        Route::post('cb/pay/{orderType}/{slug}', '\App\Http\Controllers\Payment\CbPayController@pay');
+        Route::get('cb/check/{orderType}/{slug}', '\App\Http\Controllers\Payment\CbPayController@checkTransaction');
 
         //Promo code
         Route::post('promocode/validate', 'PromocodeController@validatePromoCode');
