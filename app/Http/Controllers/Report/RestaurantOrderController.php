@@ -13,10 +13,10 @@ class RestaurantOrderController extends Controller
 {
     public function getAllOrders(Request $request)
     {
-        $request->validate([
-            'from' => 'required|date_format:Y-m-d',
-            'to' => 'required|date_format:Y-m-d',
-        ]);
+        // $request->validate([
+        //     'from' => 'required|date_format:Y-m-d',
+        //     'to' => 'required|date_format:Y-m-d',
+        // ]);
 
         $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
             ->whereBetween('order_date', [$request->from, $request->to])
@@ -30,10 +30,10 @@ class RestaurantOrderController extends Controller
 
     public function getVendorOrders(Request $request, $slug)
     {
-        $request->validate([
-            'from' => 'required|date_format:Y-m-d',
-            'to' => 'required|date_format:Y-m-d',
-        ]);
+        // $request->validate([
+        //     'from' => 'required|date_format:Y-m-d',
+        //     'to' => 'required|date_format:Y-m-d',
+        // ]);
 
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
@@ -50,10 +50,10 @@ class RestaurantOrderController extends Controller
 
     public function getBranchOrders(Request $request, $slug)
     {
-        $request->validate([
-            'from' => 'required|date_format:Y-m-d',
-            'to' => 'required|date_format:Y-m-d',
-        ]);
+        // $request->validate([
+        //     'from' => 'required|date_format:Y-m-d',
+        //     'to' => 'required|date_format:Y-m-d',
+        // ]);
 
         $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
 
