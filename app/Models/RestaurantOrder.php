@@ -24,23 +24,11 @@ class RestaurantOrder extends BaseModel
         'restaurant_branch_info' => AsArrayObject::class,
     ];
 
-    protected $appends = ['invoice_id', 'total_amount', 'driver_status'];
+    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount', 'driver_status'];
 
     public function getInvoiceIdAttribute()
     {
         return 'BHR' . sprintf('%08d', $this->id);
-    }
-    public function getDriverStatusAttribute()
-    {
-        $restaurantOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $this->id)->latest()->first();
-
-        if (!empty($restaurantOrderDriver)) {
-            $driverStatus = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $restaurantOrderDriver->id)->latest()->value('status');
-        } else {
-            $driverStatus = null;
-        }
-
-        return $driverStatus;
     }
 
     public function getAmountAttribute()
@@ -90,6 +78,19 @@ class RestaurantOrder extends BaseModel
         }
 
         return $totalAmount - $this->promocode_amount;
+    }
+
+    public function getDriverStatusAttribute()
+    {
+        $restaurantOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $this->id)->latest()->first();
+
+        if (!empty($restaurantOrderDriver)) {
+            $driverStatus = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $restaurantOrderDriver->id)->latest()->value('status');
+        } else {
+            $driverStatus = null;
+        }
+
+        return $driverStatus;
     }
 
     public function restaurant()

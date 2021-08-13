@@ -26,6 +26,13 @@ class Customer extends Authenticatable implements JWTSubject
         'is_enable' => 'boolean',
     ];
 
+    protected $appends = ['primary_address'];
+
+    public function getPrimaryAddressAttribute()
+    {
+        return $this->addresses->firstWhere('is_primary', 1);
+    }
+
     public function getRouteKeyName()
     {
         return 'slug';
