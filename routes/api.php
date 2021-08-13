@@ -245,6 +245,14 @@ Route::group([
     Route::delete('shop-orders/{shopOrder}/shop-order-items/{shopOrderItem}/cancel', 'ShopOrderController@cancelOrderItem');
 });
 
+Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {
+    Route::get('restaurants/carts', 'Cart\RestaurantCartController@viewCart');
+    Route::post('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@store');
+    Route::put('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@update');
+    Route::delete('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@delete');
+    Route::delete('restaurants/carts/{slug}', 'Cart\RestaurantCartController@deleteCart');
+});
+
 /*
  * -----------
  * Vendor API
