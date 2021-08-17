@@ -18,7 +18,6 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
-use App\Models\User;
 use App\Services\MessageService\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,7 +46,7 @@ class ShopOrderController extends Controller
                 ->orWhereHas('contact', function ($query) use ($request) {
                     $query->where('phone_number', $request->filter)->orWhere('customer_name', 'LIKE', '%' . $request->filter . '%');
                 })
-                ->orWhere('id', ltrim($request->filter, '0'))
+                ->orWhere('id', ltrim(ltrim($request->filter, 'BHS'), '0'))
                 ->get()
                 ->map(function ($shopOrder) {
                     return $shopOrder->makeHidden('vendors');
@@ -201,7 +200,7 @@ class ShopOrderController extends Controller
             $vendorOrders = ShopOrderVendor::where('shop_id', $shop->id)
                 ->where(function ($query) use ($request) {
                     $query->whereHas('shopOrder', function ($q) use ($request) {
-                        $q->where('id', ltrim($request->filter, '0'));
+                        $q->orWhere('id', ltrim(ltrim($request->filter, 'BHS'), '0'));
                     })
                         ->orWhereHas('shopOrder.contact', function ($q) use ($request) {
                             $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
@@ -220,7 +219,7 @@ class ShopOrderController extends Controller
         }
 
         $result = $vendorOrders->map(function ($order) {
-            $shopOrder = ShopOrder::find($order->shop_order_id)->toArray();
+            $shopOrder = ShopOrder::with('contact')->find($order->shop_order_id)->toArray();
             unset($shopOrder['vendors']);
 
             $order->shop_order = $shopOrder;

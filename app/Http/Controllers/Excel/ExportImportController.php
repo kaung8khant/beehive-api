@@ -56,7 +56,13 @@ class ExportImportController extends Controller
     {
         try {
             $_class = '\App\Exports\\' . config("export-import.export.{$type}");
-            return Excel::download(new $_class($params, $request->from, $request->to), $type . '-export.xlsx');
+            $fileName = $type . '-export.xlsx';
+
+            if (in_array($type, config('export-import.name'))) {
+                $fileName = $params . '-' . $type . '-export.xlsx';
+            }
+
+            return Excel::download(new $_class($params, $request->from, $request->to), $fileName);
         } catch (\Exception $e) {
             $this->deleteTmpFilesWhenFailed();
             return response()->json(['message' => 'failed'], 400);

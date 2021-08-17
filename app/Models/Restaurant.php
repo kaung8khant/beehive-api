@@ -21,7 +21,15 @@ class Restaurant extends BaseModel
         'is_enable' => 'boolean',
     ];
 
-    protected $appends = ['rating', 'images', 'covers'];
+    protected $appends = ['rating', 'images', 'covers', 'first_order_date'];
+
+    public function getFirstOrderDateAttribute()
+    {
+        $restaurantOrder = RestaurantOrder::where('restaurant_id', $this->id)
+        ->orderBy('order_date', 'ASC')->first();
+
+        return $restaurantOrder ? $restaurantOrder->order_date : null;
+    }
 
     public function getRatingAttribute()
     {

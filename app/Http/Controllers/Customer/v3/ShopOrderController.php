@@ -50,8 +50,8 @@ class ShopOrderController extends Controller
 
     public function store(Request $request)
     {
-        return $this->generateResponse('We are closed temporarily starting from 17.July.2021 due to the current coronavirus outbreak in Myanmar.
-        We are sorry for any inconvenience caused and we will see you again soon.', 503, true);
+        // return $this->generateResponse('We are closed temporarily starting from 17.July.2021 due to the current coronavirus outbreak in Myanmar.
+        // We are sorry for any inconvenience caused and we will see you again soon.', 503, true);
 
         try {
             $request['slug'] = $this->generateUniqueSlug();
@@ -84,6 +84,9 @@ class ShopOrderController extends Controller
 
             if ($validatedData['payment_mode'] === 'KPay') {
                 $order['prepay_id'] = $paymentData['Response']['prepay_id'];
+            } else if ($validatedData['payment_mode'] === 'CBPay') {
+                $order['mer_dqr_code'] = $paymentData['merDqrCode'];
+                $order['trans_ref'] = $paymentData['transRef'];
             }
 
             return $this->generateShopOrderResponse($order, 201);

@@ -164,6 +164,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('excels/export/{type}', 'Excel\ExportImportController@export');
             Route::get('excels/export/{type}/{params}', 'Excel\ExportImportController@exportWithParams');
 
+            Route::get('reports/restaurant-orders/all', 'Report\RestaurantOrderController@getAllOrders');
+            Route::get('reports/restaurant-orders/vendor/{slug}', 'Report\RestaurantOrderController@getVendorOrders');
+            Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
+
             Route::get('pages', 'Admin\PageController@index');
             Route::get('pages/{page}', 'Admin\PageController@show');
             Route::patch('pages/{page}', 'Admin\PageController@update');
@@ -193,8 +197,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
 
             Route::post('attendances', 'Admin\Driver\DriverController@attendance');
             Route::get('attendances', 'Admin\Driver\DriverController@getCheckin');
-
-
 
             /* End Driver */
 
@@ -241,6 +243,14 @@ Route::group([
     Route::resource('shop-orders', 'ShopOrderController', ['as' => 'admin-v3-shop', 'except' => ['create', 'edit']]);
     Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
     Route::delete('shop-orders/{shopOrder}/shop-order-items/{shopOrderItem}/cancel', 'ShopOrderController@cancelOrderItem');
+});
+
+Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {
+    Route::get('restaurants/carts', 'Cart\RestaurantCartController@viewCart');
+    Route::post('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@store');
+    Route::put('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@update');
+    Route::delete('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@delete');
+    Route::delete('restaurants/carts/{slug}', 'Cart\RestaurantCartController@deleteCart');
 });
 
 /*

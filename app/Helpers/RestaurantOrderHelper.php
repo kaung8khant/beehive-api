@@ -17,6 +17,7 @@ use App\Models\MenuVariationValue;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderContact;
+use App\Models\RestaurantOrderDriver;
 use App\Models\RestaurantOrderItem;
 use App\Models\RestaurantOrderStatus;
 use App\Models\Setting;
@@ -38,7 +39,7 @@ trait RestaurantOrderHelper
             'delivery_mode' => 'required|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
-            'order_type' => 'nullable|in:instant,schedule,pickup',
+            'order_type' => 'nullable|string',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
@@ -314,7 +315,7 @@ trait RestaurantOrderHelper
             'delivery_mode' => 'required|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
-            'order_type' => 'nullable|in:instant,schedule,pickup',
+            'order_type' => 'nullable|string',
             'customer_info' => 'required',
             'customer_info.customer_name' => 'required|string',
             'customer_info.phone_number' => 'required|string',
@@ -404,6 +405,7 @@ trait RestaurantOrderHelper
         $order = json_decode(json_encode($order), true);
         self::sendAdminPushNotifications($order, $message);
         self::sendVendorPushNotifications($order, $branchId, $message);
+        self::sendDriverPushNotifications($order, $branchId, $message);
     }
 
     private static function sendAdminPushNotifications($order, $message = null)
@@ -427,17 +429,43 @@ trait RestaurantOrderHelper
     private static function sendVendorPushNotifications($order, $branchId, $message = null)
     {
         $vendors = User::where('restaurant_branch_id', $branchId)->pluck('slug');
-
         $request = new Request();
         $request['slugs'] = $vendors;
         $request['message'] = $message ? $message : 'An order has been received.';
         $request['data'] = self::preparePushData($order);
+        $request['android_channel_id'] = '28503fba-9837-4521-896e-7897e2e8b150';
+        $request['url'] = 'http://www.beehivevendor.com/status?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
+
 
         $appId = config('one-signal.vendor_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
         SendPushNotification::dispatch($uniqueKey, $fields, 'vendor');
+    }
+
+    private static function sendDriverPushNotifications($order, $branchId, $message = null)
+    {
+        $orderID = RestaurantOrder::where('slug', $order['slug'])->pluck('id');
+        $driverID =  RestaurantOrderDriver::where('restaurant_order_id', $orderID)->whereHas('status', function ($q) {
+            $q->where('status', '!=', 'accepted');
+        })->first();
+        if ($driverID) {
+            $driver = User::where('id', $driverID->user_id)->pluck('slug');
+            $request = new Request();
+            $request['slugs'] = $driver;
+            $request['message'] = $message ? $message : 'An order has been received.';
+            $request['data'] = self::preparePushData($order);
+            $request['android_channel_id'] = config('one-signal.android_channel_id');
+            $request['url'] = 'http://www.beehivedriver.com/job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
+
+
+            $appId = config('one-signal.admin_app_id');
+            $fields = OneSignalHelper::prepareNotification($request, $appId);
+            $uniqueKey = StringHelper::generateUniqueSlug();
+
+            SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
+        }
     }
 
     private static function preparePushData($order)
