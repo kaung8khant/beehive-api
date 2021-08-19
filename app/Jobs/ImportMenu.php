@@ -121,6 +121,7 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
                         'slug' => $row['menu_variant_slug'],
                         'price' => $row['price'],
                         'tax' => $row['tax'],
+                        'is_enable' =>isset($row['variant_is_enable'])? $row['variant_is_enable'] : '1' ,
                         'discount' => $row['discount'],
                     ];
 
