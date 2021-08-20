@@ -51,6 +51,7 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             $productVatiant->slug,
             $productVatiant->product->name,
             $productVatiant->product->description,
+            $productVatiant->product->is_enable ? '1' : '0',
             $this->stringifyVariant($productVatiant->variant),
             $productVatiant->price ? $productVatiant->price : '0',
             $productVatiant->vendor_price ? $productVatiant->vendor_price : '0',
@@ -75,12 +76,13 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             'product_variant_slug',
             'name',
             'description',
+            'is_enable',
             'variant',
             'price',
             'vendor_price',
             'tax',
             'discount',
-            'is_enable',
+            'variant_is_enable',
             'shop',
             'shop_slug',
             'shop_category',
@@ -97,6 +99,25 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
         return [
             // Style the first row as bold text.
             1 => ['font' => ['bold' => true]],
+            'A' => ['alignment' => ['horizontal' => 'center']],
+            'B' => ['alignment' => ['horizontal' => 'center']],
+            'C' => ['alignment' => ['horizontal' => 'center']],
+            'D' => ['alignment' => ['horizontal' => 'center']],
+            'E' => ['alignment' => ['horizontal' => 'center']],
+            'F' => ['alignment' => ['horizontal' => 'center']],
+            'G' => ['alignment' => ['horizontal' => 'center']],
+            'H' => ['alignment' => ['horizontal' => 'center']],
+            'I' => ['alignment' => ['horizontal' => 'center']],
+            'J' => ['alignment' => ['horizontal' => 'center']],
+            'K' => ['alignment' => ['horizontal' => 'center']],
+            'L' => ['alignment' => ['horizontal' => 'center']],
+            'M' => ['alignment' => ['horizontal' => 'center']],
+            'N' => ['alignment' => ['horizontal' => 'center']],
+            'O' => ['alignment' => ['horizontal' => 'center']],
+            'P' => ['alignment' => ['horizontal' => 'center']],
+            'Q' => ['alignment' => ['horizontal' => 'center']],
+            'R' => ['alignment' => ['horizontal' => 'center']],
+            'S' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -121,6 +142,7 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             'P' => 25,
             'Q' => 25,
             'R' => 25,
+            'S' => 25,
         ];
     }
 }
