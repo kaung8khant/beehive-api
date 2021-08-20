@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Cart;
 
+use App\Exceptions\BadRequestException;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
@@ -10,6 +11,7 @@ use App\Models\Menu;
 use App\Models\MenuTopping;
 use App\Models\MenuVariant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class RestaurantCartController extends Controller
 {
@@ -17,32 +19,84 @@ class RestaurantCartController extends Controller
 
     public function store(Request $request, Menu $menu)
     {
+        $validator = Validator::make($request->all(), [
+            'customer_slug' => 'required|exists:App\Models\Customer,slug',
+            'variant' => 'required|array',
+            'variant.*.name' => 'required',
+            'variant.*.value' => 'required',
+            'toppings' => 'nullable|array',
+            'toppings.*.slug' => 'required|exists:App\Models\MenuTopping',
+            'toppings.*.quantity' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, true);
+        }
+
         $customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
-        $menuVariant = MenuVariant::where('slug', $request->variant_slug)->firstOrFail();
-        $toppings = MenuTopping::whereIn('slug', $request->topping_slugs)->get();
 
-        $data = [
-            'slug' => StringHelper::generateUniqueSlug(),
-            'amount' => $menuVariant->price,
-            'tax' => $menuVariant->tax,
-            'discount' => $menuVariant->discount,
-            'promocode' => null,
-            'promocode_amount' => 0,
-            'commission' => 0,
-            'total_amount' => $menuVariant->price,
-            'menus' => [
-                [
-                    'slug' => $menu->slug,
-                    'name' => $menu->name,
-                    'description' => $menu->description,
-                    'variant' => $menuVariant,
-                    'toppings' => $toppings,
+        try {
+            $menuVariant = $this->getVariant($menu, $request->variant);
+            $toppings = $this->getToppings($menu, $request->toppings);
+
+            $data = [
+                'slug' => StringHelper::generateUniqueSlug(),
+                'amount' => $menuVariant->price,
+                'tax' => $menuVariant->tax,
+                'discount' => $menuVariant->discount,
+                'promocode' => null,
+                'promocode_amount' => 0,
+                'commission' => 0,
+                'total_amount' => $menuVariant->price,
+                'menus' => [
+                    [
+                        'slug' => $menu->slug,
+                        'name' => $menu->name,
+                        'description' => $menu->description,
+                        'variant' => $menuVariant,
+                        'toppings' => $toppings,
+                    ],
                 ],
-            ],
-            'address' => $customer->primary_address,
-        ];
+                'address' => $customer->primary_address,
+            ];
 
-        return $this->generateResponse($data, 200);
+            return $this->generateResponse($data, 200);
+
+        } catch (BadRequestException $e) {
+            return $this->generateResponse($e->getMessage(), 400, true);
+        }
+    }
+
+    private function getVariant($menu, $variant)
+    {
+        $menuVariants = MenuVariant::where('menu_id', $menu->id)->get();
+
+        $menuVariant = $menuVariants->first(function ($value) use ($variant) {
+            return $variant == $value->variant;
+        });
+
+        if (!$menuVariant) {
+            throw new BadRequestException('The variant must be part of the menu.');
+        }
+
+        return $menuVariant;
+    }
+
+    private function getToppings($menu, $toppings)
+    {
+        $menuToppings = [];
+
+        foreach ($toppings as $key => $value) {
+            $menuTopping = MenuTopping::where('slug', $value['slug'])->first();
+
+            if ($menuTopping->menu_id != $menu->id) {
+                throw new BadRequestException('The selected toppings.' . $key . '.must be part of the menu.');
+            }
+
+            $menuToppings[] = $menuTopping;
+        }
+
+        return $menuToppings;
     }
 
     public function update(Request $request, Menu $menu)
