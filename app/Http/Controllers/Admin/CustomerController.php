@@ -22,7 +22,7 @@ class CustomerController extends Controller
     {
         $sorting = CollectionHelper::getSorting('customers', 'name', $request->by, $request->order);
 
-        return Customer::where('email', 'LIKE', '%' . $request->filter . '%')
+        return Customer::with('customerGroups')->where('email', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)

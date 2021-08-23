@@ -126,6 +126,7 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                         'price' => $row['price'],
                         'vendor_price' => $row['vendor_price'],
                         'tax' => $row['tax'],
+                        'is_enable' =>isset($row['variant_is_enable'])? $row['variant_is_enable'] : '1' ,
                         'discount' => $row['discount'],
                     ];
 
