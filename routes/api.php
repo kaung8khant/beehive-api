@@ -249,6 +249,7 @@ Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], func
     Route::post('carts', 'Cart\RestaurantCartController@viewCart');
     Route::post('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@store');
     Route::post('restaurants/carts/promocode', 'Cart\RestaurantCartController@applyPromocode');
+    Route::post('restaurants/carts/address', 'Cart\RestaurantCartController@checkAddress');
     Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
     Route::delete('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@delete');
     Route::delete('restaurants/carts', 'Cart\RestaurantCartController@deleteCart');

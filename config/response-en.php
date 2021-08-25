@@ -8,6 +8,7 @@ return [
         'topping_qty_err' => 'The selected toppings.%d.quantity cannot be higher than %d.',
         'empty' => 'Your cart is empty.',
 
+        'address_succ' => 'The new address can be delivered.',
         'address_err' => 'Sorry, your address cannot be delivered.',
     ],
 
