@@ -246,11 +246,11 @@ Route::group([
 });
 
 Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {
-    Route::get('restaurants/carts', 'Cart\RestaurantCartController@viewCart');
+    Route::post('carts', 'Cart\RestaurantCartController@viewCart');
     Route::post('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@store');
-    Route::put('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@update');
+    Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
     Route::delete('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@delete');
-    Route::delete('restaurants/carts/{slug}', 'Cart\RestaurantCartController@deleteCart');
+    Route::delete('restaurants/carts', 'Cart\RestaurantCartController@deleteCart');
 });
 
 /*
