@@ -308,7 +308,7 @@ class RestaurantCartController extends Controller
         }
 
         try {
-            $this->checkAddress($request, $menuCart->restaurant_branch_id);
+            $this->checkAddressAndBranch($request, $menuCart->restaurant_branch_id);
         } catch (ForbiddenException $e) {
             return $this->generateResponse($e->getMessage(), 400, true);
         }
@@ -333,7 +333,24 @@ class RestaurantCartController extends Controller
         return $result;
     }
 
-    private function checkAddress($request, $restaurantBranchId)
+    public function checkAddress(Request $request)
+    {
+        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
+
+        if (!$menuCart || !isset($menuCart->menuCartItems) || $menuCart->menuCartItems->count() === 0) {
+            return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
+        }
+
+        try {
+            $this->checkAddressAndBranch($request, $menuCart->restaurant_branch_id);
+        } catch (ForbiddenException $e) {
+            return $this->generateResponse($e->getMessage(), 400, true);
+        }
+
+        return $this->generateResponse($this->resMes['restaurant_cart']['address_succ'], 200, true);
+    }
+
+    private function checkAddressAndBranch($request, $restaurantBranchId)
     {
         $restaurantBranch = RestaurantBranch::selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id,
             ( 6371 * acos( cos(radians(?)) *
