@@ -70,6 +70,23 @@ class RestaurantOrderController extends Controller
         // return $this->generateResponse('We are closed temporarily starting from 17.July.2021 due to the current coronavirus outbreak in Myanmar.
         // We are sorry for any inconvenience caused and we will see you again soon.', 503, true);
 
+        // validate request parameters. (HTTP)
+        // validate persistent data.
+        // create order
+        // - order create
+        // - trigger order status event. (Status: pending)
+        // - trigger payment status event. (Status: pending)
+        // - trigger sms notification event.
+        // - trigger one signal notification to customer.
+        // - trigger one signal notification to admins.
+        // - trigger one signal notification to vendrs.
+        // - repository layer assign driver (order object) // business logic
+        // - find active drivers from firebase.
+        // - validate active drivers against database. such as enable/disable
+        // - filter location based on restaurant and drivers.
+        // - trigger event to assign this driver.
+        // - assign recursively until 5 dirvers.
+        // - if last driver doesn't accept order, we will notifiy admins.
         try {
             $request['slug'] = $this->generateUniqueSlug();
             $validatedData = OrderHelper::validateOrder($request);
@@ -105,7 +122,7 @@ class RestaurantOrderController extends Controller
 
             if ($validatedData['payment_mode'] === 'KPay') {
                 $order['prepay_id'] = $paymentData['Response']['prepay_id'];
-            } else if ($validatedData['payment_mode'] === 'CBPay') {
+            } elseif ($validatedData['payment_mode'] === 'CBPay') {
                 $order['mer_dqr_code'] = $paymentData['merDqrCode'];
                 $order['trans_ref'] = $paymentData['transRef'];
             }

@@ -10,6 +10,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
 
 trait OrderAssignHelper
 {
@@ -147,8 +149,9 @@ trait OrderAssignHelper
                 $appId = config('one-signal.admin_app_id');
                 $request['data'] = ['slug' => $order->slug, 'price' => $order->total_amount, 'invoice_id' => $order->invoice_id];
                 $fields = OneSignalHelper::prepareNotification($request, $appId);
-
+                Log::info($fields);
                 $response = OneSignalHelper::sendPush($fields, 'admin');
+                Log::info($response);
             }
         }
     }
