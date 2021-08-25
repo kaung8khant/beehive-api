@@ -17,11 +17,13 @@ class CreateMenuCartsTable extends Migration
             $table->id();
             $table->string('slug')->unique();
             $table->unsignedBigInteger('customer_id');
+            $table->unsignedBigInteger('restaurant_branch_id');
             $table->unsignedBigInteger('promocode_id')->nullable();
             $table->string('promocode')->nullable();
             $table->decimal('promo_amount')->default(0);
             $table->timestamps();
             $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
+            $table->foreign('restaurant_branch_id')->references('id')->on('restaurant_branches')->onDelete('cascade');
             $table->foreign('promocode_id')->references('id')->on('promocodes')->onDelete('set null');
         });
     }

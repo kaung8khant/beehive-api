@@ -14,9 +14,15 @@ class MenuCart extends Model
     protected $hidden = [
         'id',
         'customer_id',
+        'restaurant_branch_id',
         'created_at',
         'updated_at',
     ];
+
+    public function restaurantBranch()
+    {
+        return $this->belongsTo(RestaurantBranch::class);
+    }
 
     public function menuCartItems()
     {
