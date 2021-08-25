@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
+use App\Events\DriverStatusChanged;
 use App\Exceptions\ForbiddenException;
 use App\Helpers\CollectionHelper;
 use App\Helpers\OrderAssignHelper;
@@ -22,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
 
 class RestaurantOrderController extends Controller
 {
@@ -149,6 +151,7 @@ class RestaurantOrderController extends Controller
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
 
+        // assign driver here.
         $this->assignOrder('restaurant', $order->slug);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');

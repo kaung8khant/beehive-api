@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
+use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
+use App\Repositories\DriverRealtimeDataRepository;
+use App\Repositories\RestaurantOrderDriverStatusRepository;
 use App\Services\MessageService\BoomSmsService;
 use App\Services\MessageService\MessagingService;
 use App\Services\MessageService\SlackMessagingService;
@@ -42,6 +46,9 @@ class AppServiceProvider extends ServiceProvider
                 return new CodService();
             }
         });
+
+        $this->app->bind(RestaurantOrderDriverStatusRepositoryInterface::class, RestaurantOrderDriverStatusRepository::class);
+        $this->app->bind(DriverRealtimeDataRepositoryInterface::class, DriverRealtimeDataRepository::class);
     }
 
     /**
