@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Cart;
 use App\Exceptions\BadRequestException;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
+use App\Http\Controllers\Admin\v3\RestaurantOrderController;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Menu;
@@ -12,7 +13,11 @@ use App\Models\MenuCart;
 use App\Models\MenuCartItem;
 use App\Models\MenuTopping;
 use App\Models\MenuVariant;
+use App\Models\RestaurantBranch;
+use App\Services\MessageService\BoomSmsService;
+use App\Services\MessageService\SlackMessagingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -20,29 +25,37 @@ class RestaurantCartController extends Controller
 {
     use ResponseHelper;
 
+    public function viewCart(Request $request)
+    {
+        $customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
+        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $customer->id)->first();
+
+        $data = [
+            'restaurant' => $menuCart ? $this->prepareMenuCartData($menuCart, $customer) : [],
+            'shop' => [],
+        ];
+
+        return $this->generateResponse($data, 200);
+    }
+
     public function store(Request $request, Menu $menu)
     {
-        $validator = Validator::make($request->all(), [
-            'customer_slug' => 'required|exists:App\Models\Customer,slug',
-            'variant' => 'required|array',
-            'variant.*.name' => 'required',
-            'variant.*.value' => 'required',
-            'toppings' => 'nullable|array',
-            'toppings.*.slug' => 'required|exists:App\Models\MenuTopping',
-            'toppings.*.quantity' => 'required|integer',
-        ]);
-
+        $validator = $this->validateMenuCart($request);
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
-
         try {
+            $customer = Customer::where('slug', $request->customer_slug)->first();
+            $restaurantBranch = RestaurantBranch::where('slug', $request->restaurant_branch_slug)->first();
             $menuCart = MenuCart::where('customer_id', $customer->id)->first();
             $menuData = $this->prepareMenuData($menu, $request);
 
             if ($menuCart) {
+                if ($menuCart->restaurant_branch_id !== $restaurantBranch->id) {
+                    return $this->generateResponse('You can only order from same branch.', 400, true);
+                }
+
                 $menuCartItem = MenuCartItem::where('menu_cart_id', $menuCart->id)->where('menu_id', $menu->id)->first();
 
                 if ($menuCartItem) {
@@ -52,16 +65,14 @@ class RestaurantCartController extends Controller
                     $this->createMenuCartItem($menuCart->id, $menu->id, $menuData);
                 }
             } else {
-                $menuCart = DB::transaction(function () use ($customer, $menu, $menuData) {
-                    $menuCart = $this->createMenuCart($customer->id);
+                $menuCart = DB::transaction(function () use ($customer, $restaurantBranch, $menu, $menuData) {
+                    $menuCart = $this->createMenuCart($customer->id, $restaurantBranch->id);
                     $this->createMenuCartItem($menuCart->id, $menu->id, $menuData);
-
                     return $menuCart;
                 });
             }
 
             $data = $this->prepareMenuCartData($menuCart->load('menuCartItems'), $customer);
-
             return $this->generateResponse($data, 200);
 
         } catch (BadRequestException $e) {
@@ -69,9 +80,21 @@ class RestaurantCartController extends Controller
         }
     }
 
+    private function validateMenuCart($request)
+    {
+        return Validator::make($request->all(), [
+            'customer_slug' => 'required|exists:App\Models\Customer,slug',
+            'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
+            'variant_slug' => 'required|exists:App\Models\MenuVariant,slug',
+            'toppings' => 'nullable|array',
+            'toppings.*.slug' => 'required|exists:App\Models\MenuTopping',
+            'toppings.*.quantity' => 'required|integer',
+        ]);
+    }
+
     private function prepareMenuData($menu, $request)
     {
-        $menuVariant = $this->getVariant($menu, $request->variant);
+        $menuVariant = $this->getVariant($menu, $request->variant_slug);
         $toppings = $this->getToppings($menu, $request->toppings);
 
         $amount = $menuVariant->price + collect($toppings)->sum('price');
@@ -91,13 +114,9 @@ class RestaurantCartController extends Controller
         ];
     }
 
-    private function getVariant($menu, $variant)
+    private function getVariant($menu, $variantSlug)
     {
-        $menuVariants = MenuVariant::where('menu_id', $menu->id)->get();
-
-        $menuVariant = $menuVariants->first(function ($value) use ($variant) {
-            return $variant == $value->variant;
-        });
+        $menuVariant = MenuVariant::where('menu_id', $menu->id)->where('slug', $variantSlug)->first();
 
         if (!$menuVariant) {
             throw new BadRequestException('The variant must be part of the menu.');
@@ -114,20 +133,28 @@ class RestaurantCartController extends Controller
             $menuTopping = MenuTopping::where('slug', $value['slug'])->first();
 
             if ($menuTopping->menu_id != $menu->id) {
-                throw new BadRequestException('The selected toppings.' . $key . '.must be part of the menu.');
+                throw new BadRequestException('The selected toppings.' . $key . ' must be part of the menu.');
             }
 
-            $menuToppings[] = $menuTopping;
+            if ($value['quantity'] > $menuTopping->max_quantity) {
+                throw new BadRequestException('The selected toppings.' . $key . '.quantity cannot be higher than ' . $value['quantity'] . '.');
+            }
+
+            $menuToppings[] = [
+                'slug' => $menuTopping->slug,
+                'value' => $value['quantity'],
+            ];
         }
 
         return $menuToppings;
     }
 
-    private function createMenuCart($customerId)
+    private function createMenuCart($customerId, $restaurantBranchId)
     {
         return MenuCart::create([
             'slug' => StringHelper::generateUniqueSlug(),
             'customer_id' => $customerId,
+            'restaurant_branch_id' => $restaurantBranchId,
         ]);
     }
 
@@ -164,116 +191,62 @@ class RestaurantCartController extends Controller
         return $totalAmount - $promoAmount;
     }
 
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-
-    public function update(Request $request, Menu $menu)
-    {
-        $customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
-        $menuVariant = MenuVariant::where('slug', $request->variant_slug)->firstOrFail();
-        $toppings = MenuTopping::whereIn('slug', $request->topping_slugs)->get();
-
-        $data = [
-            'slug' => StringHelper::generateUniqueSlug(),
-            'amount' => $menuVariant->price,
-            'tax' => $menuVariant->tax,
-            'discount' => $menuVariant->discount,
-            'promocode' => null,
-            'promocode_amount' => 0,
-            'commission' => 0,
-            'total_amount' => $menuVariant->price,
-            'menus' => [
-                [
-                    'slug' => $menu->slug,
-                    'name' => $menu->name,
-                    'description' => $menu->description,
-                    'variant' => $menuVariant,
-                    'toppings' => $toppings,
-                ],
-            ],
-            'address' => $customer->primary_address,
-        ];
-
-        return $this->generateResponse($data, 200);
-    }
-
-    public function viewCart(Request $request)
-    {
-        $customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
-        $menu = Menu::where('slug', 'E0FBE079')->firstOrFail();
-        $menuVariant = MenuVariant::where('slug', 'E857AEB9')->firstOrFail();
-        $toppings = MenuTopping::whereIn('slug', ['E5BCA2D6'])->get();
-
-        $data = [
-            'restaurant' => [
-                'slug' => StringHelper::generateUniqueSlug(),
-                'amount' => $menuVariant->price,
-                'tax' => $menuVariant->tax,
-                'discount' => $menuVariant->discount,
-                'promocode' => null,
-                'promocode_amount' => 0,
-                'commission' => 0,
-                'total_amount' => $menuVariant->price,
-                'menus' => [
-                    [
-                        'slug' => $menu->slug,
-                        'name' => $menu->name,
-                        'description' => $menu->description,
-                        'variant' => $menuVariant,
-                        'toppings' => $toppings,
-                    ],
-                ],
-                'address' => $customer->primary_address],
-            'shop' => [],
-        ];
-
-        return $this->generateResponse($data, 200);
-    }
-
     public function delete(Request $request, Menu $menu)
     {
         $customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
-        $menuVariant = MenuVariant::where('slug', 'E857AEB9')->firstOrFail();
-        $toppings = MenuTopping::whereIn('slug', ['E5BCA2D6'])->get();
+        $menuCart = MenuCart::where('customer_id', $customer->id)->first();
 
-        $data = [
-            'slug' => StringHelper::generateUniqueSlug(),
-            'amount' => $menuVariant->price,
-            'tax' => $menuVariant->tax,
-            'discount' => $menuVariant->discount,
-            'promocode' => null,
-            'promocode_amount' => 0,
-            'commission' => 0,
-            'total_amount' => $menuVariant->price,
-            'menus' => [
-                [
-                    'slug' => $menu->slug,
-                    'name' => $menu->name,
-                    'description' => $menu->description,
-                    'variant' => $menuVariant,
-                    'toppings' => $toppings,
-                ],
-            ],
-            'address' => $customer->primary_address,
-        ];
+        if ($menuCart) {
+            MenuCartItem::where('menu_cart_id', $menuCart->id)->where('menu_id', $menu->id)->delete();
+        }
 
+        $data = $this->prepareMenuCartData($menuCart->load('menuCartItems'), $customer);
         return $this->generateResponse($data, 200);
     }
 
     public function deleteCart(Request $request)
     {
         $customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
+        $menuCart = MenuCart::where('customer_id', $customer->id)->first();
+
+        if ($menuCart) {
+            $menuCart->delete();
+        }
 
         return $this->generateResponse('success', 200, true);
+    }
+
+    public function checkout(Request $request)
+    {
+        $customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
+        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $customer->id)->firstOrFail();
+
+        if ($menuCart && $menuCart->menuCartItems->count() === 0) {
+            return $this->generateResponse('Your cart is empty.', 400, true);
+        }
+
+        $request['restaurant_branch_slug'] = RestaurantBranch::where('id', $menuCart->restaurant_branch_id)->value('slug');
+        $request['promo_code'] = $menuCart->promocode;
+
+        $request['order_items'] = $menuCart->menuCartItems->map(function ($cartItem) {
+            return [
+                'slug' => $cartItem->menu['slug'],
+                'quantity' => $cartItem->menu['quantity'],
+                'variant_slug' => $cartItem->menu['variant']['slug'],
+                'topping_slugs' => $cartItem->menu['toppings'],
+            ];
+        })->toArray();
+
+        if (App::environment('production')) {
+            $messageService = new BoomSmsService();
+        } else {
+            $messageService = new SlackMessagingService();
+        }
+
+        $order = new RestaurantOrderController($messageService);
+
+        $result = $order->store($request);
+        
+        return $result;
     }
 }
