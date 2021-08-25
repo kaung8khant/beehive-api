@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Cart;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
+use App\Helpers\CacheHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
@@ -193,7 +194,6 @@ class RestaurantCartController extends Controller
             'promo_amount' => $menuCart->promo_amount,
             'total_amount' => $this->getTotalAmount($menuCart->menuCartItems->pluck('menu'), $menuCart->promo_amount),
             'menus' => $menuCart->menuCartItems->pluck('menu'),
-            'address' => $customer->primary_address,
         ];
     }
 
@@ -299,17 +299,18 @@ class RestaurantCartController extends Controller
         ];
     }
 
-    public function changeAddress(Request $request)
-    {
-        $customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
-    }
-
     public function checkout(Request $request)
     {
         $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
 
         if (!$menuCart || !isset($menuCart->menuCartItems) || $menuCart->menuCartItems->count() === 0) {
             return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
+        }
+
+        try {
+            $this->checkAddress($request, $menuCart->restaurant_branch_id);
+        } catch (ForbiddenException $e) {
+            return $this->generateResponse($e->getMessage(), 400, true);
         }
 
         $request['restaurant_branch_slug'] = RestaurantBranch::where('id', $menuCart->restaurant_branch_id)->value('slug');
@@ -325,12 +326,34 @@ class RestaurantCartController extends Controller
         $order = new RestaurantOrderController($messageService);
 
         $result = $order->store($request);
-
         if (json_decode($result->getContent(), true)['status'] === 201) {
             $menuCart->delete();
         }
 
         return $result;
+    }
+
+    private function checkAddress($request, $restaurantBranchId)
+    {
+        $restaurantBranch = RestaurantBranch::selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id,
+            ( 6371 * acos( cos(radians(?)) *
+                cos(radians(latitude)) * cos(radians(longitude) - radians(?))
+                + sin(radians(?)) * sin(radians(latitude)) )
+            ) AS distance', [$request->address['latitude'], $request->address['longitude'], $request->address['latitude']])
+            ->where('id', $restaurantBranchId)
+            ->first();
+
+        if ($restaurantBranch->distance > CacheHelper::getRestaurantSearchRadius()) {
+            throw new ForbiddenException($this->resMes['restaurant_cart']['address_err']);
+        }
+
+        if (!$restaurantBranch->restaurant->is_enable) {
+            throw new ForbiddenException($this->resMes['restaurant']['enable']);
+        }
+
+        if (!$restaurantBranch->is_enable) {
+            throw new ForbiddenException($this->resMes['restaurant_branch']['enable']);
+        }
     }
 
     private function getOrderItems($menuCartItems)
