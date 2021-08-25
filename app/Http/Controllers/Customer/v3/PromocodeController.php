@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Customer\v3;
 
-use App\Helpers\v3\PromocodeHelper;
+use App\Exceptions\ForbiddenException;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
+use App\Helpers\v3\PromocodeHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Promocode;
 use Illuminate\Http\Request;
@@ -38,28 +39,29 @@ class PromocodeController extends Controller
         }
 
         if ($validatedData['promo_code']) {
-            $type = isset($request['restaurant_branch_slug']) ? "restaurant" : "shop";
+            $type = isset($request['restaurant_branch_slug']) ? 'restaurant' : 'shop';
 
             $validatedData = $this->getPromoData($validatedData, $type);
         }
 
         return $this->generateResponse($validatedData, 200);
     }
+
     private function getPromoData($validatedData, $type)
     {
         $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
         if (!$promocode) {
-            throw new ForbiddenException("Promocode not found");
+            throw new ForbiddenException('Promocode not found');
         }
 
         $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, $type);
         if (!$validUsage) {
-            throw new ForbiddenException("Invalid promocode usage for" . $type . ".");
+            throw new ForbiddenException('Invalid promocode usage for' . $type . '.');
         }
 
         $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, $type);
         if (!$validRule) {
-            throw new ForbiddenException("Invalid promocode.");
+            throw new ForbiddenException('Invalid promocode.');
         }
 
         $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], $type);
