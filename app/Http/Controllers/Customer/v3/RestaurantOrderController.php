@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer\v3;
 
+use App\Events\OrderAssignEvent;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
 use App\Helpers\OrderAssignHelper;
@@ -13,7 +14,10 @@ use App\Helpers\v3\PromocodeHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
+use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
+use App\Models\User;
+use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
 use App\Services\MessageService\MessagingService;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
@@ -29,7 +33,7 @@ class RestaurantOrderController extends Controller
     protected $messageService;
     protected $paymentService;
 
-    public function __construct(MessagingService $messageService, PaymentService $paymentService)
+    public function __construct(MessagingService $messageService, PaymentService $paymentService, DriverRealtimeDataRepositoryInterface $driverRealtime)
     {
         if (Auth::guard('customers')->check()) {
             $this->customer = Auth::guard('customers')->user();
@@ -67,11 +71,11 @@ class RestaurantOrderController extends Controller
                 return $this->generateResponse($e->getMessage(), 403, true);
             }
 
-            try {
-                OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
-            } catch (ForbiddenException $e) {
-                return $this->generateResponse($e->getMessage(), 403, true);
-            }
+            // try {
+            //     OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
+            // } catch (ForbiddenException $e) {
+            //     return $this->generateResponse($e->getMessage(), 403, true);
+            // }
 
             if ($validatedData['promo_code']) {
                 $validatedData = $this->getPromoData($validatedData);
@@ -171,7 +175,10 @@ class RestaurantOrderController extends Controller
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
 
-        $this->assignOrder('restaurant', $order->slug);
+
+        event(new OrderAssignEvent($order, [], 0));
+
+        //$this->assignOrder('restaurant', $order->slug);
 
         OrderHelper::notifySystem($order, $this->customer->phone_number, $this->messageService);
 

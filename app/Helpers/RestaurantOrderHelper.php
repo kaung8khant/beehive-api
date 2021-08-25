@@ -397,7 +397,7 @@ trait RestaurantOrderHelper
     {
         self::sendPushNotifications($order, $order->restaurant_branch_id);
         self::sendSmsNotifications($order->restaurant_branch_id, $phoneNumber, $messageService);
-        self::assignBiker($order->order_type, $order->slug);
+        // self::assignBiker($order->order_type, $order->slug);
     }
 
     public static function sendPushNotifications($order, $branchId, $message = null)
