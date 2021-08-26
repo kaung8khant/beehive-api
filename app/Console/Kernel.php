@@ -26,7 +26,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('delete:database-images')->withoutOverlapping()->weeklyOn(0, '4:00')->timezone('Asia/Yangon');
         // $schedule->command('delete:storage-images')->withoutOverlapping()->weeklyOn(0, '4:00')->timezone('Asia/Yangon');
-        $schedule->command('fix:variation')->name('fix:variation')->withoutOverlapping()->everyFiveMinutes()->onOneServer();
+        // $schedule->command('fix:variation')->name('fix:variation')->withoutOverlapping()->everyFiveMinutes()->onOneServer();
         $schedule->command('order:assign')->name('order:assign')->withoutOverlapping()->everyMinute()->onOneServer();
     }
 

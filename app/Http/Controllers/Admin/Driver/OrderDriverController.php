@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin\Driver;
 
+use App\Events\DriverStatusChanged;
+use App\Exceptions\BadRequestException;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\RestaurantOrder;
@@ -9,6 +11,7 @@ use App\Models\RestaurantOrderDriver;
 use App\Models\RestaurantOrderDriverStatus;
 use App\Models\RestaurantOrderStatus;
 use App\Models\User;
+use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -19,9 +22,12 @@ class OrderDriverController extends Controller
 
     protected $driver;
 
-    public function __construct()
+    private $repository;
+
+    public function __construct(RestaurantOrderDriverStatusRepositoryInterface $repository)
     {
         $this->driver = Auth::guard('users')->user();
+        $this->repository = $repository;
     }
 
     public function jobList()
@@ -52,80 +58,20 @@ class OrderDriverController extends Controller
     {
         $request->validate(['status' => 'in:accepted,rejected,pickUp,delivered']);
 
-        if (in_array($restaurantOrder->order_status, ['delivered', 'cancelled'])) {
-            $message = 'The order is already ' . $restaurantOrder->order_status;
-            return response()->json(['status' => 'failed', 'message' => $message], 406);
+        $driver = Auth::guard('users')->user();
+
+        $restaurantOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $restaurantOrder->id)->where('user_id', $driver->id)->firstOrFail();
+        $currentDriverStatus = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $restaurantOrderDriver->id)->latest()->value('status');
+
+        try {
+            $this->repository->validateStatus($currentDriverStatus, $request->status, $restaurantOrder->order_status);
+        } catch (BadRequestException $e) {
+            return response()->json(['status' => 'failed', 'message' => $e->getMessage()], 406);
         }
 
-        $restaurantOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $restaurantOrder->id)->where('user_id', $this->driver->id)->firstOrFail();
-        $driverStatus = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $restaurantOrderDriver->id)->latest()->value('status');
-
-        if ($request->status === $driverStatus) {
-            return response()->json(['status' => 'failed', 'message' => 'Already ' . $driverStatus], 406);
-        }
-
-        if (in_array($driverStatus, ['no-response', 'rejected'])) {
-            $message = 'Already ' . $driverStatus;
-            return response()->json(['status' => 'failed', 'message' => $message], 406);
-        }
-
-        $checkStatus = $this->checkStatus($request->status, $driverStatus, $restaurantOrder->order_status);
-        if ($checkStatus !== true && $checkStatus['status'] === 'failed') {
-            return response()->json(['status' => $checkStatus['status'], 'message' => $checkStatus['message']], $checkStatus['code']);
-        }
-
-        RestaurantOrderDriverStatus::create([
-            'restaurant_order_driver_id' => $restaurantOrderDriver->id,
-            'status' => $request->status,
-        ]);
-
-        $this->changeOrderStatus($request->status, $restaurantOrder);
+        $this->repository->changeStatus($restaurantOrder, $restaurantOrderDriver, $request->status);
 
         return response()->json(['status' => 'success'], 201);
-    }
-
-    private function checkStatus($status, $driverStatus, $orderStatus)
-    {
-        switch ($status) {
-            case 'accepted':
-                if (in_array($driverStatus, ['rejected', 'no-response', 'pickUp', 'delivered'])) {
-                    return ['status' => 'failed', 'message' => 'Already ' . $driverStatus, 'code' => 406];
-                }
-                return true;
-                break;
-
-            case 'rejected':
-                if (in_array($driverStatus, ['no-response', 'pickUp', 'delivered'])) {
-                    return ['status' => 'failed', 'message' => 'Already ' . $driverStatus, 'code' => 406];
-                }
-                return true;
-                break;
-
-            case 'pickUp':
-                if ($driverStatus !== 'accepted') {
-                    return ['status' => 'failed', 'message' => 'Please accept first.', 'code' => 406];
-                }
-
-                if ($orderStatus !== 'pickUp') {
-                    return ['status' => 'failed', 'message' => 'The order is not ready to pick up yet.', 'code' => 406];
-                }
-                return true;
-                break;
-
-            case 'delivered':
-                if ($driverStatus !== 'pickUp') {
-                    return ['status' => 'failed', 'message' => 'Please pick up first.', 'code' => 406];
-                }
-
-                if ($orderStatus !== 'onRoute') {
-                    return ['status' => 'failed', 'message' => 'The order is not on route yet.', 'code' => 406];
-                }
-                return true;
-                break;
-
-            default:
-                return true;
-        }
     }
 
     private function changeOrderStatus($driverStatus, $restaurantOrder)
