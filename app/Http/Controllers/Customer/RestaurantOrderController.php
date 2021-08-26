@@ -12,6 +12,9 @@ use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
+use App\Models\Menu;
+use App\Models\MenuVariation;
+use App\Models\MenuVariationValue;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
 use App\Services\MessageService\MessagingService;
@@ -99,6 +102,12 @@ class RestaurantOrderController extends Controller
                 OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
             } catch (ForbiddenException $e) {
                 return $this->generateResponse($e->getMessage(), 403, true);
+            }
+
+            try {
+                $this->fixVariation($validatedData['order_items']);
+            } catch (\Exception $e) {
+                Log::channel('slack')->info('-----Variation Fix Error-----' . $e);
             }
 
             $validatedData['customer_id'] = $this->customer->id;
@@ -196,5 +205,54 @@ class RestaurantOrderController extends Controller
         OrderHelper::notifySystem($order, $this->customer->phone_number, $this->messageService);
 
         return $order;
+    }
+
+    private function fixVariation($orderItems)
+    {
+        $menuSlugs = collect($orderItems)->pluck('slug');
+
+        $menus = Menu::with(['menuVariants' => function ($query) {
+            $query->orderBy('price', 'asc');
+        }])
+            ->whereIn('slug', $menuSlugs)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        foreach ($menus as $menu) {
+            $menuVariants = $menu->menuVariants->filter(function ($variant) {
+                return count($variant->variant) === 1;
+            });
+
+            if (count($menuVariants) > 0) {
+                try {
+                    $menu->update([
+                        'price' => $menuVariants[0]->price,
+                        'tax' => $menuVariants[0]->tax,
+                        'discount' => $menuVariants[0]->discount,
+                    ]);
+                } catch (\Exception $e) {
+                    Log::critical('This menu failed at fixing variation ----- ' . $menu);
+                }
+
+                if ($menuVariants[0]->variant[0]['name'] !== 'default') {
+                    MenuVariation::where('menu_id', $menu->id)->delete();
+
+                    $menuVariation = MenuVariation::create([
+                        'slug' => StringHelper::generateUniqueSlug(),
+                        'name' => $menuVariants[0]->variant[0]['name'],
+                        'menu_id' => $menu->id,
+                    ]);
+
+                    foreach ($menuVariants as $variant) {
+                        MenuVariationValue::create([
+                            'slug' => StringHelper::generateUniqueSlug(),
+                            'value' => $variant->variant[0]['value'],
+                            'price' => $variant->price - $menu->price,
+                            'menu_variation_id' => $menuVariation->id,
+                        ]);
+                    }
+                }
+            }
+        }
     }
 }
