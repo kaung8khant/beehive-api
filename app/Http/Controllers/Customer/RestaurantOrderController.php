@@ -104,7 +104,11 @@ class RestaurantOrderController extends Controller
                 return $this->generateResponse($e->getMessage(), 403, true);
             }
 
-            $this->fixVariation($validatedData['order_items']);
+            try {
+                $this->fixVariation($validatedData['order_items']);
+            } catch (\Exception $e) {
+                Log::channel('slack')->info('-----Variation Fix Error-----' . $e);
+            }
 
             $validatedData['customer_id'] = $this->customer->id;
             $validatedData['order_date'] = Carbon::now();
