@@ -23,7 +23,7 @@ class RestaurantOrderController extends Controller
             ->orderBy('restaurant_id')
             ->orderBy('restaurant_branch_id')
             ->orderBy('id')
-            ->paginate(10);
+            ->get();
 
         return $this->generateReport($restaurantOrders);
     }
@@ -43,7 +43,7 @@ class RestaurantOrderController extends Controller
             ->orderBy('restaurant_id')
             ->orderBy('restaurant_branch_id')
             ->orderBy('id')
-            ->paginate(10);
+            ->get();
 
         return $this->generateReport($restaurantOrders);
     }
@@ -63,7 +63,7 @@ class RestaurantOrderController extends Controller
             ->orderBy('restaurant_id')
             ->orderBy('restaurant_branch_id')
             ->orderBy('id')
-            ->paginate(10);
+            ->get();
 
         return $this->generateReport($restaurantOrders);
     }
@@ -77,7 +77,7 @@ class RestaurantOrderController extends Controller
         $commissionCtSum = 0;
         $balanceSum = 0;
 
-        foreach ($restaurantOrders->items() as $order) {
+        foreach ($restaurantOrders as $order) {
             $restaurant = Restaurant::where('id', $order->restaurant_id)->first();
 
             $amount = $order->order_status == 'cancelled' ? 0 : $order->amount;
@@ -122,7 +122,7 @@ class RestaurantOrderController extends Controller
             'commission_sum' => $commissionSum,
             'commission_ct_sum' => $commissionCtSum,
             'balance_sum' => $balanceSum,
-            'total' => $restaurantOrders->total(),
+            'total' =>sizeof($restaurantOrders),
             'invoice' => $data,
         ];
 

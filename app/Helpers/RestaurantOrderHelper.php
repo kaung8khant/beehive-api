@@ -54,7 +54,7 @@ trait RestaurantOrderHelper
             'order_items.*.quantity' => 'required|integer',
             'order_items.*.variation_value_slugs' => 'nullable|array',
             'order_items.*.topping_ slugs' => 'nullable|array',
-            'order_items.*.variation_value_slugs.*' => 'required|exists:App\Models\MenuVariationValue,slug',
+            // 'order_items.*.variation_value_slugs.*' => 'required|exists:App\Models\MenuVariationValue,slug',
             'order_items.*.topping_slugs.*.slug' => 'required|exists:App\Models\MenuTopping,slug',
             'order_items.*.topping_slugs.*.value' => 'required|integer',
         ];
@@ -109,7 +109,6 @@ trait RestaurantOrderHelper
 
             $tax += ($amount - $menu->discount) * $menu->tax * 0.01 * $value['quantity'];
             $menu['amount'] = $amount;
-            $menu['variations'] = $variations;
             $menu['quantity'] = $value['quantity'];
             $menu['variations'] = $variations;
             $menu['toppings'] = $toppings;
@@ -202,18 +201,20 @@ trait RestaurantOrderHelper
         $variations = [];
 
         if (isset($orderItem['variation_value_slugs'])) {
-            $variationValueSlugs = $orderItem['variation_value_slugs'];
+            $menuId = Menu::where('slug', $orderItem['slug'])->value('id');
 
-            foreach ($variationValueSlugs as $variationValueSlug) {
+            foreach ($orderItem['variation_value_slugs'] as $variationValueSlug) {
                 $variationValue = self::getMenuVariationValue($variationValueSlug);
 
-                $variation = [
-                    'name' => $variationValue->menuVariation->name,
-                    'value' => $variationValue->value,
-                    'price' => (int) $variationValue->price,
-                ];
+                if ($variationValue && $variationValue->menuVariation->menu_id === $menuId) {
+                    $variation = [
+                        'name' => $variationValue->menuVariation->name,
+                        'value' => $variationValue->value,
+                        'price' => (int) $variationValue->price,
+                    ];
 
-                array_push($variations, $variation);
+                    array_push($variations, $variation);
+                }
             }
         }
 
@@ -397,7 +398,7 @@ trait RestaurantOrderHelper
     {
         self::sendPushNotifications($order, $order->restaurant_branch_id);
         self::sendSmsNotifications($order->restaurant_branch_id, $phoneNumber, $messageService);
-        self::assignBiker($order->order_type, $order->slug);
+        // self::assignBiker($order->order_type, $order->slug);
     }
 
     public static function sendPushNotifications($order, $branchId, $message = null)
@@ -405,7 +406,7 @@ trait RestaurantOrderHelper
         $order = json_decode(json_encode($order), true);
         self::sendAdminPushNotifications($order, $message);
         self::sendVendorPushNotifications($order, $branchId, $message);
-        self::sendDriverPushNotifications($order, $branchId, $message);
+        self::sendDriverPushNotifications($order, $message);
     }
 
     private static function sendAdminPushNotifications($order, $message = null)
@@ -436,7 +437,6 @@ trait RestaurantOrderHelper
         $request['android_channel_id'] = '28503fba-9837-4521-896e-7897e2e8b150';
         $request['url'] = 'http://www.beehivevendor.com/status?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
 
-
         $appId = config('one-signal.vendor_app_id');
         $fields = OneSignalHelper::prepareNotification($request, $appId);
         $uniqueKey = StringHelper::generateUniqueSlug();
@@ -444,12 +444,13 @@ trait RestaurantOrderHelper
         SendPushNotification::dispatch($uniqueKey, $fields, 'vendor');
     }
 
-    private static function sendDriverPushNotifications($order, $branchId, $message = null)
+    private static function sendDriverPushNotifications($order, $message = null)
     {
         $orderID = RestaurantOrder::where('slug', $order['slug'])->pluck('id');
-        $driverID =  RestaurantOrderDriver::where('restaurant_order_id', $orderID)->whereHas('status', function ($q) {
+        $driverID = RestaurantOrderDriver::where('restaurant_order_id', $orderID)->whereHas('status', function ($q) {
             $q->where('status', '!=', 'accepted');
         })->first();
+
         if ($driverID) {
             $driver = User::where('id', $driverID->user_id)->pluck('slug');
             $request = new Request();
@@ -458,7 +459,6 @@ trait RestaurantOrderHelper
             $request['data'] = self::preparePushData($order);
             $request['android_channel_id'] = config('one-signal.android_channel_id');
             $request['url'] = 'http://www.beehivedriver.com/job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
-
 
             $appId = config('one-signal.admin_app_id');
             $fields = OneSignalHelper::prepareNotification($request, $appId);

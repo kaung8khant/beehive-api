@@ -35,7 +35,9 @@ class ProductController extends Controller
                 });
         }
 
-        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        return $products
+            ->orderBy('search_id', 'DESC')
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -274,5 +276,18 @@ class ProductController extends Controller
 
         return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
+    }
+
+    public function updateSearchId(Request $request, Product $product)
+    {
+        $validatedData = $request->validate([
+            'search_id' => 'required|numeric',
+        ]);
+
+        // $product->update(['search_id' => $validatedData['search_id']]);
+        $product->update($validatedData);
+
+
+        return response()->json(['message' => 'Success.'], 200);
     }
 }
