@@ -80,7 +80,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('shops/{shop}/products', 'Admin\ProductController@getProductsByShop');
             Route::get('shop-categories/{shopCategory}/products', 'Admin\ProductController@getProductsByCategory');
             Route::post('products/multiple-delete', 'Admin\ProductController@multipleDelete');
-            Route::post('products/search-index-update/{product}', 'Admin\ProductController@updateSearchId');
+            Route::put('products/{product}/index', 'Admin\ProductController@updateSearchIndex');
 
             Route::resource('product-variations', 'Admin\ProductVariationController', ['except' => ['create', 'edit']]);
             Route::get('products/{product}/product-variations', 'Admin\ProductVariationController@getProductVariationsByProduct');
@@ -169,6 +169,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('reports/restaurant-orders/all', 'Report\RestaurantOrderController@getAllOrders');
             Route::get('reports/restaurant-orders/vendor/{slug}', 'Report\RestaurantOrderController@getVendorOrders');
             Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
+
+            Route::get('reports/shop-orders/all', 'Report\ShopOrderController@getAllOrders');
 
             Route::get('pages', 'Admin\PageController@index');
             Route::get('pages/{page}', 'Admin\PageController@show');

@@ -22,11 +22,53 @@ class ShopOrder extends BaseModel
         'promocode' => 'object',
     ];
 
-    protected $appends = ['invoice_id', 'total_amount'];
+    protected $appends = ['invoice_id','amount','tax', 'discount',  'total_amount'];
 
     public function getInvoiceIdAttribute()
     {
         return 'BHS' . sprintf('%08d', $this->id);
+    }
+
+    public function getAmountAttribute()
+    {
+        $vendors = $this->vendors;
+        $totalAmount = 0;
+
+        foreach ($vendors as $vendor) {
+            foreach ($vendor->items as $item) {
+                $totalAmount += $item->amount  * $item->quantity;
+            }
+        }
+
+        return $totalAmount - $this->promocode_amount;
+    }
+
+    public function getTaxAttribute()
+    {
+        $vendors = $this->vendors;
+        $tax = 0;
+
+        foreach ($vendors as $vendor) {
+            foreach ($vendor->items as $item) {
+                $tax += $item->tax * $item->quantity;
+            }
+        }
+
+        return $tax;
+    }
+
+    public function getDiscountAttribute()
+    {
+        $vendors = $this->vendors;
+        $discount = 0;
+
+        foreach ($vendors as $vendor) {
+            foreach ($vendor->items as $item) {
+                $discount += $item->discount * $item->quantity;
+            }
+        }
+
+        return $discount;
     }
 
     public function getTotalAmountAttribute()
