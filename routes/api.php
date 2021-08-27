@@ -10,7 +10,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
         Route::post('reset-password', 'Auth\UserAuthController@resetPassword');
 
         Route::middleware(['auth:users', 'user.enable'])->group(function () {
-
             Route::get('profile', 'Auth\UserAuthController@getProfile');
             Route::put('profile/update', 'Auth\UserAuthController@updateProfile');
             Route::patch('password/update', 'Auth\UserAuthController@updatePassword');
@@ -123,6 +122,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::post('restaurant-branches/status', 'Admin\RestaurantBranchController@multipleStatusUpdate');
             Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\RestaurantBranchController@getRestaurantBranchByCustomers');
             Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
+            Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
+
             // Route::get('townships/{township}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByTownship');
 
             /* Restaurant */
