@@ -61,9 +61,17 @@ class ProductController extends Controller
                 $query->where('is_enable', 1);
             })
             ->where('products.is_enable', 1)
-            ->whereNotNull('pv.price')
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate($request->size);
+            ->whereNotNull('pv.price');
+
+        if ($request->by) {
+            $products = $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->orderBy('search_index', 'desc');
+        } else {
+            $products = $products->orderBy('search_index', 'desc')
+                ->orderBy($sorting['orderBy'], $sorting['sortBy']);
+        }
+
+        $products = $products->paginate($request->size);
 
         return $this->generateProductResponse($products, 200, 'array', $products->lastPage());
     }
