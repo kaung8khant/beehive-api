@@ -278,14 +278,13 @@ class ProductController extends Controller
             ->paginate(10);
     }
 
-    public function updateSearchId(Request $request, Product $product)
+    public function updateSearchIndex(Request $request, Product $product)
     {
         $validatedData = $request->validate([
             'search_index' => 'required|numeric',
         ]);
 
         $product->update($validatedData);
-
 
         return response()->json(['message' => 'Success.'], 200);
     }
