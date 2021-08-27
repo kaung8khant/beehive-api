@@ -36,7 +36,7 @@ class ProductController extends Controller
         }
 
         return $products
-            ->orderBy('search_id', 'DESC')
+            ->orderBy('search_index', 'DESC')
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
@@ -281,10 +281,9 @@ class ProductController extends Controller
     public function updateSearchId(Request $request, Product $product)
     {
         $validatedData = $request->validate([
-            'search_id' => 'required|numeric',
+            'search_index' => 'required|numeric',
         ]);
 
-        // $product->update(['search_id' => $validatedData['search_id']]);
         $product->update($validatedData);
 
 
