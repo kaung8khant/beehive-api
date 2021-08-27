@@ -35,7 +35,9 @@ class ProductController extends Controller
                 });
         }
 
-        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        return $products
+            ->orderBy('search_index', 'DESC')
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
 
@@ -274,5 +276,16 @@ class ProductController extends Controller
 
         return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
+    }
+
+    public function updateSearchIndex(Request $request, Product $product)
+    {
+        $validatedData = $request->validate([
+            'search_index' => 'required|numeric',
+        ]);
+
+        $product->update($validatedData);
+
+        return response()->json(['message' => 'Success.'], 200);
     }
 }

@@ -28,8 +28,6 @@ class BoomSmsService extends MessagingService
             );
 
             $response = json_decode($response->getBody(), true);
-            $response['status'] = 'Success';
-
             return $response;
         } catch (RequestException $e) {
             throw $e;
