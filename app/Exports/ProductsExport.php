@@ -41,6 +41,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             $productVatiant->slug,
             $productVatiant->product->name,
             $productVatiant->product->description,
+            $productVatiant->product->is_enable ? '1' : '0',
             $this->stringifyVariant($productVatiant->variant),
             $productVatiant->price ? $productVatiant->price : '0',
             $productVatiant->vendor_price ? $productVatiant->vendor_price : '0',
@@ -65,12 +66,13 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'product_variant_slug',
             'name',
             'description',
+            'is_enable',
             'variant',
             'price',
             'vendor_price',
             'tax',
             'discount',
-            'is_enable',
+            'variant_is_enable',
             'shop',
             'shop_slug',
             'shop_category',
@@ -105,6 +107,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'P' => ['alignment' => ['horizontal' => 'center']],
             'Q' => ['alignment' => ['horizontal' => 'center']],
             'R' => ['alignment' => ['horizontal' => 'center']],
+            'S' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -116,7 +119,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'C' => 45,
             'D' => 45,
             'E' => 10,
-            'F' => 10,
+            'F' => 20,
             'G' => 10,
             'H' => 25,
             'I' => 25,
@@ -129,6 +132,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'P' => 25,
             'Q' => 25,
             'R' => 25,
+            'S' => 25,
         ];
     }
 }

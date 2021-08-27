@@ -12,6 +12,9 @@ use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
+use App\Models\Menu;
+use App\Models\MenuVariation;
+use App\Models\MenuVariationValue;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
 use App\Services\MessageService\MessagingService;
@@ -70,6 +73,23 @@ class RestaurantOrderController extends Controller
         // return $this->generateResponse('We are closed temporarily starting from 17.July.2021 due to the current coronavirus outbreak in Myanmar.
         // We are sorry for any inconvenience caused and we will see you again soon.', 503, true);
 
+        // validate request parameters. (HTTP)
+        // validate persistent data.
+        // create order
+        // - order create
+        // - trigger order status event. (Status: pending)
+        // - trigger payment status event. (Status: pending)
+        // - trigger sms notification event.
+        // - trigger one signal notification to customer.
+        // - trigger one signal notification to admins.
+        // - trigger one signal notification to vendrs.
+        // - repository layer assign driver (order object) // business logic
+        // - find active drivers from firebase.
+        // - validate active drivers against database. such as enable/disable
+        // - filter location based on restaurant and drivers.
+        // - trigger event to assign this driver.
+        // - assign recursively until 5 dirvers.
+        // - if last driver doesn't accept order, we will notifiy admins.
         try {
             $request['slug'] = $this->generateUniqueSlug();
             $validatedData = OrderHelper::validateOrder($request);
@@ -82,6 +102,12 @@ class RestaurantOrderController extends Controller
                 OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
             } catch (ForbiddenException $e) {
                 return $this->generateResponse($e->getMessage(), 403, true);
+            }
+
+            try {
+                $this->fixVariation($validatedData['order_items']);
+            } catch (\Exception $e) {
+                Log::channel('slack')->info('-----Variation Fix Error-----' . $e);
             }
 
             $validatedData['customer_id'] = $this->customer->id;
@@ -105,7 +131,7 @@ class RestaurantOrderController extends Controller
 
             if ($validatedData['payment_mode'] === 'KPay') {
                 $order['prepay_id'] = $paymentData['Response']['prepay_id'];
-            } else if ($validatedData['payment_mode'] === 'CBPay') {
+            } elseif ($validatedData['payment_mode'] === 'CBPay') {
                 $order['mer_dqr_code'] = $paymentData['merDqrCode'];
                 $order['trans_ref'] = $paymentData['transRef'];
             }
@@ -179,5 +205,54 @@ class RestaurantOrderController extends Controller
         OrderHelper::notifySystem($order, $this->customer->phone_number, $this->messageService);
 
         return $order;
+    }
+
+    private function fixVariation($orderItems)
+    {
+        $menuSlugs = collect($orderItems)->pluck('slug');
+
+        $menus = Menu::with(['menuVariants' => function ($query) {
+            $query->orderBy('price', 'asc');
+        }])
+            ->whereIn('slug', $menuSlugs)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        foreach ($menus as $menu) {
+            $menuVariants = $menu->menuVariants->filter(function ($variant) {
+                return count($variant->variant) === 1;
+            });
+
+            if (count($menuVariants) > 0) {
+                try {
+                    $menu->update([
+                        'price' => $menuVariants[0]->price,
+                        'tax' => $menuVariants[0]->tax,
+                        'discount' => $menuVariants[0]->discount,
+                    ]);
+                } catch (\Exception $e) {
+                    Log::critical('This menu failed at fixing variation ----- ' . $menu);
+                }
+
+                if ($menuVariants[0]->variant[0]['name'] !== 'default') {
+                    MenuVariation::where('menu_id', $menu->id)->delete();
+
+                    $menuVariation = MenuVariation::create([
+                        'slug' => StringHelper::generateUniqueSlug(),
+                        'name' => $menuVariants[0]->variant[0]['name'],
+                        'menu_id' => $menu->id,
+                    ]);
+
+                    foreach ($menuVariants as $variant) {
+                        MenuVariationValue::create([
+                            'slug' => StringHelper::generateUniqueSlug(),
+                            'value' => $variant->variant[0]['value'],
+                            'price' => $variant->price - $menu->price,
+                            'menu_variation_id' => $menuVariation->id,
+                        ]);
+                    }
+                }
+            }
+        }
     }
 }

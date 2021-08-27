@@ -10,7 +10,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
         Route::post('reset-password', 'Auth\UserAuthController@resetPassword');
 
         Route::middleware(['auth:users', 'user.enable'])->group(function () {
-
             Route::get('profile', 'Auth\UserAuthController@getProfile');
             Route::put('profile/update', 'Auth\UserAuthController@updateProfile');
             Route::patch('password/update', 'Auth\UserAuthController@updatePassword');
@@ -123,6 +122,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::post('restaurant-branches/status', 'Admin\RestaurantBranchController@multipleStatusUpdate');
             Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\RestaurantBranchController@getRestaurantBranchByCustomers');
             Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
+            Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
+
             // Route::get('townships/{township}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByTownship');
 
             /* Restaurant */
@@ -246,11 +247,13 @@ Route::group([
 });
 
 Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {
-    Route::get('restaurants/carts', 'Cart\RestaurantCartController@viewCart');
+    Route::post('carts', 'Cart\RestaurantCartController@viewCart');
     Route::post('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@store');
-    Route::put('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@update');
+    Route::post('restaurants/carts/promocode', 'Cart\RestaurantCartController@applyPromocode');
+    Route::post('restaurants/carts/address', 'Cart\RestaurantCartController@checkAddress');
+    Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
     Route::delete('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@delete');
-    Route::delete('restaurants/carts/{slug}', 'Cart\RestaurantCartController@deleteCart');
+    Route::delete('restaurants/carts', 'Cart\RestaurantCartController@deleteCart');
 });
 
 /*
