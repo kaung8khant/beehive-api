@@ -220,7 +220,7 @@ class RestaurantOrderController extends Controller
         $commission = 0;
 
         foreach ($orderItems as $item) {
-            $amount = ($item->amount - $item->discount) * $item->quantity;
+            $amount = ($item->amount) * $item->quantity;
             $subTotal += $amount;
             $commission += $item->commission;
         }

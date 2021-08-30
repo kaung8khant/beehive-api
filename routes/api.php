@@ -170,7 +170,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('reports/restaurant-orders/vendor/{slug}', 'Report\RestaurantOrderController@getVendorOrders');
             Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
 
-            Route::get('reports/shop-orders/all', 'Report\ShopOrderController@getAllOrders');
+            Route::get('reports/shop-orders/all', 'Report\ShopOrderController@getShopSaleInvoiceReport');
+            Route::get('reports/shop-orders/product-sales', 'Report\ShopOrderController@getProductSaleReport');
 
             Route::get('pages', 'Admin\PageController@index');
             Route::get('pages/{page}', 'Admin\PageController@show');

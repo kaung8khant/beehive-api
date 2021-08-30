@@ -347,6 +347,8 @@ trait RestaurantOrderHelper
         $orderItems = [];
         $subTotal = 0;
         $tax = 0;
+        $commission = 0;
+        $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
 
         foreach ($validatedData['order_items'] as $key => $value) {
             $menuId = Menu::where('slug', $value['slug'])->value('id');
@@ -374,18 +376,16 @@ trait RestaurantOrderHelper
 
             $subTotal += ($item['amount'] - $menuVariant->discount) * $value['quantity'];
             $tax += ($item['amount'] - $menuVariant->discount) * $menuVariant->tax * 0.01 * $value['quantity'];
-
+            if ($restaurantBranch->restaurant->commission > 0) {
+                $commission+=($item['amount']  * $value['quantity']) * $restaurantBranch->restaurant->commission * 0.01;
+            }
             array_push($orderItems, $item);
         }
 
         $validatedData['order_items'] = $orderItems;
         $validatedData['subTotal'] = $subTotal;
         $validatedData['tax'] = $tax;
-
-        $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
-        if ($restaurantBranch->restaurant->commission > 0) {
-            $validatedData['commission'] = $validatedData['subTotal'] * $restaurantBranch->restaurant->commission * 0.01;
-        }
+        $validatedData['commission'] = $commission;
 
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
