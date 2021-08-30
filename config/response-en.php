@@ -6,6 +6,7 @@ return [
         'variant_err' => 'The variant must be part of the menu.',
         'topping_err' => 'The selected toppings.%d must be part of the menu.',
         'topping_qty_err' => 'The selected toppings.%d.quantity cannot be higher than %d.',
+        'no_item' => 'There is no such item in the cart.',
         'empty' => 'Your cart is empty.',
 
         'address_succ' => 'The new address can be delivered.',
