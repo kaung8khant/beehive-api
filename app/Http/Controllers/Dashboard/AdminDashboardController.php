@@ -23,17 +23,29 @@ class AdminDashboardController extends Controller
         return response()->json($result);
     }
 
-    public function getRestaurantOrders()
+    public function getRestaurantOrders(Request $request)
     {
-        $paginator = DB::table('restaurant_orders')
-            ->select('restaurant_branch_id', DB::raw('count(*) AS total_orders'))
+        if ($request->type === 'weekly') {
+            $startDate = Carbon::now()->subDays(6);
+            $endDate = Carbon::now();
+        } elseif ($request->type === 'monthly') {
+            $startDate = Carbon::now()->subDays(29);
+            $endDate = Carbon::now();
+        } else {
+            $startDate = Carbon::now()->subMonths(11)->startOfMonth();
+            $endDate = Carbon::now();
+        }
+
+        $restaurantOrders = DB::table('restaurant_orders')
+            ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
+            ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->where('order_status', '!=', 'cancelled')->select('restaurant_branch_id', DB::raw('count(*) AS total_orders'))
             ->groupBy('restaurant_branch_id')
-            ->orderby('total_orders', 'DESC')
-            ->paginate(10);
+            ->orderby('total_orders', 'DESC')->limit(10)->get();
 
         $data = [];
 
-        foreach ($paginator->items() as $key) {
+        foreach ($restaurantOrders as $key) {
             $restaurantBranch = DB::table('restaurant_branches as b')
                 ->join('restaurants as r', 'r.id', '=', 'b.restaurant_id')
                 ->select('b.name as branch_name', 'r.name as restaurant_name', 'r.id as restaurant_id')
@@ -57,27 +69,39 @@ class AdminDashboardController extends Controller
         }
 
         $result = [
-            'current_page' => $paginator->currentPage(),
-            'last_page' => $paginator->lastPage(),
-            'per_page' => $paginator->perPage(),
-            'total' => $paginator->total(),
             'data' => $data,
         ];
 
         return response()->json($result);
     }
 
-    public function getShopOrders()
+    public function getShopOrders(Request $request)
     {
-        $paginator = DB::table('shop_order_items')
-            ->select('shop_id', DB::raw('count(*) AS total_orders'))
-            ->groupBy('shop_id')
-            ->orderBy('total_orders', 'DESC')
-            ->paginate(10);
+        if ($request->type === 'weekly') {
+            $startDate = Carbon::now()->subDays(6);
+            $endDate = Carbon::now();
+        } elseif ($request->type === 'monthly') {
+            $startDate = Carbon::now()->subDays(29);
+            $endDate = Carbon::now();
+        } else {
+            $startDate = Carbon::now()->subMonths(11)->startOfMonth();
+            $endDate = Carbon::now();
+        }
+
+        $shopOrders = DB::table('shop_order_items as oi')
+            ->join('shop_order_vendors as ov', 'ov.id', '=', 'oi.shop_order_vendor_id')
+            ->join('shop_orders as o', 'o.id', '=', 'ov.shop_order_id')
+            ->where('o.order_status', '!=', 'cancelled')
+            ->where('o.order_date', '>', $startDate->format('Y-m-d H:i:s'))
+            ->where('o.order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->select('oi.shop_id', DB::raw('count(*) AS total_orders'))
+            ->groupBy('oi.shop_id')
+            ->orderBy('total_orders', 'DESC')->limit(10)->get();
+
 
         $data = [];
 
-        foreach ($paginator as $key) {
+        foreach ($shopOrders as $key) {
             $shop = DB::table('shops')->where('id', $key->shop_id)->first();
 
             if ($shop) {
@@ -96,10 +120,6 @@ class AdminDashboardController extends Controller
         }
 
         $result = [
-            'current_page' => $paginator->currentPage(),
-            'last_page' => $paginator->lastPage(),
-            'per_page' => $paginator->perPage(),
-            'total' => $paginator->total(),
             'data' => $data,
         ];
 
@@ -127,6 +147,7 @@ class AdminDashboardController extends Controller
         $restaurantOrders = DB::table('restaurant_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->where('order_status', '!=', 'cancelled')
             ->select(DB::raw('MONTH(order_date) AS month_number'), DB::raw('DATE_FORMAT(order_date, "%b") AS label'), DB::raw('count(*) AS total_orders'))
             ->groupBy('month_number', 'label')
             ->orderBy('month_number')
@@ -135,6 +156,7 @@ class AdminDashboardController extends Controller
         $shopOrders = DB::table('shop_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->where('order_status', '!=', 'cancelled')
             ->select(DB::raw('MONTH(order_date) AS month_number'), DB::raw('DATE_FORMAT(order_date, "%b") AS label'), DB::raw('count(*) AS total_orders'))
             ->groupBy('month_number', 'label')
             ->orderBy('month_number')
@@ -162,6 +184,7 @@ class AdminDashboardController extends Controller
         $restaurantOrders = DB::table('restaurant_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->where('order_status', '!=', 'cancelled')
             ->select(DB::raw('DATE(order_date) AS label'), DB::raw('count(*) AS total_orders'))
             ->groupBy('label')
             ->get();
@@ -169,6 +192,7 @@ class AdminDashboardController extends Controller
         $shopOrders = DB::table('shop_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->where('order_status', '!=', 'cancelled')
             ->select(DB::raw('DATE(order_date) AS label'), DB::raw('count(*) AS total_orders'))
             ->groupBy('label')
             ->get();
@@ -187,6 +211,7 @@ class AdminDashboardController extends Controller
         $restaurantOrders = DB::table('restaurant_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->where('order_status', '!=', 'cancelled')
             ->select(DB::raw('DATE(order_date) AS label'), DB::raw('count(*) AS total_orders'))
             ->groupBy('label')
             ->get();
@@ -194,6 +219,7 @@ class AdminDashboardController extends Controller
         $shopOrders = DB::table('shop_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->where('order_status', '!=', 'cancelled')
             ->select(DB::raw('DATE(order_date) AS label'), DB::raw('count(*) AS total_orders'))
             ->groupBy('label')
             ->get();
@@ -217,8 +243,7 @@ class AdminDashboardController extends Controller
             ->join('customers as c', 'c.id', '=', 'ro.customer_id')
             ->join('restaurant_order_items as roi', 'roi.restaurant_order_id', '=', 'ro.id')
             ->select('c.id', DB::raw('SUM((amount + tax - discount) * quantity) as total'))
-            ->where('ro.order_status', 'delivered')
-            ->groupBy('c.id')
+            ->where('ro.order_status', '!=', 'cancelled')->groupBy('c.id')
             ->orderBy('total', 'DESC')
             ->limit(10)
             ->get()
@@ -233,8 +258,7 @@ class AdminDashboardController extends Controller
             ->join('shop_order_vendors as sov', 'sov.shop_order_id', '=', 'so.id')
             ->join('shop_order_items as soi', 'soi.shop_order_vendor_id', '=', 'sov.id')
             ->select('c.id', DB::raw('SUM((amount + tax - discount) * quantity) as total'))
-            ->where('so.order_status', 'delivered')
-            ->groupBy('c.id')
+            ->where('so.order_status', '!=', 'cancelled')->groupBy('c.id')
             ->orderBy('total', 'DESC')
             ->limit(10)
             ->get()
