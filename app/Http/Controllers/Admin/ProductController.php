@@ -286,6 +286,6 @@ class ProductController extends Controller
 
         $product->update($validatedData);
 
-        return response()->json(['message' => 'Success.'], 200);
+        return response()->json($product, 200);
     }
 }
