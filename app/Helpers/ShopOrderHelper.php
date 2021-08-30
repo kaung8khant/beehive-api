@@ -21,6 +21,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 trait ShopOrderHelper
@@ -240,6 +241,7 @@ trait ShopOrderHelper
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
+            Log::error("Shop validation order in v3: " . json_decode($request->getContent(), true));
             return $validator->errors()->first();
         }
 
