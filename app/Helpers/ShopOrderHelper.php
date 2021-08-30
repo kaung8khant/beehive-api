@@ -241,8 +241,8 @@ trait ShopOrderHelper
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
-            Log::error("Shop validation order in v3: " . json_decode($request->getContent(), true)) . " and response: " . json_decode($validator->errors()->first(), true);
-            return $validator->errors()->first();
+            Log::channel('slack')->error('Shop validation order in v3: ' . json_encode($request->all()));
+            Log::channel('slack')->error('and response: ' . $validator->errors()->first());
         }
 
         $validatedData = $validator->validated();
