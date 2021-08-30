@@ -32,15 +32,15 @@ class ShopOrder extends BaseModel
     public function getAmountAttribute()
     {
         $vendors = $this->vendors;
-        $totalAmount = 0;
+        $amount = 0;
 
         foreach ($vendors as $vendor) {
             foreach ($vendor->items as $item) {
-                $totalAmount += $item->amount  * $item->quantity;
+                $amount += $item->amount  * $item->quantity;
             }
         }
 
-        return $totalAmount - $this->promocode_amount;
+        return $amount;
     }
 
     public function getTaxAttribute()

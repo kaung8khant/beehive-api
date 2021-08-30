@@ -28,6 +28,15 @@ class ShopOrderItem extends Model
         'variant' => 'array',
     ];
 
+    protected $appends = ['total_amount'];
+
+    public function getTotalAmountAttribute()
+    {
+        $totalAmount=0;
+        $totalAmount+= ($this->amount - $this->discount + $this->tax) * $this->quantity;
+        return $totalAmount;
+    }
+
     public function vendor()
     {
         return $this->belongsTo(ShopOrderVendor::class, 'shop_order_vendor_id');
