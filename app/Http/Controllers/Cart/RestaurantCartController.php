@@ -43,7 +43,7 @@ class RestaurantCartController extends Controller
         $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
 
         $data = [
-            'restaurant' => $menuCart ? $this->prepareMenuCartData($menuCart, $this->customer) : [],
+            'restaurant' => $menuCart ? $this->prepareMenuCartData($menuCart) : [],
             'shop' => [],
         ];
 
@@ -68,7 +68,7 @@ class RestaurantCartController extends Controller
                     return $this->generateResponse($sameBranchError, 400, true);
                 }
 
-                $menuCartItem = MenuCartItem::where('menu_cart_id', $menuCart->id)->where('menu_id', $menu->id)->first();
+                $menuCartItem = $this->getMenuCartItem($menu->id, $menuCart->id, $menuData['key']);
 
                 if ($menuCartItem) {
                     $menuCartItem->menu = $menuData;
@@ -89,7 +89,7 @@ class RestaurantCartController extends Controller
                 });
             }
 
-            $data = $this->prepareMenuCartData($menuCart->refresh()->load('menuCartItems'), $this->customer);
+            $data = $this->prepareMenuCartData($menuCart->refresh()->load('menuCartItems'));
             return $this->generateResponse($data, 200);
 
         } catch (BadRequestException $e) {
@@ -119,6 +119,7 @@ class RestaurantCartController extends Controller
         $discount = $menuVariant->discount;
 
         return [
+            'key' => $this->getMenuKey($menu->slug, $menuVariant->slug, $toppings),
             'slug' => $menu->slug,
             'name' => $menu->name,
             'description' => $menu->description,
@@ -159,12 +160,17 @@ class RestaurantCartController extends Controller
 
             $menuToppings[] = [
                 'slug' => $menuTopping->slug,
-                'value' => $value['quantity'],
+                'quantity' => $value['quantity'],
                 'price' => $menuTopping->price,
             ];
         }
 
-        return $menuToppings;
+        return collect($menuToppings)->sortBy('slug')->values();
+    }
+
+    private function getMenuKey($menuSlug, $menuVariantSlug, $toppings)
+    {
+        return $menuSlug . '-' . $menuVariantSlug . '-' . implode('-', $toppings->pluck('slug')->toArray()) . '-' . implode('-', $toppings->pluck('quantity')->toArray());
     }
 
     private function createMenuCart($customerId, $restaurantBranchId)
@@ -185,7 +191,17 @@ class RestaurantCartController extends Controller
         ]);
     }
 
-    private function prepareMenuCartData($menuCart, $customer)
+    private function getMenuCartItem($menuId, $menuCartId, $key)
+    {
+        return MenuCartItem::where('menu_cart_id', $menuCartId)
+            ->where('menu_id', $menuId)
+            ->get()
+            ->first(function ($value) use ($key) {
+                return $value->menu['key'] === $key;
+            });
+    }
+
+    private function prepareMenuCartData($menuCart)
     {
         return [
             'slug' => $menuCart->slug,
@@ -221,26 +237,64 @@ class RestaurantCartController extends Controller
         return $totalAmount - $promoAmount;
     }
 
-    public function delete(Request $request, Menu $menu)
+    public function updateQuantity(Request $request, Menu $menu)
     {
         $menuCart = MenuCart::where('customer_id', $this->customer->id)->first();
-
-        if ($menuCart) {
-            MenuCartItem::where('menu_cart_id', $menuCart->id)->where('menu_id', $menu->id)->delete();
+        if (!$menuCart) {
+            return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
 
-        $data = $this->prepareMenuCartData($menuCart->load('menuCartItems'), $this->customer);
+        $menuCartItem = $this->getMenuCartItem($menu->id, $menuCart->id, $request->key);
+        if (!$menuCartItem) {
+            return $this->generateResponse($this->resMes['restaurant_cart']['no_item'], 400, true);
+        }
+
+        $menuData = $menuCartItem->menu;
+        $menuData['quantity'] = $request->quantity;
+
+        $menuCartItem->menu = $menuData;
+        $menuCartItem->save();
+
+        if ($menuCart->promocode) {
+            $request['promo_code'] = $menuCart->promocode;
+            $this->applyPromocode($request);
+        }
+
+        $data = $this->prepareMenuCartData($menuCart->refresh()->load('menuCartItems'));
         return $this->generateResponse($data, 200);
     }
 
-    public function deleteCart(Request $request)
+    public function delete(Request $request, Menu $menu)
     {
         $menuCart = MenuCart::where('customer_id', $this->customer->id)->first();
-
-        if ($menuCart) {
-            $menuCart->delete();
+        if (!$menuCart) {
+            return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
 
+        $menuCartItem = $this->getMenuCartItem($menu->id, $menuCart->id, $request->key);
+        if (!$menuCartItem) {
+            return $this->generateResponse($this->resMes['restaurant_cart']['no_item'], 400, true);
+        }
+
+        $menuCartItem->delete();
+
+        if ($menuCart->promocode) {
+            $request['promo_code'] = $menuCart->promocode;
+            $this->applyPromocode($request);
+        }
+
+        $data = $this->prepareMenuCartData($menuCart->refresh()->load('menuCartItems'));
+        return $this->generateResponse($data, 200);
+    }
+
+    public function deleteCart()
+    {
+        $menuCart = MenuCart::where('customer_id', $this->customer->id)->first();
+        if (!$menuCart) {
+            return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
+        }
+
+        $menuCart->delete();
         return $this->generateResponse('success', 200, true);
     }
 
@@ -263,7 +317,7 @@ class RestaurantCartController extends Controller
             $menuCart->promo_amount = $promoData['promo_amount'];
             $menuCart->save();
 
-            $cartData = $this->prepareMenuCartData($menuCart, $this->customer);
+            $cartData = $this->prepareMenuCartData($menuCart);
             return $this->generateResponse($cartData, 200);
 
         } catch (ForbiddenException $e) {
@@ -380,7 +434,11 @@ class RestaurantCartController extends Controller
                 'slug' => $cartItem->menu['slug'],
                 'quantity' => $cartItem->menu['quantity'],
                 'variant_slug' => $cartItem->menu['variant']['slug'],
-                'topping_slugs' => $cartItem->menu['toppings'],
+                'topping_slugs' => collect($cartItem->menu['toppings'])->map(function ($value) {
+                    $value['value'] = $value['quantity'];
+                    unset($value['quantity']);
+                    return $value;
+                })->toArray(),
             ];
         })->toArray();
     }

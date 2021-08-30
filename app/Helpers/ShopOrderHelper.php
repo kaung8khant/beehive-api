@@ -21,6 +21,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 trait ShopOrderHelper
@@ -240,7 +241,8 @@ trait ShopOrderHelper
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
-            return $validator->errors()->first();
+            Log::channel('slack')->error('Shop validation order in v3: ' . json_encode($request->all()));
+            Log::channel('slack')->error('and response: ' . $validator->errors()->first());
         }
 
         $validatedData = $validator->validated();
@@ -318,7 +320,7 @@ trait ShopOrderHelper
 
             $subTotal += ($item['price'] - $productVariant->discount) * $value['quantity'];
 
-            $commission += max(($item['price'] - $item['vendor_price']) * $value['quantity'], 0);
+            $commission += $item['commission'];
             $tax += ($item['price'] - $productVariant->discount) * $productVariant->tax * 0.01 * $value['quantity'];
 
             array_push($orderItems, $item);
