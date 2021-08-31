@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use stdClass;
 
 class RestaurantCartController extends Controller
 {
@@ -43,8 +44,8 @@ class RestaurantCartController extends Controller
         $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
 
         $data = [
-            'restaurant' => $menuCart ? $this->prepareMenuCartData($menuCart) : [],
-            'shop' => [],
+            'restaurant' => $menuCart ? $this->prepareMenuCartData($menuCart) : new stdClass(),
+            'shop' => new stdClass(),
         ];
 
         return $this->generateResponse($data, 200);
@@ -91,7 +92,6 @@ class RestaurantCartController extends Controller
 
             $data = $this->prepareMenuCartData($menuCart->refresh()->load('menuCartItems'));
             return $this->generateResponse($data, 200);
-
         } catch (BadRequestException $e) {
             return $this->generateResponse($e->getMessage(), 400, true);
         }
@@ -129,6 +129,7 @@ class RestaurantCartController extends Controller
             'quantity' => $request->quantity,
             'variant' => $menuVariant,
             'toppings' => $toppings,
+            'images' => $menu->images,
         ];
     }
 
@@ -203,8 +204,12 @@ class RestaurantCartController extends Controller
 
     private function prepareMenuCartData($menuCart)
     {
+        $branch = RestaurantBranch::with('restaurant')->where('id', $menuCart->restaurant_branch_id)->first();
+
         return [
             'slug' => $menuCart->slug,
+            'restaurant' => $branch->restaurant->makeHidden('created_by', 'updated_by', 'covers'),
+            'restaurant_branch' => $branch->makeHidden('restaurant', 'created_by', 'updated_by'),
             'promocode' => $menuCart->promocode,
             'sub_total' => $this->getSubTotal($menuCart->menuCartItems->pluck('menu')),
             'total_tax' => $this->getTotalTax($menuCart->menuCartItems->pluck('menu')),
@@ -285,8 +290,12 @@ class RestaurantCartController extends Controller
         if (!$menuCartItem) {
             return $this->generateResponse($this->resMes['restaurant_cart']['no_item'], 400, true);
         }
-
         $menuCartItem->delete();
+
+        if (MenuCartItem::where('menu_cart_id', $menuCart->id)->count() === 0) {
+            $menuCart->delete();
+            return $this->generateResponse(new stdClass(), 200);
+        }
 
         if ($menuCart->promocode) {
             $request['promo_code'] = $menuCart->promocode;
@@ -329,7 +338,6 @@ class RestaurantCartController extends Controller
 
             $cartData = $this->prepareMenuCartData($menuCart);
             return $this->generateResponse($cartData, 200);
-
         } catch (ForbiddenException $e) {
             return $this->generateResponse($e->getMessage(), 403, true);
         }

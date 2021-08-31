@@ -171,6 +171,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
 
             Route::get('reports/shop-orders/all', 'Report\ShopOrderController@getShopSaleInvoiceReport');
+            Route::get('reports/shop-orders/shop-sales', 'Report\ShopOrderController@getShopSaleReport');
+            Route::get('reports/shop-orders/vendor/{shop}/product-sales', 'Report\ShopOrderController@getShopProductSaleReport');
             Route::get('reports/shop-orders/product-sales', 'Report\ShopOrderController@getProductSaleReport');
 
             Route::get('pages', 'Admin\PageController@index');
@@ -262,7 +264,7 @@ Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], func
     Route::post('restaurants/carts/address', 'Cart\RestaurantCartController@checkAddress');
     Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
 
-    Route::get('restaurants/invoice/{restaurantOrder}/generate', 'Pdf\RestaurantInvoiceController@generateInvoice');
+    Route::get('restaurants/invoice/{slug}/generate', 'Pdf\RestaurantInvoiceController@generateInvoice');
 });
 
 /*
