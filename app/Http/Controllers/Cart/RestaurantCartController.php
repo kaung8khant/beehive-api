@@ -207,6 +207,7 @@ class RestaurantCartController extends Controller
             'slug' => $menuCart->slug,
             'promocode' => $menuCart->promocode,
             'sub_total' => $this->getSubTotal($menuCart->menuCartItems->pluck('menu')),
+            'total_tax' => $this->getTotalTax($menuCart->menuCartItems->pluck('menu')),
             'promo_amount' => $menuCart->promo_amount,
             'total_amount' => $this->getTotalAmount($menuCart->menuCartItems->pluck('menu'), $menuCart->promo_amount),
             'menus' => $menuCart->menuCartItems->pluck('menu'),
@@ -218,11 +219,21 @@ class RestaurantCartController extends Controller
         $subTotal = 0;
 
         foreach ($menuCartItems as $item) {
-            $amount = ($item['amount'] - $item['discount']) * $item['quantity'];
-            $subTotal += $amount;
+            $subTotal += ($item['amount'] - $item['discount']) * $item['quantity'];
         }
 
         return $subTotal;
+    }
+
+    private function getTotalTax($menuCartItems)
+    {
+        $tax = 0;
+
+        foreach ($menuCartItems as $item) {
+            $tax += $item['tax'] * $item['quantity'];
+        }
+
+        return $tax;
     }
 
     private function getTotalAmount($menuCartItems, $promoAmount)
@@ -230,8 +241,7 @@ class RestaurantCartController extends Controller
         $totalAmount = 0;
 
         foreach ($menuCartItems as $item) {
-            $amount = ($item['amount'] + $item['tax'] - $item['discount']) * $item['quantity'];
-            $totalAmount += $amount;
+            $totalAmount += ($item['amount'] + $item['tax'] - $item['discount']) * $item['quantity'];
         }
 
         return $totalAmount - $promoAmount;
