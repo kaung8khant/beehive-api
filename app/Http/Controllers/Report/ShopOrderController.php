@@ -38,8 +38,7 @@ class ShopOrderController extends Controller
     {
         $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
             $query->whereBetween('order_date', array($request->from, $request->to));
-        })
-            ->get();
+        })->get();
         return $this->generateProductSaleReport($shopOrderItems);
     }
 
@@ -49,12 +48,15 @@ class ShopOrderController extends Controller
             $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
         })->where('shop_id', $shop->id)->get();
 
-        $groups=collect($shopOrderItems)->groupBy(function ($item, $key) {
-            $variant = '';
-            foreach ($item->variant as $subarray) {
-                $variant .= implode(",", $subarray);
-            }
-            return $item->product_id.','.$variant.','.$item->amount.','.$item->vendor_price.','.$item->discount;
+        $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
+            // $variant = '';
+            // foreach ($item->variant as $subarray) {
+            //     dd($subarray);
+            //     $variant .= implode(",", $subarray);
+            // }
+            return $item->product_id . ',' . implode(',', array_map(function ($n) {
+                return $n['value'];
+            }, $item->variant)). ',' . $item->amount . ',' . $item->vendor_price . ',' . $item->discount;
         });
         return $this->generateShopProductSaleReport($groups);
     }
@@ -84,8 +86,6 @@ class ShopOrderController extends Controller
             $data[] = [
                 'invoice_id' => $order->invoice_id,
                 'order_date' => Carbon::parse($order->order_date)->format('M d Y h:i a'),
-                'customer_name' => $order->contact->customer_name,
-                'phone_number' => $order->contact->phone_number,
                 'revenue' => $amount,
                 'commercial_tax' => $order->order_status != 'cancelled' && $order->tax ? $order->tax : 0,
                 'discount' => $order->order_status != 'cancelled' && $order->discount ? $order->discount : 0,
@@ -139,8 +139,6 @@ class ShopOrderController extends Controller
             $data[] = [
                 'invoice_id' => $vendor->shopOrder->invoice_id,
                 'order_date' => Carbon::parse($vendor->shopOrder->order_date)->format('M d Y h:i a'),
-                'customer_name' => $vendor->shopOrder->contact->customer_name,
-                'phone_number' => $vendor->shopOrder->contact->phone_number,
                 'shop' => $shop->name,
                 'revenue' => $amount,
                 'commercial_tax' => $vendor->shopOrder->order_status != 'cancelled' && $vendor->tax ? $vendor->tax : 0,
@@ -195,8 +193,6 @@ class ShopOrderController extends Controller
             $data[] = [
                 'invoice_id' => $item->vendor->shopOrder->invoice_id,
                 'order_date' => Carbon::parse($item->vendor->shopOrder->order_date)->format('M d Y h:i a'),
-                'customer_name' => $item->vendor->shopOrder->contact->customer_name,
-                'phone_number' => $item->vendor->shopOrder->contact->phone_number,
                 'product_name' => $item->product_name,
                 'price' => $item->amount,
                 'vendor_price' => $item->vendor_price,
@@ -239,13 +235,13 @@ class ShopOrderController extends Controller
         $balanceSum = 0;
 
         foreach ($groups as $key => $group) {
-            $amount=0;
-            $commercialTax=0;
-            $discount=0;
-            $totalAmount=0;
-            $commission=0;
-            $commissionCt=0;
-            $quantity=0;
+            $amount = 0;
+            $commercialTax = 0;
+            $discount = 0;
+            $totalAmount = 0;
+            $commission = 0;
+            $commissionCt = 0;
+            $quantity = 0;
             foreach ($group as $k => $item) {
                 $shop = Shop::where('id', $item->shop_id)->first();
 
@@ -254,8 +250,8 @@ class ShopOrderController extends Controller
                 $commissionCt += $commission * 0.05;
                 $totalAmount += $item->total_amount;
                 $balance = $totalAmount - $commissionCt;
-                $commercialTax+=$item->tax ? $item->tax*$item->quantity: 0;
-                $discount+=$item->discount ? $item->discount*$item->quantity: 0;
+                $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
+                $discount += $item->discount ? $item->discount * $item->quantity : 0;
                 $quantity += $item->quantity;
 
                 $amountSum += $amount;
@@ -269,7 +265,7 @@ class ShopOrderController extends Controller
                 'price' => $group[0]->amount,
                 'vendor_price' => $group[0]->vendor_price,
                 'variant' => $group[0]->variant,
-                'quantity' =>$quantity,
+                'quantity' => $quantity,
                 'revenue' => $amount,
                 'commercial_tax' => $commercialTax ? $commercialTax : 0,
                 'discount' =>  $discount ? $discount : 0,
