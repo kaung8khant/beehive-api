@@ -412,7 +412,8 @@ class RestaurantCartController extends Controller
 
         $order = new RestaurantOrderController($this->getMessageService(), $this->getPaymentService($request->payment_mode));
 
-        return $result = $order->store($request);
+        $result = $order->store($request);
+
         if (json_decode($result->getContent(), true)['status'] === 201) {
             $menuCart->delete();
         }
