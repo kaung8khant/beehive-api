@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
-use App\Events\DriverStatusChanged;
 use App\Exceptions\ForbiddenException;
+use App\Exceptions\ServerException;
 use App\Helpers\CollectionHelper;
 use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
@@ -19,21 +19,23 @@ use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderItem;
 use App\Services\MessageService\MessagingService;
+use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
 
 class RestaurantOrderController extends Controller
 {
     use PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
 
     protected $messageService;
+    protected $paymentService;
 
-    public function __construct(MessagingService $messageService)
+    public function __construct(MessagingService $messageService, PaymentService $paymentService)
     {
         $this->messageService = $messageService;
+        $this->paymentService = $paymentService;
     }
 
     public function index(Request $request)
@@ -80,7 +82,23 @@ class RestaurantOrderController extends Controller
                 $validatedData = $this->getPromoData($validatedData, $customer);
             }
 
+            $paymentData = [];
+            if ($validatedData['payment_mode'] !== 'COD') {
+                try {
+                    $paymentData = $this->paymentService->createTransaction($validatedData, 'restaurant');
+                } catch (ServerException $e) {
+                    return $this->generateResponse($e->getMessage(), 500, true);
+                }
+            }
+
             $order = $this->restaurantOrderTransaction($validatedData);
+
+            if ($validatedData['payment_mode'] === 'KPay') {
+                $order['prepay_id'] = $paymentData['Response']['prepay_id'];
+            } else if ($validatedData['payment_mode'] === 'CBPay') {
+                $order['mer_dqr_code'] = $paymentData['merDqrCode'];
+                $order['trans_ref'] = $paymentData['transRef'];
+            }
 
             return $this->generateResponse($order, 201);
         } catch (\Exception $e) {

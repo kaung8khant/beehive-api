@@ -256,11 +256,13 @@ Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], func
     Route::post('carts', 'Cart\RestaurantCartController@viewCart');
     Route::post('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@store');
     Route::put('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@updateQuantity');
-    Route::delete('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@delete');
 
+    Route::delete('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@delete');
     Route::delete('restaurants/carts', 'Cart\RestaurantCartController@deleteCart');
 
     Route::post('restaurants/carts/promocode', 'Cart\RestaurantCartController@applyPromocode');
+    Route::delete('restaurants/carts/promocode', 'Cart\RestaurantCartController@removePromocode');
+
     Route::post('restaurants/carts/address', 'Cart\RestaurantCartController@checkAddress');
     Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
 
