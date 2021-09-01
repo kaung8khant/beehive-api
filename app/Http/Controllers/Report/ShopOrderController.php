@@ -26,10 +26,7 @@ class ShopOrderController extends Controller
     {
         $shopOrderVendors = ShopOrderVendor::whereHas('shopOrder', function ($query) use ($request) {
             $query->whereBetween('order_date', array($request->from, $request->to));
-        })
-            ->orderBy('shop_id')
-            ->orderBy('shop_order_id')
-            ->get();
+        })->orderBy('shop_id')->orderBy('shop_order_id')->get();
 
         return $this->generateShopSaleReport($shopOrderVendors);
     }
@@ -49,14 +46,9 @@ class ShopOrderController extends Controller
         })->where('shop_id', $shop->id)->get();
 
         $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
-            // $variant = '';
-            // foreach ($item->variant as $subarray) {
-            //     dd($subarray);
-            //     $variant .= implode(",", $subarray);
-            // }
-            return $item->product_id . ',' . implode(',', array_map(function ($n) {
+            return $item->product_id . '-' . implode('-', array_map(function ($n) {
                 return $n['value'];
-            }, $item->variant)). ',' . $item->amount . ',' . $item->vendor_price . ',' . $item->discount;
+            }, $item->variant)) . '-' . $item->amount . '-' . $item->vendor_price . '-' . $item->discount;
         });
         return $this->generateShopProductSaleReport($groups);
     }
@@ -243,8 +235,6 @@ class ShopOrderController extends Controller
             $commissionCt = 0;
             $quantity = 0;
             foreach ($group as $k => $item) {
-                $shop = Shop::where('id', $item->shop_id)->first();
-
                 $amount += $item->amount * $item->quantity;
                 $commission +=  $item->commission;
                 $commissionCt += $commission * 0.05;

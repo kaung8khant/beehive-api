@@ -2,7 +2,9 @@
 
 namespace App\Exports\Sales;
 
+use App\Models\Shop;
 use App\Models\ShopOrder;
+use App\Models\ShopOrderVendor;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
@@ -36,15 +38,17 @@ class ShopSalesExport implements FromCollection, WithColumnFormatting, WithColum
 
     public function collection()
     {
-        $shopOrders = ShopOrder::whereBetween('order_date', [$this->from, $this->to])
-            ->orderBy('id')
-            ->get();
+        $shopOrderVendors = ShopOrderVendor::whereHas('shopOrder', function ($query) {
+            $query->whereBetween('order_date', [$this->from, $this->to]);
+        })->orderBy('shop_id')->orderBy('shop_order_id')->get();
 
-        $this->result = $shopOrders->map(function ($order, $key) {
-            $amount = $order->order_status == 'cancelled' ? '0' : $order->amount;
-            $commission = $order->commission;
-            $commissionCt = $order->commission * 0.05;
-            $totalAmount = $order->order_status == 'cancelled' ? '0' : $order->total_amount;
+        $this->result = $shopOrderVendors->map(function ($vendor, $key) {
+            $shop = Shop::where('id', $vendor->shop_id)->first();
+
+            $amount = $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->amount;
+            $commission =   $vendor->commission;
+            $commissionCt = $commission * 0.05;
+            $totalAmount =  $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->total_amount;
             $balance = $totalAmount - $commissionCt;
 
             $this->amountSum += $amount;
@@ -55,20 +59,20 @@ class ShopSalesExport implements FromCollection, WithColumnFormatting, WithColum
 
             return [
                 $key + 1,
-                $order->invoice_id,
-                Carbon::parse($order->order_date)->format('M d Y h:i a'),
+                $vendor->shopOrder->invoice_id,
+                Carbon::parse($vendor->shopOrder->order_date)->format('M d Y h:i a'),
+                $shop->name,
                 $amount,
-                $order->order_status != 'cancelled' && $order->tax ? $order->tax : '0',
-                $order->order_status != 'cancelled' && $order->discount ? $order->discount : '0',
-                $order->order_status != 'cancelled' && $order->promocode_amount ? $order->promocode_amount : '0',
+                $vendor->shopOrder->order_status != 'cancelled' && $vendor->tax ? $vendor->tax : 0,
+                $vendor->shopOrder->order_status != 'cancelled' && $vendor->discount ? $vendor->discount : 0,
                 $totalAmount,
-                $commission ? $commission : '0',
-                $commissionCt ? $commissionCt : '0',
+                $commission ? $commission : 0,
+                $commissionCt ? $commissionCt : 0,
                 round($balance),
-                $order->payment_mode,
-                $order->payment_status,
-                $order->order_status,
-                $order->special_instruction,
+                $vendor->shopOrder->payment_mode,
+                $vendor->shopOrder->payment_status,
+                $vendor->shopOrder->order_status,
+                $vendor->shopOrder->special_instruction,
             ];
         });
 
@@ -91,10 +95,10 @@ class ShopSalesExport implements FromCollection, WithColumnFormatting, WithColum
                 'no.',
                 'invoice id',
                 'order date',
+                'shop',
                 'revenue',
                 'commercial tax',
                 'discount',
-                'promo discount',
                 "total amount\n(tax inclusive)",
                 'commission',
                 'ct on commision',
@@ -113,9 +117,9 @@ class ShopSalesExport implements FromCollection, WithColumnFormatting, WithColum
             'A' => 15,
             'B' => 12,
             'C' => 20,
-            'D' => 15,
-            'E' => 20,
-            'F' => 10,
+            'D' => 30,
+            'E' => 15,
+            'F' => 15,
             'G' => 15,
             'H' => 15,
             'I' => 15,
@@ -136,6 +140,7 @@ class ShopSalesExport implements FromCollection, WithColumnFormatting, WithColum
             'A' => ['alignment' => ['horizontal' => 'center']],
             'B' => ['alignment' => ['horizontal' => 'center']],
             'C' => ['alignment' => ['horizontal' => 'center']],
+            'D' => ['alignment' => ['horizontal' => 'center']],
             'L' => ['alignment' => ['horizontal' => 'center']],
             'M' => ['alignment' => ['horizontal' => 'center']],
             'N' => ['alignment' => ['horizontal' => 'center']],
@@ -150,7 +155,6 @@ class ShopSalesExport implements FromCollection, WithColumnFormatting, WithColum
     public function columnFormats(): array
     {
         return [
-            'D' => '#,##0',
             'E' => '#,##0',
             'F' => '#,##0',
             'G' => '#,##0',
@@ -181,13 +185,13 @@ class ShopSalesExport implements FromCollection, WithColumnFormatting, WithColum
             AfterSheet::class => function (AfterSheet $event) {
                 $lastRow = count($this->result) + 6 + 1;
 
-                $event->sheet->getStyle(sprintf('D%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('D%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('E%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('E%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
                 $event->sheet->getStyle(sprintf('H%d:K%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
                 $event->sheet->getStyle(sprintf('H%d:K%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
                 $event->sheet->getStyle(sprintf('K%d', $lastRow))->getFont()->setBold(true);
 
-                $event->sheet->setCellValue(sprintf('D%d', $lastRow), $this->amountSum);
+                $event->sheet->setCellValue(sprintf('E%d', $lastRow), $this->amountSum);
                 $event->sheet->setCellValue(sprintf('H%d', $lastRow), $this->totalAmountSum);
                 $event->sheet->setCellValue(sprintf('I%d', $lastRow), $this->commissionSum);
                 $event->sheet->setCellValue(sprintf('J%d', $lastRow), $this->commissionCtSum);
