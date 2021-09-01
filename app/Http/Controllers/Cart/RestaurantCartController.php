@@ -20,6 +20,9 @@ use App\Models\Promocode;
 use App\Models\RestaurantBranch;
 use App\Services\MessageService\BoomSmsService;
 use App\Services\MessageService\SlackMessagingService;
+use App\Services\PaymentService\CbPayService;
+use App\Services\PaymentService\CodService;
+use App\Services\PaymentService\KbzPayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +48,7 @@ class RestaurantCartController extends Controller
 
         $data = [
             'restaurant' => $menuCart ? $this->prepareMenuCartData($menuCart) : new stdClass(),
-            'shop' => new stdClass(),
+            'shop' => [],
         ];
 
         return $this->generateResponse($data, 200);
@@ -72,6 +75,7 @@ class RestaurantCartController extends Controller
                 $menuCartItem = $this->getMenuCartItem($menu->id, $menuCart->id, $menuData['key']);
 
                 if ($menuCartItem) {
+                    $menuData['quantity'] = $menuCartItem->menu['quantity'] + 1;
                     $menuCartItem->menu = $menuData;
                     $menuCartItem->save();
                 } else {
@@ -343,6 +347,23 @@ class RestaurantCartController extends Controller
         }
     }
 
+    public function removePromocode(Request $request)
+    {
+        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
+
+        if (!$menuCart) {
+            return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
+        }
+
+        $menuCart->promocode_id = null;
+        $menuCart->promocode = null;
+        $menuCart->promo_amount = 0;
+        $menuCart->save();
+
+        $cartData = $this->prepareMenuCartData($menuCart);
+        return $this->generateResponse($cartData, 200);
+    }
+
     private function getPromoData($request, $customer)
     {
         $resMessages = $this->resMes['promo_code'];
@@ -389,20 +410,34 @@ class RestaurantCartController extends Controller
         $request['promo_code'] = $menuCart->promocode;
         $request['order_items'] = $this->getOrderItems($menuCart->menuCartItems);
 
-        if (App::environment('production')) {
-            $messageService = new BoomSmsService();
-        } else {
-            $messageService = new SlackMessagingService();
-        }
+        $order = new RestaurantOrderController($this->getMessageService(), $this->getPaymentService($request->payment_mode));
 
-        $order = new RestaurantOrderController($messageService);
-
-        $result = $order->store($request);
+        return $result = $order->store($request);
         if (json_decode($result->getContent(), true)['status'] === 201) {
             $menuCart->delete();
         }
 
         return $result;
+    }
+
+    private function getMessageService()
+    {
+        if (App::environment('production')) {
+            return new BoomSmsService();
+        } else {
+            return new SlackMessagingService();
+        }
+    }
+
+    private function getPaymentService($paymentMode)
+    {
+        if ($paymentMode === 'KPay') {
+            return new KbzPayService();
+        } elseif ($paymentMode === 'CBPay') {
+            return new CbPayService();
+        } else {
+            return new CodService();
+        }
     }
 
     public function checkAddress(Request $request)
