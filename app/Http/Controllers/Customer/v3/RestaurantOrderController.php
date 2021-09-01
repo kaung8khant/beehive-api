@@ -14,10 +14,7 @@ use App\Helpers\v3\PromocodeHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Promocode;
-use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
-use App\Models\User;
-use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
 use App\Services\MessageService\MessagingService;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
@@ -33,7 +30,7 @@ class RestaurantOrderController extends Controller
     protected $messageService;
     protected $paymentService;
 
-    public function __construct(MessagingService $messageService, PaymentService $paymentService, DriverRealtimeDataRepositoryInterface $driverRealtime)
+    public function __construct(MessagingService $messageService, PaymentService $paymentService)
     {
         if (Auth::guard('customers')->check()) {
             $this->customer = Auth::guard('customers')->user();
