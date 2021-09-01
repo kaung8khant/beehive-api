@@ -28,13 +28,21 @@ class ShopOrderItem extends Model
         'variant' => 'array',
     ];
 
-    protected $appends = ['total_amount'];
+    protected $appends = ['total_amount','promo'];
 
     public function getTotalAmountAttribute()
     {
         $totalAmount=0;
         $totalAmount+= ($this->amount - $this->discount + $this->tax) * $this->quantity;
         return $totalAmount;
+    }
+
+    public function getPromoAttribute()
+    {
+        $promo=0;
+        $promo=$this->vendor->shopOrder->promocode_amount/$this->vendor->shopOrder->item_count;
+
+        return $promo;
     }
 
     public function vendor()

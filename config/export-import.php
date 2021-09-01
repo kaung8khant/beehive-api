@@ -52,6 +52,7 @@ return [
         'shop-sales' => 'Sales\ShopSalesExport',
         'shop-product-sales' => 'Sales\ProductSalesExport',
         'shop-vendor-product-sales' => 'Sales\ShopProductSalesExport',
+        'shop-vendor-invoice' => 'Sales\ShopVendorInvoiceExport',
     ],
     'name' => [
         'restaurant-vendor-sales',

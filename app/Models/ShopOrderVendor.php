@@ -25,7 +25,7 @@ class ShopOrderVendor extends Model
         'promocode' => 'object',
     ];
 
-    protected $appends = ['amount','tax', 'discount',  'total_amount','commission'];
+    protected $appends = ['amount','tax', 'discount',  'total_amount','commission','promo_amount'];
 
 
     public function getCommissionAttribute()
@@ -75,13 +75,26 @@ class ShopOrderVendor extends Model
     public function getTotalAmountAttribute()
     {
         $totalAmount = 0;
+        $promo = 0;
 
         foreach ($this->items as $item) {
+            $promo+=$item->promo;
             $amount = $item->amount + $item->tax - $item->discount;
             $totalAmount += $amount;
         }
 
-        return $totalAmount;
+        return $totalAmount-$promo;
+    }
+
+    public function getPromoAmountAttribute()
+    {
+        $promo = 0;
+
+        foreach ($this->items as $item) {
+            $promo+=$item->promo;
+        }
+
+        return $promo;
     }
 
     public function shop()

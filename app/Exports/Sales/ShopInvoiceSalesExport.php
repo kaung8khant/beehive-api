@@ -42,7 +42,7 @@ class ShopInvoiceSalesExport implements FromCollection, WithColumnFormatting, Wi
 
         $this->result = $shopOrders->map(function ($order, $key) {
             $amount = $order->order_status == 'cancelled' ? '0' : $order->amount;
-            $commission = $order->commission;
+            $commission = $order->order_status == 'cancelled' ? '0' : $order->commission;
             $commissionCt = $order->commission * 0.05;
             $totalAmount = $order->order_status == 'cancelled' ? '0' : $order->total_amount;
             $balance = $totalAmount - $commissionCt;

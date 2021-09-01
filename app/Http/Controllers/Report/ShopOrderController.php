@@ -64,7 +64,7 @@ class ShopOrderController extends Controller
 
         foreach ($shopOrders as $order) {
             $amount = $order->order_status == 'cancelled' ? 0 : $order->amount;
-            $commission =  $order->commission;
+            $commission =  $order->order_status == 'cancelled' ? 0 : $order->commission;
             $commissionCt = $commission * 0.05;
             $totalAmount = $order->order_status == 'cancelled' ? 0 : $order->total_amount;
             $balance = $totalAmount - $commissionCt;
@@ -117,7 +117,7 @@ class ShopOrderController extends Controller
             $shop = Shop::where('id', $vendor->shop_id)->first();
 
             $amount = $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->amount;
-            $commission =   $vendor->commission;
+            $commission =   $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->commission;
             $commissionCt = $commission * 0.05;
             $totalAmount =  $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->total_amount;
             $balance = $totalAmount - $commissionCt;
@@ -135,6 +135,7 @@ class ShopOrderController extends Controller
                 'revenue' => $amount,
                 'commercial_tax' => $vendor->shopOrder->order_status != 'cancelled' && $vendor->tax ? $vendor->tax : 0,
                 'discount' => $vendor->shopOrder->order_status != 'cancelled' && $vendor->discount ? $vendor->discount : 0,
+                'promo_discount' => $vendor->shopOrder->order_status != 'cancelled' && $vendor->promo_amount ? $vendor->promo_amount : 0,
                 'total_amount' => $totalAmount,
                 'commission' => $commission ? $commission : 0,
                 'commission_ct' => $commissionCt ? $commissionCt : 0,
@@ -171,7 +172,7 @@ class ShopOrderController extends Controller
             $shop = Shop::where('id', $item->shop_id)->first();
 
             $amount = $item->vendor->shopOrder->order_status == 'cancelled' ? 0 : ($item->amount * $item->quantity);
-            $commission =  $item->commission;
+            $commission = $item->vendor->shopOrder->order_status == 'cancelled' ? 0 : $item->commission;
             $commissionCt = $commission * 0.05;
             $totalAmount = $item->vendor->shopOrder->order_status == 'cancelled' ? 0 : $item->total_amount;
             $balance = $totalAmount - $commissionCt;
@@ -194,6 +195,7 @@ class ShopOrderController extends Controller
                 'revenue' => $amount,
                 'commercial_tax' => $item->vendor->shopOrder->order_status != 'cancelled' && $item->tax ? $item->tax * $item->quantity : 0,
                 'discount' => $item->vendor->shopOrder->order_status != 'cancelled' && $item->discount ? $item->discount * $item->quantity : 0,
+                'promo_discount' => $item->vendor->shopOrder->order_status != 'cancelled' && $item->promo ? $item->promo : 0,
                 'total_amount' => $totalAmount,
                 'commission' => $commission ? $commission : 0,
                 'commission_ct' => $commissionCt ? $commissionCt : 0,
@@ -234,6 +236,7 @@ class ShopOrderController extends Controller
             $commission = 0;
             $commissionCt = 0;
             $quantity = 0;
+            $promo = 0;
             foreach ($group as $k => $item) {
                 $amount += $item->amount * $item->quantity;
                 $commission +=  $item->commission;
@@ -243,6 +246,7 @@ class ShopOrderController extends Controller
                 $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
                 $discount += $item->discount ? $item->discount * $item->quantity : 0;
                 $quantity += $item->quantity;
+                $promo += $item->promo;
 
                 $amountSum += $amount;
                 $totalAmountSum += $totalAmount;
@@ -250,7 +254,9 @@ class ShopOrderController extends Controller
                 $commissionCtSum += $commissionCt;
                 $balanceSum += $balance;
             }
+
             $data[] = [
+                'promo_discount' => $promo ? $promo : 0,
                 'product_name' => $group[0]->product_name,
                 'price' => $group[0]->amount,
                 'vendor_price' => $group[0]->vendor_price,
