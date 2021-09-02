@@ -48,8 +48,11 @@ return [
         'restaurant-vendor-sales' => 'Sales\RestaurantVendorSalesExport',
         'restaurant-branch-sales' => 'Sales\RestaurantBranchSalesExport',
         'restaurant-vendor-invoice' => 'Sales\RestaurantVendorInvoiceExport',
-        'shop-invoice-sales' => 'Sales\ShopSalesExport',
-        'product-sales' => 'Sales\ProductSalesExport',
+        'shop-invoice-sales' => 'Sales\ShopInvoiceSalesExport',
+        'shop-sales' => 'Sales\ShopSalesExport',
+        'shop-product-sales' => 'Sales\ProductSalesExport',
+        'shop-vendor-product-sales' => 'Sales\ShopProductSalesExport',
+        'shop-vendor-invoice' => 'Sales\ShopVendorInvoiceExport',
     ],
     'name' => [
         'restaurant-vendor-sales',

@@ -24,7 +24,16 @@ class Shop extends BaseModel
         'notify_numbers' => 'array',
     ];
 
-    protected $appends = ['rating', 'images'];
+    protected $appends = ['rating', 'images','first_order_date'];
+
+    public function getFirstOrderDateAttribute()
+    {
+        $shopOrder = ShopOrder::whereHas('vendors', function ($query) {
+            $query->where('shop_id', $this->id);
+        })->orderBy('order_date', 'ASC')->first();
+
+        return $shopOrder ? $shopOrder->order_date : null;
+    }
 
     public function getRatingAttribute()
     {
