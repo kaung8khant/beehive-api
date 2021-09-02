@@ -133,7 +133,10 @@ class RestaurantController extends Controller
         $restaurantBranch->load([
             'restaurant',
             'availableMenus' => function ($query) {
-                $query->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings')
+                $query->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuToppings')
+                    ->with('menuVariants', function ($q) {
+                        $q->where('is_enable', 1);
+                    })
                     ->where('is_enable', 1)
                     ->where('is_available', 1)
                     ->orderBy('id', 'desc');
