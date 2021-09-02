@@ -56,7 +56,7 @@ class Product extends BaseModel
 
     private function cheapestVariant()
     {
-        return $this->productVariants()->orderBy('price', 'asc')->first();
+        return $this->productVariants()->where('is_enable', 1)->orderBy('price', 'asc')->first();
     }
 
     public function getRatingAttribute()

@@ -171,6 +171,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
 
             Route::get('reports/shop-orders/all', 'Report\ShopOrderController@getShopSaleInvoiceReport');
+            Route::get('reports/shop-orders/shop-sales', 'Report\ShopOrderController@getShopSaleReport');
+            Route::get('reports/shop-orders/vendor/{shop}/product-sales', 'Report\ShopOrderController@getShopProductSaleReport');
             Route::get('reports/shop-orders/product-sales', 'Report\ShopOrderController@getProductSaleReport');
 
             Route::get('pages', 'Admin\PageController@index');
@@ -254,15 +256,20 @@ Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], func
     Route::post('carts', 'Cart\RestaurantCartController@viewCart');
     Route::post('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@store');
     Route::put('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@updateQuantity');
-    Route::delete('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@delete');
 
+    Route::delete('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@delete');
     Route::delete('restaurants/carts', 'Cart\RestaurantCartController@deleteCart');
 
     Route::post('restaurants/carts/promocode', 'Cart\RestaurantCartController@applyPromocode');
+    Route::delete('restaurants/carts/promocode', 'Cart\RestaurantCartController@removePromocode');
+
     Route::post('restaurants/carts/address', 'Cart\RestaurantCartController@checkAddress');
     Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
 
-    Route::get('restaurants/invoice/{restaurantOrder}/generate', 'Pdf\RestaurantInvoiceController@generateInvoice');
+    Route::post('shops/carts/products/{product}', 'Cart\ShopCartController@store');
+    Route::put('shops/carts/products/{menu}', 'Cart\ShopCartController@updateQuantity');
+
+    Route::get('restaurants/invoice/{slug}/generate', 'Pdf\RestaurantInvoiceController@generateInvoice');
 });
 
 /*

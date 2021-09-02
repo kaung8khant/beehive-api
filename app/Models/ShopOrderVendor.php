@@ -25,18 +25,76 @@ class ShopOrderVendor extends Model
         'promocode' => 'object',
     ];
 
-    protected $appends = ['total_amount'];
+    protected $appends = ['amount','tax', 'discount',  'total_amount','commission','promo_amount'];
+
+
+    public function getCommissionAttribute()
+    {
+        $commission = 0;
+
+        foreach ($this->items as $item) {
+            $commission += ($item->amount-$item->vendor_price)  * $item->quantity;
+        }
+
+        return $commission;
+    }
+
+    public function getAmountAttribute()
+    {
+        $amount = 0;
+
+        foreach ($this->items as $item) {
+            $amount += $item->amount  * $item->quantity;
+        }
+
+        return $amount;
+    }
+
+    public function getTaxAttribute()
+    {
+        $tax = 0;
+
+        foreach ($this->items as $item) {
+            $tax += $item->tax * $item->quantity;
+        }
+
+        return $tax;
+    }
+
+    public function getDiscountAttribute()
+    {
+        $discount = 0;
+
+        foreach ($this->items as $item) {
+            $discount += $item->discount * $item->quantity;
+        }
+
+        return $discount;
+    }
 
     public function getTotalAmountAttribute()
     {
         $totalAmount = 0;
+        $promo = 0;
 
         foreach ($this->items as $item) {
+            $promo+=$item->promo;
             $amount = $item->amount + $item->tax - $item->discount;
             $totalAmount += $amount;
         }
 
-        return $totalAmount;
+        return $totalAmount-$promo;
+    }
+
+    public function getPromoAmountAttribute()
+    {
+        $promo = 0;
+
+        foreach ($this->items as $item) {
+            $promo+=$item->promo;
+        }
+
+        return $promo;
     }
 
     public function shop()
