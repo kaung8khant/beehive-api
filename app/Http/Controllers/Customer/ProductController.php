@@ -82,6 +82,10 @@ class ProductController extends Controller
             abort(404);
         }
 
+        $product->load(['shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariants' => function ($query) {
+            $query->where('is_enable', 1);
+        }]);
+
         if ($product->variants) {
             foreach ($product->variants as $variants) {
                 if ($variants && $variants['ui'] === 'image') {
@@ -108,7 +112,7 @@ class ProductController extends Controller
             }
         }
 
-        return $this->generateProductResponse($product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariants'), 200, 'other');
+        return $this->generateProductResponse($product, 200, 'other');
     }
 
     public function getByCategory(Request $request, ShopCategory $category)

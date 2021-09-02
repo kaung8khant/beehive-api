@@ -55,7 +55,7 @@ class Menu extends BaseModel
 
     private function cheapestVariant()
     {
-        return $this->menuVariants()->orderBy('price', 'asc')->first();
+        return $this->menuVariants()->where('is_enable', 1)->orderBy('price', 'asc')->first();
     }
 
     public function getImagesAttribute()

@@ -266,6 +266,9 @@ Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], func
     Route::post('restaurants/carts/address', 'Cart\RestaurantCartController@checkAddress');
     Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
 
+    Route::post('shops/carts/products/{product}', 'Cart\ShopCartController@store');
+    Route::put('shops/carts/products/{menu}', 'Cart\ShopCartController@updateQuantity');
+
     Route::get('restaurants/invoice/{slug}/generate', 'Pdf\RestaurantInvoiceController@generateInvoice');
 });
 
