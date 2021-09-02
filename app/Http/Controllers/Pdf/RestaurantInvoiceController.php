@@ -19,8 +19,6 @@ class RestaurantInvoiceController extends Controller
 
         $fileName = $restaurantOrder->slug . '-' . $restaurantOrder->invoice_id . '.pdf';
 
-        // return $restaurantOrder->restaurant_branch_info;
-
         $pdf = PDF::loadView('restaurant-invoice', compact('restaurantOrder', 'branchInfo', 'restaurantOrderItems', 'restaurantOrderContact', 'date'))->setPaper('a4');
         return $pdf->download($fileName);
     }
