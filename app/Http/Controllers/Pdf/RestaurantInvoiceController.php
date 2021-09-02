@@ -13,9 +13,11 @@ class RestaurantInvoiceController extends Controller
         $restaurantOrder = RestaurantOrder::where('slug', $slug)->firstOrFail();
         $branchInfo = $restaurantOrder->restaurant_branch_info;
 
+        $fileName = $restaurantOrder->slug . '-' . $restaurantOrder->invoice_id . '.pdf';
+
         // return $restaurantOrder->restaurant_branch_info;
 
-        PDF::loadView('restaurant-invoice', compact('restaurantOrder', 'branchInfo'))->setPaper('a4')->save($restaurantOrder->invoice_id);
-        return response()->download($restaurantOrder->invoice_id)->deleteFileAfterSend(true);
+        $pdf = PDF::loadView('restaurant-invoice', compact('restaurantOrder', 'branchInfo'))->setPaper('a4');
+        return $pdf->download($fileName);
     }
 }

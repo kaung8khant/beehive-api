@@ -16,7 +16,7 @@
 
 <body>
     <div class="center">
-        <img src="{{ $branchInfo['restaurant']['images'][0]['url'] }}" alt="restaurant-logo" width="100px">
+        <img src="{{ public_path() . '/beehive-logo.png' }}" alt="restaurant-logo" width="100px">
     </div>
 
     <h2 class="center">{{ $branchInfo['restaurant']['name'] }} ({{ $branchInfo['name'] }})</h2>
