@@ -3,7 +3,6 @@
 namespace App\Exports\Sales;
 
 use App\Models\Shop;
-use App\Models\ShopOrder;
 use App\Models\ShopOrderVendor;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
