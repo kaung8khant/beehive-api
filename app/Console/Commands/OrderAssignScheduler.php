@@ -65,6 +65,6 @@ class OrderAssignScheduler extends Command
         //     AssignOrder::dispatch($uniqueKey, $order->slug, 'restaurant');
         // }
 
-        $this->assignOrderToOther();
+        //$this->assignOrderToOther();
     }
 }

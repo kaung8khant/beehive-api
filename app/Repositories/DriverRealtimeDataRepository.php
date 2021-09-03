@@ -30,7 +30,7 @@ class DriverRealtimeDataRepository implements DriverRealtimeDataRepositoryInterf
         $drivers = $this->database->getReference('/driver')
             ->orderByChild('updated_at')
             // enable the following code if you want real-time active data.
-            // ->startAt(Carbon::now()->subMinutes(5)->toDateTimeString())
+            ->startAt(Carbon::now()->subMinutes(1)->toDateTimeString())
             ->getSnapshot()->getValue();
         $filterDriver =  array_filter($drivers, function ($obj, $key) use ($exclude) {
             if ($obj['last_order'] == 'accepted' || $obj['last_order'] == 'delivered') {

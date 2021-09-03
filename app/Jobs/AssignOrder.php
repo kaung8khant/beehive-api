@@ -54,6 +54,6 @@ class AssignOrder implements ShouldQueue, ShouldBeUnique
      */
     public function handle()
     {
-        OrderAssignHelper::assignOrder($this->type, $this->orderSlug);
+        // OrderAssignHelper::assignOrder($this->type, $this->orderSlug);
     }
 }
