@@ -27,8 +27,7 @@ class ShopOrderController extends Controller
         $shopOrderVendors = ShopOrderVendor::whereHas('shopOrder', function ($query) use ($request) {
             $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
         })->get()->groupBy('shop_id');
-        $shopOrders = ShopOrder::with('contact')
-        ->whereBetween('order_date', [$request->from, $request->to])
+        $shopOrders = ShopOrder::whereBetween('order_date', [$request->from, $request->to])
         ->where('order_status', '!=', 'cancelled')
         ->get();
 
@@ -51,8 +50,7 @@ class ShopOrderController extends Controller
             }, $item->variant)) . '-' . $item->amount . '-' . $item->vendor_price . '-' . $item->discount;
         });
 
-        $shopOrders = ShopOrder::with('contact')
-            ->whereBetween('order_date', [$request->from, $request->to])
+        $shopOrders = ShopOrder::whereBetween('order_date', [$request->from, $request->to])
             ->where('order_status', '!=', 'cancelled')
             ->get();
 

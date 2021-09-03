@@ -76,8 +76,9 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
                 $this->commissionCtSum += $commissionCt;
                 $this->balanceSum += $balance;
             }
+            $this->key += 1;
             return [
-                $this->key += 1,
+                $this->key,
                 $group[0]->product_name,
                 implode(',', array_map(function ($n) {
                     return $n['value'];
