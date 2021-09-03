@@ -77,8 +77,7 @@ class ShopOrderVendor extends Model
         $totalAmount = 0;
 
         foreach ($this->items as $item) {
-            $amount = $item->amount + $item->tax - $item->discount;
-            $totalAmount += $amount;
+            $totalAmount += ($item->amount - $item->discount + $item->tax) * $item->quantity;
         }
 
         return $totalAmount;
