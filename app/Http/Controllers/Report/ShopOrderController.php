@@ -135,7 +135,6 @@ class ShopOrderController extends Controller
                 'revenue' => $amount,
                 'commercial_tax' => $vendor->shopOrder->order_status != 'cancelled' && $vendor->tax ? $vendor->tax : 0,
                 'discount' => $vendor->shopOrder->order_status != 'cancelled' && $vendor->discount ? $vendor->discount : 0,
-                'promo_discount' => $vendor->shopOrder->order_status != 'cancelled' && $vendor->promo_amount ? $vendor->promo_amount : 0,
                 'total_amount' => $totalAmount,
                 'commission' => $commission ? $commission : 0,
                 'commission_ct' => $commissionCt ? $commissionCt : 0,
@@ -195,7 +194,6 @@ class ShopOrderController extends Controller
                 'revenue' => $amount,
                 'commercial_tax' => $item->vendor->shopOrder->order_status != 'cancelled' && $item->tax ? $item->tax * $item->quantity : 0,
                 'discount' => $item->vendor->shopOrder->order_status != 'cancelled' && $item->discount ? $item->discount * $item->quantity : 0,
-                'promo_discount' => $item->vendor->shopOrder->order_status != 'cancelled' && $item->promo ? $item->promo : 0,
                 'total_amount' => $totalAmount,
                 'commission' => $commission ? $commission : 0,
                 'commission_ct' => $commissionCt ? $commissionCt : 0,
@@ -236,7 +234,6 @@ class ShopOrderController extends Controller
             $commission = 0;
             $commissionCt = 0;
             $quantity = 0;
-            $promo = 0;
             foreach ($group as $k => $item) {
                 $amount += $item->amount * $item->quantity;
                 $commission +=  $item->commission;
@@ -246,7 +243,6 @@ class ShopOrderController extends Controller
                 $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
                 $discount += $item->discount ? $item->discount * $item->quantity : 0;
                 $quantity += $item->quantity;
-                $promo += $item->promo;
 
                 $amountSum += $amount;
                 $totalAmountSum += $totalAmount;
@@ -256,7 +252,6 @@ class ShopOrderController extends Controller
             }
 
             $data[] = [
-                'promo_discount' => $promo ? $promo : 0,
                 'product_name' => $group[0]->product_name,
                 'price' => $group[0]->amount,
                 'vendor_price' => $group[0]->vendor_price,

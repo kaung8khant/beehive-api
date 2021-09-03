@@ -70,7 +70,6 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
                 $amount,
                 $item->vendor->shopOrder->order_status != 'cancelled' && $item->tax ? $item->tax : '0',
                 $item->vendor->shopOrder->order_status != 'cancelled' && $item->discount ? $item->discount : '0',
-                $item->vendor->shopOrder->order_status != 'cancelled' && $item->promo ? $item->promo : '0',
                 $totalAmount,
                 $commission ? $commission : '0',
                 $commissionCt ? $commissionCt : '0',
@@ -110,7 +109,6 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
                 'revenue',
                 'commercial tax',
                 'discount',
-                'promo discount',
                 "total amount\n(tax inclusive)",
                 'commission',
                 'ct on commision',
@@ -145,8 +143,7 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             'Q' => 15,
             'R' => 15,
             'S' => 15,
-            'T' => 15,
-            'U' => 30,
+            'T' => 30,
         ];
     }
 
@@ -161,10 +158,10 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             'D' => ['alignment' => ['horizontal' => 'center']],
             'E' => ['alignment' => ['horizontal' => 'center']],
             'H' => ['alignment' => ['horizontal' => 'center']],
+            'Q' => ['alignment' => ['horizontal' => 'center']],
             'R' => ['alignment' => ['horizontal' => 'center']],
             'S' => ['alignment' => ['horizontal' => 'center']],
             'T' => ['alignment' => ['horizontal' => 'center']],
-            'U' => ['alignment' => ['horizontal' => 'center']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -185,7 +182,6 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             'N' => '#,##0',
             'O' => '#,##0',
             'P' => '#,##0',
-            'Q' => '#,##0',
         ];
     }
 
@@ -211,15 +207,15 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
 
                 $event->sheet->getStyle(sprintf('J%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
                 $event->sheet->getStyle(sprintf('J%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('N%d:Q%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('N%d:Q%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('Q%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('M%d:P%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('M%d:P%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('P%d', $lastRow))->getFont()->setBold(true);
 
                 $event->sheet->setCellValue(sprintf('J%d', $lastRow), $this->amountSum);
-                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->commissionSum);
-                $event->sheet->setCellValue(sprintf('P%d', $lastRow), $this->commissionCtSum);
-                $event->sheet->setCellValue(sprintf('Q%d', $lastRow), $this->balanceSum);
+                $event->sheet->setCellValue(sprintf('M%d', $lastRow), $this->totalAmountSum);
+                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->commissionSum);
+                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->commissionCtSum);
+                $event->sheet->setCellValue(sprintf('P%d', $lastRow), $this->balanceSum);
 
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
 
