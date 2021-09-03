@@ -230,8 +230,10 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
 
                 $event->sheet->setCellValue(sprintf('J%d', $lastRow - 1), 'Promo Discount');
                 $event->sheet->setCellValue(sprintf('K%d', $lastRow - 1), $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('N%d', $lastRow - 1), $this->promoDiscount);
                 $event->sheet->setCellValue(sprintf('J%d', $lastRow), 'Net Amount');
                 $event->sheet->setCellValue(sprintf('K%d', $lastRow), $this->totalAmountSum - $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->balanceSum - $this->promoDiscount);
 
                 $event->sheet->getStyle($lastRow - 2)->getNumberFormat()->setFormatCode('#,##0');
                 $event->sheet->getStyle(sprintf('K%d', $lastRow - 2))->getNumberFormat()->setFormatCode('#,##0');
