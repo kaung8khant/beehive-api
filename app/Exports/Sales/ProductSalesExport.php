@@ -100,6 +100,7 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
                 $totalAmount,
                 $commission ? $commission : '0',
                 $commissionCt ? $commissionCt : '0',
+                round($balance)
             ];
         });
 
