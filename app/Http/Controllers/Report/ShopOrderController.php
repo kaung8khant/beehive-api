@@ -203,13 +203,13 @@ class ShopOrderController extends Controller
             foreach ($group as $k => $item) {
                 $amount += ($item->amount * $item->quantity);
                 $commission +=  $item->commission;
-                $commissionCt += $commission * 0.05;
                 $totalAmount += $item->total_amount;
                 $balance = $totalAmount - $commissionCt;
                 $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
                 $discount += $item->discount ? $item->discount * $item->quantity : 0;
                 $quantity += $item->quantity;
             }
+            $commissionCt += $commission * 0.05;
             $amountSum += $amount;
             $totalAmountSum += $totalAmount;
             $commissionSum += $commission;
