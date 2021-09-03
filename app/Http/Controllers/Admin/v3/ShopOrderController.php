@@ -30,10 +30,12 @@ class ShopOrderController extends Controller
     use PromocodeHelper, ResponseHelper, StringHelper;
 
     protected $messageService;
+    protected $resMes;
 
     public function __construct(MessagingService $messageService)
     {
         $this->messageService = $messageService;
+        $this->resMes = config('response-en.shop_order');
     }
 
     public function index(Request $request)
@@ -152,7 +154,13 @@ class ShopOrderController extends Controller
         if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
             $superUser = Auth::guard('users')->user()->roles->contains('name', 'SuperAdmin');
             if (!$superUser) {
-                return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
+                return $this->generateResponse(sprintf($this->resMes['order_sts_err'], $shopOrder->order_status), 406, true);
+            }
+        }
+
+        if ($shopOrder->payment_mode !== 'COD' && $shopOrder->payment_status !== 'success') {
+            if ($request->status !== 'cancelled') {
+                return $this->generateResponse($this->resMes['payment_err'], 406, true);
             }
         }
 
@@ -178,7 +186,7 @@ class ShopOrderController extends Controller
             SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
         }
 
-        return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
+        return $this->generateResponse(sprintf($this->resMes['order_sts_succ'], $request->status), 200, true);
     }
 
     public function getVendorOrders(Request $request, Shop $shop)

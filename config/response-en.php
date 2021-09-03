@@ -21,6 +21,18 @@ return [
         'enable' => 'You cannot order from this restaurant branch at the moment. Please contact support.',
     ],
 
+    'restaurant_order' => [
+        'order_sts_succ' => 'The order has successfully been %s.',
+        'order_sts_err' => 'The order has already been %s.',
+        'payment_err' => "You cannot change the order status to 'pick up' or 'delivered' when payment status is pending or cancelled.",
+    ],
+
+    'shop_order' => [
+        'order_sts_succ' => 'The order has successfully been %s.',
+        'order_sts_err' => 'The order has already been %s.',
+        'payment_err' => "You cannot change the order status to 'pick up' or 'delivered' when payment status is pending or cancelled.",
+    ],
+
     'promo_code' => [
         'not_found' => 'Promocode not found.',
         'invalid' => 'Invalid promocode.',
