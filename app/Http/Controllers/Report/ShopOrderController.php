@@ -204,7 +204,6 @@ class ShopOrderController extends Controller
                 $amount += ($item->amount * $item->quantity);
                 $commission +=  $item->commission;
                 $totalAmount += $item->total_amount;
-                $balance = $totalAmount - $commissionCt;
                 $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
                 $discount += $item->discount ? $item->discount * $item->quantity : 0;
                 $quantity += $item->quantity;
@@ -214,6 +213,7 @@ class ShopOrderController extends Controller
             $totalAmountSum += $totalAmount;
             $commissionSum += $commission;
             $commissionCtSum += $commissionCt;
+            $balance = $totalAmount - $commissionCt;
             $balanceSum += $balance;
 
             $data[] = [
