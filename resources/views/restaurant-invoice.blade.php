@@ -44,7 +44,8 @@
 <body>
     <div class="center">
         <img src="{{ public_path() . '/beehive-logo.png' }}" alt="restaurant-logo" width="100px">
-        <h2>Kamayut, Yangon</h2>
+        <h2>Beehive</h2>
+        <div>Kamayut, Yangon</div>
         <div>beehive@gmail.com</div>
         <div>09962223334</div>
     </div>
