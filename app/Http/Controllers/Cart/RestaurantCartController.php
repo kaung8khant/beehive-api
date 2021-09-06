@@ -5,11 +5,9 @@ namespace App\Http\Controllers\Cart;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Helpers\CacheHelper;
-use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Admin\v3\RestaurantOrderController;
-use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Menu;
 use App\Models\MenuCart;
@@ -18,18 +16,13 @@ use App\Models\MenuTopping;
 use App\Models\MenuVariant;
 use App\Models\Promocode;
 use App\Models\RestaurantBranch;
-use App\Services\MessageService\BoomSmsService;
-use App\Services\MessageService\SlackMessagingService;
-use App\Services\PaymentService\CbPayService;
-use App\Services\PaymentService\CodService;
-use App\Services\PaymentService\KbzPayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use stdClass;
 
-class RestaurantCartController extends Controller
+class RestaurantCartController extends CartController
 {
     use ResponseHelper;
 
@@ -40,18 +33,6 @@ class RestaurantCartController extends Controller
     {
         $this->customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
         $this->resMes = config('response-en');
-    }
-
-    public function viewCart()
-    {
-        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
-
-        $data = [
-            'restaurant' => $menuCart ? $this->prepareMenuCartData($menuCart) : new stdClass(),
-            'shop' => [],
-        ];
-
-        return $this->generateResponse($data, 200);
     }
 
     public function store(Request $request, Menu $menu)
@@ -75,7 +56,7 @@ class RestaurantCartController extends Controller
                 $menuCartItem = $this->getMenuCartItem($menu->id, $menuCart->id, $menuData['key']);
 
                 if ($menuCartItem) {
-                    $menuData['quantity'] = $menuCartItem->menu['quantity'] + 1;
+                    $menuData['quantity'] = $menuCartItem->menu['quantity'] + $request->quantity;
                     $menuCartItem->menu = $menuData;
                     $menuCartItem->save();
                 } else {
@@ -106,6 +87,7 @@ class RestaurantCartController extends Controller
         return Validator::make($request->all(), [
             'customer_slug' => 'required|exists:App\Models\Customer,slug',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
+            'quantity' => 'required|integer',
             'variant_slug' => 'required|exists:App\Models\MenuVariant,slug',
             'toppings' => 'nullable|array',
             'toppings.*.slug' => 'required|exists:App\Models\MenuTopping',
@@ -206,56 +188,6 @@ class RestaurantCartController extends Controller
             });
     }
 
-    private function prepareMenuCartData($menuCart)
-    {
-        $branch = RestaurantBranch::with('restaurant')->where('id', $menuCart->restaurant_branch_id)->first();
-
-        return [
-            'slug' => $menuCart->slug,
-            'restaurant' => $branch->restaurant->makeHidden('created_by', 'updated_by', 'covers'),
-            'restaurant_branch' => $branch->makeHidden('restaurant', 'created_by', 'updated_by'),
-            'promocode' => $menuCart->promocode,
-            'sub_total' => $this->getSubTotal($menuCart->menuCartItems->pluck('menu')),
-            'total_tax' => $this->getTotalTax($menuCart->menuCartItems->pluck('menu')),
-            'promo_amount' => $menuCart->promo_amount,
-            'total_amount' => $this->getTotalAmount($menuCart->menuCartItems->pluck('menu'), $menuCart->promo_amount),
-            'menus' => $menuCart->menuCartItems->pluck('menu'),
-        ];
-    }
-
-    private function getSubTotal($menuCartItems)
-    {
-        $subTotal = 0;
-
-        foreach ($menuCartItems as $item) {
-            $subTotal += ($item['amount'] - $item['discount']) * $item['quantity'];
-        }
-
-        return $subTotal;
-    }
-
-    private function getTotalTax($menuCartItems)
-    {
-        $tax = 0;
-
-        foreach ($menuCartItems as $item) {
-            $tax += $item['tax'] * $item['quantity'];
-        }
-
-        return $tax;
-    }
-
-    private function getTotalAmount($menuCartItems, $promoAmount)
-    {
-        $totalAmount = 0;
-
-        foreach ($menuCartItems as $item) {
-            $totalAmount += ($item['amount'] + $item['tax'] - $item['discount']) * $item['quantity'];
-        }
-
-        return $totalAmount - $promoAmount;
-    }
-
     public function updateQuantity(Request $request, Menu $menu)
     {
         $menuCart = MenuCart::where('customer_id', $this->customer->id)->first();
@@ -324,7 +256,6 @@ class RestaurantCartController extends Controller
     public function applyPromocode(Request $request)
     {
         $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
-
         if (!$menuCart) {
             return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
@@ -333,7 +264,7 @@ class RestaurantCartController extends Controller
             $request['sub_total'] = $this->getSubTotal($menuCart->menuCartItems->pluck('menu'));
             $request['order_items'] = $this->getOrderItems($menuCart->menuCartItems);
 
-            $promoData = $this->getPromoData($request, $this->customer);
+            $promoData = $this->getPromoData($request, $this->customer, 'restaurant');
 
             $menuCart->promocode_id = $promoData['promocode_id'];
             $menuCart->promocode = $promoData['promocode'];
@@ -347,7 +278,7 @@ class RestaurantCartController extends Controller
         }
     }
 
-    public function removePromocode(Request $request)
+    public function removePromocode()
     {
         $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
 
@@ -364,34 +295,6 @@ class RestaurantCartController extends Controller
         return $this->generateResponse($cartData, 200);
     }
 
-    private function getPromoData($request, $customer)
-    {
-        $resMessages = $this->resMes['promo_code'];
-
-        $promocode = Promocode::where('code', strtoupper($request->promo_code))->with('rules')->latest('created_at')->first();
-        if (!$promocode) {
-            throw new ForbiddenException($resMessages['not_found']);
-        }
-
-        $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
-        if (!$validUsage) {
-            throw new ForbiddenException($resMessages['invalid_res']);
-        }
-
-        $validRule = PromocodeHelper::validatePromocodeRules($promocode, $request->order_items, $request->sub_total, $customer, 'restaurant');
-        if (!$validRule) {
-            throw new ForbiddenException($resMessages['invalid']);
-        }
-
-        $promoAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $request->order_items, $request->sub_total, 'restaurant');
-
-        return [
-            'promocode_id' => $promocode->id,
-            'promocode' => $promocode->code,
-            'promo_amount' => $promoAmount,
-        ];
-    }
-
     public function checkout(Request $request)
     {
         $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
@@ -401,7 +304,8 @@ class RestaurantCartController extends Controller
         }
 
         try {
-            $this->checkAddressAndBranch($request, $menuCart->restaurant_branch_id);
+            $menuIds = $menuCart->menuCartItems->pluck('menu_id')->unique();
+            $this->checkAddressAndBranch($request, $menuIds, $menuCart->restaurant_branch_id);
         } catch (ForbiddenException $e) {
             return $this->generateResponse($e->getMessage(), 400, true);
         }
@@ -411,7 +315,6 @@ class RestaurantCartController extends Controller
         $request['order_items'] = $this->getOrderItems($menuCart->menuCartItems);
 
         $order = new RestaurantOrderController($this->getMessageService(), $this->getPaymentService($request->payment_mode));
-
         $result = $order->store($request);
 
         if (json_decode($result->getContent(), true)['status'] === 201) {
@@ -419,26 +322,6 @@ class RestaurantCartController extends Controller
         }
 
         return $result;
-    }
-
-    private function getMessageService()
-    {
-        if (App::environment('production')) {
-            return new BoomSmsService();
-        } else {
-            return new SlackMessagingService();
-        }
-    }
-
-    private function getPaymentService($paymentMode)
-    {
-        if ($paymentMode === 'KPay') {
-            return new KbzPayService();
-        } elseif ($paymentMode === 'CBPay') {
-            return new CbPayService();
-        } else {
-            return new CodService();
-        }
     }
 
     public function checkAddress(Request $request)
@@ -450,7 +333,8 @@ class RestaurantCartController extends Controller
         }
 
         try {
-            $this->checkAddressAndBranch($request, $menuCart->restaurant_branch_id);
+            $menuIds = $menuCart->menuCartItems->pluck('menu_id')->unique();
+            $this->checkAddressAndBranch($request, $menuIds, $menuCart->restaurant_branch_id);
         } catch (ForbiddenException $e) {
             return $this->generateResponse($e->getMessage(), 400, true);
         }
@@ -458,7 +342,7 @@ class RestaurantCartController extends Controller
         return $this->generateResponse($this->resMes['restaurant_cart']['address_succ'], 200, true);
     }
 
-    private function checkAddressAndBranch($request, $restaurantBranchId)
+    private function checkAddressAndBranch($request, $menuIds, $restaurantBranchId)
     {
         $restaurantBranch = RestaurantBranch::selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id,
             ( 6371 * acos( cos(radians(?)) *
@@ -473,11 +357,19 @@ class RestaurantCartController extends Controller
         }
 
         if (!$restaurantBranch->restaurant->is_enable) {
-            throw new ForbiddenException($this->resMes['restaurant']['enable']);
+            throw new ForbiddenException(sprintf($this->resMes['restaurant']['enable'], $restaurantBranch->restaurant->name));
         }
 
         if (!$restaurantBranch->is_enable) {
-            throw new ForbiddenException($this->resMes['restaurant_branch']['enable']);
+            throw new ForbiddenException(sprintf($this->resMes['restaurant_branch']['enable'], $restaurantBranch->name));
+        }
+
+        foreach ($menuIds as $menuId) {
+            $menu = Menu::where('id', $menuId)->first();
+
+            if (!$menu->is_enable) {
+                throw new ForbiddenException(sprintf($this->resMes['menu']['enable'], $menu->name));
+            }
         }
     }
 
