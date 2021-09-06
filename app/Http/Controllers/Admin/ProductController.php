@@ -296,6 +296,6 @@ class ProductController extends Controller
 
         $product->update($validatedData);
 
-        return response()->json($product, 200);
+        return response()->json($product->load('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants'), 200);
     }
 }
