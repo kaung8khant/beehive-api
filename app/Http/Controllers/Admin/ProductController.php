@@ -34,11 +34,14 @@ class ProductController extends Controller
                     $query->where('is_enable', $request->is_enable);
                 });
         }
-
-        return $products
-            ->orderBy('search_index', 'DESC')
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        if ($request->by) {
+            $products = $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->orderBy('search_index', 'desc');
+        } else {
+            $products = $products->orderBy('search_index', 'desc')
+                ->orderBy($sorting['orderBy'], $sorting['sortBy']);
+        }
+        return $products->paginate(10);
     }
 
     public function store(Request $request)
@@ -230,8 +233,15 @@ class ProductController extends Controller
                 });
         }
 
-        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        if ($request->by) {
+            $products = $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->orderBy('search_index', 'desc');
+        } else {
+            $products = $products->orderBy('search_index', 'desc')
+                ->orderBy($sorting['orderBy'], $sorting['sortBy']);
+        }
+
+        return $products->paginate(10);
     }
 
     public function getProductsByBrand(Request $request, Brand $brand)
