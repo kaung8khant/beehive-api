@@ -127,6 +127,8 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
 
         Route::get('reports/restaurant-orders/vendor/{slug}', 'Report\RestaurantOrderController@getVendorOrders');
         Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
+        Route::get('reports/shop-orders/vendor/{shop}/product-sales', 'Report\ShopOrderController@getShopProductSaleReport');
+
 
         Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
 
