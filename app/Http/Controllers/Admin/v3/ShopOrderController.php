@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\v3;
 
 use App\Exceptions\ForbiddenException;
+use App\Exceptions\ServerException;
 use App\Helpers\CollectionHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -19,6 +20,7 @@ use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
 use App\Services\MessageService\MessagingService;
+use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -30,10 +32,14 @@ class ShopOrderController extends Controller
     use PromocodeHelper, ResponseHelper, StringHelper;
 
     protected $messageService;
+    protected $paymentService;
+    protected $resMes;
 
-    public function __construct(MessagingService $messageService)
+    public function __construct(MessagingService $messageService, PaymentService $paymentService)
     {
         $this->messageService = $messageService;
+        $this->paymentService = $paymentService;
+        $this->resMes = config('response-en.shop_order');
     }
 
     public function index(Request $request)
@@ -79,7 +85,23 @@ class ShopOrderController extends Controller
                 $validatedData = $this->getPromoData($validatedData, $customer);
             }
 
+            $paymentData = [];
+            if ($validatedData['payment_mode'] !== 'COD') {
+                try {
+                    $paymentData = $this->paymentService->createTransaction($validatedData, 'shop');
+                } catch (ServerException $e) {
+                    return $this->generateResponse($e->getMessage(), 500, true);
+                }
+            }
+
             $order = $this->shopOrderTransaction($validatedData);
+
+            if ($validatedData['payment_mode'] === 'KPay') {
+                $order['prepay_id'] = $paymentData['Response']['prepay_id'];
+            } else if ($validatedData['payment_mode'] === 'CBPay') {
+                $order['mer_dqr_code'] = $paymentData['merDqrCode'];
+                $order['trans_ref'] = $paymentData['transRef'];
+            }
 
             return $this->generateShopOrderResponse($order, 201);
         } catch (\Exception $e) {
@@ -152,7 +174,13 @@ class ShopOrderController extends Controller
         if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
             $superUser = Auth::guard('users')->user()->roles->contains('name', 'SuperAdmin');
             if (!$superUser) {
-                return $this->generateResponse('The order has already been ' . $shopOrder->order_status . '.', 406, true);
+                return $this->generateResponse(sprintf($this->resMes['order_sts_err'], $shopOrder->order_status), 406, true);
+            }
+        }
+
+        if ($shopOrder->payment_mode !== 'COD' && $shopOrder->payment_status !== 'success') {
+            if ($request->status !== 'cancelled') {
+                return $this->generateResponse($this->resMes['payment_err'], 406, true);
             }
         }
 
@@ -178,7 +206,7 @@ class ShopOrderController extends Controller
             SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
         }
 
-        return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
+        return $this->generateResponse(sprintf($this->resMes['order_sts_succ'], $request->status), 200, true);
     }
 
     public function getVendorOrders(Request $request, Shop $shop)
@@ -208,7 +236,6 @@ class ShopOrderController extends Controller
             })
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->get();
-
 
         $result = $vendorOrders->map(function ($order) {
             $shopOrder = ShopOrder::with('contact')->find($order->shop_order_id)->toArray();

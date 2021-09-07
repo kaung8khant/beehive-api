@@ -31,11 +31,13 @@ class RestaurantOrderController extends Controller
 
     protected $messageService;
     protected $paymentService;
+    protected $resMes;
 
     public function __construct(MessagingService $messageService, PaymentService $paymentService)
     {
         $this->messageService = $messageService;
         $this->paymentService = $paymentService;
+        $this->resMes = config('response-en.restaurant_order');
     }
 
     public function index(Request $request)
@@ -183,7 +185,13 @@ class RestaurantOrderController extends Controller
         if ($restaurantOrder->order_status === 'delivered' || $restaurantOrder->order_status === 'cancelled') {
             $superUser = Auth::guard('users')->user()->roles->contains('name', 'SuperAdmin');
             if (!$superUser) {
-                return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
+                return $this->generateResponse(sprintf($this->resMes['order_sts_err'], $restaurantOrder->order_status), 406, true);
+            }
+        }
+
+        if ($restaurantOrder->payment_mode !== 'COD' && $restaurantOrder->payment_status !== 'success') {
+            if ($request->status !== 'cancelled') {
+                return $this->generateResponse($this->resMes['payment_err'], 406, true);
             }
         }
 
@@ -201,7 +209,7 @@ class RestaurantOrderController extends Controller
             SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
         }
 
-        return $this->generateResponse('The order has successfully been ' . $request->status . '.', 200, true);
+        return $this->generateResponse(sprintf($this->resMes['order_sts_succ'], $request->status), 200, true);
     }
 
     public function getBranchOrders(Request $request, RestaurantBranch $restaurantBranch)
@@ -210,7 +218,9 @@ class RestaurantOrderController extends Controller
         if ($vendorBranchId !== $restaurantBranch->id) {
             abort(404);
         }
+
         $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
+
         $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
             ->where('restaurant_branch_id', $restaurantBranch->id)
             ->whereBetween('order_date', array($request->from, $request->to))

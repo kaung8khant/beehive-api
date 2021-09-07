@@ -37,27 +37,23 @@
 
 <body>
     <div class="center">
-        <img src="{{ public_path() . '/beehive-logo.png' }}" alt="restaurant-logo" width="100px">
+        <img src="{{ public_path() . '/beehive-logo.png' }}" alt="shop-logo" width="100px">
         <h2>Beehive</h2>
         <div>Kamayut, Yangon</div>
         <div>beehive@gmail.com</div>
         <div>09962223334</div>
     </div>
     <hr>
-    <h4>{{ $branchInfo['restaurant']['name'] }}
-        <div> ({{ $branchInfo['name'] }})</div>
-    </h4>
     <table align="right">
         <tbody>
             <tr>
                 <td><b>INVOICE NO.</b></td>
-                <td>{{ $restaurantOrder['invoice_id'] }}</td>
+                <td>{{ $shopOrder['invoice_id'] }}</td>
             </tr>
             <tr>
                 <td><b>Date.</b></td>
                 <td>{{ $date }}</td>
             </tr>
-
         </tbody>
     </table>
     <br />
@@ -69,17 +65,17 @@
             <tr>
                 <td>NAME</td>
                 <td>:</td>
-                <td>{{ $restaurantOrderContact['customer_name'] }}</td>
+                <td>{{ $contact['customer_name'] }}</td>
             </tr>
             <tr>
                 <td>PHONE</td>
                 <td>:</td>
-                <td>{{ $restaurantOrderContact['phone_number'] }}</td>
+                <td>{{ $contact['phone_number'] }}</td>
             </tr>
             <tr>
                 <td>ADDRESS</td>
                 <td>:</td>
-                <td>{{ $restaurantOrderContact['street_name'] }}</td>
+                <td>{{ $contact['street_name'] }}</td>
             </tr>
         </tbody>
     </table>
@@ -88,16 +84,18 @@
     <table class="pdf-table" cellspacing="0">
         <thead>
             <tr>
-                <th class="border" align="left">Menu</th>
+                <th class="border" align="left">Product</th>
+                <th class="border" align="left">Shop</th>
                 <th class="border" align="right">Unit Price</th>
                 <th class="border" align="right">Qty</th>
                 <th class="border" align="right">Line Total</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($restaurantOrderItems as $item)
+            @foreach ($vendors as $vendor)
+            @foreach ($vendor['items'] as $item)
             <tr>
-                <td class="border" align="left">{{ $item['menu_name'] }}
+                <td class="border" align="left">{{ $item['product_name'] }}
                     @if($item['variant'])
                     <div class="text-muted">
                         {{
@@ -107,41 +105,35 @@
                         }}
                     </div>
                     @endif
-
-                    @if($item['toppings'])
-                    @foreach ($item['toppings'] as $t)
-                    <div class="text-muted">
-                        {{ implode(' ', $t) }}
-                    </div>
-                    @endforeach
-                    @endif
                 </td>
+                <td class="border" align="left" style="vertical-align: top;">{{ $vendor['shop']['name'] }}</td>
                 <td class="border" align="right" style="vertical-align: top;">{{ number_format($item['amount'] - $item['discount']) }} MMK</td>
                 <td class="border" align="right" style="vertical-align: top;">{{ $item['quantity'] }}</td>
                 <td class="border" align="right" style="vertical-align: top;">{{ number_format(($item['amount'] - $item['discount']) * $item['quantity']) }} MMK</td>
             </tr>
             @endforeach
+            @endforeach
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="3" align="right">Sub Total</td>
-                <td align="right">{{ number_format(round($restaurantOrder['amount'])) }} MMK</td>
+                <td colspan="4" align="right">Sub Total</td>
+                <td align="right">{{ number_format(round($shopOrder['amount'])) }} MMK</td>
             </tr>
             <tr>
-                <td colspan="3" align="right">Delivery Fee</td>
+                <td colspan="4" align="right">Delivery Fee</td>
                 <td align="right">{{ 0 }} MMK</td>
             </tr>
             <tr>
-                <td colspan="3" align="right">Tax</td>
-                <td align="right">{{ number_format(round($restaurantOrder['tax'])) }} MMK</td>
+                <td colspan="4" align="right">Tax</td>
+                <td align="right">{{ number_format(round($shopOrder['tax'])) }} MMK</td>
             </tr>
             <tr>
-                <td colspan="3" align="right" class="border">Discount</td>
-                <td align="right" class="border">{{ number_format(round($restaurantOrder['promocode_amount'])) }} MMK</td>
+                <td colspan="4" align="right" class="border">Discount</td>
+                <td align="right" class="border">{{ number_format(round($shopOrder['promocode_amount'])) }} MMK</td>
             </tr>
             <tr>
-                <td colspan="3" align="right">Total</td>
-                <td align="right">{{ number_format(round($restaurantOrder['total_amount'])) }} MMK</td>
+                <td colspan="4" align="right">Total</td>
+                <td align="right">{{ number_format(round($shopOrder['total_amount'])) }} MMK</td>
             </tr>
         </tfoot>
     </table>

@@ -22,7 +22,7 @@ class ShopOrder extends BaseModel
         'promocode' => 'object',
     ];
 
-    protected $appends = ['invoice_id','amount','tax', 'discount',  'total_amount','item_count'];
+    protected $appends = ['invoice_id','amount','tax', 'discount',  'total_amount'];
 
     public function getInvoiceIdAttribute()
     {
@@ -83,20 +83,6 @@ class ShopOrder extends BaseModel
         }
 
         return $totalAmount - $this->promocode_amount;
-    }
-
-    public function getItemCountAttribute()
-    {
-        $vendors = $this->vendors;
-        $count = 0;
-
-        foreach ($vendors as $vendor) {
-            foreach ($vendor->items as $item) {
-                $count += $item->quantity;
-            }
-        }
-
-        return $count;
     }
 
     public function contact()

@@ -3,6 +3,7 @@
 namespace App\Exports\Sales;
 
 use App\Models\Shop;
+use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -28,6 +29,8 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
     protected $commissionSum;
     protected $commissionCtSum;
     protected $balanceSum;
+    protected $promoDiscount;
+    protected $key;
 
     public function __construct($from, $to)
     {
@@ -38,47 +41,66 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
     public function collection()
     {
         $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) {
-            $query->whereBetween('order_date', [$this->from, $this->to]);
+            $query->whereBetween('order_date', [$this->from, $this->to])->where('order_status', '!=', 'cancelled');
         })->get();
 
-        $this->result = $shopOrderItems->map(function ($item, $key) {
-            $shop = Shop::where('id', $item->shop_id)->first();
+        $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
+            return $item->product_id . '-' . implode('-', array_map(function ($n) {
+                return $n['value'];
+            }, $item->variant)) . '-' . $item->amount . '-' . $item->vendor_price . '-' . $item->discount;
+        });
 
-            $amount = $item->vendor->shopOrder->order_status == 'cancelled' ? '0' : ($item->amount * $item->quantity);
-            $commission =  $item->vendor->shopOrder->order_status == 'cancelled' ? '0' : $item->commission;
-            $commissionCt = $commission * 0.05;
-            $totalAmount = $item->vendor->shopOrder->order_status == 'cancelled' ? '0' : $item->total_amount;
-            $balance = $totalAmount - $commissionCt;
+        $shopOrders = ShopOrder::whereBetween('order_date', [$this->from, $this->to])
+            ->where('order_status', '!=', 'cancelled')
+            ->get();
 
+        foreach ($shopOrders as $k => $order) {
+            $this->promoDiscount+=$order->promocode_amount;
+        }
+
+        $this->result = $groups->map(function ($group) {
+            $amount = 0;
+            $commercialTax = 0;
+            $discount = 0;
+            $totalAmount = 0;
+            $commission = 0;
+            $commissionCt = 0;
+            $quantity = 0;
+            $shop = Shop::where('id', $group[0]->shop_id)->first();
+
+            foreach ($group as $item) {
+                $amount += ($item->amount * $item->quantity);
+                $commission +=  $item->commission;
+                $totalAmount += $item->total_amount;
+                $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
+                $discount += $item->discount ? $item->discount * $item->quantity : 0;
+                $quantity += $item->quantity;
+            }
+            $commissionCt += $commission * 0.05;
             $this->amountSum += $amount;
             $this->totalAmountSum += $totalAmount;
             $this->commissionSum += $commission;
             $this->commissionCtSum += $commissionCt;
+            $balance = $totalAmount - $commissionCt;
             $this->balanceSum += $balance;
+            $this->key += 1;
             return [
-                $key + 1,
-                $item->vendor->shopOrder->invoice_id,
-                Carbon::parse($item->vendor->shopOrder->order_date)->format('M d Y h:i a'),
+                $this->key,
+                $group[0]->product_name,
                 $shop->name,
-                $item->product_name,
-                $item->amount,
-                $item->vendor_price,
                 implode(',', array_map(function ($n) {
                     return $n['value'];
-                }, $item->variant)),
-                $item->quantity,
+                }, $group[0]->variant)),
+                $group[0]->amount,
+                $group[0]->vendor_price,
+                $quantity,
                 $amount,
-                $item->vendor->shopOrder->order_status != 'cancelled' && $item->tax ? $item->tax : '0',
-                $item->vendor->shopOrder->order_status != 'cancelled' && $item->discount ? $item->discount : '0',
-                $item->vendor->shopOrder->order_status != 'cancelled' && $item->promo ? $item->promo : '0',
+                $commercialTax ? $commercialTax : '0',
+                $discount ? $discount : '0',
                 $totalAmount,
                 $commission ? $commission : '0',
                 $commissionCt ? $commissionCt : '0',
-                round($balance),
-                $item->vendor->shopOrder->payment_mode,
-                $item->vendor->shopOrder->payment_status,
-                $item->vendor->shopOrder->order_status,
-                $item->vendor->shopOrder->special_instruction,
+                round($balance)
             ];
         });
 
@@ -99,26 +121,19 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             [],
             [
                 'no.',
-                'invoice id',
-                'order date',
+                'product',
                 'shop',
-                'product_name',
-                'price',
-                'vendor_price',
                 'variant',
+                'selling price',
+                'vendor price',
                 'quantity',
                 'revenue',
                 'commercial tax',
                 'discount',
-                'promo discount',
                 "total amount\n(tax inclusive)",
                 'commission',
                 'ct on commision',
                 'balance',
-                'payment mode',
-                'payment status',
-                'order status',
-                'special instructions',
             ],
         ];
     }
@@ -127,8 +142,8 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
     {
         return [
             'A' => 15,
-            'B' => 12,
-            'C' => 20,
+            'B' => 30,
+            'C' => 30,
             'D' => 20,
             'E' => 30,
             'F' => 10,
@@ -140,13 +155,6 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             'L' => 15,
             'M' => 17,
             'N' => 20,
-            'O' => 15,
-            'P' => 15,
-            'Q' => 15,
-            'R' => 15,
-            'S' => 15,
-            'T' => 15,
-            'U' => 30,
         ];
     }
 
@@ -159,12 +167,6 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             'B' => ['alignment' => ['horizontal' => 'center']],
             'C' => ['alignment' => ['horizontal' => 'center']],
             'D' => ['alignment' => ['horizontal' => 'center']],
-            'E' => ['alignment' => ['horizontal' => 'center']],
-            'H' => ['alignment' => ['horizontal' => 'center']],
-            'R' => ['alignment' => ['horizontal' => 'center']],
-            'S' => ['alignment' => ['horizontal' => 'center']],
-            'T' => ['alignment' => ['horizontal' => 'center']],
-            'U' => ['alignment' => ['horizontal' => 'center']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -175,6 +177,7 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
     public function columnFormats(): array
     {
         return [
+            'E' => '#,##0',
             'F' => '#,##0',
             'G' => '#,##0',
             'I' => '#,##0',
@@ -183,9 +186,6 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             'L' => '#,##0',
             'M' => '#,##0',
             'N' => '#,##0',
-            'O' => '#,##0',
-            'P' => '#,##0',
-            'Q' => '#,##0',
         ];
     }
 
@@ -207,21 +207,37 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $lastRow = count($this->result) + 6 + 1;
+                $lastRow = count($this->result) + 8 + 1;
 
-                $event->sheet->getStyle(sprintf('J%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('J%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('N%d:Q%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('N%d:Q%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('Q%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('H%d', $lastRow - 3))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('H%d', $lastRow - 2))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('J%d:N%d', $lastRow - 3, $lastRow - 3))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('J%d:N%d', $lastRow - 2, $lastRow - 2))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('J%d:N%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('J%d:N%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('thin');
 
-                $event->sheet->setCellValue(sprintf('J%d', $lastRow), $this->amountSum);
-                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->commissionSum);
-                $event->sheet->setCellValue(sprintf('P%d', $lastRow), $this->commissionCtSum);
-                $event->sheet->setCellValue(sprintf('Q%d', $lastRow), $this->balanceSum);
+                $event->sheet->getStyle(sprintf('N%d', $lastRow - 2))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('J%d', $lastRow-1))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('J%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('J%d', $lastRow -1))->getAlignment()->setHorizontal('center');
+                $event->sheet->getStyle(sprintf('J%d', $lastRow))->getAlignment()->setHorizontal('center');
 
-                $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
+                $event->sheet->setCellValue(sprintf('H%d', $lastRow -2), $this->amountSum);
+                $event->sheet->setCellValue(sprintf('K%d', $lastRow-2), $this->totalAmountSum);
+                $event->sheet->setCellValue(sprintf('L%d', $lastRow-2), $this->commissionSum);
+                $event->sheet->setCellValue(sprintf('M%d', $lastRow-2), $this->commissionCtSum);
+                $event->sheet->setCellValue(sprintf('N%d', $lastRow-2), $this->balanceSum);
+
+                $event->sheet->setCellValue(sprintf('J%d', $lastRow - 1), 'Promo Discount');
+                $event->sheet->setCellValue(sprintf('K%d', $lastRow - 1), $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('N%d', $lastRow - 1), $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('J%d', $lastRow), 'Net Amount');
+                $event->sheet->setCellValue(sprintf('K%d', $lastRow), $this->totalAmountSum - $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->balanceSum - $this->promoDiscount);
+
+                $event->sheet->getStyle($lastRow - 2)->getNumberFormat()->setFormatCode('#,##0');
+                $event->sheet->getStyle(sprintf('K%d', $lastRow - 2))->getNumberFormat()->setFormatCode('#,##0');
+                $event->sheet->getStyle(sprintf('K%d', $lastRow - 1))->getNumberFormat()->setFormatCode('#,##0');
 
                 $month = Carbon::parse($this->to)->format('F');
 
