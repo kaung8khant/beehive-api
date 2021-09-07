@@ -30,6 +30,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('dashboard/shop-orders', 'Dashboard\AdminDashboardController@getShopOrders');
             Route::get('dashboard/order-data', 'Dashboard\AdminDashboardController@getOrderChartData');
             Route::get('dashboard/top-customers', 'Dashboard\AdminDashboardController@getTopCustomers');
+            Route::get('dashboard/top-categories', 'Dashboard\AdminDashboardController@getTopShopCategories');
             /* Dashboard */
 
             Route::resource('roles', 'Admin\RoleController', ['except' => ['create', 'edit']]);
@@ -174,6 +175,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('reports/shop-orders/shop-sales', 'Report\ShopOrderController@getShopSaleReport');
             Route::get('reports/shop-orders/vendor/{shop}/product-sales', 'Report\ShopOrderController@getShopProductSaleReport');
             Route::get('reports/shop-orders/product-sales', 'Report\ShopOrderController@getProductSaleReport');
+
+            Route::get('reports/promocodes', 'Report\PromocodeController@getPromocodeReport');
 
             Route::get('pages', 'Admin\PageController@index');
             Route::get('pages/{page}', 'Admin\PageController@show');
