@@ -93,11 +93,16 @@ trait PromocodeHelper
         return false;
     }
 
-    public function validateRule($rules)
+    public function validateRule($rules, $promoId = null)
     {
         if (sizeof($rules) == 0) {
             return true;
         }
+
+        if ($promoId) {
+            $this->promoId = $promoId;
+        }
+
         $returnValue = false;
 
         foreach ($rules as $rule) {

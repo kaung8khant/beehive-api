@@ -23,20 +23,25 @@ class ShopOrderItem extends Model
     ];
 
     protected $casts = [
+        'quantity' => 'integer',
+        'amount' => 'float',
+        'tax' => 'float',
+        'discount' => 'float',
+        'vendor_price' => 'float',
+        'commission' => 'float',
+        'variant' => 'array',
         'shop' => 'object',
         'variations' => 'array',
-        'variant' => 'array',
     ];
 
     protected $appends = ['total_amount'];
 
     public function getTotalAmountAttribute()
     {
-        $totalAmount=0;
-        $totalAmount+= ($this->amount - $this->discount + $this->tax) * $this->quantity;
+        $totalAmount = 0;
+        $totalAmount += ($this->amount - $this->discount + $this->tax) * $this->quantity;
         return $totalAmount;
     }
-
 
     public function vendor()
     {

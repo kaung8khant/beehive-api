@@ -18,7 +18,9 @@ class MenuTopping extends BaseModel
     ];
 
     protected $casts = [
+        'price' => 'float',
         'is_incremental' => 'boolean',
+        'max_quantity' => 'integer',
     ];
 
     protected $appends = ['images'];

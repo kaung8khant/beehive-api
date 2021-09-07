@@ -18,6 +18,10 @@ class RestaurantRating extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'rating' => 'float',
+    ];
+
     public function restaurantOrder()
     {
         return $this->belongsTo(RestaurantOrder::class);
