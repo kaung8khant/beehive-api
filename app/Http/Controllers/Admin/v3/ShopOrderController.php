@@ -98,7 +98,7 @@ class ShopOrderController extends Controller
 
             if ($validatedData['payment_mode'] === 'KPay') {
                 $order['prepay_id'] = $paymentData['Response']['prepay_id'];
-            } else if ($validatedData['payment_mode'] === 'CBPay') {
+            } elseif ($validatedData['payment_mode'] === 'CBPay') {
                 $order['mer_dqr_code'] = $paymentData['merDqrCode'];
                 $order['trans_ref'] = $paymentData['transRef'];
             }
@@ -279,5 +279,15 @@ class ShopOrderController extends Controller
         }
 
         return response()->json(['message' => 'Successfully cancelled.'], 200);
+    }
+
+    public function updatePayment(Request $request, ShopOrder $shopOrder)
+    {
+        $shopOrder->update($request->validate([
+            'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
+            'payment_status' => 'required|in:success,failed,pending',
+        ]));
+
+        return $this->generateResponse('The order payment has successfully been updated.', 200, true);
     }
 }
