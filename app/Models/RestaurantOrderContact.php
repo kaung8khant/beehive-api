@@ -19,9 +19,14 @@ class RestaurantOrderContact extends Model
         'updated_at',
     ];
 
-    public function getFloorAttribute()
+    protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
+    ];
+
+    public function getFloorAttribute($value)
     {
-        return $this->value ? $this->value : '0';
+        return $value ? $value : 0;
     }
 
     public function restaurantOrder()

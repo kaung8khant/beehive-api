@@ -19,8 +19,12 @@ class ProductVariant extends Model
     ];
 
     protected $casts = [
-        'is_enable' => 'boolean',
         'variant' => 'array',
+        'price' => 'float',
+        'tax' => 'float',
+        'discount' => 'float',
+        'vendor_price' => 'float',
+        'is_enable' => 'boolean',
     ];
 
     public function product()

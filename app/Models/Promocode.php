@@ -16,6 +16,10 @@ class Promocode extends BaseModel
         'updated_at',
     ];
 
+    protected $casts = [
+        'amount' => 'float',
+    ];
+
     public function rules()
     {
         return $this->hasMany(PromocodeRule::class);

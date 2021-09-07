@@ -18,6 +18,10 @@ class ShopRating extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'rating' => 'float',
+    ];
+
     protected $appends = ['customer'];
 
     public function getCustomerAttribute()

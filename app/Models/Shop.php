@@ -19,9 +19,11 @@ class Shop extends BaseModel
     ];
 
     protected $casts = [
+        'notify_numbers' => 'array',
+        'latitude' => 'float',
+        'longitude' => 'float',
         'is_official' => 'boolean',
         'is_enable' => 'boolean',
-        'notify_numbers' => 'array',
     ];
 
     protected $appends = ['rating', 'images','first_order_date'];

@@ -19,6 +19,9 @@ class Address extends BaseModel
 
     protected $casts = [
         'is_primary' => 'boolean',
+        'floor' => 'integer',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     // public function township()
