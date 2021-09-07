@@ -256,7 +256,8 @@ Route::group([
 });
 
 Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {
-    Route::post('carts', 'Cart\RestaurantCartController@viewCart');
+    /* Restaurant Cart */
+    Route::post('carts', 'Cart\CartController@viewCart');
     Route::post('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@store');
     Route::put('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@updateQuantity');
 
@@ -268,9 +269,21 @@ Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], func
 
     Route::post('restaurants/carts/address', 'Cart\RestaurantCartController@checkAddress');
     Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
+    /* Restaurant Cart */
 
+    /* Shop Cart */
     Route::post('shops/carts/products/{product}', 'Cart\ShopCartController@store');
-    Route::put('shops/carts/products/{menu}', 'Cart\ShopCartController@updateQuantity');
+    Route::put('shops/carts/products/{product}', 'Cart\ShopCartController@updateQuantity');
+
+    Route::delete('shops/carts/products/{product}', 'Cart\ShopCartController@delete');
+    Route::delete('shops/carts', 'Cart\ShopCartController@deleteCart');
+
+    Route::post('shops/carts/promocode', 'Cart\ShopCartController@applyPromocode');
+    Route::delete('shops/carts/promocode', 'Cart\ShopCartController@removePromocode');
+
+    Route::post('shops/carts/address', 'Cart\ShopCartController@checkAddress');
+    Route::post('shops/carts/checkout', 'Cart\ShopCartController@checkout');
+    /* Shop Cart */
 
     Route::get('restaurants/invoice/{slug}/generate', 'Pdf\RestaurantInvoiceController@generateInvoice');
     Route::get('shops/invoice/{slug}/generate', 'Pdf\ShopInvoiceController@generateInvoice');
