@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\ShopOrderItem;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -272,5 +273,20 @@ class AdminDashboardController extends Controller
             'restaurant_top_customers' => $restaurantCustomers,
             'shop_top_customers' => $shopCustomers,
         ];
+    }
+
+    public function getTopShopCategories()
+    {
+        $shopCustomers = DB::table('shop_orders as so')
+            ->join('shop_order_vendors as sov', 'sov.shop_order_id', '=', 'so.id')
+            ->join('shop_order_items as soi', 'soi.shop_order_vendor_id', '=', 'sov.id')
+            ->join('products as p', 'p.id', '=', 'soi.product_id')
+            ->join('shop_categories as sc', 'sc.id', '=', 'p.shop_category_id')
+            ->select('sc.name', 'sc.slug', DB::raw('count(*) AS count'))
+            ->where('so.order_status', '!=', 'cancelled')->groupBy('sc.id')
+            ->orderBy('count', 'DESC')
+            ->limit(5)
+            ->get();
+        return $shopCustomers;
     }
 }

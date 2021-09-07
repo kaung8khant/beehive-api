@@ -406,7 +406,7 @@ trait RestaurantOrderHelper
         $order = json_decode(json_encode($order), true);
         self::sendAdminPushNotifications($order, $message);
         self::sendVendorPushNotifications($order, $branchId, $message);
-        self::sendDriverPushNotifications($order, $message);
+        //self::sendDriverPushNotifications($order, $message);
     }
 
     private static function sendAdminPushNotifications($order, $message = null)
