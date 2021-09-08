@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Pdf;
 
 use App\Http\Controllers\Controller;
 use App\Models\RestaurantOrder;
-use Barryvdh\DomPDF\Facade as PDF;
 use Carbon\Carbon;
+use niklasravnsborg\LaravelPdf\Facades\Pdf as PDF;
 
 class RestaurantInvoiceController extends Controller
 {
@@ -19,7 +19,7 @@ class RestaurantInvoiceController extends Controller
 
         $fileName = $restaurantOrder->slug . '-' . $restaurantOrder->invoice_id . '.pdf';
 
-        $pdf = PDF::loadView('restaurant-invoice', compact('restaurantOrder', 'branchInfo', 'restaurantOrderItems', 'restaurantOrderContact', 'date'))->setPaper('a4');
+        $pdf = PDF::loadView('restaurant-invoice', compact('restaurantOrder', 'branchInfo', 'restaurantOrderItems', 'restaurantOrderContact', 'date'));
         return $pdf->download($fileName);
     }
 }
