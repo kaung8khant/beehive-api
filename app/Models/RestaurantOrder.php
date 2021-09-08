@@ -22,6 +22,8 @@ class RestaurantOrder extends BaseModel
 
     protected $casts = [
         'restaurant_branch_info' => AsArrayObject::class,
+        'promocode_amount' => 'float',
+        'commission' => 'float',
     ];
 
     protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount', 'driver_status'];

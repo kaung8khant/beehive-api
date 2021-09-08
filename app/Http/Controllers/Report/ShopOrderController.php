@@ -59,7 +59,7 @@ class ShopOrderController extends Controller
             $promoDiscount+=$order->promocode_amount;
         }
 
-        return $this->generateShopProductSaleReport($groups, $promoDiscount);
+        return $this->generateProductSaleReport($groups, $promoDiscount);
     }
 
     public function getShopProductSaleReport(Request $request, Shop $shop)
@@ -179,7 +179,7 @@ class ShopOrderController extends Controller
         return $result;
     }
 
-    private function generateShopProductSaleReport($groups, $promoDiscount=null)
+    private function generateProductSaleReport($groups, $promoDiscount)
     {
         $data = [];
         $amountSum = 0;
@@ -214,6 +214,74 @@ class ShopOrderController extends Controller
             $balance = $totalAmount - $commissionCt;
             $balanceSum += $balance;
 
+            $data[] = [
+                'product_name' => $group[0]->product_name,
+                'price' => $group[0]->amount,
+                'shop' => $shop->name,
+                'vendor_price' => $group[0]->vendor_price,
+                'variant' => $group[0]->variant,
+                'quantity' => $quantity,
+                'revenue' => $amount,
+                'commercial_tax' => $commercialTax ? $commercialTax : 0,
+                'discount' =>  $discount ? $discount : 0,
+                'total_amount' => $totalAmount,
+                'commission' => $commission ? $commission : 0,
+                'commission_ct' => $commissionCt ? $commissionCt : 0,
+                'balance' => round($balance),
+            ];
+        }
+
+        $result = [
+            'revenue_sum' => $amountSum,
+            'total_amount_sum' => $totalAmountSum,
+            'commission_sum' => $commissionSum,
+            'commission_ct_sum' => $commissionCtSum,
+            'balance_sum' => $balanceSum,
+            'promo_discount' => $promoDiscount,
+            'invoice' => $data,
+        ];
+
+        return $result;
+    }
+
+    private function generateShopProductSaleReport($groups)
+    {
+        $data = [];
+        $amountSum = 0;
+        $totalAmountSum = 0;
+        $commissionSum = 0;
+        $commissionCtSum = 0;
+        $balanceSum = 0;
+        $promoDiscount = 0;
+
+        foreach ($groups as $key => $group) {
+            $amount = 0;
+            $commercialTax = 0;
+            $discount = 0;
+            $totalAmount = 0;
+            $commission = 0;
+            $commissionCt = 0;
+            $quantity = 0;
+            $shop = Shop::where('id', $group[0]->shop_id)->first();
+
+            foreach ($group as $k => $item) {
+                $amount += ($item->amount * $item->quantity);
+                $commission +=  $item->commission;
+                $totalAmount += $item->total_amount;
+                $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
+                $discount += $item->discount ? $item->discount * $item->quantity : 0;
+                $quantity += $item->quantity;
+                $perItemPromo=$item->vendor->shopOrder->promocode_amount/ $item->vendor->shopOrder->item_count;
+                $promoDiscount+=$perItemPromo*$item->quantity;
+            }
+
+            $commissionCt += $commission * 0.05;
+            $amountSum += $amount;
+            $totalAmountSum += $totalAmount;
+            $commissionSum += $commission;
+            $commissionCtSum += $commissionCt;
+            $balance = $totalAmount - $commissionCt;
+            $balanceSum += $balance;
             $data[] = [
                 'product_name' => $group[0]->product_name,
                 'price' => $group[0]->amount,

@@ -13,7 +13,6 @@ class RestaurantOrderItem extends Model
     protected $guarded = ['id'];
 
     protected $hidden = [
-        // 'id',
         'restaurant_order_id',
         'menu_id',
         'restaurant_id',
@@ -22,6 +21,10 @@ class RestaurantOrderItem extends Model
     ];
 
     protected $casts = [
+        'quantity' => 'integer',
+        'amount' => 'float',
+        'tax' => 'float',
+        'discount' => 'float',
         'is_deleted' => 'boolean',
         'variations' => AsArrayObject::class,
         'toppings' => AsArrayObject::class,

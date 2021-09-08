@@ -18,6 +18,10 @@ class ProductCart extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'promo_amount' => 'float',
+    ];
+
     public function productCartItems()
     {
         return $this->hasMany(ProductCartItem::class);

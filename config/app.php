@@ -180,7 +180,7 @@ return [
         App\Providers\FakerServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
         Kreait\Laravel\Firebase\ServiceProvider::class,
-        Barryvdh\DomPDF\ServiceProvider::class,
+        niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
     ],
 
     /*

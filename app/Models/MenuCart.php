@@ -19,6 +19,10 @@ class MenuCart extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'promo_amount' => 'float',
+    ];
+
     public function restaurantBranch()
     {
         return $this->belongsTo(RestaurantBranch::class);
