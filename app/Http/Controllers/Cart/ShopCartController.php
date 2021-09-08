@@ -12,7 +12,6 @@ use App\Models\Product;
 use App\Models\ProductCart;
 use App\Models\ProductCartItem;
 use App\Models\ProductVariant;
-use App\Models\Promocode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
