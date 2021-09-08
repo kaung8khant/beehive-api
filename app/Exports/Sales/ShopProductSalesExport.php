@@ -28,6 +28,7 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
     protected $commissionSum;
     protected $commissionCtSum;
     protected $balanceSum;
+    protected $promoDiscount;
     protected $key;
 
     public function __construct($param, $from, $to)
@@ -68,15 +69,16 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
                 $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
                 $discount += $item->discount ? $item->discount * $item->quantity : 0;
                 $quantity += $item->quantity;
+                $perItemPromo=$item->vendor->shopOrder->promocode_amount/ $item->vendor->shopOrder->item_count;
 
-
-                $this->amountSum += $amount;
-                $this->totalAmountSum += $totalAmount;
-                $this->commissionSum += $commission;
-                $this->commissionCtSum += $commissionCt;
-                $this->balanceSum += $balance;
+                $this->promoDiscount+=$perItemPromo*$item->quantity;
             }
             $this->key += 1;
+            $this->amountSum += $amount;
+            $this->totalAmountSum += $totalAmount;
+            $this->commissionSum += $commission;
+            $this->commissionCtSum += $commissionCt;
+            $this->balanceSum += $balance;
             return [
                 $this->key,
                 $group[0]->product_name,
@@ -197,21 +199,39 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $lastRow = count($this->result) + 6 + 1;
+                $lastRow = count($this->result) + 8 + 1;
 
-                $event->sheet->getStyle(sprintf('G%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('G%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('J%d:M%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('J%d:M%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('M%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('G%d', $lastRow - 3))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('G%d', $lastRow - 2))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('I%d:M%d', $lastRow - 3, $lastRow - 3))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('I%d:M%d', $lastRow - 2, $lastRow - 2))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('I%d:M%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('I%d:M%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('thin');
 
-                $event->sheet->setCellValue(sprintf('G%d', $lastRow), $this->amountSum);
-                $event->sheet->setCellValue(sprintf('J%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('K%d', $lastRow), $this->commissionSum);
-                $event->sheet->setCellValue(sprintf('L%d', $lastRow), $this->commissionCtSum);
-                $event->sheet->setCellValue(sprintf('M%d', $lastRow), $this->balanceSum);
+                $event->sheet->getStyle(sprintf('M%d', $lastRow - 2))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('I%d', $lastRow-1))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('I%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('I%d', $lastRow -1))->getAlignment()->setHorizontal('center');
+                $event->sheet->getStyle(sprintf('I%d', $lastRow))->getAlignment()->setHorizontal('center');
 
+                $event->sheet->setCellValue(sprintf('G%d', $lastRow -2), $this->amountSum);
+                $event->sheet->setCellValue(sprintf('J%d', $lastRow-2), $this->totalAmountSum);
+                $event->sheet->setCellValue(sprintf('K%d', $lastRow-2), $this->commissionSum);
+                $event->sheet->setCellValue(sprintf('L%d', $lastRow-2), $this->commissionCtSum);
+                $event->sheet->setCellValue(sprintf('M%d', $lastRow-2), $this->balanceSum);
+
+                $event->sheet->setCellValue(sprintf('I%d', $lastRow - 1), 'Promo Discount');
+                $event->sheet->setCellValue(sprintf('J%d', $lastRow - 1), $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('M%d', $lastRow - 1), $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('I%d', $lastRow), 'Net Amount');
+                $event->sheet->setCellValue(sprintf('J%d', $lastRow), $this->totalAmountSum - $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('M%d', $lastRow), $this->balanceSum - $this->promoDiscount);
+
+                $event->sheet->getStyle($lastRow - 2)->getNumberFormat()->setFormatCode('#,##0');
+                $event->sheet->getStyle($lastRow - 1)->getNumberFormat()->setFormatCode('#,##0');
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
+                $event->sheet->getStyle(sprintf('J%d', $lastRow - 2))->getNumberFormat()->setFormatCode('#,##0');
+                $event->sheet->getStyle(sprintf('J%d', $lastRow - 1))->getNumberFormat()->setFormatCode('#,##0');
 
                 $month = Carbon::parse($this->to)->format('F');
 
