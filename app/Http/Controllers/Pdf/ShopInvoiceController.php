@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Pdf;
 
 use App\Http\Controllers\Controller;
 use App\Models\ShopOrder;
-use Barryvdh\DomPDF\Facade as PDF;
 use Carbon\Carbon;
+use niklasravnsborg\LaravelPdf\Facades\Pdf as PDF;
 
 class ShopInvoiceController extends Controller
 {
@@ -18,7 +18,7 @@ class ShopInvoiceController extends Controller
 
         $fileName = $shopOrder->slug . '-' . $shopOrder->invoice_id . '.pdf';
 
-        $pdf = PDF::loadView('shop-invoice', compact('shopOrder', 'vendors', 'contact', 'date'))->setPaper('a4');
+        $pdf = PDF::loadView('shop-invoice', compact('shopOrder', 'vendors', 'contact', 'date'));
         return $pdf->download($fileName);
     }
 }

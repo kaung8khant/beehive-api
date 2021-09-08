@@ -8,27 +8,37 @@
     <title>Document</title>
 
     <style>
+        .mm-font {
+            font-family: 'Tharlon';
+        }
+
         .center {
             text-align: center;
         }
+
         .text-muted {
             color: #666;
         }
+
         .pdf-table {
             width: 100%;
             font-weight: light;
             line-height: 1.3em;
         }
+
         h2 {
             margin-top: 0 !important;
         }
+
         th,
         td {
             padding: 5px,
         }
+
         .border {
             border-bottom: 1px solid rgb(162, 164, 165);
         }
+
         tfoot {
             font-weight: bold;
         }
@@ -97,7 +107,9 @@
         <tbody>
             @foreach ($restaurantOrderItems as $item)
             <tr>
-                <td class="border" align="left">{{ $item['menu_name'] }}
+                <td class="border mm-font" align="left">
+                    {{ $item['menu_name'] }}
+
                     @if($item['variant'])
                     <div class="text-muted">
                         {{
