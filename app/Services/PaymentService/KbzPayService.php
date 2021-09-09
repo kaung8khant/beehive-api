@@ -72,7 +72,7 @@ class KbzPayService extends PaymentService
 
     private function getTotalAmount($validatedData)
     {
-        $totalAmount = $validatedData['subTotal'] + $validatedData['tax'];
+        $totalAmount = $validatedData['subTotal'] + $validatedData['tax'] + $validatedData['delivery_fee'];
 
         if (isset($validatedData['promocode_amount'])) {
             $totalAmount = $totalAmount - $validatedData['promocode_amount'];

@@ -326,6 +326,7 @@ trait RestaurantOrderHelper
             'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
+            'delivery_fee' => 'nullable|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -376,9 +377,11 @@ trait RestaurantOrderHelper
 
             $subTotal += ($item['amount'] - $menuVariant->discount) * $value['quantity'];
             $tax += ($item['amount'] - $menuVariant->discount) * $menuVariant->tax * 0.01 * $value['quantity'];
+
             if ($restaurantBranch->restaurant->commission > 0) {
-                $commission+=($item['amount']  * $value['quantity']) * $restaurantBranch->restaurant->commission * 0.01;
+                $commission += ($item['amount'] * $value['quantity']) * $restaurantBranch->restaurant->commission * 0.01;
             }
+
             array_push($orderItems, $item);
         }
 
