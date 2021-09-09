@@ -19,6 +19,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             /* Address */
             Route::get('customers/{slug}/addresses', 'Admin\AddressController@index');
             Route::post('customers/{slug}/addresses', 'Admin\AddressController@store');
+            Route::put('customers/{customer}/addresses/{slug}', 'Admin\AddressController@update');
 
             Route::get('settings', 'Admin\SettingController@index');
             Route::get('settings/{groupName}', 'Admin\SettingController@show');
