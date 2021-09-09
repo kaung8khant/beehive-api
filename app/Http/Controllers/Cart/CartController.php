@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Cart;
 
 use App\Exceptions\ForbiddenException;
+use App\Helpers\GeoHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
@@ -43,15 +44,23 @@ class CartController extends Controller
     {
         $branch = RestaurantBranch::with('restaurant')->where('id', $menuCart->restaurant_branch_id)->first();
 
+        $address = $menuCart->address;
+        $distance = GeoHelper::calculateDistance($address['latitude'], $address['longitude'], $branch->latitude, $branch->longitude);
+        $deliveryFee = GeoHelper::calculateDeliveryFee($distance);
+
         return [
             'slug' => $menuCart->slug,
             'restaurant' => $branch->restaurant->makeHidden('created_by', 'updated_by', 'covers'),
             'restaurant_branch' => $branch->makeHidden('restaurant', 'created_by', 'updated_by'),
+            'address' => $menuCart->address,
+            'distance' => $distance,
+            'delivery_time' => GeoHelper::calculateDeliveryTime($distance),
+            'delivery_fee' => $deliveryFee,
             'promocode' => $menuCart->promocode,
             'sub_total' => $this->getSubTotal($menuCart->menuCartItems->pluck('menu')),
             'total_tax' => $this->getTotalTax($menuCart->menuCartItems->pluck('menu')),
             'promo_amount' => $menuCart->promo_amount,
-            'total_amount' => $this->getTotalAmount($menuCart->menuCartItems->pluck('menu'), $menuCart->promo_amount),
+            'total_amount' => $this->getTotalAmount($menuCart->menuCartItems->pluck('menu'), $menuCart->promo_amount) + $deliveryFee,
             'menus' => $menuCart->menuCartItems->pluck('menu'),
         ];
     }

@@ -22,6 +22,7 @@ class RestaurantOrder extends BaseModel
 
     protected $casts = [
         'restaurant_branch_info' => AsArrayObject::class,
+        'delivery_fee' => 'float',
         'promocode_amount' => 'float',
         'commission' => 'float',
     ];
@@ -79,7 +80,7 @@ class RestaurantOrder extends BaseModel
             $totalAmount += $amount;
         }
 
-        return $totalAmount - $this->promocode_amount;
+        return $totalAmount - $this->promocode_amount + $this->delivery_fee;
     }
 
     public function getDriverStatusAttribute()

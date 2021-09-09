@@ -21,6 +21,7 @@ class MenuCart extends Model
 
     protected $casts = [
         'promo_amount' => 'float',
+        'address' => 'array',
     ];
 
     public function restaurantBranch()

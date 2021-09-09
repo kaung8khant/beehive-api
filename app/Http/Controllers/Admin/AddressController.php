@@ -45,6 +45,26 @@ class AddressController extends Controller
         return $this->generateResponse($address->refresh(), 201);
     }
 
+    public function update(Request $request, Customer $customer, $slug)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $validator = Validator::make($request->all(), $this->getParamsToValidate(true));
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, true);
+        }
+
+        $validatedData = $validator->validated();
+
+        $validatedData['customer_id'] = $customer->id;
+        $validatedData['is_primary'] = true;
+
+        $this->setNonPrimary($customer->id);
+        $address =Address::where('customer_id', $customer->id)->where('slug', $slug)->firstOrFail();
+        $address->update($validatedData);
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
     private function getParamsToValidate($slug = false)
     {
         $params = [
