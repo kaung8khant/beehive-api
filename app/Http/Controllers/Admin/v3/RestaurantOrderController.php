@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
+use App\Events\OrderAssignEvent;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
 use App\Helpers\CollectionHelper;
@@ -172,7 +173,9 @@ class RestaurantOrderController extends Controller
         });
 
         // assign driver here.
-        $this->assignOrder('restaurant', $order->slug);
+        //$this->assignOrder('restaurant', $order->slug);
+
+        event(new OrderAssignEvent($order, [], 0));
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
         OrderHelper::notifySystem($order, $phoneNumber, $this->messageService);
