@@ -8,16 +8,12 @@
     <title>Document</title>
 
     <style>
-        .mm-font {
+        body {
             font-family: 'Tharlon';
         }
 
         .center {
             text-align: center;
-        }
-
-        .text-muted {
-            color: #666;
         }
 
         .pdf-table {
@@ -107,11 +103,11 @@
         <tbody>
             @foreach ($restaurantOrderItems as $item)
             <tr>
-                <td class="border mm-font" align="left">
+                <td class="border" align="left">
                     {{ $item['menu_name'] }}
 
                     @if($item['variant'])
-                    <div class="text-muted">
+                    <div>
                         {{
                             implode(',', array_map(function ($n) {
                                 return $n['value'];
@@ -122,7 +118,7 @@
 
                     @if($item['toppings'])
                     @foreach ($item['toppings'] as $t)
-                    <div class="text-muted">
+                    <div>
                         {{ implode(' ', $t) }}
                     </div>
                     @endforeach
