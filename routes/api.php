@@ -19,6 +19,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             /* Address */
             Route::get('customers/{slug}/addresses', 'Admin\AddressController@index');
             Route::post('customers/{slug}/addresses', 'Admin\AddressController@store');
+            Route::put('customers/{customer}/addresses/{slug}', 'Admin\AddressController@update');
 
             Route::get('settings', 'Admin\SettingController@index');
             Route::get('settings/{groupName}', 'Admin\SettingController@show');
@@ -269,7 +270,7 @@ Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], func
     Route::post('restaurants/carts/promocode', 'Cart\RestaurantCartController@applyPromocode');
     Route::delete('restaurants/carts/promocode', 'Cart\RestaurantCartController@removePromocode');
 
-    Route::post('restaurants/carts/address', 'Cart\RestaurantCartController@checkAddress');
+    Route::put('restaurants/carts/address', 'Cart\RestaurantCartController@updateAddress');
     Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
     /* Restaurant Cart */
 
@@ -283,7 +284,7 @@ Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], func
     Route::post('shops/carts/promocode', 'Cart\ShopCartController@applyPromocode');
     Route::delete('shops/carts/promocode', 'Cart\ShopCartController@removePromocode');
 
-    Route::post('shops/carts/address', 'Cart\ShopCartController@checkAddress');
+    Route::put('shops/carts/address', 'Cart\ShopCartController@updateAddress');
     Route::post('shops/carts/checkout', 'Cart\ShopCartController@checkout');
     /* Shop Cart */
 
