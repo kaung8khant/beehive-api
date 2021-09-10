@@ -82,7 +82,11 @@ class ShopOrderController extends Controller
             $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
 
             if ($validatedData['promo_code']) {
-                $validatedData = $this->getPromoData($validatedData, $customer);
+                try {
+                    $validatedData = $this->getPromoData($validatedData, $customer);
+                } catch (ForbiddenException $e) {
+                    return $this->generateResponse($e->getMessage(), 403, true);
+                }
             }
 
             $paymentData = [];
@@ -131,17 +135,17 @@ class ShopOrderController extends Controller
     {
         $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest()->first();
         if (!$promocode) {
-            return $this->generateResponse('Promocode not found', 422, true);
+            throw new ForbiddenException('Promocode not found.');
         }
 
         $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
         if (!$validUsage) {
-            return $this->generateResponse('Invalid promocode usage for shop.', 422, true);
+            throw new ForbiddenException('Invalid promocode usage for shop.');
         }
 
         $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'shop');
         if (!$validRule) {
-            return $this->generateResponse('Invalid promocode.', 422, true);
+            throw new ForbiddenException('Invalid promocode.');
         }
 
         $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
