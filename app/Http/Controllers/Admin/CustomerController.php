@@ -209,10 +209,11 @@ class CustomerController extends Controller
             ->where('customer_id', $customer->id)
             ->get();
         if ($request->filter) {
-            $orderList = $shopOrder->merge($restaurantOrder)->where('id', ltrim($request->filter, '0'));
-        } else {
-            $orderList = $shopOrder->merge($restaurantOrder);
+            $shopOrder=$shopOrder->where('id', ltrim(ltrim($request->filter, 'BHS'), '0'));
+            $restaurantOrder=$restaurantOrder->where('id', ltrim(ltrim($request->filter, 'BHR'), '0'));
         }
+        $orderList = collect($shopOrder)->merge($restaurantOrder);
+
         $orderList = CollectionHelper::paginate(collect($orderList), $request->size);
 
         return response()->json($orderList, 200);
