@@ -141,26 +141,54 @@ class CustomerController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
+    public function getPromocodeUsedCustomerCounts(Request $request, Promocode $promocode)
+    {
+        $shopOrders = ShopOrder::where('promocode_id', $promocode->id)->select('customer_id')
+            ->get();
+        $restaurantOrders = RestaurantOrder::where('promocode_id', $promocode->id)->select('customer_id')
+            ->get();
+
+        $totalFrequency = 0;
+
+        $orderList = collect($shopOrders)->merge($restaurantOrders)->groupBy('customer_id');
+        foreach ($orderList as $key => $group) {
+            $totalFrequency+=$group->count();
+        }
+        $result = [
+            'total_frequency' => $totalFrequency,
+            'total_user_count' => $orderList->count(),
+        ];
+        return $result;
+    }
+
+
     public function getPromocodeUsedCustomers(Request $request, Promocode $promocode)
     {
-        $shopOrder = ShopOrder::where('promocode_id', $promocode->id)->get();
-        $restaurantOrder = RestaurantOrder::where('promocode_id', $promocode->id)->get();
+        $shopOrders = ShopOrder::where('promocode_id', $promocode->id)->select('customer_id')
+            ->get();
+        $restaurantOrders = RestaurantOrder::where('promocode_id', $promocode->id)->select('customer_id')
+            ->get();
 
-        $orderList = $shopOrder->merge($restaurantOrder);
+        $orderList = collect($shopOrders)->merge($restaurantOrders)->groupBy('customer_id');
 
         $customerlist = [];
 
-        foreach ($orderList as $order) {
-            $customer = Customer::where('id', $order->customer_id)->where(function ($query) use ($request) {
+        foreach ($orderList as $key => $group) {
+            $customer = Customer::where('id', $group[0]->customer_id)->where(function ($query) use ($request) {
                 $query->where('email', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
             })->first();
-            $customer && array_push($customerlist, $customer);
+            $customer && array_push($customerlist, [
+                'frequency' =>$group->count(),
+                'slug'=>$customer->slug,
+                'name'=>$customer->name,
+                'email'=>$customer->email,
+                'phone_number'=>$customer->phone_number,
+            ]);
         }
 
-        $customerlist = collect($customerlist)->unique()->values()->all();
         $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
 
         return response()->json($customerlist, 200);
