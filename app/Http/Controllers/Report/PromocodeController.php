@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
+use App\Models\Promocode;
 use App\Models\RestaurantOrder;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
@@ -26,8 +27,9 @@ class PromocodeController extends Controller
                 $amount += $order->promocode_amount ? $order->promocode_amount : 0;
             }
             $totalAmountSum += $amount;
-
+            $promocode=Promocode::where('id', $group[0]->promocode_id)->first();
             $data[] = [
+                'slug' => $promocode ?  $promocode->slug : null,
                 'promocode' => $group[0]->promocode,
                 'count' => $group->count(),
                 'amount' => $amount
