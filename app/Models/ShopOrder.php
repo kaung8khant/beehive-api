@@ -20,8 +20,8 @@ class ShopOrder extends BaseModel
 
     protected $casts = [
         'promocode' => 'object',
-        'promocode_amount' => 'float',
-        'commission' => 'float',
+        // 'promocode_amount' => 'float',
+        // 'commission' => 'float',
     ];
 
     protected $appends = ['invoice_id','amount','tax', 'discount',  'total_amount','item_count'];
