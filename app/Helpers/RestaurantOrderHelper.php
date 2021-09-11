@@ -49,6 +49,7 @@ trait RestaurantOrderHelper
             'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
+            'delivery_fee' => 'nullable|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',
