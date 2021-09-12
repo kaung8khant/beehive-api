@@ -123,6 +123,10 @@ trait RestaurantOrderHelper
         $validatedData['subTotal'] = $subTotal;
         $validatedData['tax'] = $tax;
 
+        if (!isset($validatedData['delivery_fee'])) {
+            $validatedData['delivery_fee'] = 0;
+        }
+
         $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
 
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
@@ -390,6 +394,10 @@ trait RestaurantOrderHelper
         $validatedData['subTotal'] = $subTotal;
         $validatedData['tax'] = $tax;
         $validatedData['commission'] = $commission;
+
+        if (!isset($validatedData['delivery_fee'])) {
+            $validatedData['delivery_fee'] = 0;
+        }
 
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;

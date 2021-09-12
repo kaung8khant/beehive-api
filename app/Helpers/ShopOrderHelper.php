@@ -106,6 +106,10 @@ trait ShopOrderHelper
         $validatedData['subTotal'] = $subTotal;
         $validatedData['tax'] = $tax;
 
+        if (!isset($validatedData['delivery_fee'])) {
+            $validatedData['delivery_fee'] = 0;
+        }
+
         return $validatedData;
     }
 
@@ -332,6 +336,10 @@ trait ShopOrderHelper
         $validatedData['subTotal'] = $subTotal;
         $validatedData['commission'] = $commission;
         $validatedData['tax'] = $tax;
+
+        if (!isset($validatedData['delivery_fee'])) {
+            $validatedData['delivery_fee'] = 0;
+        }
 
         return $validatedData;
     }
