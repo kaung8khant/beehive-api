@@ -44,6 +44,7 @@ trait ShopOrderHelper
             'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
+            'delivery_fee' => 'nullable|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -104,6 +105,10 @@ trait ShopOrderHelper
         $validatedData['order_items'] = $orderItems;
         $validatedData['subTotal'] = $subTotal;
         $validatedData['tax'] = $tax;
+
+        if (!isset($validatedData['delivery_fee'])) {
+            $validatedData['delivery_fee'] = 0;
+        }
 
         return $validatedData;
     }
@@ -275,6 +280,7 @@ trait ShopOrderHelper
             'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
+            'delivery_fee' => 'nullable|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|string|exists:App\Models\Product,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -330,6 +336,10 @@ trait ShopOrderHelper
         $validatedData['subTotal'] = $subTotal;
         $validatedData['commission'] = $commission;
         $validatedData['tax'] = $tax;
+
+        if (!isset($validatedData['delivery_fee'])) {
+            $validatedData['delivery_fee'] = 0;
+        }
 
         return $validatedData;
     }
