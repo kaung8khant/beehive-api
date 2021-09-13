@@ -51,7 +51,7 @@ class PromocodeUsedCustomerExport implements FromCollection, WithColumnFormattin
             $totalPromoDiscount = 0;
             foreach ($orders as $order) {
                 $totalAmount += $order->total_amount;
-                $totalPromoDiscount += $order->promocode_amount ? $order->promocode_amount : 0;
+                $totalPromoDiscount += $order->promocode_amount ? $order->promocode_amount : '0';
             }
             $this->key += 1;
             $customer = Customer::where('id', $orders[0]->customer_id)->first();

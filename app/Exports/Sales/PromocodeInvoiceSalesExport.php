@@ -46,8 +46,8 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
         $orderList = collect($shopOrders)->merge($restaurantOrders);
 
         $this->result = $orderList->map(function ($order, $key) {
-            $totalAmount = $order->order_status == 'cancelled' ? 0 : $order->total_amount;
-            $this->totalPromoDiscount += $order->order_status == 'cancelled' && $order->promocode_amount ? $order->promocode_amount : 0;
+            $totalAmount = $order->order_status == 'cancelled' ? '0' : $order->total_amount;
+            $this->totalPromoDiscount += $order->order_status == 'cancelled' && $order->promocode_amount ? $order->promocode_amount : '0';
             $this->totalAmountSum += $totalAmount;
 
             return [
