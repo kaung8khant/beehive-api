@@ -143,8 +143,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::post('promocodes/add-rules/{promocode}', 'Admin\PromocodeController@addRules');
             Route::delete('rules/{promocodeRule:id}', 'Admin\PromocodeController@removeRule');
             Route::post('promocodes/validate/{slug}', 'Admin\PromocodeController@validateCode');
-            Route::get('promocodes/{promocode}/customers', 'Admin\CustomerController@getPromocodeUsedCustomers');
-            Route::get('promocodes/{promocode}/customer-count', 'Admin\CustomerController@getPromocodeUsedCustomerCounts');
 
             /* Promocode */
 
@@ -179,6 +177,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::get('reports/shop-orders/product-sales', 'Report\ShopOrderController@getProductSaleReport');
 
             Route::get('reports/promocodes', 'Report\PromocodeController@getPromocodeReport');
+            Route::get('reports/promocodes/{promocode}', 'Report\PromocodeController@getPromocodeUsedInvoiceReport');
+            Route::get('reports/promocodes/{promocode}/customers', 'Report\PromocodeController@getPromocodeUsedCustomerReport');
 
             Route::get('pages', 'Admin\PageController@index');
             Route::get('pages/{page}', 'Admin\PageController@show');
