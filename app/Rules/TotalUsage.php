@@ -7,12 +7,10 @@ use App\Models\ShopOrder;
 class TotalUsage implements Rule
 {
     private $promocode;
-    private $usage;
 
-    public function __construct($promocode, $usage)
+    public function __construct($promocode)
     {
         $this->promocode = $promocode;
-        $this->usage = $usage;
     }
 
     public function validate($items, $subTotal, $customer, $value): bool

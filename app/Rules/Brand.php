@@ -6,12 +6,10 @@ use App\Models\Product;
 
 class Brand implements Rule
 {
-    private $promocode;
     private $usage;
 
-    public function __construct($promocode, $usage)
+    public function __construct($usage)
     {
-        $this->promocode = $promocode;
         $this->usage = $usage;
     }
 
@@ -26,16 +24,6 @@ class Brand implements Rule
                     return true;
                 }
             }
-        }
-        return false;
-    }
-
-    public function validateItem($item, $value): bool
-    {
-        if ($this->usage == "shop") {
-            $product = Product::where('slug', $item['slug'])->with('brand')->firstOrFail();
-            $brand_id = $product->brand->id;
-            return intval($value) == intval($brand_id);
         }
         return false;
     }

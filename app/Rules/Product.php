@@ -2,9 +2,9 @@
 
 namespace App\Rules;
 
-use App\Models\Product;
+use App\Models\Product as ProductModel;
 
-class Shop implements Rule
+class Product implements Rule
 {
     private $usage;
 
@@ -15,18 +15,16 @@ class Shop implements Rule
 
     public function validate($items, $subTotal, $customer, $value): bool
     {
-        if ($this->usage == "shop") {
+        if ($this->usage == 'shop') {
             foreach ($items as $item) {
-                $product = Product::where('slug', $item['slug'])->with('shop')->firstOrFail();
+                $product = ProductModel::where('slug', $item['slug'])->firstOrFail();
 
-                $shop_id = $product->shop->id;
-
-                if (intval($value) == intval($shop_id)) {
+                $product_id = $product->id;
+                if (intval($value) == intval($product_id)) {
                     return true;
                 }
             }
         }
-
         return false;
     }
 }

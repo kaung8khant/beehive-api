@@ -6,12 +6,10 @@ use App\Models\Menu as MenuModel;
 
 class Menu implements Rule
 {
-    private $promocode;
     private $usage;
 
-    public function __construct($promocode, $usage)
+    public function __construct($usage)
     {
-        $this->promocode = $promocode;
         $this->usage = $usage;
     }
 
@@ -26,17 +24,6 @@ class Menu implements Rule
                     return true;
                 }
             }
-        }
-        return false;
-    }
-
-    public function validateItem($item, $value): bool
-    {
-        if ($this->usage == "restaurant") {
-            $menu = MenuModel::where('slug', $item['slug'])->firstOrFail();
-
-            $menu_id = $menu->id;
-            return intval($value) == intval($menu_id);
         }
         return false;
     }
