@@ -24,7 +24,7 @@ trait PromocodeHelper
             $rule = new $_class($promocode, $usage);
 
             $value = $rule->validate($orderItems, $subTotal, $customer, $data['value']);
-
+            dd($value);
             if (!$value) {
                 return false;
             }

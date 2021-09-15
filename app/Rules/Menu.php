@@ -18,13 +18,9 @@ class Menu implements Rule
     public function validate($items, $subTotal, $customer, $value): bool
     {
         if ($this->usage == 'restaurant') {
-            foreach ($items as $item) {
-                $menu = MenuModel::where('slug', $item['slug'])->firstOrFail();
-
-                $menu_slug = $menu->slug;
-                if ($value === $menu_slug) {
-                    return true;
-                }
+            $menu = MenuModel::whereIn('slug', array_column($items, 'slug'))->pluck('slug');
+            if ($menu == collect($value)) {
+                return true;
             }
         }
         return false;
