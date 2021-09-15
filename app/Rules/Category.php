@@ -7,12 +7,15 @@ use App\Models\Product;
 
 class Category implements Rule
 {
+    private $promocode;
     private $usage;
 
-    public function __construct($usage)
+    public function __construct($promocode, $usage)
     {
+        $this->promocode = $promocode;
         $this->usage = $usage;
     }
+
     public function validate($items, $subTotal, $customer, $value): bool
     {
         if ($this->usage == "shop") {
@@ -20,9 +23,9 @@ class Category implements Rule
                 $product = Product::where('slug', $item['slug'])->with('shopCategory')->first();
 
                 if ($product) {
-                    $category_id = $product->shopCategory->id;
+                    $category_slug = $product->shopCategory->slug;
 
-                    if (intval($value) == intval($category_id)) {
+                    if ($value === $category_slug) {
                         return true;
                     }
                 }
@@ -32,9 +35,9 @@ class Category implements Rule
                 $menu = Menu::where('slug', $item['slug'])->with('restaurantCategory')->first();
 
                 if ($menu) {
-                    $category_id = $menu->restaurantCategory->id;
+                    $category_slug = $menu->restaurantCategory->slug;
 
-                    if (intval($value) == intval($category_id)) {
+                    if ($value === $category_slug) {
                         return true;
                     }
                 }

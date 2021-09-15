@@ -6,10 +6,12 @@ use App\Models\Product;
 
 class Shop implements Rule
 {
+    private $promocode;
     private $usage;
 
-    public function __construct($usage)
+    public function __construct($promocode, $usage)
     {
+        $this->promocode = $promocode;
         $this->usage = $usage;
     }
 
@@ -19,9 +21,9 @@ class Shop implements Rule
             foreach ($items as $item) {
                 $product = Product::where('slug', $item['slug'])->with('shop')->firstOrFail();
 
-                $shop_id = $product->shop->id;
+                $shop_slug = $product->shop->slug;
 
-                if (intval($value) == intval($shop_id)) {
+                if ($value === $shop_slug) {
                     return true;
                 }
             }

@@ -6,10 +6,12 @@ use App\Models\Menu as MenuModel;
 
 class Menu implements Rule
 {
+    private $promocode;
     private $usage;
 
-    public function __construct($usage)
+    public function __construct($promocode, $usage)
     {
+        $this->promocode = $promocode;
         $this->usage = $usage;
     }
 
@@ -19,8 +21,8 @@ class Menu implements Rule
             foreach ($items as $item) {
                 $menu = MenuModel::where('slug', $item['slug'])->firstOrFail();
 
-                $menu_id = $menu->id;
-                if (intval($value) == intval($menu_id)) {
+                $menu_slug = $menu->slug;
+                if ($value === $menu_slug) {
                     return true;
                 }
             }

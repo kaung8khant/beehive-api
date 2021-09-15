@@ -89,6 +89,7 @@ class RestaurantOrderController extends Controller
                 }
             }
 
+
             $paymentData = [];
             if ($validatedData['payment_mode'] !== 'COD') {
                 try {
