@@ -20,7 +20,7 @@ class OrderAssignListener implements ShouldQueue
      */
     public $delay = 5;
 
-    public $connection = 'database';
+    // public $connection = 'database';
     private $repository;
 
     /**
@@ -43,7 +43,6 @@ class OrderAssignListener implements ShouldQueue
     public function handle(OrderAssignEvent $event)
     {
         $maxAssign = 5;
-
 
         $restaurantBranch = RestaurantBranch::where('slug', $event->order->restaurant_branch_info['slug'])->first();
 
