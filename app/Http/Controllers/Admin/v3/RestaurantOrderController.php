@@ -157,7 +157,7 @@ class RestaurantOrderController extends Controller
         if (!$validRule) {
             throw new ForbiddenException('Invalid promocode.');
         }
-
+        return 'a';
         $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
 
         $validatedData['promocode_id'] = $promocode->id;

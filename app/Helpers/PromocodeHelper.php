@@ -38,7 +38,6 @@ trait PromocodeHelper
         foreach ($promocode->rules as $data) {
             if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category", "menu", "product"))) {
                 $isItemRule = true;
-
                 foreach ($orderItems as $item) {
                     $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
                     $rule = new $_class($promocode, $usage);
