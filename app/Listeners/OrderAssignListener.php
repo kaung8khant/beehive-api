@@ -6,10 +6,10 @@ use App\Events\OrderAssignEvent;
 use App\Models\RestaurantBranch;
 use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
 use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Support\Facades\Log;
 
-class OrderAssignListener
+class OrderAssignListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
@@ -47,7 +47,7 @@ class OrderAssignListener
         $restaurantBranch = RestaurantBranch::where('slug', $event->order->restaurant_branch_info['slug'])->first();
 
         $driver = $this->driverRealtime->getAvailableDrivers($event->driver);
-        Log::info($driver);
+
         $driver = $this->driverRealtime->sortDriverByLocation($restaurantBranch, $driver);
 
         $driverData = array_keys($driver);
