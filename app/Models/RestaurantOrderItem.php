@@ -22,9 +22,9 @@ class RestaurantOrderItem extends Model
 
     protected $casts = [
         'quantity' => 'integer',
-        'amount' => 'float',
-        'tax' => 'float',
-        'discount' => 'float',
+        // 'amount' => 'float',
+        // 'tax' => 'float',
+        // 'discount' => 'float',
         'is_deleted' => 'boolean',
         'variations' => AsArrayObject::class,
         'toppings' => AsArrayObject::class,
