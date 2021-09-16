@@ -4,26 +4,44 @@ namespace App\Repositories;
 
 use App\Events\DriverStatusChanged;
 use App\Exceptions\BadRequestException;
+use App\Helpers\OneSignalHelper;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderDriver;
 use App\Models\RestaurantOrderDriverStatus;
 use App\Models\User;
 use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Helpers\OneSignalHelper;
-use Illuminate\Support\Facades\Log;
 
 class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStatusRepositoryInterface
 {
     use OneSignalHelper;
 
     private $model;
+    private $database;
 
     public function __construct(RestaurantOrderDriverStatus $model)
     {
         $this->model = $model;
-    }
+        $this->database = app('firebase.database');
 
+    }
+    public function setJobToFirebase($slug, $driver)
+    {
+
+        $order = $this->database->getReference('/orders')
+            ->orderByChild('time')
+        // enable the following code if you want real-time active data.
+            ->startAt(Carbon::now()->subDay(1)->toDateTimeString())
+            ->getSnapshot()->getValue();
+        $order[$slug] =[
+            'driver' => $driver,
+            'time' => Carbon::now()->toDateTimeString(),
+        ];
+        $this->database->getReference('/orders')
+            ->set($order);
+
+    }
     public function assignDriver(RestaurantOrder $restaurantOrder, $driverSlug): ?RestaurantOrderDriverStatus
     {
         $driver = User::where('slug', $driverSlug)->first();
@@ -53,7 +71,6 @@ class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStat
 
             $response = OneSignalHelper::sendPush($fields, 'admin');
             // end of one signal send notification
-
 
             return $restaurantOrderDriverStatus;
         }
