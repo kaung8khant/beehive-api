@@ -81,7 +81,6 @@ class RestaurantOrderController extends Controller
             }
 
             $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
-
             if ($validatedData['promo_code']) {
                 try {
                     $validatedData = $this->getPromoData($validatedData, $customer);
@@ -89,7 +88,6 @@ class RestaurantOrderController extends Controller
                     return $this->generateResponse($e->getMessage(), 403, true);
                 }
             }
-
 
             $paymentData = [];
             if ($validatedData['payment_mode'] !== 'COD') {
@@ -161,7 +159,8 @@ class RestaurantOrderController extends Controller
 
         $validatedData['promocode_id'] = $promocode->id;
         $validatedData['promocode'] = $promocode->code;
-        $validatedData['promocode_amount'] = $promocodeAmount;
+        // $validatedData['promocode_amount'] = $promocodeAmount;
+        $validatedData['promocode_amount'] = min($validatedData['subTotal']+$validatedData['tax'], $promocodeAmount);
 
         return $validatedData;
     }
