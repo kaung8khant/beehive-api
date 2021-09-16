@@ -43,7 +43,7 @@ class RestaurantOrder extends BaseModel
             $amount += $item->amount * $item->quantity;
         }
 
-        return $amount;
+        return strval($amount);
     }
 
     public function getTaxAttribute()
@@ -55,7 +55,7 @@ class RestaurantOrder extends BaseModel
             $tax += $item->tax * $item->quantity;
         }
 
-        return $tax;
+        return strval($tax);
     }
 
     public function getDiscountAttribute()
@@ -67,7 +67,7 @@ class RestaurantOrder extends BaseModel
             $discount += $item->discount * $item->quantity;
         }
 
-        return $discount;
+        return strval($discount);
     }
 
     public function getTotalAmountAttribute()
@@ -80,7 +80,7 @@ class RestaurantOrder extends BaseModel
             $totalAmount += $amount;
         }
 
-        return $totalAmount - $this->promocode_amount + $this->delivery_fee;
+        return strval($totalAmount - $this->promocode_amount + $this->delivery_fee);
     }
 
     public function getDriverStatusAttribute()

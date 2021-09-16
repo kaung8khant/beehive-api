@@ -42,7 +42,7 @@ class ShopOrder extends BaseModel
             }
         }
 
-        return $amount;
+        return strval($amount);
     }
 
     public function getTaxAttribute()
@@ -56,7 +56,7 @@ class ShopOrder extends BaseModel
             }
         }
 
-        return $tax;
+        return strval($tax);
     }
 
     public function getDiscountAttribute()
@@ -70,7 +70,7 @@ class ShopOrder extends BaseModel
             }
         }
 
-        return $discount;
+        return strval($discount);
     }
 
     public function getTotalAmountAttribute()
@@ -84,7 +84,7 @@ class ShopOrder extends BaseModel
             }
         }
 
-        return $totalAmount - $this->promocode_amount;
+        return strval($totalAmount - $this->promocode_amount);
     }
 
     public function getItemCountAttribute()
