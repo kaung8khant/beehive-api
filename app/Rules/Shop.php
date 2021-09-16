@@ -20,15 +20,23 @@ class Shop implements Rule
         if ($this->usage == "shop") {
             foreach ($items as $item) {
                 $product = Product::where('slug', $item['slug'])->with('shop')->firstOrFail();
-
-                $shop_slug = $product->shop->slug;
-
-                if ($value === $shop_slug) {
+                if ($value === $product->shop->slug) {
                     return true;
                 }
             }
         }
 
+        return false;
+    }
+
+    public function validateItem($item, $value): bool
+    {
+        if ($this->usage == "shop") {
+            $product = Product::where('slug', $item['slug'])->with('shop')->firstOrFail();
+            if ($value == $product->shop->slug) {
+                return true;
+            }
+        }
         return false;
     }
 }

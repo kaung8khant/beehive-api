@@ -20,10 +20,20 @@ class Restaurant implements Rule
         if ($this->usage == 'restaurant') {
             foreach ($items as $item) {
                 $menu = MenuModel::where('slug', $item['slug'])->with('restaurant')->firstOrFail();
-                $restaurant_slug = $menu->restaurant->slug;
-                if ($value === $restaurant_slug) {
+                if ($value === $menu->restaurant->slug) {
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    public function validateItem($item, $value): bool
+    {
+        if ($this->usage == "restaurant") {
+            $menu = MenuModel::where('slug', $item['slug'])->with('restaurant')->firstOrFail();
+            if ($value == $menu->restaurant->slug) {
+                return true;
             }
         }
         return false;

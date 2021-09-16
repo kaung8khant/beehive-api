@@ -19,13 +19,18 @@ class Menu implements Rule
     {
         if ($this->usage == 'restaurant') {
             foreach ($items as $item) {
-                $menu = MenuModel::where('slug', $item['slug'])->firstOrFail();
-
-                $menu_slug = $menu->slug;
-                if ($value === $menu_slug) {
+                if ($value === $item['slug']) {
                     return true;
                 }
             }
+        }
+        return false;
+    }
+
+    public function validateItem($item, $value): bool
+    {
+        if ($this->usage == "restaurant") {
+            return $item['slug'] == $value;
         }
         return false;
     }

@@ -19,13 +19,18 @@ class Product implements Rule
     {
         if ($this->usage == 'shop') {
             foreach ($items as $item) {
-                $product = ProductModel::where('slug', $item['slug'])->firstOrFail();
-
-                $product_slug = $product->slug;
-                if ($value === $product_slug) {
+                if ($value === $item['slug']) {
                     return true;
                 }
             }
+        }
+        return false;
+    }
+
+    public function validateItem($item, $value): bool
+    {
+        if ($this->usage == "shop") {
+            return $item['slug'] == $value;
         }
         return false;
     }

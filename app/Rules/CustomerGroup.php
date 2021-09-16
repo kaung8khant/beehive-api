@@ -13,4 +13,9 @@ class CustomerGroup implements Rule
         }
         return false;
     }
+
+    public function validateItem($item, $value): bool
+    {
+        return false;
+    }
 }

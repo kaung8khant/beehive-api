@@ -45,4 +45,15 @@ class Category implements Rule
         }
         return false;
     }
+
+    public function validateItem($item, $value): bool
+    {
+        if ($this->usage == "shop") {
+            $product = Product::where('slug', $item['slug'])->with('shopCategory')->firstOrFail();
+            return $value == $product->shopCategory->slug;
+        } elseif ($this->usage == "restaurant") {
+            $menu = Menu::where('slug', $item['slug'])->with('restaurantCategory')->first();
+            return $value == $menu->restaurantCategory->slug;
+        }
+    }
 }

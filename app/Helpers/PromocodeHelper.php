@@ -24,7 +24,6 @@ trait PromocodeHelper
             $rule = new $_class($promocode, $usage);
 
             $value = $rule->validate($orderItems, $subTotal, $customer, $data['value']);
-            dd($value);
             if (!$value) {
                 return false;
             }
@@ -37,18 +36,23 @@ trait PromocodeHelper
         $isItemRule = false;
         $total = 0;
         foreach ($promocode->rules as $data) {
-            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category","menu","product"))) {
+            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category", "menu", "product"))) {
                 $isItemRule = true;
 
                 foreach ($orderItems as $item) {
-                    if ($promocode->type === 'fix') {
-                        $total += $promocode->amount;
-                    } else {
-                        $variation = $item['variations']->sum('price');
-                        if (isset($item['toppings'])) {
-                            $variation += $item['variations']->sum('price');
+                    $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
+                    $rule = new $_class($promocode, $usage);
+
+                    if ($rule->validateItem($item, $data['value'])) {
+                        if ($promocode->type === 'fix') {
+                            $total += $promocode->amount;
+                        } else {
+                            $variation = $item['variations']->sum('price');
+                            if (isset($item['toppings'])) {
+                                $variation += $item['variations']->sum('price');
+                            }
+                            $total += ($item['price'] + $variation) * $promocode->amount * 0.01;
                         }
-                        $total += ($item['price'] + $variation) * $promocode->amount * 0.01;
                     }
                 }
             }

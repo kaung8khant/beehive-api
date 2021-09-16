@@ -29,4 +29,15 @@ class Brand implements Rule
         }
         return false;
     }
+
+    public function validateItem($item, $value): bool
+    {
+        if ($this->usage == "shop") {
+            $product = Product::where('slug', $item['slug'])->with('brand')->firstOrFail();
+            if ($value == $product->brand->slug) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

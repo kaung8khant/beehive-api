@@ -21,6 +21,7 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderItem;
 use App\Services\MessageService\MessagingService;
 use App\Services\PaymentService\PaymentService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -84,7 +85,7 @@ class RestaurantOrderController extends Controller
             if ($validatedData['promo_code']) {
                 try {
                     $validatedData = $this->getPromoData($validatedData, $customer);
-                } catch (ForbiddenException $e) {
+                } catch (Exception $e) {
                     return $this->generateResponse($e->getMessage(), 403, true);
                 }
             }
@@ -147,13 +148,12 @@ class RestaurantOrderController extends Controller
         if (!$promocode) {
             throw new ForbiddenException('Promocode not found.');
         }
-
         $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
         if (!$validUsage) {
             throw new ForbiddenException('Invalid promocode usage for restaurant.');
         }
-
         $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
+
         if (!$validRule) {
             throw new ForbiddenException('Invalid promocode.');
         }

@@ -10,4 +10,9 @@ class ExactDate implements Rule
     {
         return Carbon::now()->startOfDay() == Carbon::parse($value)->startOfDay();
     }
+
+    public function validateItem($item, $value): bool
+    {
+        return false;
+    }
 }

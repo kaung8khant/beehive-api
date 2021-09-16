@@ -24,4 +24,9 @@ class TotalUsage implements Rule
         $orderCount = count($shopOrder) + count($restaurantOrder);
         return $orderCount < $value;
     }
+
+    public function validateItem($item, $value): bool
+    {
+        return false;
+    }
 }
