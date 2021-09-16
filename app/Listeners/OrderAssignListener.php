@@ -20,7 +20,7 @@ class OrderAssignListener implements ShouldQueue
      */
     public $delay = 5;
 
-    public $connection = 'database';
+    // public $connection = 'database';
     private $repository;
 
     /**
@@ -44,7 +44,6 @@ class OrderAssignListener implements ShouldQueue
     {
         $maxAssign = 5;
 
-
         $restaurantBranch = RestaurantBranch::where('slug', $event->order->restaurant_branch_info['slug'])->first();
 
         $driver = $this->driverRealtime->getAvailableDrivers($event->driver);
@@ -65,6 +64,7 @@ class OrderAssignListener implements ShouldQueue
 
         if (isset($driverSlug)) {
             $this->repository->assignDriver($event->order, $driverSlug);
+            $this->repository->setJobToFirebase($event->order->slug, $driverSlug);
         }
     }
 }
