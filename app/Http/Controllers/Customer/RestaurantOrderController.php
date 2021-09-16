@@ -70,9 +70,6 @@ class RestaurantOrderController extends Controller
 
     public function store(Request $request)
     {
-        // return $this->generateResponse('We are closed temporarily starting from 17.July.2021 due to the current coronavirus outbreak in Myanmar.
-        // We are sorry for any inconvenience caused and we will see you again soon.', 503, true);
-
         // validate request parameters. (HTTP)
         // validate persistent data.
         // create order
@@ -115,7 +112,11 @@ class RestaurantOrderController extends Controller
             $validatedData = OrderHelper::prepareRestaurantVariations($validatedData);
 
             if ($validatedData['promo_code']) {
-                $validatedData = $this->getPromoData($validatedData);
+                try {
+                    $validatedData = $this->getPromoData($validatedData);
+                } catch (ForbiddenException $e) {
+                    return $this->generateResponse($e->getMessage(), 403, true);
+                }
             }
 
             $paymentData = [];
@@ -169,18 +170,19 @@ class RestaurantOrderController extends Controller
     {
         $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
         if (!isset($promocode) && empty($promocode)) {
-            return $this->generateResponse('Promocode not found', 422, true);
+            throw new ForbiddenException('Promocode not found.');
         }
 
         $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
         if (!$validUsage) {
-            return $this->generateResponse('Invalid promocode usage for restaurant.', 422, true);
+            throw new ForbiddenException('Invalid promocode usage for restaurant.');
         }
 
         $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $this->customer, 'restaurant');
         if (!$validRule) {
-            return $this->generateResponse('Invalid promocode rule.', 422, true);
+            throw new ForbiddenException('Invalid promocode.');
         }
+
         $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
 
         $validatedData['promocode_id'] = $promocode->id;

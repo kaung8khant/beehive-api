@@ -144,6 +144,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::delete('rules/{promocodeRule:id}', 'Admin\PromocodeController@removeRule');
             Route::post('promocodes/validate/{slug}', 'Admin\PromocodeController@validateCode');
             Route::get('promocodes/{promocode}/customers', 'Admin\CustomerController@getPromocodeUsedCustomers');
+            Route::get('promocodes/{promocode}/customer-count', 'Admin\CustomerController@getPromocodeUsedCustomerCounts');
 
             /* Promocode */
 
