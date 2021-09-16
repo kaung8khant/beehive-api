@@ -22,9 +22,9 @@ class RestaurantOrder extends BaseModel
 
     protected $casts = [
         'restaurant_branch_info' => AsArrayObject::class,
-        // 'delivery_fee' => 'float',
-        // 'promocode_amount' => 'float',
-        // 'commission' => 'float',
+        'delivery_fee' => 'float',
+        'promocode_amount' => 'float',
+        'commission' => 'float',
     ];
 
     protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount', 'driver_status'];
@@ -43,7 +43,7 @@ class RestaurantOrder extends BaseModel
             $amount += $item->amount * $item->quantity;
         }
 
-        return strval($amount);
+        return $amount;
     }
 
     public function getTaxAttribute()
@@ -55,7 +55,7 @@ class RestaurantOrder extends BaseModel
             $tax += $item->tax * $item->quantity;
         }
 
-        return strval($tax);
+        return $tax;
     }
 
     public function getDiscountAttribute()
@@ -67,7 +67,7 @@ class RestaurantOrder extends BaseModel
             $discount += $item->discount * $item->quantity;
         }
 
-        return strval($discount);
+        return $discount;
     }
 
     public function getTotalAmountAttribute()
@@ -80,7 +80,7 @@ class RestaurantOrder extends BaseModel
             $totalAmount += $amount;
         }
 
-        return strval($totalAmount - $this->promocode_amount + $this->delivery_fee);
+        return $totalAmount - $this->promocode_amount + $this->delivery_fee;
     }
 
     public function getDriverStatusAttribute()

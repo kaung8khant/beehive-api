@@ -20,8 +20,8 @@ class ShopOrder extends BaseModel
 
     protected $casts = [
         'promocode' => 'object',
-        // 'promocode_amount' => 'float',
-        // 'commission' => 'float',
+        'promocode_amount' => 'float',
+        'commission' => 'float',
     ];
 
     protected $appends = ['invoice_id','amount','tax', 'discount',  'total_amount','item_count'];
@@ -42,7 +42,7 @@ class ShopOrder extends BaseModel
             }
         }
 
-        return strval($amount);
+        return $amount;
     }
 
     public function getTaxAttribute()
@@ -56,7 +56,7 @@ class ShopOrder extends BaseModel
             }
         }
 
-        return strval($tax);
+        return $tax;
     }
 
     public function getDiscountAttribute()
@@ -70,7 +70,7 @@ class ShopOrder extends BaseModel
             }
         }
 
-        return strval($discount);
+        return $discount;
     }
 
     public function getTotalAmountAttribute()
@@ -84,7 +84,7 @@ class ShopOrder extends BaseModel
             }
         }
 
-        return strval($totalAmount - $this->promocode_amount);
+        return $totalAmount - $this->promocode_amount;
     }
 
     public function getItemCountAttribute()
