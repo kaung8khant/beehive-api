@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Helpers\CacheHelper;
+use App\Helpers\GeoHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper;
 use App\Http\Controllers\Controller;
@@ -115,20 +116,32 @@ class RestaurantController extends Controller
         return $this->generateBranchResponse($restaurantBranches, 200, 'array', $restaurantBranches->lastPage());
     }
 
-    public function getOneBranch(RestaurantBranch $restaurantBranch)
+    public function getOneBranch(Request $request, RestaurantBranch $restaurantBranch)
     {
         if (!$restaurantBranch->is_enable || !$restaurantBranch->restaurant->is_enable) {
             abort(404);
+        }
+
+        $distance = GeoHelper::calculateDistance($request->lat, $request->lng, $restaurantBranch->latitude, $restaurantBranch->longitude);
+        $deliveryTime = GeoHelper::calculateDeliveryTime($distance);
+        $deliveryFee = GeoHelper::calculateDeliveryFee($distance);
+
+        if ($request->lat && $request->lng) {
+            $restaurantBranch['distance'] = $distance;
+            $restaurantBranch['time'] = $deliveryTime;
+            $restaurantBranch['delivery_fee'] = $deliveryFee;
         }
 
         return $this->generateBranchResponse($restaurantBranch->load('restaurant', 'restaurant.availableTags'), 200, 'obj');
     }
 
-    public function getAvailableMenusByBranch(RestaurantBranch $restaurantBranch)
+    public function getAvailableMenusByBranch(Request $request, RestaurantBranch $restaurantBranch)
     {
         if (!$restaurantBranch->is_enable || !$restaurantBranch->restaurant->is_enable) {
             abort(404);
         }
+
+        $distance = GeoHelper::calculateDistance($request->lat, $request->lng, $restaurantBranch->latitude, $restaurantBranch->longitude);
 
         $restaurantBranch->load([
             'restaurant',
@@ -172,6 +185,12 @@ class RestaurantController extends Controller
         })->values();
 
         $restaurantBranch['available_categories'] = $availableCategories;
+
+        if ($request->lat && $request->lng) {
+            $restaurantBranch['distance'] = $distance;
+            $restaurantBranch['time'] = GeoHelper::calculateDeliveryTime($distance);
+            $restaurantBranch['delivery_fee'] = GeoHelper::calculateDeliveryFee($distance);
+        }
 
         return $this->generateResponse($restaurantBranch, 200);
     }

@@ -277,16 +277,21 @@ class AdminDashboardController extends Controller
 
     public function getTopShopCategories()
     {
-        $shopCustomers = DB::table('shop_orders as so')
+        $shopCategories = DB::table('shop_orders as so')
             ->join('shop_order_vendors as sov', 'sov.shop_order_id', '=', 'so.id')
             ->join('shop_order_items as soi', 'soi.shop_order_vendor_id', '=', 'sov.id')
             ->join('products as p', 'p.id', '=', 'soi.product_id')
             ->join('shop_categories as sc', 'sc.id', '=', 'p.shop_category_id')
-            ->select('sc.name', 'sc.slug', DB::raw('count(*) AS count'))
+            ->select('sc.id',DB::raw('count(*) AS total'))
             ->where('so.order_status', '!=', 'cancelled')->groupBy('sc.id')
-            ->orderBy('count', 'DESC')
+            ->orderBy('total', 'DESC')
             ->limit(5)
-            ->get();
-        return $shopCustomers;
+            ->get()
+            ->map(function ($data) {
+                $shopCategories = DB::table('shop_categories')->select('slug', 'name')->where('id', $data->id)->first();
+                $shopCategories->total = $data->total;
+                return $shopCategories;
+            });
+        return $shopCategories;
     }
 }

@@ -49,6 +49,7 @@ trait RestaurantOrderHelper
             'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
+            'delivery_fee' => 'nullable|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -121,6 +122,10 @@ trait RestaurantOrderHelper
         $validatedData['order_items'] = $orderItems;
         $validatedData['subTotal'] = $subTotal;
         $validatedData['tax'] = $tax;
+
+        if (!isset($validatedData['delivery_fee'])) {
+            $validatedData['delivery_fee'] = 0;
+        }
 
         $restaurantBranch = self::getRestaurantBranch($validatedData['restaurant_branch_slug']);
 
@@ -326,6 +331,7 @@ trait RestaurantOrderHelper
             'address.street_name' => 'nullable|string',
             'address.latitude' => 'nullable|numeric',
             'address.longitude' => 'nullable|numeric',
+            'delivery_fee' => 'nullable|numeric',
             'order_items' => 'required|array',
             'order_items.*.slug' => 'required|exists:App\Models\Menu,slug',
             'order_items.*.quantity' => 'required|integer',
@@ -376,9 +382,11 @@ trait RestaurantOrderHelper
 
             $subTotal += ($item['amount'] - $menuVariant->discount) * $value['quantity'];
             $tax += ($item['amount'] - $menuVariant->discount) * $menuVariant->tax * 0.01 * $value['quantity'];
+
             if ($restaurantBranch->restaurant->commission > 0) {
-                $commission+=($item['amount']  * $value['quantity']) * $restaurantBranch->restaurant->commission * 0.01;
+                $commission += ($item['amount'] * $value['quantity']) * $restaurantBranch->restaurant->commission * 0.01;
             }
+
             array_push($orderItems, $item);
         }
 
@@ -386,6 +394,10 @@ trait RestaurantOrderHelper
         $validatedData['subTotal'] = $subTotal;
         $validatedData['tax'] = $tax;
         $validatedData['commission'] = $commission;
+
+        if (!isset($validatedData['delivery_fee'])) {
+            $validatedData['delivery_fee'] = 0;
+        }
 
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;

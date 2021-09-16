@@ -141,31 +141,6 @@ class CustomerController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function getPromocodeUsedCustomers(Request $request, Promocode $promocode)
-    {
-        $shopOrder = ShopOrder::where('promocode_id', $promocode->id)->get();
-        $restaurantOrder = RestaurantOrder::where('promocode_id', $promocode->id)->get();
-
-        $orderList = $shopOrder->merge($restaurantOrder);
-
-        $customerlist = [];
-
-        foreach ($orderList as $order) {
-            $customer = Customer::where('id', $order->customer_id)->where(function ($query) use ($request) {
-                $query->where('email', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })->first();
-            $customer && array_push($customerlist, $customer);
-        }
-
-        $customerlist = collect($customerlist)->unique()->values()->all();
-        $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
-
-        return response()->json($customerlist, 200);
-    }
-
     public function getOrdersByCustomer(Request $request, $slug)
     {
         $customer = Customer::where('slug', $slug)->firstOrFail();
@@ -181,10 +156,11 @@ class CustomerController extends Controller
             ->where('customer_id', $customer->id)
             ->get();
         if ($request->filter) {
-            $orderList = $shopOrder->merge($restaurantOrder)->where('id', ltrim($request->filter, '0'));
-        } else {
-            $orderList = $shopOrder->merge($restaurantOrder);
+            $shopOrder=$shopOrder->where('id', ltrim(ltrim($request->filter, 'BHS'), '0'));
+            $restaurantOrder=$restaurantOrder->where('id', ltrim(ltrim($request->filter, 'BHR'), '0'));
         }
+        $orderList = collect($shopOrder)->merge($restaurantOrder);
+
         $orderList = CollectionHelper::paginate(collect($orderList), $request->size);
 
         return response()->json($orderList, 200);

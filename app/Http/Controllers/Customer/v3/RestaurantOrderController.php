@@ -68,14 +68,18 @@ class RestaurantOrderController extends Controller
                 return $this->generateResponse($e->getMessage(), 403, true);
             }
 
-            // try {
-            //     OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
-            // } catch (ForbiddenException $e) {
-            //     return $this->generateResponse($e->getMessage(), 403, true);
-            // }
+            try {
+                OrderHelper::checkOpeningTime($validatedData['restaurant_branch_slug']);
+            } catch (ForbiddenException $e) {
+                return $this->generateResponse($e->getMessage(), 403, true);
+            }
 
             if ($validatedData['promo_code']) {
-                $validatedData = $this->getPromoData($validatedData);
+                try {
+                    $validatedData = $this->getPromoData($validatedData);
+                } catch (ForbiddenException $e) {
+                    return $this->generateResponse($e->getMessage(), 403, true);
+                }
             }
 
             $paymentData = [];
@@ -140,7 +144,7 @@ class RestaurantOrderController extends Controller
     {
         $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest('created_at')->first();
         if (!$promocode) {
-            throw new ForbiddenException('Promocode not found');
+            throw new ForbiddenException('Promocode not found.');
         }
 
         $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
@@ -172,10 +176,9 @@ class RestaurantOrderController extends Controller
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
 
-
         event(new OrderAssignEvent($order, [], 0));
 
-        //$this->assignOrder('restaurant', $order->slug);
+        // $this->assignOrder('restaurant', $order->slug);
 
         OrderHelper::notifySystem($order, $this->customer->phone_number, $this->messageService);
 

@@ -2,24 +2,47 @@
 
 namespace App\Helpers;
 
-
 trait GeoHelper
 {
-    private static function calculateDistance($latFrom, $lngFrom, $latTo, $lngTo, $earthRadius = 6371000)
+    public static function calculateDistance($lat1, $lng1, $lat2, $lng2)
     {
-        // convert from degrees to radians
-        $latFrom = deg2rad($latFrom);
-        $lonFrom = deg2rad($lngFrom);
-        $latTo = deg2rad($latTo);
-        $lonTo = deg2rad($lngTo);
+        $theta = deg2rad($lng2) - deg2rad($lng1);
+        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos($theta);
+        return 6371 * acos($dist);
+    }
 
-        $lonDelta = $lonTo - $lonFrom;
-        $a = pow(cos($latTo) * sin($lonDelta), 2) +
-            pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
-        $b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
+    public static function calculateDeliveryTime($distance)
+    {
+        if ($distance <= 1) {
+            $time = '30m';
+        } elseif ($distance <= 3) {
+            $time = '45m';
+        } elseif ($distance <= 5) {
+            $time = '1hr';
+        } elseif ($distance <= 25) {
+            $time = '2hr';
+        } else {
+            $time = '48hr';
+        }
 
-        $angle = atan2(sqrt($a), $b);
-        //distance in meter
-        return round($angle * $earthRadius);
+        return $time;
+    }
+
+    public static function calculateDeliveryFee($distance)
+    {
+        $fee = 1500;
+
+        if ($distance > 3) {
+            $extraKilo = intval($distance) - 3;
+
+            if (is_numeric($distance) && floor($distance) != $distance) {
+                $extraKilo = $extraKilo + 1;
+            }
+
+            $extraFee = $extraKilo * 300;
+            $fee = $fee + $extraFee;
+        }
+
+        return $fee;
     }
 }

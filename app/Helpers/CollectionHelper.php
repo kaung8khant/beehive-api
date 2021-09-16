@@ -17,7 +17,7 @@ trait CollectionHelper
 
         $total = $results->count();
 
-        return self::paginator($results->forPage($page, $pageSize), $total, $pageSize, $page, [
+        return self::paginator(array_values($results->forPage($page, $pageSize)->toArray()), $total, $pageSize, $page, [
             'path' => Paginator::resolveCurrentPath(),
             'pageName' => 'page',
         ]);
