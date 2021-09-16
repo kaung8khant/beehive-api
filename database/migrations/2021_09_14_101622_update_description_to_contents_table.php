@@ -26,7 +26,7 @@ class UpdateDescriptionToContentsTable extends Migration
     public function down()
     {
         Schema::table('contents', function (Blueprint $table) {
-            $table->string('order_date')->change();
+            $table->string('description')->change();
         });
     }
 }

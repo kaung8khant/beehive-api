@@ -257,6 +257,8 @@ Route::group([
     Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
     Route::put('shop-orders/{shopOrder}/payment', 'ShopOrderController@updatePayment');
     Route::delete('shop-orders/{shopOrder}/shop-order-items/{shopOrderItem}/cancel', 'ShopOrderController@cancelOrderItem');
+
+    Route::resource('menu-options', 'MenuOptionController', ['as' => 'admin-v3-menu-option', 'except' => ['create', 'edit']]);
 });
 
 Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {
