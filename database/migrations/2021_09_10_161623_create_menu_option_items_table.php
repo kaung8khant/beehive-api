@@ -19,7 +19,10 @@ class CreateMenuOptionItemsTable extends Migration
             $table->string('slug')->unique();
             $table->string('name');
             $table->decimal('price', 12, 0);
+            $table->string('created_by')->nullable();
+            $table->string('updated_by')->nullable();
             $table->timestamps();
+            $table->unique(['menu_option_id', 'name']);
             $table->foreign('menu_option_id')->references('id')->on('menu_options')->onDelete('cascade');
         });
     }

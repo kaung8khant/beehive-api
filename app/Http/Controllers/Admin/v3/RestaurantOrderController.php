@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\v3;
 
 use App\Events\OrderAssignEvent;
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
 use App\Helpers\CollectionHelper;
@@ -77,6 +78,8 @@ class RestaurantOrderController extends Controller
                 $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
             } catch (ForbiddenException $e) {
                 return $this->generateResponse($e->getMessage(), 403, true);
+            } catch (BadRequestException $e) {
+                return $this->generateResponse($e->getMessage(), 400, true);
             }
 
             $customer = Customer::where('slug', $validatedData['customer_slug'])->first();

@@ -19,7 +19,10 @@ class CreateMenuOptionsTable extends Migration
             $table->string('slug')->unique();
             $table->string('name');
             $table->integer('max_choice');
+            $table->string('created_by')->nullable();
+            $table->string('updated_by')->nullable();
             $table->timestamps();
+            $table->unique(['menu_id', 'name']);
             $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
         });
     }

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,9 +25,10 @@ class RestaurantOrderItem extends Model
         'tax' => 'float',
         'discount' => 'float',
         'is_deleted' => 'boolean',
-        'variations' => AsArrayObject::class,
-        'toppings' => AsArrayObject::class,
+        'variations' => 'array',
         'variant' => 'array',
+        'toppings' => 'array',
+        'options' => 'array',
     ];
 
     protected $appends = ['images'];

@@ -7,7 +7,6 @@ use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Address;
 use App\Models\Customer;
-use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -60,7 +59,7 @@ class AddressController extends Controller
         $validatedData['is_primary'] = true;
 
         $this->setNonPrimary($customer->id);
-        $address =Address::where('customer_id', $customer->id)->where('slug', $slug)->firstOrFail();
+        $address = Address::where('customer_id', $customer->id)->where('slug', $slug)->firstOrFail();
         $address->update($validatedData);
         return response()->json(['message' => 'Success.'], 200);
     }

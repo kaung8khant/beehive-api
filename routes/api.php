@@ -259,6 +259,10 @@ Route::group([
     Route::delete('shop-orders/{shopOrder}/shop-order-items/{shopOrderItem}/cancel', 'ShopOrderController@cancelOrderItem');
 
     Route::resource('menu-options', 'MenuOptionController', ['as' => 'admin-v3-menu-option', 'except' => ['create', 'edit']]);
+    Route::get('menus/{menu}/menu-options', 'MenuOptionController@index');
+
+    Route::resource('menu-option-items', 'MenuOptionItemController', ['as' => 'admin-v3-menu-option-item', 'except' => ['create', 'edit']]);
+    Route::get('menu-options/{menuOption}/items', 'MenuOptionItemController@index');
 });
 
 Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {

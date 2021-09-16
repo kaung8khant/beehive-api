@@ -11,6 +11,8 @@ use App\Jobs\SendPushNotification;
 use App\Jobs\SendSms;
 use App\Models\Customer;
 use App\Models\Menu;
+use App\Models\MenuOption;
+use App\Models\MenuOptionItem;
 use App\Models\MenuTopping;
 use App\Models\MenuVariant;
 use App\Models\MenuVariationValue;
@@ -103,7 +105,7 @@ trait RestaurantOrderHelper
         foreach ($validatedData['order_items'] as $key => $value) {
             $menu = self::getMenu($value['slug']);
             $variations = self::prepareVariations($value);
-            $toppings = collect(self::prepareToppings($value['topping_slugs']));
+            $toppings = collect(self::prepareToppings($value['topping_slugs'], $menu->id));
             $amount = $menu->price + $variations->sum('price') + $toppings->sum('price');
 
             $subTotal += ($amount - $menu->discount) * $value['quantity'];
@@ -226,23 +228,80 @@ trait RestaurantOrderHelper
         return collect($variations);
     }
 
-    private static function prepareToppings($toppingSlugs)
+    private static function prepareToppings($toppings, $menuId)
     {
-        $toppings = [];
+        self::checkToppings($toppings, $menuId);
 
-        foreach ($toppingSlugs as $toppingSlug) {
-            $menuTopping = self::getMenuTopping($toppingSlug['slug']);
+        return collect($toppings)->map(function ($topping) {
+            $menuTopping = MenuTopping::where('slug', $topping['slug'])->first();
 
-            $topping = [
+            return [
                 'name' => $menuTopping->name,
-                'value' => $toppingSlug['value'],
-                'price' => $menuTopping->price * $toppingSlug['value'],
+                'value' => $topping['value'],
+                'price' => $menuTopping->price * $topping['value'],
             ];
+        });
+    }
 
-            array_push($toppings, $topping);
+    private static function checkToppings($toppings, $menuId)
+    {
+        collect($toppings)->map(function ($item) use ($menuId) {
+            $menuTopping = MenuTopping::where('slug', $item['slug'])->first();
+
+            if ($menuTopping->menu_id !== $menuId) {
+                $menu = Menu::where('id', $menuId)->first();
+                throw new BadRequestException('The \'' . $menuTopping->name . '\' topping is not part of the menu \'' . $menu->name . '\'.');
+            }
+        });
+    }
+
+    private static function prepareOptions($optionItems, $menuId)
+    {
+        self::checkOptionItemDuplicate($optionItems);
+        self::checkOptions($optionItems, $menuId);
+
+        return collect($optionItems)->map(function ($item) {
+            $menuOptionItem = MenuOptionItem::where('slug', $item)->first();
+
+            return [
+                'name' => $menuOptionItem->name,
+                'price' => $menuOptionItem->price,
+            ];
+        });
+    }
+
+    private static function checkOptions($optionItems, $menuId)
+    {
+        $optionsCount = collect($optionItems)->map(function ($item) use ($menuId) {
+            $menuOptionItem = MenuOptionItem::with('menuOption')->where('slug', $item)->first();
+
+            if ($menuOptionItem->menuOption->menu_id !== $menuId) {
+                $menu = Menu::where('id', $menuId)->first();
+                throw new BadRequestException('The \'' . $menuOptionItem->name . '\' option is not part of the menu \'' . $menu->name . '\'.');
+            }
+
+            return $menuOptionItem->menu_option_id;
+        })->countBy();
+
+        foreach ($optionsCount as $menuOptionId => $count) {
+            $menuOption = MenuOption::with('menu')->where('id', $menuOptionId)->first();
+
+            if ($count > $menuOption->max_choice) {
+                throw new BadRequestException('Maximum options for \'' . $menuOption->name . '\' of \'' . $menuOption->menu->name . '\' is ' . $menuOption->max_choice . '.');
+            }
         }
+    }
 
-        return $toppings;
+    private static function checkOptionItemDuplicate($optionItems)
+    {
+        $itemsCount = array_count_values($optionItems);
+
+        foreach ($itemsCount as $itemSlug => $count) {
+            if ($count > 1) {
+                $menuOptionItem = MenuOptionItem::where('slug', $itemSlug)->first();
+                throw new BadRequestException('There are duplicate options for \'' . $menuOptionItem->menuOption->menu->name . '\'.');
+            }
+        }
     }
 
     private static function getMenu($slug)
@@ -253,11 +312,6 @@ trait RestaurantOrderHelper
     private static function getMenuVariationValue($slug)
     {
         return MenuVariationValue::with('menuVariation')->where('slug', $slug)->first();
-    }
-
-    private static function getMenuTopping($slug)
-    {
-        return MenuTopping::where('slug', $slug)->first();
     }
 
     public static function getBranches($request)
@@ -339,6 +393,8 @@ trait RestaurantOrderHelper
             'order_items.*.topping_slugs' => 'nullable|array',
             'order_items.*.topping_slugs.*.slug' => 'required|exists:App\Models\MenuTopping,slug',
             'order_items.*.topping_slugs.*.value' => 'required|integer',
+            'order_items.*.options_items' => 'nullable|array',
+            'order_items.*.options_items.*' => 'required|exists:App\Models\MenuOptionItem,slug',
         ];
 
         if ($customerSlug) {
@@ -361,23 +417,25 @@ trait RestaurantOrderHelper
             $menuVariant = MenuVariant::with('menu')->where('slug', $value['variant_slug'])->where('is_enable', 1)->first();
 
             if (!$menuVariant) {
-                throw new ForbiddenException('The order_items.' . $key . '.variant is disabled.');
+                throw new ForbiddenException('The order_items.' . $key . '.variant is disabled.', 403);
             }
 
             if ($menuId !== $menuVariant->menu->id) {
-                throw new BadRequestException('The order_items.' . $key . '.variant_slug must be part of the menu_slug.', 400);
+                throw new BadRequestException('The order_items.' . $key . '.variant_slug must be part of the menu.');
             }
 
-            $toppings = collect(self::prepareToppings($value['topping_slugs']));
+            $toppings = collect(self::prepareToppings($value['topping_slugs'], $menuId));
+            $options = collect(self::prepareOptions($value['option_items'], $menuId));
 
             $item['slug'] = $value['slug'];
             $item['name'] = $menuVariant->menu->name;
             $item['quantity'] = $value['quantity'];
-            $item['amount'] = $menuVariant->price + $toppings->sum('price');
+            $item['amount'] = $menuVariant->price + $toppings->sum('price') + $options->sum('price');
             $item['tax'] = ($item['amount'] - $menuVariant->discount) * $menuVariant->tax * 0.01;
             $item['discount'] = $menuVariant->discount;
             $item['variant'] = $menuVariant->variant;
             $item['toppings'] = $toppings;
+            $item['options'] = $options;
             $item['menu_id'] = $menuId;
 
             $subTotal += ($item['amount'] - $menuVariant->discount) * $value['quantity'];
