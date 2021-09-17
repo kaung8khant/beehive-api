@@ -118,6 +118,10 @@ class RestaurantCartController extends CartController
 
     private function prepareMenuData($menu, $request)
     {
+        if (!isset($request->option_items)) {
+            $request['option_items'] = [];
+        }
+
         $menuVariant = $this->getVariant($menu, $request->variant_slug);
         $toppings = $this->getToppings($menu, $request->toppings);
         $optionItems = $this->getOptionItems($menu, $request->option_items);
