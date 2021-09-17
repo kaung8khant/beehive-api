@@ -37,4 +37,9 @@ class Matching
 
         return $data;
     }
+
+    public function validateItem($item, $value): bool
+    {
+        return false;
+    }
 }
