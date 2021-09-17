@@ -19,7 +19,7 @@ class RestaurantRating extends Model
     ];
 
     protected $casts = [
-        'rating' => 'float',
+        // 'rating' => 'float',
     ];
 
     public function restaurantOrder()
