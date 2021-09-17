@@ -424,6 +424,10 @@ trait RestaurantOrderHelper
                 throw new BadRequestException('The order_items.' . $key . '.variant_slug must be part of the menu.');
             }
 
+            if (!isset($value['option_items'])) {
+                $value['option_items'] = [];
+            }
+
             $toppings = collect(self::prepareToppings($value['topping_slugs'], $menuId));
             $options = collect(self::prepareOptions($value['option_items'], $menuId));
 
