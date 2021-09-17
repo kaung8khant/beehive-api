@@ -27,7 +27,7 @@ class AddTargetTypeAndValueToAdsTable extends Migration
     public function down()
     {
         Schema::table('ads', function (Blueprint $table) {
-            //
+            $table->dropColumn(['target_type', 'value']);
         });
     }
 }
