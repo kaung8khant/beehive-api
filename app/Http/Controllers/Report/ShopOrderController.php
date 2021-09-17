@@ -252,7 +252,6 @@ class ShopOrderController extends Controller
         $commissionSum = 0;
         $commissionCtSum = 0;
         $balanceSum = 0;
-        $promoDiscount = 0;
 
         foreach ($groups as $key => $group) {
             $amount = 0;
@@ -271,8 +270,6 @@ class ShopOrderController extends Controller
                 $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
                 $discount += $item->discount ? $item->discount * $item->quantity : 0;
                 $quantity += $item->quantity;
-                $perItemPromo=$item->vendor->shopOrder->promocode_amount/ $item->vendor->shopOrder->item_count;
-                $promoDiscount+=$perItemPromo*$item->quantity;
             }
 
             $commissionCt += $commission * 0.05;
@@ -305,7 +302,6 @@ class ShopOrderController extends Controller
             'commission_sum' => $commissionSum,
             'commission_ct_sum' => $commissionCtSum,
             'balance_sum' => $balanceSum,
-            'promo_discount' => $promoDiscount,
             'invoice' => $data,
         ];
 
