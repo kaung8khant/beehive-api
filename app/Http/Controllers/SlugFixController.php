@@ -13,7 +13,6 @@ class SlugFixController
     {
         $model = '\App\Models\\' . $table;
         $data = $model::all();
-
         foreach ($data as $key) {
             if (is_numeric(substr($key->slug, 0, 6)) && substr($key->slug, 6, 1) == 'E') {
                 do {

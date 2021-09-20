@@ -20,10 +20,7 @@ class Shop implements Rule
         if ($this->usage == "shop") {
             foreach ($items as $item) {
                 $product = Product::where('slug', $item['slug'])->with('shop')->firstOrFail();
-
-                $shop_id = $product->shop->id;
-
-                if (intval($value) == intval($shop_id)) {
+                if ($value === $product->shop->slug) {
                     return true;
                 }
             }
@@ -36,9 +33,9 @@ class Shop implements Rule
     {
         if ($this->usage == "shop") {
             $product = Product::where('slug', $item['slug'])->with('shop')->firstOrFail();
-            $shop_id = $product->shop->id;
-
-            return intval($value) == intval($shop_id);
+            if ($value == $product->shop->slug) {
+                return true;
+            }
         }
         return false;
     }

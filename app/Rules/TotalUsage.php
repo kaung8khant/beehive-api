@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Models\RestaurantOrder;
 use App\Models\ShopOrder;
 
 class TotalUsage implements Rule
@@ -17,7 +18,15 @@ class TotalUsage implements Rule
 
     public function validate($items, $subTotal, $customer, $value): bool
     {
-        $shopOrder = ShopOrder::where('promocode', $this->promocode->id)->get();
-        return count($shopOrder) < $value;
+        $shopOrder = ShopOrder::where('promocode_id', $this->promocode->id)->get();
+        $restaurantOrder = RestaurantOrder::where('promocode_id', $this->promocode->id)->get();
+
+        $orderCount = count($shopOrder) + count($restaurantOrder);
+        return $orderCount < $value;
+    }
+
+    public function validateItem($item, $value): bool
+    {
+        return false;
     }
 }

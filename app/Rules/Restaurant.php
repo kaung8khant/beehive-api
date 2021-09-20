@@ -2,9 +2,9 @@
 
 namespace App\Rules;
 
-use App\Models\Product;
+use App\Models\Menu as MenuModel;
 
-class Brand implements Rule
+class Restaurant implements Rule
 {
     private $promocode;
     private $usage;
@@ -17,12 +17,10 @@ class Brand implements Rule
 
     public function validate($items, $subTotal, $customer, $value): bool
     {
-        if ($this->usage == "shop") {
+        if ($this->usage == 'restaurant') {
             foreach ($items as $item) {
-                $product = Product::where('slug', $item['slug'])->with('brand')->firstOrFail();
-
-                $brand_slug = $product->brand->slug;
-                if ($value === $brand_slug) {
+                $menu = MenuModel::where('slug', $item['slug'])->with('restaurant')->firstOrFail();
+                if ($value === $menu->restaurant->slug) {
                     return true;
                 }
             }
@@ -32,9 +30,9 @@ class Brand implements Rule
 
     public function validateItem($item, $value): bool
     {
-        if ($this->usage == "shop") {
-            $product = Product::where('slug', $item['slug'])->with('brand')->firstOrFail();
-            if ($value == $product->brand->slug) {
+        if ($this->usage == "restaurant") {
+            $menu = MenuModel::where('slug', $item['slug'])->with('restaurant')->firstOrFail();
+            if ($value == $menu->restaurant->slug) {
                 return true;
             }
         }
