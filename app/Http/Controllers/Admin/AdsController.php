@@ -83,6 +83,8 @@ class AdsController extends Controller
             'type' => 'required|in:banner',
             'source' => 'required|in:restaurant,shop',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
+            'target_type' => 'nullable|string',
+            'value' => 'nullable|string',
         ];
 
         if ($slug) {
