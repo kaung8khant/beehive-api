@@ -133,8 +133,8 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                             'latitude' => $row['branch_latitude'],
                             'longitude' => $row['branch_longitude'],
                             'address' => $row['branch_address'],
-                            'township' => $row['township'],
-                            'city' => $row['city'],
+                            'township' => $row['branch_township'],
+                            'city' => $row['branch_city'],
                             'free_delivery' => $row['free_delivery'],
                             'restaurant_id' => $restaurant->id,
                         ]);
