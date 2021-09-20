@@ -20,9 +20,9 @@ class MenuVariant extends Model
 
     protected $casts = [
         'variant' => 'array',
-        // 'price' => 'float',
-        // 'tax' => 'float',
-        // 'discount' => 'float',
+        'price' => 'float',
+        'tax' => 'float',
+        'discount' => 'float',
         'is_enable' => 'boolean',
         
     ];

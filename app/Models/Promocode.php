@@ -17,7 +17,7 @@ class Promocode extends BaseModel
     ];
 
     protected $casts = [
-        // 'amount' => 'float',
+        'amount' => 'float',
     ];
 
     public function rules()

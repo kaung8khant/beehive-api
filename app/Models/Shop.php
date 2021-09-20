@@ -20,8 +20,8 @@ class Shop extends BaseModel
 
     protected $casts = [
         'notify_numbers' => 'array',
-        // 'latitude' => 'float',
-        // 'longitude' => 'float',
+        'latitude' => 'float',
+        'longitude' => 'float',
         'is_official' => 'boolean',
         'is_enable' => 'boolean',
     ];

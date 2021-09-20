@@ -19,7 +19,7 @@ class Restaurant extends BaseModel
 
     protected $casts = [
         'is_enable' => 'boolean',
-        // 'commission' => 'float',
+        'commission' => 'float',
     ];
 
     protected $appends = ['rating', 'images', 'covers', 'first_order_date'];

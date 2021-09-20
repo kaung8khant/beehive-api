@@ -20,10 +20,10 @@ class ProductVariant extends Model
 
     protected $casts = [
         'variant' => 'array',
-        // 'price' => 'float',
-        // 'tax' => 'float',
-        // 'discount' => 'float',
-        // 'vendor_price' => 'float',
+        'price' => 'float',
+        'tax' => 'float',
+        'discount' => 'float',
+        'vendor_price' => 'float',
         'is_enable' => 'boolean',
     ];
 
