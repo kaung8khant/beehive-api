@@ -366,7 +366,7 @@ class RestaurantCartController extends CartController
         $branch = RestaurantBranch::with('restaurant')->where('id', $menuCart->restaurant_branch_id)->first();
 
         $distance = GeoHelper::calculateDistance($address['latitude'], $address['longitude'], $branch->latitude, $branch->longitude);
-        $deliveryFee = GeoHelper::calculateDeliveryFee($distance);
+        $deliveryFee = $branch->free_delivery ? 0 : GeoHelper::calculateDeliveryFee($distance);
 
         $request['restaurant_branch_slug'] = RestaurantBranch::where('id', $menuCart->restaurant_branch_id)->value('slug');
         $request['address'] = $menuCart->address;
