@@ -13,6 +13,8 @@ use App\Models\Customer;
 use App\Models\Menu;
 use App\Models\MenuCart;
 use App\Models\MenuCartItem;
+use App\Models\MenuOption;
+use App\Models\MenuOptionItem;
 use App\Models\MenuTopping;
 use App\Models\MenuVariant;
 use App\Models\RestaurantBranch;
@@ -30,7 +32,10 @@ class RestaurantCartController extends CartController
 
     public function __construct(Request $request)
     {
-        $this->customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
+        if ($request->customer_slug) {
+            $this->customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
+        }
+
         $this->resMes = config('response-en');
     }
 
@@ -98,8 +103,10 @@ class RestaurantCartController extends CartController
             'quantity' => 'required|integer',
             'variant_slug' => 'required|exists:App\Models\MenuVariant,slug',
             'toppings' => 'nullable|array',
-            'toppings.*.slug' => 'required|exists:App\Models\MenuTopping',
+            'toppings.*.slug' => 'required|exists:App\Models\MenuTopping,slug',
             'toppings.*.quantity' => 'required|integer',
+            'option_items' => 'nullable|array',
+            'option_items.*' => 'required|exists:App\Models\MenuOptionItem,slug',
             'address' => 'required',
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer',
@@ -111,15 +118,20 @@ class RestaurantCartController extends CartController
 
     private function prepareMenuData($menu, $request)
     {
+        if (!isset($request->option_items)) {
+            $request['option_items'] = [];
+        }
+
         $menuVariant = $this->getVariant($menu, $request->variant_slug);
         $toppings = $this->getToppings($menu, $request->toppings);
+        $optionItems = $this->getOptionItems($menu, $request->option_items);
 
-        $amount = $menuVariant->price + collect($toppings)->sum('price');
+        $amount = $menuVariant->price + collect($toppings)->sum('price') + collect($optionItems)->sum('price');
         $tax = ($amount - $menuVariant->discount) * $menuVariant->tax * 0.01;
         $discount = $menuVariant->discount;
 
         return [
-            'key' => $this->getMenuKey($menu->slug, $menuVariant->slug, $toppings),
+            'key' => $this->getMenuKey($menu->slug, $menuVariant->slug, $toppings, $optionItems),
             'slug' => $menu->slug,
             'name' => $menu->name,
             'description' => $menu->description,
@@ -129,6 +141,7 @@ class RestaurantCartController extends CartController
             'quantity' => $request->quantity,
             'variant' => $menuVariant,
             'toppings' => $toppings,
+            'options' => $optionItems,
             'images' => $menu->images,
         ];
     }
@@ -146,32 +159,65 @@ class RestaurantCartController extends CartController
 
     private function getToppings($menu, $toppings)
     {
-        $menuToppings = [];
-
-        foreach ($toppings as $key => $value) {
+        $menuToppings = collect($toppings)->map(function ($value, $key) use ($menu) {
             $menuTopping = MenuTopping::where('slug', $value['slug'])->first();
 
             if ($menuTopping->menu_id != $menu->id) {
-                throw new BadRequestException(sprintf($this->resMes['restaurant_cart']['topping_err'], $key));
+                throw new BadRequestException(sprintf($this->resMes['restaurant_cart']['topping_err'], $menuTopping->name, $menu->name));
             }
 
             if ($value['quantity'] > $menuTopping->max_quantity) {
-                throw new BadRequestException(sprintf($this->resMes['restaurant_cart']['topping_qty_err'], $key, $menuTopping->max_quantity));
+                throw new BadRequestException(sprintf($this->resMes['restaurant_cart']['topping_qty_err'], $menuTopping->name, $menu->name, $menuTopping->max_quantity));
             }
 
-            $menuToppings[] = [
+            return [
                 'slug' => $menuTopping->slug,
                 'quantity' => $value['quantity'],
                 'price' => $menuTopping->price,
             ];
-        }
+        });
 
-        return collect($menuToppings)->sortBy('slug')->values();
+        return $menuToppings->sortBy('slug')->values();
     }
 
-    private function getMenuKey($menuSlug, $menuVariantSlug, $toppings)
+    private function getOptionItems($menu, $optionItems)
     {
-        return $menuSlug . '-' . $menuVariantSlug . '-' . implode('-', $toppings->pluck('slug')->toArray()) . '-' . implode('-', $toppings->pluck('quantity')->toArray());
+        $itemsCount = array_count_values($optionItems);
+
+        foreach ($itemsCount as $itemSlug => $count) {
+            if ($count > 1) {
+                throw new BadRequestException(sprintf($this->resMes['restaurant_cart']['option_dup_err'], $menu->name));
+            }
+        }
+
+        $menuOptions = collect($optionItems)->map(function ($value, $key) use ($menu) {
+            $menuOptionItem = MenuOptionItem::where('slug', $value)->first();
+
+            if ($menuOptionItem->menuOption->menu_id != $menu->id) {
+                throw new BadRequestException(sprintf($this->resMes['restaurant_cart']['option_item_err'], $menuOptionItem->name, $menu->name));
+            }
+
+            return [
+                'slug' => $menuOptionItem->slug,
+                'price' => $menuOptionItem->price,
+                'menu_option_id' => $menuOptionItem->menu_option_id,
+            ];
+        });
+
+        foreach ($menuOptions->countBy('menu_option_id') as $menuOptionId => $count) {
+            $menuOption = MenuOption::with('menu')->where('id', $menuOptionId)->first();
+
+            if ($count > $menuOption->max_choice) {
+                throw new BadRequestException(sprintf($this->resMes['restaurant_cart']['option_max_err'], $menuOption->name, $menu->name, $menuOption->max_choice));
+            }
+        }
+
+        return $menuOptions->sortBy('slug')->values();
+    }
+
+    private function getMenuKey($menuSlug, $menuVariantSlug, $toppings, $optionItems)
+    {
+        return $menuSlug . '-' . $menuVariantSlug . '-' . implode('-', $toppings->pluck('slug')->toArray()) . '-' . implode('-', $toppings->pluck('quantity')->toArray()) . '-' . implode('-', $optionItems->pluck('slug')->toArray());
     }
 
     private function createMenuCart($customerId, $restaurantBranchId, $address)
@@ -320,7 +366,7 @@ class RestaurantCartController extends CartController
         $branch = RestaurantBranch::with('restaurant')->where('id', $menuCart->restaurant_branch_id)->first();
 
         $distance = GeoHelper::calculateDistance($address['latitude'], $address['longitude'], $branch->latitude, $branch->longitude);
-        $deliveryFee = GeoHelper::calculateDeliveryFee($distance);
+        $deliveryFee = $branch->free_delivery ? 0 : GeoHelper::calculateDeliveryFee($distance);
 
         $request['restaurant_branch_slug'] = RestaurantBranch::where('id', $menuCart->restaurant_branch_id)->value('slug');
         $request['address'] = $menuCart->address;
@@ -398,6 +444,7 @@ class RestaurantCartController extends CartController
                     unset($value['quantity']);
                     return $value;
                 })->toArray(),
+                'option_items' => collect($cartItem->menu['options'])->pluck('slug')->toArray(),
             ];
         })->toArray();
     }

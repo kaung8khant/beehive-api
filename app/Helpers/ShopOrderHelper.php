@@ -94,6 +94,7 @@ trait ShopOrderHelper
 
             $tax += ($amount - $product->discount) * $product->tax * 0.01 * $value['quantity'];
             $product['price'] = $amount;
+            $product['amount'] = $amount;
             $product['variations'] = $variations;
             $product['quantity'] = $value['quantity'];
             $product['tax'] = ($amount - $product->discount) * $product->tax * 0.01;
@@ -317,6 +318,7 @@ trait ShopOrderHelper
             $item['name'] = $productVariant->product->name;
             $item['quantity'] = $value['quantity'];
             $item['price'] = $productVariant->price;
+            $item['amount'] = $productVariant->price;
             $item['vendor_price'] = $productVariant->vendor_price;
             $item['tax'] = ($item['price'] - $productVariant->discount) * $productVariant->tax * 0.01;
             $item['discount'] = $productVariant->discount;

@@ -46,7 +46,7 @@ class CartController extends Controller
 
         $address = $menuCart->address;
         $distance = GeoHelper::calculateDistance($address['latitude'], $address['longitude'], $branch->latitude, $branch->longitude);
-        $deliveryFee = GeoHelper::calculateDeliveryFee($distance);
+        $deliveryFee = $branch->free_delivery ? 0 : GeoHelper::calculateDeliveryFee($distance);
 
         return [
             'slug' => $menuCart->slug,

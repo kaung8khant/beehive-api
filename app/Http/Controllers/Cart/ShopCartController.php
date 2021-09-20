@@ -26,7 +26,10 @@ class ShopCartController extends CartController
 
     public function __construct(Request $request)
     {
-        $this->customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
+        if ($request->customer_slug) {
+            $this->customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
+        }
+
         $this->resMes = config('response-en');
     }
 

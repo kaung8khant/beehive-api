@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\v3;
 
 use App\Events\OrderAssignEvent;
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
 use App\Helpers\CollectionHelper;
@@ -21,6 +22,7 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderItem;
 use App\Services\MessageService\MessagingService;
 use App\Services\PaymentService\PaymentService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -77,14 +79,15 @@ class RestaurantOrderController extends Controller
                 $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
             } catch (ForbiddenException $e) {
                 return $this->generateResponse($e->getMessage(), 403, true);
+            } catch (BadRequestException $e) {
+                return $this->generateResponse($e->getMessage(), 400, true);
             }
 
             $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
-
             if ($validatedData['promo_code']) {
                 try {
                     $validatedData = $this->getPromoData($validatedData, $customer);
-                } catch (ForbiddenException $e) {
+                } catch (Exception $e) {
                     return $this->generateResponse($e->getMessage(), 403, true);
                 }
             }
@@ -146,22 +149,20 @@ class RestaurantOrderController extends Controller
         if (!$promocode) {
             throw new ForbiddenException('Promocode not found.');
         }
-
         $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'restaurant');
         if (!$validUsage) {
             throw new ForbiddenException('Invalid promocode usage for restaurant.');
         }
-
         $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'restaurant');
+
         if (!$validRule) {
             throw new ForbiddenException('Invalid promocode.');
         }
-
         $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'restaurant');
 
         $validatedData['promocode_id'] = $promocode->id;
         $validatedData['promocode'] = $promocode->code;
-        $validatedData['promocode_amount'] = $promocodeAmount;
+        $validatedData['promocode_amount'] = min($validatedData['subTotal'] + $validatedData['tax'], $promocodeAmount);
 
         return $validatedData;
     }
@@ -248,27 +249,8 @@ class RestaurantOrderController extends Controller
     {
         $restaurantOrderItem->delete();
         $restaurantOrder = RestaurantOrder::where('slug', $restaurantOrder->slug)->first();
-
-        $promocode = Promocode::where('code', $restaurantOrder->promocode)->first();
-        $orderItems = $restaurantOrder->restaurantOrderItems;
-        $subTotal = 0;
-        $commission = 0;
-
-        foreach ($orderItems as $item) {
-            $amount = ($item->amount) * $item->quantity;
-            $subTotal += $amount;
-            $commission += $item->commission;
-        }
-
-        $commission = $subTotal * $restaurantOrder->restaurant->commission * 0.01;
-
-        if ($promocode) {
-            if ($promocode->type === 'fix') {
-                $restaurantOrder->update(['promocode_amount' => $promocode->amount, 'commission' => $commission]);
-            } else {
-                $restaurantOrder->update(['promocode_amount' => $subTotal * $promocode->amount * 0.01, 'commission' => $commission]);
-            }
-        }
+        $commission = $restaurantOrder->amount * $restaurantOrder->restaurant->commission * 0.01;
+        $restaurantOrder->update(['commission' => $commission]);
 
         return response()->json(['message' => 'Successfully cancelled.'], 200);
     }

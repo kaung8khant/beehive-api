@@ -22,8 +22,8 @@ trait PromocodeHelper
             $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
 
             $rule = new $_class($promocode, $usage);
-            $value = $rule->validate($orderItems, $subTotal, $customer, $data['value']);
 
+            $value = $rule->validate($orderItems, $subTotal, $customer, $data['value']);
             if (!$value) {
                 return false;
             }
@@ -33,30 +33,24 @@ trait PromocodeHelper
 
     public static function calculatePromocodeAmount($promocode, $orderItems, $subTotal, $usage)
     {
-
         $isItemRule = false;
         $total = 0;
         foreach ($promocode->rules as $data) {
-
-            if (in_array($data['data_type'], array("shop", "brand", "menu", "category"))) {
+            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category", "menu", "product"))) {
                 $isItemRule = true;
-
                 foreach ($orderItems as $item) {
-
                     $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
                     $rule = new $_class($promocode, $usage);
 
                     if ($rule->validateItem($item, $data['value'])) {
-
                         if ($promocode->type === 'fix') {
                             $total += $promocode->amount;
                         } else {
-
-                            $variation = $item['variations']->sum('price');
-                            if (isset($item['toppings'])) {
-                                $variation += $item['variations']->sum('price');
-                            }
-                            $total += ($item['price'] + $variation) * $promocode->amount * 0.01;
+                            // $variation = $item['variations']->sum('price');
+                            // if (isset($item['toppings'])) {
+                            //     $variation += $item['variations']->sum('price');
+                            // }
+                            $total += $item['amount'] * $promocode->amount * 0.01;
                         }
                     }
                 }

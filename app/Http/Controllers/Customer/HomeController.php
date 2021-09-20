@@ -34,10 +34,8 @@ class HomeController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantBranches = RestaurantOrderHelper::getBranches($request)->inRandomOrder()->limit(10)->get();
-
         $result = [
-            'restaurant_branches' => $this->generateBranchResponse($restaurantBranches, 200, 'home'),
+            'restaurant_branches' => $this->generateBranchResponse($this->getRandomRestaurants($request), 200, 'home'),
             'products' => $this->generateProductResponse($this->getRandomProducts(), 200, 'home'),
         ];
 
@@ -51,10 +49,8 @@ class HomeController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantBranches = RestaurantOrderHelper::getBranches($request)->orderBy('id', 'desc')->limit(10)->get();
-
         $result = [
-            'restaurant_branches' => $this->generateBranchResponse($restaurantBranches, 200, 'home'),
+            'restaurant_branches' => $this->generateBranchResponse($this->getNewRestaurants($request), 200, 'home'),
             'products' => $this->generateProductResponse($this->getNewProducts(), 200, 'home'),
         ];
 
@@ -101,6 +97,15 @@ class HomeController extends Controller
         ]);
     }
 
+    private function getRandomRestaurants($request)
+    {
+        return RestaurantOrderHelper::getBranches($request)
+            ->orderBy('search_index', 'desc')
+            ->inRandomOrder()
+            ->limit(10)
+            ->get();
+    }
+
     private function getRandomProducts()
     {
         return Product::with('shop')
@@ -109,6 +114,15 @@ class HomeController extends Controller
             })
             ->where('is_enable', 1)
             ->inRandomOrder()
+            ->limit(10)
+            ->get();
+    }
+
+    private function getNewRestaurants($request)
+    {
+        return RestaurantOrderHelper::getBranches($request)
+            ->orderBy('search_index', 'desc')
+            ->orderBy('id', 'desc')
             ->limit(10)
             ->get();
     }
@@ -161,6 +175,7 @@ class HomeController extends Controller
                             });
                     });
             })
+            ->orderBy('search_index', 'desc')
             ->orderBy('distance', 'asc')
             ->paginate($request->size)
             ->items();

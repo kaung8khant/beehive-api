@@ -45,6 +45,7 @@ class RestaurantBranchesImport implements ToCollection, WithHeadingRow
             $rules = [
                 'name' => ['required', 'unique:restaurant_branches'],
                 'is_enable' => ['required', 'boolean'],
+                'free_delivery' => ['nullable', 'boolean'],
                 'address' => ['nullable'],
                 'contact_number' => ['required', 'phone:MM'],
                 'opening_time' => ['required', 'date_format:H:i'],

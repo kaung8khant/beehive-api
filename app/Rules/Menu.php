@@ -19,10 +19,7 @@ class Menu implements Rule
     {
         if ($this->usage == 'restaurant') {
             foreach ($items as $item) {
-                $menu = MenuModel::where('slug', $item['slug'])->firstOrFail();
-
-                $menu_id = $menu->id;
-                if (intval($value) == intval($menu_id)) {
+                if ($value === $item['slug']) {
                     return true;
                 }
             }
@@ -33,10 +30,7 @@ class Menu implements Rule
     public function validateItem($item, $value): bool
     {
         if ($this->usage == "restaurant") {
-            $menu = MenuModel::where('slug', $item['slug'])->firstOrFail();
-
-            $menu_id = $menu->id;
-            return intval($value) == intval($menu_id);
+            return $item['slug'] == $value;
         }
         return false;
     }

@@ -122,10 +122,13 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::post('restaurant-branches/add-available-menus/{restaurantBranch}', 'Admin\RestaurantBranchController@addAvailableMenus');
             Route::post('restaurant-branches/remove-available-menus/{slug}', 'Admin\RestaurantBranchController@removeAvailableMenus');
             Route::patch('restaurant-branches/toggle-enable/{restaurantBranch}', 'Admin\RestaurantBranchController@toggleEnable');
+            Route::patch('restaurant-branches/toggle-free-delivery/{restaurantBranch}', 'Admin\RestaurantBranchController@toggleFreeDelivery');
             Route::post('restaurant-branches/status', 'Admin\RestaurantBranchController@multipleStatusUpdate');
             Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\RestaurantBranchController@getRestaurantBranchByCustomers');
             Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
             Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
+
+            Route::put('restaurant-branches/{restaurantBranch}/index', 'Admin\RestaurantBranchController@updateSearchIndex');
 
             // Route::get('townships/{township}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByTownship');
 
@@ -257,6 +260,12 @@ Route::group([
     Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
     Route::put('shop-orders/{shopOrder}/payment', 'ShopOrderController@updatePayment');
     Route::delete('shop-orders/{shopOrder}/shop-order-items/{shopOrderItem}/cancel', 'ShopOrderController@cancelOrderItem');
+
+    Route::resource('menu-options', 'MenuOptionController', ['as' => 'admin-v3-menu-option', 'except' => ['create', 'edit']]);
+    Route::get('menus/{menu}/menu-options', 'MenuOptionController@index');
+
+    Route::resource('menu-option-items', 'MenuOptionItemController', ['as' => 'admin-v3-menu-option-item', 'except' => ['create', 'edit']]);
+    Route::get('menu-options/{menuOption}/items', 'MenuOptionItemController@index');
 });
 
 Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {
