@@ -20,8 +20,8 @@ class RestaurantOrderContact extends Model
     ];
 
     protected $casts = [
-        'latitude' => 'float',
-        'longitude' => 'float',
+        // 'latitude' => 'float',
+        // 'longitude' => 'float',
     ];
 
     public function getFloorAttribute($value)
