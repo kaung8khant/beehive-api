@@ -15,7 +15,6 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class RestaurantBranchController extends Controller
@@ -263,5 +262,15 @@ class RestaurantBranchController extends Controller
         $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
 
         return response()->json($customerlist, 200);
+    }
+
+    public function updateSearchIndex(Request $request, RestaurantBranch $restaurantBranch)
+    {
+        $validatedData = $request->validate([
+            'search_index' => 'required|numeric',
+        ]);
+
+        $restaurantBranch->update($validatedData);
+        return response()->json($restaurantBranch->load('restaurant'), 200);
     }
 }
