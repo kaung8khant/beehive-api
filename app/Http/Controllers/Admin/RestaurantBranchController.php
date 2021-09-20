@@ -96,6 +96,7 @@ class RestaurantBranchController extends Controller
             'longitude' => 'required',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'is_enable' => 'required|boolean',
+            'free_delivery' => 'nullable|boolean',
         ];
 
         if ($slug) {
@@ -152,6 +153,12 @@ class RestaurantBranchController extends Controller
     public function toggleEnable(RestaurantBranch $restaurantBranch)
     {
         $restaurantBranch->update(['is_enable' => !$restaurantBranch->is_enable]);
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function toggleFreeDelivery(RestaurantBranch $restaurantBranch)
+    {
+        $restaurantBranch->update(['free_delivery' => !$restaurantBranch->free_delivery]);
         return response()->json(['message' => 'Success.'], 200);
     }
 
