@@ -34,24 +34,17 @@ trait PromocodeHelper
 
     public static function calculatePromocodeAmount($promocode, $orderItems, $subTotal, $usage)
     {
-
         $isItemRule = false;
         $total = 0;
 
         foreach ($promocode->rules as $data) {
-            if (in_array($data['data_type'], array("shop", "brand", "menu", "category", "before_date", "after_date"))) {
+            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category","menu","product", "before_date", "after_date"))) {
                 $isItemRule = true;
                 foreach ($orderItems as $item) {
-                    $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
-                    $rule = new $_class($promocode, $usage);
-
-                    if ($rule->validateItem($item, $data['value'])) {
-
-                        if ($promocode->type === 'fix') {
-                            $total += $promocode->amount;
-                        } else {
-                            $total += ($item['amount']) * $promocode->amount * 0.01;
-                        }
+                    if ($promocode->type === 'fix') {
+                        $total += $promocode->amount;
+                    } else {
+                        $total += ($item['amount']) * $promocode->amount * 0.01;
                     }
                 }
             }

@@ -24,9 +24,9 @@ class ShopOrderItem extends Model
 
     protected $casts = [
         'quantity' => 'integer',
-        'amount' => 'float',
-        'tax' => 'float',
-        'discount' => 'float',
+        // 'amount' => 'float',
+        // 'tax' => 'float',
+        // 'discount' => 'float',
         'vendor_price' => 'float',
         'commission' => 'float',
         'variant' => 'array',
