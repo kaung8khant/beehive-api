@@ -101,6 +101,7 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                     'branch_longitude' => ['required', 'numeric'],
                     'branch_township' => ['nullable', 'string'],
                     'branch_city' => ['nullable', 'string'],
+                    'free_delivery' => ['nullable', 'boolean'],
                 ];
 
                 $validator = Validator::make(
@@ -134,6 +135,7 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                             'address' => $row['branch_address'],
                             'township' => $row['township'],
                             'city' => $row['city'],
+                            'free_delivery' => $row['free_delivery'],
                             'restaurant_id' => $restaurant->id,
                         ]);
                     } catch (QueryException $e) {
