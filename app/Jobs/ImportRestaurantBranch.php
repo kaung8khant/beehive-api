@@ -69,6 +69,7 @@ class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
             $rules = [
                 'name' => ['required', 'unique:restaurant_branches'],
                 'is_enable' => ['required', 'boolean'],
+                'free_delivery' => ['nullable', 'boolean'],
                 'address' => ['nullable'],
                 'contact_number' => ['required', 'phone:MM'],
                 'opening_time' => ['required', 'date_format:H:i'],
@@ -106,6 +107,7 @@ class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
                     'longitude' => $row['longitude'],
                     'address' => $row['address'],
                     'is_enable' => $row['is_enable'],
+                    'free_delivery' => $row['free_delivery'],
                     'township' => $row['township'],
                     'city' => $row['city'],
                     'restaurant_id' => Restaurant::where('slug', $row['restaurant_slug'])->value('id'),

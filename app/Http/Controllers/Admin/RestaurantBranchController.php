@@ -15,7 +15,6 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class RestaurantBranchController extends Controller
@@ -97,6 +96,7 @@ class RestaurantBranchController extends Controller
             'longitude' => 'required',
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'is_enable' => 'required|boolean',
+            'free_delivery' => 'nullable|boolean',
         ];
 
         if ($slug) {
@@ -153,6 +153,12 @@ class RestaurantBranchController extends Controller
     public function toggleEnable(RestaurantBranch $restaurantBranch)
     {
         $restaurantBranch->update(['is_enable' => !$restaurantBranch->is_enable]);
+        return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function toggleFreeDelivery(RestaurantBranch $restaurantBranch)
+    {
+        $restaurantBranch->update(['free_delivery' => !$restaurantBranch->free_delivery]);
         return response()->json(['message' => 'Success.'], 200);
     }
 
@@ -263,5 +269,15 @@ class RestaurantBranchController extends Controller
         $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
 
         return response()->json($customerlist, 200);
+    }
+
+    public function updateSearchIndex(Request $request, RestaurantBranch $restaurantBranch)
+    {
+        $validatedData = $request->validate([
+            'search_index' => 'required|numeric',
+        ]);
+
+        $restaurantBranch->update($validatedData);
+        return response()->json($restaurantBranch->load('restaurant'), 200);
     }
 }

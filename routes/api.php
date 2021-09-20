@@ -122,10 +122,13 @@ Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () 
             Route::post('restaurant-branches/add-available-menus/{restaurantBranch}', 'Admin\RestaurantBranchController@addAvailableMenus');
             Route::post('restaurant-branches/remove-available-menus/{slug}', 'Admin\RestaurantBranchController@removeAvailableMenus');
             Route::patch('restaurant-branches/toggle-enable/{restaurantBranch}', 'Admin\RestaurantBranchController@toggleEnable');
+            Route::patch('restaurant-branches/toggle-free-delivery/{restaurantBranch}', 'Admin\RestaurantBranchController@toggleFreeDelivery');
             Route::post('restaurant-branches/status', 'Admin\RestaurantBranchController@multipleStatusUpdate');
             Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\RestaurantBranchController@getRestaurantBranchByCustomers');
             Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
             Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
+
+            Route::put('restaurant-branches/{restaurantBranch}/index', 'Admin\RestaurantBranchController@updateSearchIndex');
 
             // Route::get('townships/{township}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByTownship');
 

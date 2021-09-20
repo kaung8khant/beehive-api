@@ -41,6 +41,12 @@ class ShopController extends Controller
             $this->updateFile($request->image_slug, 'shops', $shop->slug);
         }
 
+        if ($request->cover_slugs) {
+            foreach ($request->cover_slugs as $coverSlug) {
+                $this->updateFile($coverSlug, 'shops', $shop->slug);
+            }
+        }
+
         if ($request->shop_tags) {
             $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
             $shop->availableTags()->attach($shopTags);
@@ -66,6 +72,12 @@ class ShopController extends Controller
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'shops', $shop->slug);
+        }
+
+        if ($request->cover_slugs) {
+            foreach ($request->cover_slugs as $coverSlug) {
+                $this->updateFile($coverSlug, 'shops', $shop->slug);
+            }
         }
 
         if ($request->shop_tags) {
@@ -110,7 +122,8 @@ class ShopController extends Controller
             'shop_tags' => 'nullable|array',
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ];
+            'cover_slugs' => 'nullable|array',
+            'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',        ];
 
         if ($slug) {
             $request['slug'] = $this->generateUniqueSlug();
