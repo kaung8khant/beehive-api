@@ -68,6 +68,7 @@ class RestaurantController extends Controller
         }
 
         $recommendedBranches = RestaurantOrderHelper::getBranches($request)
+            ->orderBy('search_index', 'desc')
             ->orderBy('distance', 'asc')
             ->paginate($request->size);
 
@@ -82,6 +83,7 @@ class RestaurantController extends Controller
         }
 
         $newArrivals = RestaurantOrderHelper::getBranches($request)
+            ->orderBy('search_index', 'desc')
             ->orderBy('id', 'desc')
             ->paginate($request->size)
             ->items();
@@ -110,6 +112,7 @@ class RestaurantController extends Controller
                             });
                     });
             })
+            ->orderBy('search_index', 'desc')
             ->orderBy('distance', 'asc')
             ->paginate($request->size);
 
@@ -253,7 +256,7 @@ class RestaurantController extends Controller
 
         $restaurantTags = RestaurantTag::with('restaurants')
             ->with(['restaurants.restaurantBranches' => function ($query) use ($request) {
-                RestaurantOrderHelper::getBranchQuery($query, $request)->orderBy('distance', 'asc');
+                RestaurantOrderHelper::getBranchQuery($query, $request)->orderBy('search_index', 'desc')->orderBy('distance', 'asc');
             }])
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -290,6 +293,7 @@ class RestaurantController extends Controller
             return RestaurantOrderHelper::getBranches($request)
                 ->without('restaurant.availableTags')
                 ->where('restaurant_id', $restaurantId)
+                ->orderBy('search_index', 'desc')
                 ->orderBy('distance', 'asc')
                 ->get();
         })->collapse()->sortBy('distance')->values();
@@ -314,7 +318,7 @@ class RestaurantController extends Controller
 
         $restaurantTag = RestaurantTag::with(['restaurants' => function ($query) use ($request) {
             $query->with(['restaurantBranches' => function ($q) use ($request) {
-                RestaurantOrderHelper::getBranchQuery($q, $request)->orderBy('distance', 'asc');
+                RestaurantOrderHelper::getBranchQuery($q, $request)->orderBy('search_index', 'desc')->orderBy('distance', 'asc');
             }]);
         }])
             ->where('slug', $slug)

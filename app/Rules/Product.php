@@ -2,9 +2,9 @@
 
 namespace App\Rules;
 
-use App\Models\Product;
+use App\Models\Product as ProductModel;
 
-class Brand implements Rule
+class Product implements Rule
 {
     private $promocode;
     private $usage;
@@ -17,12 +17,9 @@ class Brand implements Rule
 
     public function validate($items, $subTotal, $customer, $value): bool
     {
-        if ($this->usage == "shop") {
+        if ($this->usage == 'shop') {
             foreach ($items as $item) {
-                $product = Product::where('slug', $item['slug'])->with('brand')->firstOrFail();
-
-                $brand_slug = $product->brand->slug;
-                if ($value === $brand_slug) {
+                if ($value === $item['slug']) {
                     return true;
                 }
             }
@@ -33,10 +30,7 @@ class Brand implements Rule
     public function validateItem($item, $value): bool
     {
         if ($this->usage == "shop") {
-            $product = Product::where('slug', $item['slug'])->with('brand')->firstOrFail();
-            if ($value == $product->brand->slug) {
-                return true;
-            }
+            return $item['slug'] == $value;
         }
         return false;
     }

@@ -10,4 +10,9 @@ class BeforeDate implements Rule
     {
         return Carbon::now() <= Carbon::parse($value);
     }
+
+    public function validateItem($item, $value): bool
+    {
+        return false;
+    }
 }

@@ -75,6 +75,7 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
                     'branch_longitude' => ['required', 'numeric'],
                     'branch_township' => ['nullable', 'string'],
                     'branch_city' => ['nullable', 'string'],
+                    'free_delivery' => ['nullable', 'boolean'],
                 ];
 
                 $validator = Validator::make(
@@ -107,6 +108,7 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
                         'longitude' => $row['branch_longitude'],
                         'township' => $row['branch_township'],
                         'city' => $row['branch_city'],
+                        'free_delivery' => $row['free_delivery'],
                         'errors' => $validator->errors(),
                     ];
                 }

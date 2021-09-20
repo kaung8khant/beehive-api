@@ -77,7 +77,7 @@ class AddressController extends Controller
     {
         $params = [
             'label' => 'required',
-            'house_number' => 'required',
+            'house_number' => 'nullable',
             'floor' => 'nullable|integer|min:0|max:50',
             'street_name' => 'required',
             'latitude' => 'nullable',

@@ -54,6 +54,8 @@ return [
         'shop-vendor-product-sales' => 'Sales\ShopProductSalesExport',
         'shop-vendor-invoice' => 'Sales\ShopVendorInvoiceExport',
         'promocode-sales' => 'Sales\PromocodeSalesExport',
+        'promocode-used-customers' => 'Sales\PromocodeUsedCustomerExport',
+        'promocode-invoice' => 'Sales\PromocodeInvoiceSalesExport',
     ],
     'name' => [
         'restaurant-vendor-sales',

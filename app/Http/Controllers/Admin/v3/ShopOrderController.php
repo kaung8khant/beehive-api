@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
 use App\Helpers\CollectionHelper;
@@ -77,6 +78,8 @@ class ShopOrderController extends Controller
                 $validatedData = OrderHelper::prepareProductVariants($validatedData);
             } catch (ForbiddenException $e) {
                 return $this->generateResponse($e->getMessage(), 403, true);
+            } catch (BadRequestException $e) {
+                return $this->generateResponse($e->getMessage(), 400, true);
             }
 
             $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
@@ -152,7 +155,7 @@ class ShopOrderController extends Controller
 
         $validatedData['promocode_id'] = $promocode->id;
         $validatedData['promocode'] = $promocode->code;
-        $validatedData['promocode_amount'] = $promocodeAmount;
+        $validatedData['promocode_amount'] = min($validatedData['subTotal'] + $validatedData['tax'], $promocodeAmount);
 
         return $validatedData;
     }
@@ -258,30 +261,15 @@ class ShopOrderController extends Controller
     public function cancelOrderItem(ShopOrder $shopOrder, ShopOrderItem $shopOrderItem)
     {
         $shopOrderItem->delete();
-
         $shopOrder = ShopOrder::where('slug', $shopOrder->slug)->first();
-        $promocode = Promocode::where('code', $shopOrder->promocode)->first();
-
         $vendors = $shopOrder->vendors;
-        $subTotal = 0;
         $commission = 0;
-
         foreach ($vendors as $vendor) {
             foreach ($vendor->items as $item) {
                 $commission += $item->commission;
-
-                $subTotal += ($item->amount - $item->discount) * $item->quantity;
             }
         }
-
-        if ($promocode) {
-            if ($promocode->type === 'fix') {
-                $shopOrder->update(['promocode_amount' => $promocode->amount, 'commission' => $commission]);
-            } else {
-                $shopOrder->update(['promocode_amount' => $subTotal * $promocode->amount * 0.01, 'commission' => $commission]);
-            }
-        }
-
+        $shopOrder->update(['commission' => $commission]);
         return response()->json(['message' => 'Successfully cancelled.'], 200);
     }
 

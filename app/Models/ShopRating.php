@@ -19,7 +19,7 @@ class ShopRating extends Model
     ];
 
     protected $casts = [
-        // 'rating' => 'float',
+        'rating' => 'float',
     ];
 
     protected $appends = ['customer'];
