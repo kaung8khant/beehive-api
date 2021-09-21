@@ -123,7 +123,7 @@ class AddressController extends Controller
         }
 
         $address = Address::
-            selectRaw('label, house_number, floor, street_name, latitude, longitude, is_primary,
+            selectRaw('slug, label, house_number, floor, street_name, latitude, longitude, is_primary,
         ( 6371 * acos( cos(radians(?)) *
             cos(radians(latitude)) * cos(radians(longitude) - radians(?))
             + sin(radians(?)) * sin(radians(latitude)) )
