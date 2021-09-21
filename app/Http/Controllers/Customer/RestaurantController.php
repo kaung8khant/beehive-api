@@ -127,7 +127,7 @@ class RestaurantController extends Controller
 
         $distance = GeoHelper::calculateDistance($request->lat, $request->lng, $restaurantBranch->latitude, $restaurantBranch->longitude);
         $deliveryTime = GeoHelper::calculateDeliveryTime($distance);
-        $deliveryFee = GeoHelper::calculateDeliveryFee($distance);
+        $deliveryFee = $restaurantBranch->free_delivery ? 0 : GeoHelper::calculateDeliveryFee($distance);
 
         if ($request->lat && $request->lng) {
             $restaurantBranch['distance'] = $distance;
@@ -192,7 +192,7 @@ class RestaurantController extends Controller
         if ($request->lat && $request->lng) {
             $restaurantBranch['distance'] = $distance;
             $restaurantBranch['time'] = GeoHelper::calculateDeliveryTime($distance);
-            $restaurantBranch['delivery_fee'] = GeoHelper::calculateDeliveryFee($distance);
+            $restaurantBranch['delivery_fee'] = $restaurantBranch['free_delivery'] ? 0 : GeoHelper::calculateDeliveryFee($distance);
         }
 
         return $this->generateResponse($restaurantBranch, 200);
