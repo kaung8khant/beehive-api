@@ -276,11 +276,13 @@ class HomeController extends Controller
 
     private function checkMobileVersion($request)
     {
-        $appType = $request->header('X-APP-TYPE');
-        $appVersion = $request->header('X-APP-VERSION');
+        // $appType = $request->header('X-APP-TYPE');
 
-        if ($appType === 'android' || $appType === 'ios') {
-            if ($appType === 'android') {
+        $platform = $this->getDevice(strtolower($request->header('User-Agent')));
+        $appVersion = $request->header('X-APP-VERSION') ? $request->header('X-APP-VERSION') : 0;
+
+        if ($platform === 'android' || $platform === 'ios') {
+            if ($platform === 'android') {
                 $currentVersion = Setting::where('key', 'android_version')->value('value');
             } else {
                 $currentVersion = Setting::where('key', 'ios_version')->value('value');
@@ -290,5 +292,18 @@ class HomeController extends Controller
                 throw new ForbiddenException('Your application is out of date. Please update your application to get the latest features.');
             }
         }
+    }
+
+    private function getDevice($userAgent)
+    {
+        if (preg_match('/android/i', $userAgent)) {
+            $platform = 'android';
+        } else if (preg_match('/iphone/i', $userAgent)) {
+            $platform = 'ios';
+        } else {
+            $platform = 'web';
+        }
+
+        return $platform;
     }
 }
