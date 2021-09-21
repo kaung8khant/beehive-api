@@ -20,13 +20,13 @@ class Shop extends BaseModel
 
     protected $casts = [
         'notify_numbers' => 'array',
-        // 'latitude' => 'float',
-        // 'longitude' => 'float',
+        'latitude' => 'float',
+        'longitude' => 'float',
         'is_official' => 'boolean',
         'is_enable' => 'boolean',
     ];
 
-    protected $appends = ['rating', 'images','first_order_date'];
+    protected $appends = ['rating', 'images','covers','first_order_date'];
 
     public function getFirstOrderDateAttribute()
     {
@@ -51,6 +51,15 @@ class Shop extends BaseModel
         return File::where('source', 'shops')
             ->where('source_id', $this->id)
             ->where('type', 'image')
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
+    }
+
+    public function getCoversAttribute()
+    {
+        return File::where('source', 'shops')
+            ->where('source_id', $this->id)
+            ->where('type', 'cover')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
     }

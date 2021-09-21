@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class UpdateDescriptionToContentsTable extends Migration
+class AddFreeDeliveryColumnToRestaurantBranchesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class UpdateDescriptionToContentsTable extends Migration
      */
     public function up()
     {
-        Schema::table('contents', function (Blueprint $table) {
-            $table->text('description')->change();
+        Schema::table('restaurant_branches', function (Blueprint $table) {
+            $table->boolean('free_delivery')->nullable()->default(1)->after('is_enable');
         });
     }
 
@@ -25,8 +25,8 @@ class UpdateDescriptionToContentsTable extends Migration
      */
     public function down()
     {
-        Schema::table('contents', function (Blueprint $table) {
-            $table->string('description')->change();
+        Schema::table('restaurant_branches', function (Blueprint $table) {
+            $table->dropColumn(['free_delivery']);
         });
     }
 }

@@ -68,6 +68,7 @@ class RestaurantController extends Controller
         }
 
         $recommendedBranches = RestaurantOrderHelper::getBranches($request)
+            ->orderBy('search_index', 'desc')
             ->orderBy('distance', 'asc')
             ->paginate($request->size);
 
@@ -82,6 +83,7 @@ class RestaurantController extends Controller
         }
 
         $newArrivals = RestaurantOrderHelper::getBranches($request)
+            ->orderBy('search_index', 'desc')
             ->orderBy('id', 'desc')
             ->paginate($request->size)
             ->items();
@@ -110,6 +112,7 @@ class RestaurantController extends Controller
                             });
                     });
             })
+            ->orderBy('search_index', 'desc')
             ->orderBy('distance', 'asc')
             ->paginate($request->size);
 
@@ -124,7 +127,7 @@ class RestaurantController extends Controller
 
         $distance = GeoHelper::calculateDistance($request->lat, $request->lng, $restaurantBranch->latitude, $restaurantBranch->longitude);
         $deliveryTime = GeoHelper::calculateDeliveryTime($distance);
-        $deliveryFee = GeoHelper::calculateDeliveryFee($distance);
+        $deliveryFee = $restaurantBranch->free_delivery ? 0 : GeoHelper::calculateDeliveryFee($distance);
 
         if ($request->lat && $request->lng) {
             $restaurantBranch['distance'] = $distance;
@@ -189,7 +192,7 @@ class RestaurantController extends Controller
         if ($request->lat && $request->lng) {
             $restaurantBranch['distance'] = $distance;
             $restaurantBranch['time'] = GeoHelper::calculateDeliveryTime($distance);
-            $restaurantBranch['delivery_fee'] = GeoHelper::calculateDeliveryFee($distance);
+            $restaurantBranch['delivery_fee'] = $restaurantBranch['free_delivery'] ? 0 : GeoHelper::calculateDeliveryFee($distance);
         }
 
         return $this->generateResponse($restaurantBranch, 200);
@@ -253,7 +256,7 @@ class RestaurantController extends Controller
 
         $restaurantTags = RestaurantTag::with('restaurants')
             ->with(['restaurants.restaurantBranches' => function ($query) use ($request) {
-                RestaurantOrderHelper::getBranchQuery($query, $request)->orderBy('distance', 'asc');
+                RestaurantOrderHelper::getBranchQuery($query, $request)->orderBy('search_index', 'desc')->orderBy('distance', 'asc');
             }])
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
@@ -290,6 +293,7 @@ class RestaurantController extends Controller
             return RestaurantOrderHelper::getBranches($request)
                 ->without('restaurant.availableTags')
                 ->where('restaurant_id', $restaurantId)
+                ->orderBy('search_index', 'desc')
                 ->orderBy('distance', 'asc')
                 ->get();
         })->collapse()->sortBy('distance')->values();
@@ -314,7 +318,7 @@ class RestaurantController extends Controller
 
         $restaurantTag = RestaurantTag::with(['restaurants' => function ($query) use ($request) {
             $query->with(['restaurantBranches' => function ($q) use ($request) {
-                RestaurantOrderHelper::getBranchQuery($q, $request)->orderBy('distance', 'asc');
+                RestaurantOrderHelper::getBranchQuery($q, $request)->orderBy('search_index', 'desc')->orderBy('distance', 'asc');
             }]);
         }])
             ->where('slug', $slug)

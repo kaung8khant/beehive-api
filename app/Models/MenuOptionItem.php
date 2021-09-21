@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MenuVariant extends Model
+class MenuOptionItem extends BaseModel
 {
     use HasFactory;
 
@@ -13,22 +13,17 @@ class MenuVariant extends Model
 
     protected $hidden = [
         'id',
-        'menu_id',
+        'menu_option_id',
         'created_at',
         'updated_at',
     ];
 
     protected $casts = [
-        'variant' => 'array',
         'price' => 'float',
-        'tax' => 'float',
-        'discount' => 'float',
-        'is_enable' => 'boolean',
-        
     ];
 
-    public function menu()
+    public function menuOption()
     {
-        return $this->belongsTo(Menu::class);
+        return $this->belongsTo(MenuOption::class);
     }
 }
