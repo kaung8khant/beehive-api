@@ -13,6 +13,7 @@ use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Jenssegers\Agent\Agent;
 
 class HomeController extends Controller
 {
@@ -276,9 +277,7 @@ class HomeController extends Controller
 
     private function checkMobileVersion($request)
     {
-        // $appType = $request->header('X-APP-TYPE');
-
-        $platform = $this->getDevice(strtolower($request->header('User-Agent')));
+        $platform = $request->header('X-APP-TYPE') ? strtolower($request->header('X-APP-TYPE')) : $this->getPlatform();
         $appVersion = $request->header('X-APP-VERSION') ? $request->header('X-APP-VERSION') : 0;
 
         if ($platform === 'android' || $platform === 'ios') {
@@ -294,11 +293,13 @@ class HomeController extends Controller
         }
     }
 
-    private function getDevice($userAgent)
+    private function getPlatform()
     {
-        if (preg_match('/android/i', $userAgent)) {
+        $agent = new Agent();
+
+        if ($agent->isAndroidOS()) {
             $platform = 'android';
-        } else if (preg_match('/iphone/i', $userAgent)) {
+        } else if ($agent->isiOS()) {
             $platform = 'ios';
         } else {
             $platform = 'web';
