@@ -337,4 +337,14 @@ class MenuController extends Controller
         return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
+
+    public function updateSearchIndex(Request $request, Menu $menu)
+    {
+        $validatedData = $request->validate([
+            'search_index' => 'required|numeric',
+        ]);
+
+        $menu->update($validatedData);
+        return response()->json($menu->load('restaurant'), 200);
+    }
 }

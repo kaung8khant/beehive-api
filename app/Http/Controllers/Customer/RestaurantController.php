@@ -138,66 +138,6 @@ class RestaurantController extends Controller
         return $this->generateBranchResponse($restaurantBranch->load('restaurant', 'restaurant.availableTags'), 200, 'obj');
     }
 
-    public function getAvailableMenusByBranch(Request $request, RestaurantBranch $restaurantBranch)
-    {
-        if (!$restaurantBranch->is_enable || !$restaurantBranch->restaurant->is_enable) {
-            abort(404);
-        }
-
-        $distance = GeoHelper::calculateDistance($request->lat, $request->lng, $restaurantBranch->latitude, $restaurantBranch->longitude);
-
-        $restaurantBranch->load([
-            'restaurant',
-            'availableMenus' => function ($query) {
-                $query->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuToppings', 'menuOptions', 'menuOptions.options')
-                    ->with('menuVariants', function ($q) {
-                        $q->where('is_enable', 1);
-                    })
-                    ->where('is_enable', 1)
-                    ->where('is_available', 1)
-                    ->orderBy('id', 'desc');
-            },
-        ]);
-
-        $restaurantBranch->restaurant->is_favorite = $this->checkFavoriteRestaurant($restaurantBranch->restaurant->id);
-
-        $availableCategories = $restaurantBranch->availableMenus->map(function ($menu) {
-            $menu->setAppends(['is_available', 'images']);
-            return $menu->restaurantCategory;
-        })->unique()->values();
-
-        $restaurantBranch = $restaurantBranch->toArray();
-
-        for ($i = 0; $i < count($availableCategories); $i++) {
-            $categoryMenus = [];
-
-            foreach ($restaurantBranch['available_menus'] as $menu) {
-                if ($availableCategories[$i]['slug'] === $menu['restaurant_category']['slug'] && $menu['is_enable'] && $menu['is_available']) {
-                    unset($menu['restaurant_category']);
-                    array_push($categoryMenus, $menu);
-                }
-            }
-
-            $availableCategories[$i]['menus'] = $categoryMenus;
-        }
-
-        unset($restaurantBranch['available_menus']);
-
-        $availableCategories = $availableCategories->filter(function ($value) {
-            return count($value['menus']) > 0;
-        })->values();
-
-        $restaurantBranch['available_categories'] = $availableCategories;
-
-        if ($request->lat && $request->lng) {
-            $restaurantBranch['distance'] = $distance;
-            $restaurantBranch['time'] = GeoHelper::calculateDeliveryTime($distance);
-            $restaurantBranch['delivery_fee'] = $restaurantBranch['free_delivery'] ? 0 : GeoHelper::calculateDeliveryFee($distance);
-        }
-
-        return $this->generateResponse($restaurantBranch, 200);
-    }
-
     public function getCategorizedRestaurants(Request $request)
     {
         $validator = $this->validateLocation($request);
