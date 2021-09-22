@@ -51,8 +51,10 @@ class ProductController extends Controller
 
         $product = Product::create($validatedData);
 
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'products', $product->slug);
+        if ($request->image_slugs) {
+            foreach ($request->image_slugs as $imageSlug) {
+                $this->updateFile($imageSlug, 'products', $product->slug);
+            }
         }
 
         if ($request->cover_slugs) {
@@ -79,8 +81,10 @@ class ProductController extends Controller
 
         $product->update($validatedData);
 
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'products', $product->slug);
+        if ($request->image_slugs) {
+            foreach ($request->image_slugs as $imageSlug) {
+                $this->updateFile($imageSlug, 'products', $product->slug);
+            }
         }
 
         if ($request->cover_slugs) {
@@ -122,7 +126,8 @@ class ProductController extends Controller
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
             'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
             'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
+            'image_slugs' => 'nullable|array',
+            'image_slugs.*' => 'nullable|exists:App\Models\File,slug',
             'cover_slugs' => 'nullable|array',
             'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
 

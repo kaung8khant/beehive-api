@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Exceptions\ForbiddenException;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Ads;
 use App\Models\Customer;
 use App\Models\Product;
-use App\Models\RestaurantOrderDriver;
-use App\Models\RestaurantOrderDriverStatus;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class HomeController extends Controller
@@ -26,21 +25,6 @@ class HomeController extends Controller
         if (Auth::guard('customers')->check()) {
             $this->customer = Auth::guard('customers')->user();
         }
-    }
-    public function test()
-    {
-        $restaurant_orders = DB::select('Select od.id,od.restaurant_order_id,od.user_id,ods.status from (SELECT sod1.* FROM restaurant_order_drivers sod1
-        JOIN (SELECT restaurant_order_id, MAX(created_at) created_at FROM restaurant_order_drivers GROUP BY restaurant_order_id) sod2
-            ON sod1.restaurant_order_id = sod2.restaurant_order_id AND sod1.created_at = sod2.created_at) od left join restaurant_order_driver_statuses ods on od.id=ods.restaurant_order_driver_id where ods.status="pending" or ods.status="no_response"');
-        $orderDriverStatus = [];
-        foreach ($restaurant_orders as $order) {
-            $reOrder = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $order->id)->get();
-            array_push($orderDriverStatus, $reOrder);
-            $resOrderDriver = RestaurantOrderDriver::with('driver')->where('restaurant_order_id', $order->restaurant_order_id)->get()->pluck('driver.slug');
-            $order->{'drivers'} = $resOrderDriver;
-        }
-
-        return response()->json(['all_pending' => $restaurant_orders, "res_order_driver_status" => $orderDriverStatus, "drivers" => $resOrderDriver]);
     }
 
     public function getSuggestions(Request $request)
@@ -267,6 +251,12 @@ class HomeController extends Controller
 
     public function getAds(Request $request)
     {
+        try {
+            $this->checkMobileVersion($request);
+        } catch (ForbiddenException $e) {
+            return $this->generateResponse($e->getMessage(), 403, true);
+        }
+
         $ads = Ads::where('type', $request->type);
 
         if ($request->source) {
@@ -282,5 +272,27 @@ class HomeController extends Controller
         });
 
         return $this->generateResponse($result, 200);
+    }
+
+    private function checkMobileVersion($request)
+    {
+        $platform = $request->header('X-APP-TYPE');
+        $appVersion = $request->header('X-APP-VERSION');
+
+        if (!$platform || !$appVersion) {
+            throw new ForbiddenException('Your application is out of date. Please update your application to get the latest features.');
+        }
+
+        if ($platform === 'android' || $platform === 'ios') {
+            if ($platform === 'android') {
+                $currentVersion = Setting::where('key', 'android_version')->value('value');
+            } else {
+                $currentVersion = Setting::where('key', 'ios_version')->value('value');
+            }
+
+            if ($appVersion < $currentVersion) {
+                throw new ForbiddenException('Your application is out of date. Please update your application to get the latest features.');
+            }
+        }
     }
 }

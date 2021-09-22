@@ -18,6 +18,10 @@ class ProductVariationValue extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'price' => 'float',
+    ];
+
     protected $appends = ['images'];
 
     public function getImagesAttribute()
