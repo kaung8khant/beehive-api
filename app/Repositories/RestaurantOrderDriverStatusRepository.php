@@ -24,23 +24,21 @@ class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStat
     {
         $this->model = $model;
         $this->database = app('firebase.database');
-
     }
     public function setJobToFirebase($slug, $driver)
     {
 
         $order = $this->database->getReference('/orders')
             ->orderByChild('time')
-        // enable the following code if you want real-time active data.
+            // enable the following code if you want real-time active data.
             ->startAt(Carbon::now()->subDay(1)->toDateTimeString())
             ->getSnapshot()->getValue();
-        $order[$slug] =[
+        $order[$slug] = [
             'driver' => $driver,
             'time' => Carbon::now()->toDateTimeString(),
         ];
         $this->database->getReference('/orders')
             ->set($order);
-
     }
     public function assignDriver(RestaurantOrder $restaurantOrder, $driverSlug): ?RestaurantOrderDriverStatus
     {
@@ -62,7 +60,7 @@ class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStat
 
             $request['slugs'] = array($driverSlug);
             $request['message'] = 'You have received new order. Accept Now!';
-            $request['url'] = 'http://www.beehivedriver.com/job?&slug=' . $restaurantOrder->slug . '&price=' . $restaurantOrder->total_amount . '&invoice_id=' . $restaurantOrder->invoice_id;
+            $request['url'] = 'hive://beehivedriver/job?&slug=' . $restaurantOrder->slug . '&price=' . $restaurantOrder->total_amount . '&invoice_id=' . $restaurantOrder->invoice_id;
             $request['android_channel_id'] = config('one-signal.android_channel_id');
 
             $appId = config('one-signal.admin_app_id');

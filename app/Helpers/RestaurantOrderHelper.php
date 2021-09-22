@@ -480,7 +480,7 @@ trait RestaurantOrderHelper
         $order = json_decode(json_encode($order), true);
         self::sendAdminPushNotifications($order, $message);
         self::sendVendorPushNotifications($order, $branchId, $message);
-        //self::sendDriverPushNotifications($order, $message);
+        self::sendDriverPushNotifications($order, $message);
     }
 
     private static function sendAdminPushNotifications($order, $message = null)
@@ -529,27 +529,29 @@ trait RestaurantOrderHelper
             $driver = User::where('id', $driverID->user_id)->pluck('slug');
             $request = new Request();
             $request['slugs'] = $driver;
-            $request['message'] = $message ? $message : 'An order has been received.';
-            $request['data'] = self::preparePushData($order);
+            $request['message'] = $message ? $message : 'An order has been updated.';
+
+            $request['data'] = self::preparePushData($order, "driver_order_update");
             $request['android_channel_id'] = config('one-signal.android_channel_id');
-            $request['url'] = 'http://www.beehivedriver.com/job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
+            $request['url'] = 'hive://beehivedriver/job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
 
             $appId = config('one-signal.admin_app_id');
+
             $fields = OneSignalHelper::prepareNotification($request, $appId);
             $uniqueKey = StringHelper::generateUniqueSlug();
 
-            SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
+            $response = OneSignalHelper::sendPush($fields, 'admin');
         }
     }
 
-    private static function preparePushData($order)
+    private static function preparePushData($order, $type = "restaurant_order")
     {
         unset($order['created_by']);
         unset($order['updated_by']);
         unset($order['restaurant_order_items']);
 
         return [
-            'type' => 'restaurant_order',
+            'type' => $type,
             'body' => $order,
         ];
     }

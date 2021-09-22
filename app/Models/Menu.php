@@ -96,6 +96,11 @@ class Menu extends BaseModel
         return $this->hasMany(MenuTopping::class);
     }
 
+    public function menuOptions()
+    {
+        return $this->hasMany(MenuOption::class);
+    }
+
     public function restaurantBranches()
     {
         return $this->belongsToMany(RestaurantBranch::class, 'restaurant_branch_menu_map')->withPivot('is_available');
