@@ -50,6 +50,7 @@ pipelines:
                 - >
                   ./dotenv -f .env set AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                   AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                  LOG_CHANNEL=slack
                   APP_KEY=${APP_KEY}
                   JWT_SECRET=${JWT_SECRET}
                   DB_DATABASE=${DB_DATABASE}
