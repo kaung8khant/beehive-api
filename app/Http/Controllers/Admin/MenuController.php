@@ -9,6 +9,8 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
+use App\Models\MenuOption;
+use App\Models\MenuOptionItem;
 use App\Models\MenuTopping;
 use App\Models\MenuVariant;
 use App\Models\Restaurant;
@@ -60,6 +62,10 @@ class MenuController extends Controller
             $this->createToppings($menu->id, $validatedData['menu_toppings']);
         }
 
+        if (isset($validatedData['menu_options'])) {
+            $this->createOptions($menu->id, $validatedData['menu_options']);
+        }
+
         $restaurantBranches = CacheHelper::getAllRestaurantBranchesByRestaurantId($validatedData['restaurant_id']);
 
         foreach ($restaurantBranches as $branch) {
@@ -71,7 +77,7 @@ class MenuController extends Controller
 
     public function show(Menu $menu)
     {
-        return response()->json($menu->load(['restaurant', 'restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings']), 200);
+        return response()->json($menu->load(['restaurant', 'restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings','menuOptions','menuOptions.options']), 200);
     }
 
     public function update(Request $request, Menu $menu)
@@ -98,6 +104,13 @@ class MenuController extends Controller
             $this->createToppings($menu->id, $validatedData['menu_toppings']);
         } else {
             $menu->menuToppings()->delete();
+        }
+
+        if (isset($validatedData['menu_options'])) {
+            $menu->menuOptions()->delete();
+            $this->createOptions($menu->id, $validatedData['menu_options']);
+        } else {
+            $menu->menuOptions()->delete();
         }
 
         if ($oldRestaurantId !== $validatedData['restaurant_id']) {
@@ -158,6 +171,13 @@ class MenuController extends Controller
             'menu_toppings.*.is_incremental' => 'required|boolean',
             'menu_toppings.*.max_quantity' => 'nullable|max:10',
             'menu_toppings.*.image_slug' => 'nullable|exists:App\Models\File,slug',
+
+            'menu_options' => 'nullable|array',
+            'menu_options.*.name' => 'required|string',
+            'menu_options.*.max_choice' => 'required',
+            'menu_options.*.options' => 'required|array',
+            'menu_options.*.options.*.name' => 'required|string',
+            'menu_options.*.options.*.price' => 'required|numeric',
         ];
 
         if ($slug) {
@@ -194,6 +214,20 @@ class MenuController extends Controller
             MenuTopping::create($topping);
             if (!empty($topping['image_slug'])) {
                 $this->updateFile($topping['image_slug'], 'menu_toppings', $topping['slug']);
+            }
+        }
+    }
+
+    private function createOptions($menuId, $options)
+    {
+        foreach ($options as $option) {
+            $option['slug'] = $this->generateUniqueSlug();
+            $option['menu_id'] = $menuId;
+            $menuOption=MenuOption::create($option);
+            foreach ($option['options'] as $item) {
+                $item['menu_option_id']=$menuOption->id;
+                $item['slug'] = $this->generateUniqueSlug();
+                MenuOptionItem::create($item);
             }
         }
     }
