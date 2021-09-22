@@ -298,6 +298,8 @@ Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], func
     Route::post('shops/carts/checkout', 'Cart\ShopCartController@checkout');
     /* Shop Cart */
 
+    Route::get('versions', 'SettingsController@getAppVersions');
+
     Route::get('restaurants/invoice/{slug}/generate', 'Pdf\RestaurantInvoiceController@generateInvoice');
     Route::get('shops/invoice/{slug}/generate', 'Pdf\ShopInvoiceController@generateInvoice');
 });
