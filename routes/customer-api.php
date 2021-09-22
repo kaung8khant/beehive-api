@@ -27,7 +27,7 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
     Route::get('restaurants/branches', 'Customer\RestaurantController@getAllBranches');
     Route::get('restaurants/branches/search', 'Customer\HomeController@searchRestaurantBranches');
     Route::get('restaurants/branches/{restaurantBranch}', 'Customer\RestaurantController@getOneBranch');
-    Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
+    Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\MenuController@getAvailableMenusByBranch');
 
     Route::get('restaurant-categories', 'Customer\RestaurantController@getCategorizedRestaurants');
     Route::get('restaurant-categories/{category}/restaurants', 'Customer\RestaurantController@getByCategory');
