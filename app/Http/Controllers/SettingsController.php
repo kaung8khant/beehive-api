@@ -17,9 +17,9 @@ class SettingsController extends Controller
             $versionSplit = explode('.', $version);
 
             return [
-                'major' => (int) $versionSplit[0],
-                'minor' => (int) $versionSplit[1],
-                'patch' => (int) $versionSplit[2],
+                'major' => isset($versionSplit[0]) ? (int) $versionSplit[0] : 0,
+                'minor' => isset($versionSplit[1]) ? (int) $versionSplit[1] : 0,
+                'patch' => isset($versionSplit[2]) ? (int) $versionSplit[2] : 0,
             ];
         });
 
