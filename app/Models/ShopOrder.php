@@ -24,7 +24,7 @@ class ShopOrder extends BaseModel
         'commission' => 'float',
     ];
 
-    protected $appends = ['invoice_id','amount','tax', 'discount',  'total_amount'];
+    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount'];
 
     public function getInvoiceIdAttribute()
     {
@@ -38,7 +38,7 @@ class ShopOrder extends BaseModel
 
         foreach ($vendors as $vendor) {
             foreach ($vendor->items as $item) {
-                $amount += $item->amount  * $item->quantity;
+                $amount += $item->amount * $item->quantity;
             }
         }
 
@@ -84,7 +84,8 @@ class ShopOrder extends BaseModel
             }
         }
 
-        return $totalAmount - $this->promocode_amount;
+        $totalAmount = $totalAmount - $this->promocode_amount;
+        return $totalAmount < 0 ? 0 : $totalAmount;
     }
 
     public function contact()
