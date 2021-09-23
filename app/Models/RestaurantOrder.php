@@ -80,7 +80,8 @@ class RestaurantOrder extends BaseModel
             $totalAmount += $amount;
         }
 
-        return $totalAmount - $this->promocode_amount + $this->delivery_fee;
+        $totalAmount = $totalAmount - $this->promocode_amount + $this->delivery_fee;
+        return $totalAmount < 0 ? 0 : $totalAmount;
     }
 
     public function getDriverStatusAttribute()
