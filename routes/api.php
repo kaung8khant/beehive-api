@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => 'v2', 'middleware' => ['json.response']], function () {
+Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], function () {
     Route::group(['prefix' => 'admin'], function () {
         Route::get('test/{slug}', 'Customer\ShopController@test');
         Route::post('login', 'Auth\UserAuthController@login');
