@@ -23,6 +23,7 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
 
     protected $uniqueKey;
     protected $rows;
+    protected $userId;
 
     /**
      * The number of seconds after which the job's unique lock will be released.
@@ -36,12 +37,13 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
      *
      * @return void
      */
-    public function __construct($uniqueKey, $rows)
+    public function __construct($uniqueKey, $rows, $userId)
     {
         ini_set('max_execution_time', 300);
 
         $this->uniqueKey = $uniqueKey;
         $this->rows = $rows;
+        $this->userId = $userId;
     }
 
     /**
@@ -61,7 +63,7 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
      */
     public function handle()
     {
-        foreach ($this->rows as $key => $row) {
+        foreach ($this->rows as $row) {
             $rules = [
                 'name' => 'required|string',
                 'description' => 'nullable|string',
@@ -101,11 +103,13 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                     'shop_sub_category_id' => ShopSubCategory::where('slug', $row['shop_sub_category_slug'])->value('id'),
                     'brand_id' => Brand::where('slug', $row['brand_slug'])->value('id'),
                     'variants' => [],
+                    'created_by' => $this->userId,
+                    'updated_by' => $this->userId,
                 ];
 
                 if (!$productVariant) {
                     $product = Product::create($productData);
-                    $standardProductVariant= [
+                    $standardProductVariant = [
                         'product_id' => $product->id,
                         'slug' => StringHelper::generateUniqueSlug(),
                         'variant' => json_decode('[{"name":"default","value":"Standard"}]'),
@@ -116,8 +120,8 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                     ];
                     ProductVariant::create($standardProductVariant);
                 } else {
-                    $productData['slug']=$productVariant->product->slug;
-                    $productData['variants']=$productVariant->product->variants;
+                    $productData['slug'] = $productVariant->product->slug;
+                    $productData['variants'] = $productVariant->product->variants;
                     $productVariant->product->update($productData);
 
                     $productVariantData = [
@@ -126,7 +130,7 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                         'price' => $row['price'],
                         'vendor_price' => $row['vendor_price'],
                         'tax' => $row['tax'],
-                        'is_enable' =>isset($row['variant_is_enable'])? $row['variant_is_enable'] : '1' ,
+                        'is_enable' => isset($row['variant_is_enable']) ? $row['variant_is_enable'] : '1',
                         'discount' => $row['discount'],
                     ];
 

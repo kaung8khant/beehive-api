@@ -6,6 +6,7 @@ use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportProduct;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -29,7 +30,7 @@ class ProductsImport implements ToCollection, WithHeadingRow
         for ($i = 0; $i < $workerCount; $i++) {
             $uniqueKey = StringHelper::generateUniqueSlug();
             $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
-            ImportProduct::dispatch($uniqueKey, $rowsBatch);
+            ImportProduct::dispatch($uniqueKey, $rowsBatch, Auth::guard('users')->user()->id);
         }
     }
 

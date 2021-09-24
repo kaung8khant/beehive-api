@@ -7,6 +7,7 @@ use App\Helpers\StringHelper;
 use App\Jobs\ImportRestaurantBranch;
 use App\Models\RestaurantBranch;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -31,7 +32,7 @@ class RestaurantBranchesImport implements ToCollection, WithHeadingRow
         for ($i = 0; $i < $workerCount; $i++) {
             $uniqueKey = StringHelper::generateUniqueSlug();
             $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
-            ImportRestaurantBranch::dispatch($uniqueKey, $rowsBatch);
+            ImportRestaurantBranch::dispatch($uniqueKey, $rowsBatch, Auth::guard('users')->user()->id);
         }
     }
 
