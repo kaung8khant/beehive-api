@@ -5,7 +5,6 @@ namespace App\Jobs;
 use App\Helpers\StringHelper;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
-use App\Models\Township;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,6 +22,7 @@ class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
 
     protected $uniqueKey;
     protected $rows;
+    protected $userId;
 
     /**
      * The number of seconds after which the job's unique lock will be released.
@@ -36,12 +36,13 @@ class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
      *
      * @return void
      */
-    public function __construct($uniqueKey, $rows)
+    public function __construct($uniqueKey, $rows, $userId)
     {
         ini_set('max_execution_time', 300);
 
         $this->uniqueKey = $uniqueKey;
         $this->rows = $rows;
+        $this->userId = $userId;
     }
 
     /**
@@ -61,7 +62,7 @@ class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
      */
     public function handle()
     {
-        foreach ($this->rows as $key => $row) {
+        foreach ($this->rows as $row) {
             if (isset($row['contact_number'])) {
                 $row['contact_number'] = str_replace([' ', '-'], '', $row['contact_number']);
             }
@@ -111,6 +112,8 @@ class ImportRestaurantBranch implements ShouldQueue, ShouldBeUnique
                     'township' => $row['township'],
                     'city' => $row['city'],
                     'restaurant_id' => Restaurant::where('slug', $row['restaurant_slug'])->value('id'),
+                    'created_by' => $this->userId,
+                    'updated_by' => $this->userId,
                 ];
 
                 if (!$restaurantBranch) {

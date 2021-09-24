@@ -133,7 +133,7 @@
         <tfoot>
             <tr>
                 <td colspan="3" align="right">Sub Total</td>
-                <td align="right">{{ number_format(round($restaurantOrder['amount'])) }} MMK</td>
+                <td align="right">{{ number_format(round($restaurantOrder['amount'] - $restaurantOrder['discount'])) }} MMK</td>
             </tr>
             <tr>
                 <td colspan="3" align="right">Delivery Fee</td>

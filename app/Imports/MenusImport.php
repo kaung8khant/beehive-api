@@ -6,6 +6,7 @@ use App\Exceptions\ImportException;
 use App\Helpers\StringHelper;
 use App\Jobs\ImportMenu;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -29,7 +30,7 @@ class MenusImport implements ToCollection, WithHeadingRow
         for ($i = 0; $i < $workerCount; $i++) {
             $uniqueKey = StringHelper::generateUniqueSlug();
             $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
-            ImportMenu::dispatch($uniqueKey, $rowsBatch);
+            ImportMenu::dispatch($uniqueKey, $rowsBatch, Auth::guard('users')->user()->id);
         }
     }
 

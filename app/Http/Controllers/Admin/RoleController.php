@@ -48,6 +48,8 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         $role->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }

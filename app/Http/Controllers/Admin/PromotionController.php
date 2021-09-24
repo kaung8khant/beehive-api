@@ -13,26 +13,15 @@ class PromotionController extends Controller
 {
     use FileHelper, StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
-        $promotions= Promotion::with('promocode')->where('title', 'LIKE', '%' . $request->filter . '%')
+        $promotions = Promotion::with('promocode')->where('title', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
 
         return response()->json($promotions, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -48,25 +37,12 @@ class PromotionController extends Controller
         return response()->json($promotion->refresh()->load('promocode'), 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Promotion  $promotion
-     * @return \Illuminate\Http\Response
-     */
     public function show($slug)
     {
         $promotion = Promotion::where('slug', $slug)->firstOrFail();
         return response()->json($promotion, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Promotion  $promotion
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $slug)
     {
         $promotion = Promotion::where('slug', $slug)->firstOrFail();
@@ -83,12 +59,6 @@ class PromotionController extends Controller
         return response()->json($promotion->refresh()->load('promocode'), 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Promotion  $promotion
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($slug)
     {
         $promotion = Promotion::where('slug', $slug)->firstOrFail();
@@ -117,7 +87,6 @@ class PromotionController extends Controller
 
         return $params;
     }
-
 
     private function getPromocodeIdBySlug($slug)
     {

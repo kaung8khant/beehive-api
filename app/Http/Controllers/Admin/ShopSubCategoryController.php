@@ -71,6 +71,8 @@ class ShopSubCategoryController extends Controller
 
     public function destroy(ShopSubCategory $shopSubCategory)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         $shopSubCategory->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }

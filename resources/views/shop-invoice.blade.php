@@ -125,7 +125,7 @@
         <tfoot>
             <tr>
                 <td colspan="4" align="right">Sub Total</td>
-                <td align="right">{{ number_format(round($shopOrder['amount'])) }} MMK</td>
+                <td align="right">{{ number_format(round($shopOrder['amount'] - $shopOrder['discount']))}} MMK</td>
             </tr>
             <tr>
                 <td colspan="4" align="right">Delivery Fee</td>

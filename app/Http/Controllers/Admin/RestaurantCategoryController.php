@@ -68,6 +68,8 @@ class RestaurantCategoryController extends Controller
 
     public function destroy(RestaurantCategory $restaurantCategory)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         foreach ($restaurantCategory->images as $image) {
             $this->deleteFile($image->slug);
         }

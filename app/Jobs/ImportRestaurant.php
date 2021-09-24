@@ -5,7 +5,6 @@ namespace App\Jobs;
 use App\Helpers\StringHelper;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
-use App\Models\Township;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,6 +22,7 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
 
     protected $uniqueKey;
     protected $rows;
+    protected $userId;
 
     /**
      * The number of seconds after which the job's unique lock will be released.
@@ -36,12 +36,13 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
      *
      * @return void
      */
-    public function __construct($uniqueKey, $rows)
+    public function __construct($uniqueKey, $rows, $userId)
     {
         ini_set('max_execution_time', 300);
 
         $this->uniqueKey = $uniqueKey;
         $this->rows = $rows;
+        $this->userId = $userId;
     }
 
     /**
@@ -73,7 +74,7 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                         Rule::unique('restaurants')->ignore($restaurant->id),
                     ],
                     'is_enable' => 'required|boolean',
-                    'commission' => ['nullable','numeric'],
+                    'commission' => ['nullable', 'numeric'],
                 ];
 
                 $validator = Validator::make(
@@ -91,7 +92,7 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                         'unique:restaurants',
                     ],
                     'is_enable' => 'required|boolean',
-                    'commission' => ['nullable','numeric'],
+                    'commission' => ['nullable', 'numeric'],
                     'branch_name' => ['required'],
                     'branch_address' => ['nullable'],
                     'branch_contact_number' => ['required', 'phone:MM'],
@@ -119,6 +120,8 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                     'name' => $row['name'],
                     'is_enable' => $row['is_enable'],
                     'commission' => $row['commission'],
+                    'created_by' => $this->userId,
+                    'updated_by' => $this->userId,
                 ];
 
                 if (!$restaurant) {
@@ -137,6 +140,8 @@ class ImportRestaurant implements ShouldQueue, ShouldBeUnique
                             'city' => $row['branch_city'],
                             'free_delivery' => $row['free_delivery'],
                             'restaurant_id' => $restaurant->id,
+                            'created_by' => $this->userId,
+                            'updated_by' => $this->userId,
                         ]);
                     } catch (QueryException $e) {
                         $restaurant = Restaurant::where('name', $row['name'])->first();
