@@ -50,7 +50,7 @@ trait PromocodeHelper
                             // if (isset($item['toppings'])) {
                             //     $variation += $item['variations']->sum('price');
                             // }
-                            $total += $item['amount'] * $promocode->amount * 0.01;
+                            $total += (($item['amount']-$item['discount']) * $item['quantity']) * $promocode->amount * 0.01;
                         }
                     }
                 }
