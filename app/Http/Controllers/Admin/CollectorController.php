@@ -113,6 +113,8 @@ class CollectorController extends Controller
 
     public function destroy($slug)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         $collector = User::where('slug', $slug)->firstOrFail();
 
         if ($collector->id === Auth::guard('users')->user()->id) {

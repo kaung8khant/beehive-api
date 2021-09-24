@@ -95,6 +95,8 @@ class ShopController extends Controller
 
     public function destroy(Shop $shop)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         foreach ($shop->images as $image) {
             $this->deleteFile($image->slug);
         }
@@ -123,7 +125,7 @@ class ShopController extends Controller
             'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
             'cover_slugs' => 'nullable|array',
-            'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',        ];
+            'cover_slugs.*' => 'nullable|exists:App\Models\File,slug'];
 
         if ($slug) {
             $request['slug'] = $this->generateUniqueSlug();

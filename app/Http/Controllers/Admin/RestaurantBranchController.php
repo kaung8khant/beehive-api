@@ -74,6 +74,8 @@ class RestaurantBranchController extends Controller
 
     public function destroy(RestaurantBranch $restaurantBranch)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         Cache::forget('all_restaurant_branches_restaurant_id' . $restaurantBranch->restaurant_id);
 
         $restaurantBranch->delete();

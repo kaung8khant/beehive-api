@@ -12,14 +12,9 @@ class ContentController extends Controller
 {
     use FileHelper, StringHelper;
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
-        $contents= Content::where('type', $request->type)
+        $contents = Content::where('type', $request->type)
             ->where(function ($q) use ($request) {
                 $q->where('title', 'LIKE', '%' . $request->filter . '%')
                     ->orWhere('slug', $request->filter);
@@ -29,12 +24,6 @@ class ContentController extends Controller
         return response()->json($contents, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -52,25 +41,12 @@ class ContentController extends Controller
         return response()->json($content, 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Content  $content
-     * @return \Illuminate\Http\Response
-     */
     public function show($slug)
     {
         $content = Content::where('slug', $slug)->firstOrFail();
         return response()->json($content, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Content  $content
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $slug)
     {
         $content = Content::where('slug', $slug)->firstOrFail();
@@ -88,12 +64,6 @@ class ContentController extends Controller
         return response()->json($content, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Content  $content
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($slug)
     {
         $content = Content::where('slug', $slug)->firstOrFail();

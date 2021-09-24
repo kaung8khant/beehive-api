@@ -67,6 +67,8 @@ class BrandController extends Controller
 
     public function destroy(Brand $brand)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         foreach ($brand->images as $image) {
             $this->deleteFile($image->slug);
         }
