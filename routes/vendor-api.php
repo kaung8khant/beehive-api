@@ -153,4 +153,10 @@ Route::group([
     Route::get('restaurant-branches/{restaurantBranch}/orders', 'RestaurantOrderController@getBranchOrders');
     Route::delete('restaurant-order-items/{restaurantOrderItem}/cancel', 'RestaurantOrderController@cancelOrderItem');
     Route::delete('restaurant-orders/{restaurantOrder}/restaurant-order-items/{restaurantOrderItem}/cancel', 'RestaurantOrderController@cancelOrderItem');
+
+    Route::put('menu-options/{menuOption}', 'MenuOptionController@update');
+    Route::delete('menu-options/{menuOption}', 'MenuOptionController@destroy');
+    Route::post('menu-option-items', 'MenuOptionItemController@store');
+    Route::put('menu-option-items/{menuOptionItem}', 'MenuOptionItemController@update');
+    Route::delete('menu-option-items/{menuOptionItem}', 'MenuOptionItemController@destroy');
 });
