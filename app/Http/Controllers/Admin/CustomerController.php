@@ -7,7 +7,6 @@ use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerGroup;
-use App\Models\Promocode;
 use App\Models\RestaurantOrder;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
@@ -107,6 +106,8 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         $customer->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
@@ -156,8 +157,8 @@ class CustomerController extends Controller
             ->where('customer_id', $customer->id)
             ->get();
         if ($request->filter) {
-            $shopOrder=$shopOrder->where('id', ltrim(ltrim($request->filter, 'BHS'), '0'));
-            $restaurantOrder=$restaurantOrder->where('id', ltrim(ltrim($request->filter, 'BHR'), '0'));
+            $shopOrder = $shopOrder->where('id', ltrim(ltrim($request->filter, 'BHS'), '0'));
+            $restaurantOrder = $restaurantOrder->where('id', ltrim(ltrim($request->filter, 'BHR'), '0'));
         }
         $orderList = collect($shopOrder)->merge($restaurantOrder);
 

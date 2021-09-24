@@ -118,6 +118,8 @@ class MenuController extends Controller
 
     public function destroy(Menu $menu)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         foreach ($menu->images as $image) {
             $this->deleteFile($image->slug);
         }
@@ -224,6 +226,8 @@ class MenuController extends Controller
 
     public function multipleDelete(Request $request)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         $validatedData = $request->validate([
             'slugs' => 'required|array',
             'slugs.*' => 'required|exists:App\Models\Menu,slug',
@@ -336,5 +340,15 @@ class MenuController extends Controller
 
         return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
+    }
+
+    public function updateSearchIndex(Request $request, Menu $menu)
+    {
+        $validatedData = $request->validate([
+            'search_index' => 'required|numeric',
+        ]);
+
+        $menu->update($validatedData);
+        return response()->json($menu->load('restaurant'), 200);
     }
 }

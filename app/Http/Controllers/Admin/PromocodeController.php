@@ -119,6 +119,8 @@ class PromocodeController extends Controller
 
     public function destroy(Promocode $promocode)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         $promocode->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }

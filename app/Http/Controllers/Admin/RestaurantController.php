@@ -124,6 +124,8 @@ class RestaurantController extends Controller
 
     public function destroy(Restaurant $restaurant)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         foreach ($restaurant->images as $image) {
             $this->deleteFile($image->slug);
         }

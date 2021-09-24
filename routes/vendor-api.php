@@ -41,7 +41,7 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::post('menus/multiple-delete', 'Admin\MenuController@multipleDelete');
         Route::resource('menus', 'Admin\MenuController', ['as' => 'vendor', 'except' => ['create', 'edit']]);
 
-        Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
+        Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\MenuController@getAvailableMenusByBranch');
 
         Route::post('restaurant-branches/{restaurantBranch}/menus/{menu}', 'Admin\RestaurantBranchController@toggleAvailable');
 

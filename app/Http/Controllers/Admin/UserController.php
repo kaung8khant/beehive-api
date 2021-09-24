@@ -242,6 +242,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         if ($user->id === Auth::guard('users')->user()->id) {
             return response()->json(['message' => 'You cannot delete yourself.'], 406);
         }

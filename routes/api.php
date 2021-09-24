@@ -126,9 +126,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('restaurant-branches/status', 'Admin\RestaurantBranchController@multipleStatusUpdate');
             Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\RestaurantBranchController@getRestaurantBranchByCustomers');
             Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
-            Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\RestaurantController@getAvailableMenusByBranch');
+            Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\MenuController@getAvailableMenusByBranch');
 
             Route::put('restaurant-branches/{restaurantBranch}/index', 'Admin\RestaurantBranchController@updateSearchIndex');
+            Route::put('menus/{menu}/index', 'Admin\MenuController@updateSearchIndex');
 
             // Route::get('townships/{township}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByTownship');
 
