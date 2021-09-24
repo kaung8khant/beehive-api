@@ -354,7 +354,7 @@ class MenuController extends Controller
         $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
 
         $menus = $restaurantBranch->availableMenus()
-            ->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings')
+            ->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings', 'menuOptions', 'menuOptions.options')
             ->where('is_available', true)
             ->where(function ($q) use ($request) {
                 $q->where('name', 'LIKE', '%' . $request->filter . '%')
