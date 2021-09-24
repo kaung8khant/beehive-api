@@ -393,8 +393,8 @@ trait RestaurantOrderHelper
             'order_items.*.topping_slugs' => 'nullable|array',
             'order_items.*.topping_slugs.*.slug' => 'required|exists:App\Models\MenuTopping,slug',
             'order_items.*.topping_slugs.*.value' => 'required|integer',
-            'order_items.*.options_items' => 'nullable|array',
-            'order_items.*.options_items.*' => 'required|exists:App\Models\MenuOptionItem,slug',
+            'order_items.*.option_items' => 'nullable|array',
+            'order_items.*.option_items.*' => 'required|exists:App\Models\MenuOptionItem,slug',
         ];
 
         if ($customerSlug) {
@@ -430,6 +430,7 @@ trait RestaurantOrderHelper
 
             $toppings = collect(self::prepareToppings($value['topping_slugs'], $menuId));
             $options = collect(self::prepareOptions($value['option_items'], $menuId));
+
 
             $item['slug'] = $value['slug'];
             $item['name'] = $menuVariant->menu->name;

@@ -123,6 +123,16 @@
                     </div>
                     @endforeach
                     @endif
+
+                    @if($item['options'])
+                    <div>
+                        {{
+                            implode(',', array_map(function ($n) {
+                                return $n['name'];
+                            }, $item['options']))
+                        }}
+                    </div>
+                    @endif
                 </td>
                 <td class="border" align="right" style="vertical-align: top;">{{ number_format($item['amount'] - $item['discount']) }} MMK</td>
                 <td class="border" align="right" style="vertical-align: top;">{{ $item['quantity'] }}</td>
