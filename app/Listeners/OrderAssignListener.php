@@ -18,7 +18,7 @@ class OrderAssignListener implements ShouldQueue
      *
      * @var int
      */
-    public $delay = 5;
+    public $delay = 15;
 
     // public $connection = 'database';
     private $repository;
