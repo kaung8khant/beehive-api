@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\DataChanged;
 use App\Helpers\CacheHelper;
 use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
@@ -17,6 +18,7 @@ use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MenuController extends Controller
 {
@@ -72,12 +74,15 @@ class MenuController extends Controller
             $branch->availableMenus()->attach($menu->id);
         }
 
+        $user = Auth::guard('users')->user();
+        DataChanged::dispatch($user, 'create', 'menus', $request->slug, 'success', $request);
+
         return response()->json($menu->load('restaurant'), 200);
     }
 
     public function show(Menu $menu)
     {
-        return response()->json($menu->load(['restaurant', 'restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings','menuOptions','menuOptions.options']), 200);
+        return response()->json($menu->load(['restaurant', 'restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings', 'menuOptions', 'menuOptions.options']), 200);
     }
 
     public function update(Request $request, Menu $menu)
@@ -126,10 +131,13 @@ class MenuController extends Controller
             }
         }
 
+        $user = Auth::guard('users')->user();
+        DataChanged::dispatch($user, 'update', 'menus', $menu->slug, 'success', $request);
+
         return response()->json($menu->load('restaurant'), 200);
     }
 
-    public function destroy(Menu $menu)
+    public function destroy(Request $request, Menu $menu)
     {
         return response()->json(['message' => 'Permission denied.'], 403);
 
@@ -137,8 +145,12 @@ class MenuController extends Controller
             $this->deleteFile($image->slug);
         }
 
+        $user = Auth::guard('users')->user();
+        DataChanged::dispatch($user, 'delete', 'menus', $menu->slug, 'success', $request);
+
         CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         $menu->delete();
+
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -213,7 +225,9 @@ class MenuController extends Controller
         foreach ($toppings as $topping) {
             $topping['slug'] = $this->generateUniqueSlug();
             $topping['menu_id'] = $menuId;
+
             MenuTopping::create($topping);
+
             if (!empty($topping['image_slug'])) {
                 $this->updateFile($topping['image_slug'], 'menu_toppings', $topping['slug']);
             }
@@ -225,9 +239,11 @@ class MenuController extends Controller
         foreach ($options as $option) {
             $option['slug'] = $this->generateUniqueSlug();
             $option['menu_id'] = $menuId;
-            $menuOption=MenuOption::create($option);
+
+            $menuOption = MenuOption::create($option);
+
             foreach ($option['options'] as $item) {
-                $item['menu_option_id']=$menuOption->id;
+                $item['menu_option_id'] = $menuOption->id;
                 $item['slug'] = $this->generateUniqueSlug();
                 MenuOptionItem::create($item);
             }
