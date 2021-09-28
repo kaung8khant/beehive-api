@@ -24,15 +24,15 @@ class DataChanged
      *
      * @return void
      */
-    public function __construct($user, $action, $table, $slug, $status, $request = null)
+    public function __construct($user, $action, $table, $slug, $url, $status, $request = null)
     {
         $this->user = $user;
         $this->action = $action;
         $this->table = $table;
         $this->slug = $slug;
-        $this->url = $request->url();
+        $this->url = $url;
         $this->status = $status;
-        $this->request = $request->all();
+        $this->request = $request;
     }
 
     /**
