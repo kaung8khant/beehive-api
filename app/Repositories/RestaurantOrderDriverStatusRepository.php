@@ -45,7 +45,8 @@ class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStat
         $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact')
             ->where('slug', $order->slug)
             ->whereHas('drivers.status', function ($q) {
-                $q->where('status', 'accepted');
+                $q->where('status', '!=', 'pending');
+                $q->where('status', '!=', 'rejected');
             })
             ->get();
         return count($restaurantOrder) > 0;
