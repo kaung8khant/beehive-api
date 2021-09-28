@@ -27,15 +27,27 @@ class StoreAuditInformation implements ShouldQueue
      */
     public function handle(DataChanged $event)
     {
+        $table = $event->table;
+        $message = $event->user->name . ' ' . $event->action . ' ' . $event->table . ' ' . $event->slug;
+
+        if ($event->action === 'upload') {
+            $table = 'files';
+            $message = $event->user->name . ' ' . $event->action . ' files ' . $event->request['slug'] . ' to ' . $event->table . ' ' . $event->slug;
+        }
+
+        if ($event->table === 'files') {
+            $message = $event->user->name . ' ' . $event->action . ' files ' . $event->request['slug'] . ' from ' . $event->request['source'] . ' ' . $event->slug;
+        }
+
         Audit::create([
             'user_slug' => $event->user->slug,
             'username' => $event->user->username,
             'action' => $event->action,
-            'table' => $event->table,
+            'table' => $table,
             'url' => $event->url,
             'status' => $event->status,
             'request' => $event->request,
-            'message' => $event->user->name . ' ' . $event->action . ' ' . $event->table . ' ' . $event->slug,
+            'message' => $message,
         ]);
     }
 }

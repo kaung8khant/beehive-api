@@ -63,7 +63,7 @@ class MenuController extends Controller
         DataChanged::dispatch($this->user, 'create', 'menus', $request->slug, $request->url(), 'success', $request->all());
 
         if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'menus', $menu->slug);
+            $this->updateFile($request->image_slug, 'menus', $menu->slug, $this->user, $request->url());
         }
 
         if (isset($validatedData['menu_variants'])) {
@@ -102,7 +102,7 @@ class MenuController extends Controller
         DataChanged::dispatch($this->user, 'update', 'menus', $menu->slug, $request->url(), 'success', $request->all());
 
         if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'menus', $menu->slug);
+            $this->updateFile($request->image_slug, 'menus', $menu->slug, $this->user, $request->url());
         }
 
         if (isset($validatedData['menu_variants'])) {

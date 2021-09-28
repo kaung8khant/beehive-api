@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Events\DataChanged;
 use App\Helpers\ResponseHelper;
 use App\Models\File;
 use Illuminate\Support\Facades\Storage;
@@ -11,7 +12,7 @@ trait FileHelper
 {
     use ResponseHelper;
 
-    protected function updateFile($slug, $source, $sourceSlug)
+    protected function updateFile($slug, $source, $sourceSlug, $user = null, $url = '/')
     {
         $file = File::where('slug', $slug)->firstOrFail();
 
@@ -35,7 +36,11 @@ trait FileHelper
         }
 
         $model = config('model.' . $source);
-        $sourceId = $model::where('slug', $sourceSlug)->first()->id;
+        $sourceId = $model::where('slug', $sourceSlug)->value('id');
+
+        if ($user && ($file->source !== $source || $file->source_id !== $sourceId)) {
+            DataChanged::dispatch($user, 'upload', $source, $sourceSlug, $url, 'success', $file);
+        }
 
         $file->update([
             'source' => $source,

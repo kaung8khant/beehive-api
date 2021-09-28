@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\File;
 
+use App\Events\DataChanged;
 use App\Http\Controllers\Controller;
 use App\Models\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class FileController extends Controller
@@ -72,8 +74,17 @@ class FileController extends Controller
         return null;
     }
 
-    public function deleteFile(File $file)
+    public function deleteFile(Request $request, File $file)
     {
+        if ($file->source && $file->source_id) {
+            $user = Auth::guard('users')->user();
+            $model = config('model.' . $file->source);
+            $sourceSlug = $model::where('id', $file->source_id)->value('slug');
+
+            $file->makeVisible(['source', 'source_id']);
+            DataChanged::dispatch($user, 'delete', 'files', $sourceSlug, $request->url(), 'success', $file->toArray());
+        }
+
         $this->deleteImagesFromStorage($file->file_name);
         $file->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
