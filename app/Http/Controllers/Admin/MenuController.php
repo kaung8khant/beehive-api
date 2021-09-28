@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\DataChanged;
 use App\Helpers\CacheHelper;
 use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
@@ -17,10 +18,20 @@ use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MenuController extends Controller
 {
     use FileHelper, ResponseHelper, StringHelper;
+
+    private $user;
+
+    public function __construct()
+    {
+        if (Auth::guard('users')->check()) {
+            $this->user = Auth::guard('users')->user();
+        }
+    }
 
     public function index(Request $request)
     {
@@ -49,21 +60,22 @@ class MenuController extends Controller
         $validatedData = $this->validateRequest($request, true);
 
         $menu = Menu::create($validatedData);
+        DataChanged::dispatch($this->user, 'create', 'menus', $request->slug, $request->url(), 'success', $request->all());
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'menus', $menu->slug);
         }
 
         if (isset($validatedData['menu_variants'])) {
-            $this->createMenuVariants($menu->id, $validatedData['menu_variants']);
+            $this->createMenuVariants($request, $menu->id, $validatedData['menu_variants']);
         }
 
         if (isset($validatedData['menu_toppings'])) {
-            $this->createToppings($menu->id, $validatedData['menu_toppings']);
+            $this->createToppings($request, $menu->id, $validatedData['menu_toppings']);
         }
 
         if (isset($validatedData['menu_options'])) {
-            $this->createOptions($menu->id, $validatedData['menu_options']);
+            $this->createOptions($request, $menu->id, $validatedData['menu_options']);
         }
 
         $restaurantBranches = CacheHelper::getAllRestaurantBranchesByRestaurantId($validatedData['restaurant_id']);
@@ -77,7 +89,7 @@ class MenuController extends Controller
 
     public function show(Menu $menu)
     {
-        return response()->json($menu->load(['restaurant', 'restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings','menuOptions','menuOptions.options']), 200);
+        return response()->json($menu->load(['restaurant', 'restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings', 'menuOptions', 'menuOptions.options']), 200);
     }
 
     public function update(Request $request, Menu $menu)
@@ -87,6 +99,7 @@ class MenuController extends Controller
 
         $menu->update($validatedData);
         CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
+        DataChanged::dispatch($this->user, 'update', 'menus', $menu->slug, $request->url(), 'success', $request->all());
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'menus', $menu->slug);
@@ -94,21 +107,21 @@ class MenuController extends Controller
 
         if (isset($validatedData['menu_variants'])) {
             $menu->menuVariants()->delete();
-            $this->createMenuVariants($menu->id, $validatedData['menu_variants']);
+            $this->createMenuVariants($request, $menu->id, $validatedData['menu_variants']);
         } else {
             $menu->menuVariants()->delete();
         }
 
         if (isset($validatedData['menu_toppings'])) {
             $menu->menuToppings()->delete();
-            $this->createToppings($menu->id, $validatedData['menu_toppings']);
+            $this->createToppings($request, $menu->id, $validatedData['menu_toppings']);
         } else {
             $menu->menuToppings()->delete();
         }
 
         if (isset($validatedData['menu_options'])) {
             $menu->menuOptions()->delete();
-            $this->createOptions($menu->id, $validatedData['menu_options']);
+            $this->createOptions($request, $menu->id, $validatedData['menu_options']);
         } else {
             $menu->menuOptions()->delete();
         }
@@ -129,7 +142,7 @@ class MenuController extends Controller
         return response()->json($menu->load('restaurant'), 200);
     }
 
-    public function destroy(Menu $menu)
+    public function destroy(Request $request, Menu $menu)
     {
         return response()->json(['message' => 'Permission denied.'], 403);
 
@@ -137,8 +150,10 @@ class MenuController extends Controller
             $this->deleteFile($image->slug);
         }
 
+        DataChanged::dispatch($this->user, 'delete', 'menus', $menu->slug, $request->url(), 'success');
         CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         $menu->delete();
+
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -194,13 +209,14 @@ class MenuController extends Controller
         return $validatedData;
     }
 
-    private function createMenuVariants($menuId, $menuVariants)
+    private function createMenuVariants($request, $menuId, $menuVariants)
     {
         foreach ($menuVariants as $variant) {
             $variant['menu_id'] = $menuId;
             $variant['slug'] = $this->generateUniqueSlug();
 
             MenuVariant::create($variant);
+            DataChanged::dispatch($this->user, 'create', 'menu_variants', $variant['slug'], $request->url(), 'success', $variant);
 
             if (isset($variant['image_slug'])) {
                 $this->updateFile($variant['image_slug'], 'menu_variants', $variant['slug']);
@@ -208,36 +224,48 @@ class MenuController extends Controller
         }
     }
 
-    private function createToppings($menuId, $toppings)
+    private function createToppings($request, $menuId, $toppings)
     {
         foreach ($toppings as $topping) {
             $topping['slug'] = $this->generateUniqueSlug();
             $topping['menu_id'] = $menuId;
+
             MenuTopping::create($topping);
+            DataChanged::dispatch($this->user, 'create', 'menu_toppings', $topping['slug'], $request->url(), 'success', $topping);
+
             if (!empty($topping['image_slug'])) {
                 $this->updateFile($topping['image_slug'], 'menu_toppings', $topping['slug']);
             }
         }
     }
 
-    private function createOptions($menuId, $options)
+    private function createOptions($request, $menuId, $options)
     {
         foreach ($options as $option) {
             $option['slug'] = $this->generateUniqueSlug();
             $option['menu_id'] = $menuId;
-            $menuOption=MenuOption::create($option);
+
+            $menuOption = MenuOption::create($option);
+            DataChanged::dispatch($this->user, 'create', 'menu_options', $option['slug'], $request->url(), 'success', $option);
+
             foreach ($option['options'] as $item) {
-                $item['menu_option_id']=$menuOption->id;
+                $item['menu_option_id'] = $menuOption->id;
                 $item['slug'] = $this->generateUniqueSlug();
                 MenuOptionItem::create($item);
+
+                DataChanged::dispatch($this->user, 'create', 'menu_option_items', $item['slug'], $request->url(), 'success', $item);
             }
         }
     }
 
-    public function toggleEnable(Menu $menu)
+    public function toggleEnable(Request $request, Menu $menu)
     {
-        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         $menu->update(['is_enable' => !$menu->is_enable]);
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
+
+        $status = $menu->is_enable ? 'enable' : 'disable';
+        DataChanged::dispatch($this->user, $status, 'menus', $menu->slug, $request->url(), 'success');
+
         return response()->json(['message' => 'Success.'], 200);
     }
 
@@ -251,8 +279,11 @@ class MenuController extends Controller
         foreach ($validatedData['slugs'] as $slug) {
             $menu = Menu::where('slug', $slug)->firstOrFail();
 
-            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
             $menu->update(['is_enable' => $request->is_enable]);
+            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
+
+            $status = $menu->is_enable ? 'enable' : 'disable';
+            DataChanged::dispatch($this->user, $status, 'menus', $menu->slug, $request->url(), 'success');
         }
 
         return response()->json(['message' => 'Success.'], 200);
@@ -274,6 +305,7 @@ class MenuController extends Controller
                 $this->deleteFile($image->slug);
             }
 
+            DataChanged::dispatch($this->user, 'delete', 'menus', $menu->slug, $request->url(), 'success');
             CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
             $menu->delete();
         }
@@ -383,6 +415,9 @@ class MenuController extends Controller
         ]);
 
         $menu->update($validatedData);
+        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
+        DataChanged::dispatch($this->user, 'update', 'menus', $menu->slug, $request->url(), 'success', $request->all());
+
         return response()->json($menu->load('restaurant'), 200);
     }
 }
