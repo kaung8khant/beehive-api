@@ -185,7 +185,7 @@ class RestaurantOrderController extends Controller
         // $this->assignOrder('restaurant', $order->slug);
         $this->assignOrder($order);
 
-        $this->$phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
+        $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
         OrderHelper::notifySystem($order, $phoneNumber, $this->messageService);
 
         return $order;
