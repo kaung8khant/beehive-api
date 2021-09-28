@@ -34,7 +34,7 @@ class OrderDriverController extends Controller
     {
         $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact')
             ->where('order_status', '!=', 'cancelled')
-            ->whereDate('created_at', '>=', Carbon::now()->subDays(3)->startOfDay())
+            // ->whereDate('created_at', '>=', Carbon::now()->subDays(3)->startOfDay())
             ->whereHas('drivers', function ($q) {
                 $q->where('user_id', $this->driver->id);
             })
@@ -45,6 +45,31 @@ class OrderDriverController extends Controller
             })
             ->orderByDesc('id')
             ->get();
+
+        $restaurantOrder = $restaurantOrder->map(function ($data) {
+            $data['key'] = Carbon::parse($data["order_date"])->format('Y-m-d');
+            return $data;
+        })->groupBy('order_status')->map(function ($data, $key) {
+
+            $data = $data->groupBy('key');
+            unset($data['key']);
+            return $data;
+        });
+
+        $restaurantOrder = $restaurantOrder->toArray();
+        $restaurantOrder['accepted'] = array_merge($restaurantOrder['pending'], isset($restaurantOrder['preparing']) ? $restaurantOrder['preparing'] : []);
+
+        $restaurantOrder['accepted'] = array_merge($restaurantOrder['pending'], isset($restaurantOrder['pickUp']) ? $restaurantOrder['pickUp'] : []);
+        unset($restaurantOrder['pending']);
+        unset($restaurantOrder['preparing']);
+        unset($restaurantOrder['pickUp']);
+
+        $restaurantOrder = collect($restaurantOrder)->map(function ($data, $key) {
+
+            return collect($data)->map(function ($item) {
+                return collect($item)->sortBy('order_date')->values()->all();
+            });
+        });
 
         return response()->json($restaurantOrder, 200);
     }
