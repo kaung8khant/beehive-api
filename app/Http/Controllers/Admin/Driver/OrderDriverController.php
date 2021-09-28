@@ -34,7 +34,7 @@ class OrderDriverController extends Controller
     {
         $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact')
             ->where('order_status', '!=', 'cancelled')
-            // ->whereDate('created_at', '>=', Carbon::now()->subDays(3)->startOfDay())
+            ->whereDate('created_at', '>=', Carbon::now()->subDays(3)->startOfDay())
             ->whereHas('drivers', function ($q) {
                 $q->where('user_id', $this->driver->id);
             })
@@ -57,9 +57,12 @@ class OrderDriverController extends Controller
         });
 
         $restaurantOrder = $restaurantOrder->toArray();
-        $restaurantOrder['accepted'] = array_merge($restaurantOrder['pending'], isset($restaurantOrder['preparing']) ? $restaurantOrder['preparing'] : []);
 
-        $restaurantOrder['accepted'] = array_merge($restaurantOrder['pending'], isset($restaurantOrder['pickUp']) ? $restaurantOrder['pickUp'] : []);
+        $restaurantOrder['accepted'] = isset($restaurantOrder['pending']) ? $restaurantOrder['pending'] : [];
+
+        $restaurantOrder['accepted'] = array_merge($restaurantOrder['accepted'], isset($restaurantOrder['preparing']) ? $restaurantOrder['preparing'] : []);
+
+        $restaurantOrder['accepted'] = array_merge($restaurantOrder['accepted'], isset($restaurantOrder['pickUp']) ? $restaurantOrder['pickUp'] : []);
         unset($restaurantOrder['pending']);
         unset($restaurantOrder['preparing']);
         unset($restaurantOrder['pickUp']);

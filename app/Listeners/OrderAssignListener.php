@@ -42,7 +42,7 @@ class OrderAssignListener implements ShouldQueue
      */
     public function handle(OrderAssignEvent $event)
     {
-        $maxAssign = 5;
+        $maxAssign = 4;
 
         $restaurantBranch = RestaurantBranch::where('slug', $event->order->restaurant_branch_info['slug'])->first();
 
