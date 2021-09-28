@@ -40,6 +40,16 @@ class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStat
         $this->database->getReference('/orders')
             ->set($order);
     }
+    public function checkOrderAccepted($order)
+    {
+        $restaurantOrder = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact')
+            ->where('slug', $order->slug)
+            ->whereHas('drivers.status', function ($q) {
+                $q->where('status', 'accepted');
+            })
+            ->get();
+        return count($restaurantOrder) > 0;
+    }
     public function assignDriver(RestaurantOrder $restaurantOrder, $driverSlug): ?RestaurantOrderDriverStatus
     {
         $driver = User::where('slug', $driverSlug)->first();

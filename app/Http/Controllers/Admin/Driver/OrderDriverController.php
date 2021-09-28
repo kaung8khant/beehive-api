@@ -46,16 +46,17 @@ class OrderDriverController extends Controller
             ->orderByDesc('id')
             ->get();
 
+        //group by date and status
         $restaurantOrder = $restaurantOrder->map(function ($data) {
             $data['key'] = Carbon::parse($data["order_date"])->format('Y-m-d');
             return $data;
         })->groupBy('order_status')->map(function ($data, $key) {
-
             $data = $data->groupBy('key');
             unset($data['key']);
             return $data;
         });
 
+        //change group status into accepted, onRoute, delivered
         $restaurantOrder = $restaurantOrder->toArray();
 
         $restaurantOrder['accepted'] = isset($restaurantOrder['pending']) ? $restaurantOrder['pending'] : [];
@@ -67,6 +68,7 @@ class OrderDriverController extends Controller
         unset($restaurantOrder['preparing']);
         unset($restaurantOrder['pickUp']);
 
+        //order items with time
         $restaurantOrder = collect($restaurantOrder)->map(function ($data, $key) {
 
             return collect($data)->map(function ($item) {
