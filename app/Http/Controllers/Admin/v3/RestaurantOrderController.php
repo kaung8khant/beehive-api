@@ -194,7 +194,7 @@ class RestaurantOrderController extends Controller
     {
         $restaurantBranch = RestaurantBranch::where('slug', $order->restaurant_branch_info['slug'])->first();
 
-        $driver = $this->driverRealtime->getAvailableDrivers($driver);
+        $driver = $this->driverRealtime->getAvailableDrivers([]);
 
         $driver = $this->driverRealtime->sortDriverByLocation($restaurantBranch, $driver);
 
