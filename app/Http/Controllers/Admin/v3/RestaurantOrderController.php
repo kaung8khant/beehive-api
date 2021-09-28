@@ -27,6 +27,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
+use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
 
 class RestaurantOrderController extends Controller
 {
