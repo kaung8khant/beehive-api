@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Helpers\StringHelper;
 use App\Models\Shop;
-use App\Models\Township;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -22,6 +21,7 @@ class ImportShop implements ShouldQueue, ShouldBeUnique
 
     protected $uniqueKey;
     protected $rows;
+    protected $userId;
 
     /**
      * The number of seconds after which the job's unique lock will be released.
@@ -35,12 +35,13 @@ class ImportShop implements ShouldQueue, ShouldBeUnique
      *
      * @return void
      */
-    public function __construct($uniqueKey, $rows)
+    public function __construct($uniqueKey, $rows, $userId)
     {
         ini_set('max_execution_time', 300);
 
         $this->uniqueKey = $uniqueKey;
         $this->rows = $rows;
+        $this->userId = $userId;
     }
 
     /**
@@ -108,6 +109,8 @@ class ImportShop implements ShouldQueue, ShouldBeUnique
                     'is_official' => $row['is_official'],
                     'township' => $row['township'],
                     'city' => $row['city'],
+                    'created_by' => $this->userId,
+                    'updated_by' => $this->userId,
                 ];
 
                 if (!$shop) {

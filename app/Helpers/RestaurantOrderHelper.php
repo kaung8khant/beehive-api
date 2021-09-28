@@ -393,8 +393,9 @@ trait RestaurantOrderHelper
             'order_items.*.topping_slugs' => 'nullable|array',
             'order_items.*.topping_slugs.*.slug' => 'required|exists:App\Models\MenuTopping,slug',
             'order_items.*.topping_slugs.*.value' => 'required|integer',
-            'order_items.*.options_items' => 'nullable|array',
-            'order_items.*.options_items.*' => 'required|exists:App\Models\MenuOptionItem,slug',
+            'order_items.*.option_items' => 'nullable|array',
+            'order_items.*.option_items.*' => 'required|exists:App\Models\MenuOptionItem,slug',
+            'order_items.*.special_instruction' => 'nullable|string',
         ];
 
         if ($customerSlug) {
@@ -440,6 +441,7 @@ trait RestaurantOrderHelper
             $item['variant'] = $menuVariant->variant;
             $item['toppings'] = $toppings;
             $item['options'] = $options;
+            $item['special_instruction'] = isset($value['special_instruction']) ? $value['special_instruction'] : null;
             $item['menu_id'] = $menuId;
 
             $subTotal += ($item['amount'] - $menuVariant->discount) * $value['quantity'];

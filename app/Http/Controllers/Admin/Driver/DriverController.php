@@ -131,6 +131,8 @@ class DriverController extends Controller
 
     public function destroy($slug)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         $driver = User::where('slug', $slug)->firstOrFail();
 
         if ($driver->id === Auth::guard('users')->user()->id) {

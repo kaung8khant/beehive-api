@@ -7,6 +7,7 @@ use App\Helpers\StringHelper;
 use App\Jobs\ImportRestaurant;
 use App\Models\Restaurant;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -31,7 +32,7 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
         for ($i = 0; $i < $workerCount; $i++) {
             $uniqueKey = StringHelper::generateUniqueSlug();
             $rowsBatch = array_slice($rows, $i * $this->batchPerWorker, $this->batchPerWorker);
-            ImportRestaurant::dispatch($uniqueKey, $rowsBatch);
+            ImportRestaurant::dispatch($uniqueKey, $rowsBatch, Auth::guard('users')->user()->id);
         }
     }
 
@@ -51,7 +52,7 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
                         Rule::unique('restaurants')->ignore($restaurant->id),
                     ],
                     'is_enable' => ['required', 'boolean'],
-                    'commission' => ['nullable','numeric'],
+                    'commission' => ['nullable', 'numeric'],
                 ];
 
                 $validator = Validator::make(
@@ -65,7 +66,7 @@ class RestaurantsImport implements ToCollection, WithHeadingRow
                         'unique:restaurants',
                     ],
                     'is_enable' => ['required', 'boolean'],
-                    'commission' => ['nullable','numeric'],
+                    'commission' => ['nullable', 'numeric'],
                     'branch_name' => ['required'],
                     'branch_address' => ['nullable'],
                     'branch_contact_number' => ['required', 'phone:MM'],

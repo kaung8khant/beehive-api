@@ -21,6 +21,7 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
 
     protected $uniqueKey;
     protected $rows;
+    protected $userId;
 
     /**
      * The number of seconds after which the job's unique lock will be released.
@@ -34,12 +35,13 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
      *
      * @return void
      */
-    public function __construct($uniqueKey, $rows)
+    public function __construct($uniqueKey, $rows, $userId)
     {
         ini_set('max_execution_time', 300);
 
         $this->uniqueKey = $uniqueKey;
         $this->rows = $rows;
+        $this->userId = $userId;
     }
 
     /**
@@ -52,7 +54,6 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
         return $this->uniqueKey;
     }
 
-
     /**
      * Execute the job.
      *
@@ -60,7 +61,7 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
      */
     public function handle()
     {
-        foreach ($this->rows as $key => $row) {
+        foreach ($this->rows as $row) {
             $rules = [
                 'name' => 'required',
                 'description' => 'nullable',
@@ -92,6 +93,8 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
                     'restaurant_id' => $restaurant->id,
                     'variants' => [],
                     'restaurant_category_id' => RestaurantCategory::where('slug', $row['restaurant_category_slug'])->value('id'),
+                    'created_by' => $this->userId,
+                    'updated_by' => $this->userId,
                 ];
 
                 if (!$menuVariant) {
@@ -112,8 +115,8 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
                         $branch->availableMenus()->attach($availableMenus);
                     }
                 } else {
-                    $menuData['slug']=$menuVariant->menu->slug;
-                    $menuData['variants']=$menuVariant->menu->variants;
+                    $menuData['slug'] = $menuVariant->menu->slug;
+                    $menuData['variants'] = $menuVariant->menu->variants;
                     $menuVariant->menu->update($menuData);
 
                     $menuVariantData = [
@@ -121,7 +124,7 @@ class ImportMenu implements ShouldQueue, ShouldBeUnique
                         'slug' => $row['menu_variant_slug'],
                         'price' => $row['price'],
                         'tax' => $row['tax'],
-                        'is_enable' =>isset($row['variant_is_enable'])? $row['variant_is_enable'] : '1' ,
+                        'is_enable' => isset($row['variant_is_enable']) ? $row['variant_is_enable'] : '1',
                         'discount' => $row['discount'],
                     ];
 

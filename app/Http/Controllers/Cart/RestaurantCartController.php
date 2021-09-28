@@ -107,6 +107,7 @@ class RestaurantCartController extends CartController
             'toppings.*.quantity' => 'required|integer',
             'option_items' => 'nullable|array',
             'option_items.*' => 'required|exists:App\Models\MenuOptionItem,slug',
+            'special_instruction' => 'nullable|string',
             'address' => 'required',
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer',
@@ -142,6 +143,7 @@ class RestaurantCartController extends CartController
             'variant' => $menuVariant,
             'toppings' => $toppings,
             'options' => $optionItems,
+            'special_instruction' => $request->special_instruction,
             'images' => $menu->images,
         ];
     }
@@ -445,6 +447,7 @@ class RestaurantCartController extends CartController
                     return $value;
                 })->toArray(),
                 'option_items' => collect($cartItem->menu['options'])->pluck('slug')->toArray(),
+                'special_instruction' => $cartItem->menu['special_instruction'],
             ];
         })->toArray();
     }

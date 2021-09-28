@@ -123,6 +123,16 @@
                     </div>
                     @endforeach
                     @endif
+
+                    @if($item['options'])
+                    <div>
+                        {{
+                            implode(',', array_map(function ($n) {
+                                return $n['name'];
+                            }, $item['options']))
+                        }}
+                    </div>
+                    @endif
                 </td>
                 <td class="border" align="right" style="vertical-align: top;">{{ number_format($item['amount'] - $item['discount']) }} MMK</td>
                 <td class="border" align="right" style="vertical-align: top;">{{ $item['quantity'] }}</td>
@@ -133,7 +143,7 @@
         <tfoot>
             <tr>
                 <td colspan="3" align="right">Sub Total</td>
-                <td align="right">{{ number_format(round($restaurantOrder['amount'])) }} MMK</td>
+                <td align="right">{{ number_format(round($restaurantOrder['amount'] - $restaurantOrder['discount'])) }} MMK</td>
             </tr>
             <tr>
                 <td colspan="3" align="right">Delivery Fee</td>

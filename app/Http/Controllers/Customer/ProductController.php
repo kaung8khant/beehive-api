@@ -117,12 +117,16 @@ class ProductController extends Controller
 
     public function getByCategory(Request $request, ShopCategory $category)
     {
-        $products = Product::with('shop')
+        $products = Product::with(['shop' => function ($query) {
+            $query->exclude(['created_by', 'updated_by']);
+        }])
             ->where('shop_category_id', $category->id)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
+            ->exclude(['created_by', 'updated_by'])
+            ->orderBy('shop_sub_category_id', 'asc')
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 
@@ -136,6 +140,8 @@ class ProductController extends Controller
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
+            ->exclude(['created_by', 'updated_by'])
+            ->orderBy('shop_sub_category_id', 'asc')
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 
@@ -160,6 +166,8 @@ class ProductController extends Controller
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
+            ->exclude(['created_by', 'updated_by'])
+            ->orderBy('shop_sub_category_id', 'asc')
             ->orderBy('id', 'desc')
             ->paginate($request->size)
             ->items();
@@ -176,6 +184,8 @@ class ProductController extends Controller
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
+            ->exclude(['created_by', 'updated_by'])
+            ->orderBy('shop_sub_category_id', 'asc')
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 

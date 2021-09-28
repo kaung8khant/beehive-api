@@ -105,6 +105,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         foreach ($product->images as $image) {
             $this->deleteFile($image->slug);
         }
@@ -202,6 +204,8 @@ class ProductController extends Controller
 
     public function multipleDelete(Request $request)
     {
+        return response()->json(['message' => 'Permission denied.'], 403);
+
         $validatedData = $request->validate([
             'slugs' => 'required|array',
             'slugs.*' => 'required|exists:App\Models\Product,slug',
