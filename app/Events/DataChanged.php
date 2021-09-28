@@ -7,24 +7,32 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class OrderAssignEvent
+class DataChanged
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $order;
-    public $driver;
-    public $time;
+    public $user;
+    public $action;
+    public $table;
+    public $slug;
+    public $url;
+    public $status;
+    public $request;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($order, $driver, $time)
+    public function __construct($user, $action, $table, $slug, $url, $status, $request = null)
     {
-        $this->order = $order;
-        $this->driver = $driver;
-        $this->time = $time;
+        $this->user = $user;
+        $this->action = $action;
+        $this->table = $table;
+        $this->slug = $slug;
+        $this->url = $url;
+        $this->status = $status;
+        $this->request = $request;
     }
 
     /**
@@ -34,6 +42,6 @@ class OrderAssignEvent
      */
     public function broadcastOn()
     {
-        return new PrivateChannel("schedule.test");
+        return new PrivateChannel('data-changed');
     }
 }
