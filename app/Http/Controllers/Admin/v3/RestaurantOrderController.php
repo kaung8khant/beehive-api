@@ -205,8 +205,9 @@ class RestaurantOrderController extends Controller
         array_push($assignedDriver, $driverSlug);
 
         if (isset($driverSlug)) {
-            $this->repository->assignDriver($event->order, $driverSlug);
-            $this->repository->setJobToFirebase($event->order->slug, $driverSlug);
+            $this->repository->assignDriver($order, $driverSlug);
+            $this->repository->setJobToFirebase($order->slug, $driverSlug);
+
             event(new OrderAssignEvent($order, [$driverSlug], 0));
         }
     }
