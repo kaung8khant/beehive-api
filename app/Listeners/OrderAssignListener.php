@@ -42,7 +42,7 @@ class OrderAssignListener implements ShouldQueue
      */
     public function handle(OrderAssignEvent $event)
     {
-        $maxAssign = 5;
+        $maxAssign = 4;
 
         $restaurantBranch = RestaurantBranch::where('slug', $event->order->restaurant_branch_info['slug'])->first();
 
@@ -56,7 +56,7 @@ class OrderAssignListener implements ShouldQueue
         $assignedDriver = $event->driver;
         array_push($assignedDriver, $driverSlug);
 
-        if ($event->time + 1 < $maxAssign && count($driverData) > 1) {
+        if ($event->time + 1 < $maxAssign && count($driverData) > 1 && !checkOrderAccepted($order)) {
             event(new OrderAssignEvent($event->order, $assignedDriver, $event->time + 1));
         } else {
             // send notification to admin for max assignment or no driver
