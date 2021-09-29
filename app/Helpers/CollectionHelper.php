@@ -42,4 +42,13 @@ trait CollectionHelper
 
         return compact('orderBy', 'sortBy');
     }
+
+    public static function selectExclusiveColumns($table)
+    {
+        return collect(Schema::getColumnListing($table))->map(function ($column) {
+            if (!in_array($column, ['created_by', 'updated_by', 'created_at', 'updated_at'])) {
+                return 'products.' . $column;
+            }
+        })->filter()->values()->toArray();
+    }
 }
