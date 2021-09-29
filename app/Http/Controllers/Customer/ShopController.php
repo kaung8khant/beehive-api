@@ -58,7 +58,12 @@ class ShopController extends Controller
 
     public function getCategories(Request $request)
     {
-        $shopCategories = ShopCategory::with('shopSubCategories')
+        $shopCategories = ShopCategory::withCount(['products' => function ($query) {
+            $query->where('is_enable', 1)
+                ->whereHas('shop', function ($q) {
+                    $q->where('is_enable', 1);
+                });
+        }])
             ->whereHas('products', function ($query) {
                 $query->where('is_enable', 1)
                     ->whereHas('shop', function ($q) {
