@@ -79,6 +79,7 @@ class ContentController extends Controller
     private function getParamsToValidate($slug = false)
     {
         $params = [
+            'label' => 'nullable|string',
             'title' => 'required|string',
             'description' => 'required|string',
             'type' => 'nullable|in:announcement,news,blog,branding',
