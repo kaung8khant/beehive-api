@@ -13,13 +13,7 @@ use App\Models\ProductCart;
 use App\Models\Promocode;
 use App\Models\RestaurantBranch;
 use App\Models\Shop;
-use App\Services\MessageService\BoomSmsService;
-use App\Services\MessageService\SlackMessagingService;
-use App\Services\PaymentService\CbPayService;
-use App\Services\PaymentService\CodService;
-use App\Services\PaymentService\KbzPayService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use stdClass;
 
 class CartController extends Controller
@@ -154,25 +148,5 @@ class CartController extends Controller
             'promocode' => $promocode->code,
             'promo_amount' => $promoAmount,
         ];
-    }
-
-    protected function getMessageService()
-    {
-        if (App::environment('production')) {
-            return new BoomSmsService();
-        } else {
-            return new SlackMessagingService();
-        }
-    }
-
-    protected function getPaymentService($paymentMode)
-    {
-        if ($paymentMode === 'KPay') {
-            return new KbzPayService();
-        } elseif ($paymentMode === 'CBPay') {
-            return new CbPayService();
-        } else {
-            return new CodService();
-        }
     }
 }
