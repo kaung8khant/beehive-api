@@ -12,4 +12,6 @@ interface RestaurantOrderDriverStatusRepositoryInterface
     public function changeStatus(RestaurantOrder $restaurantOrder, $restaurantOrderDriver, $status): ?RestaurantOrderDriverStatus;
 
     public function validateStatus($currentDriverStatus, $newDriverStatus, $currentOrderStatus): bool;
+
+    public function checkOrderAccepted($order);
 }
