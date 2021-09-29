@@ -41,8 +41,6 @@ class RestaurantOrderController extends Controller
         $this->messageService = $messageService;
         $this->paymentService = $paymentService;
         $this->resMes = config('response-en.restaurant_order');
-        $this->repository = $repository;
-        $this->driverRealtime = $driverRealtime;
     }
 
     public function index(Request $request)
