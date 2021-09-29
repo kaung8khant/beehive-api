@@ -183,34 +183,14 @@ class RestaurantOrderController extends Controller
 
         // assign driver here.
         // $this->assignOrder('restaurant', $order->slug);
-        $this->assignOrder($order);
+        //$this->assignOrder($order);
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
         OrderHelper::notifySystem($order, $phoneNumber, $this->messageService);
 
         return $order;
     }
-    private function assignOrder($order)
-    {
-        $restaurantBranch = RestaurantBranch::where('slug', $order->restaurant_branch_info['slug'])->first();
 
-        $driver = $this->driverRealtime->getAvailableDrivers([]);
-
-        $driver = $this->driverRealtime->sortDriverByLocation($restaurantBranch, $driver);
-
-        $driverData = array_keys($driver);
-        $driverSlug = count($driverData) > 0 ? $driverData[0] : null;
-
-        $assignedDriver = $driver;
-        array_push($assignedDriver, $driverSlug);
-
-        if (isset($driverSlug)) {
-            $this->repository->assignDriver($order, $driverSlug);
-            $this->repository->setJobToFirebase($order->slug, $driverSlug);
-
-            event(new OrderAssignEvent($order, [$driverSlug], 0));
-        }
-    }
 
     public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
     {
