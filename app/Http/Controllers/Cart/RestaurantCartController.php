@@ -18,6 +18,8 @@ use App\Models\MenuOptionItem;
 use App\Models\MenuTopping;
 use App\Models\MenuVariant;
 use App\Models\RestaurantBranch;
+use App\Services\MessageService\MessagingService;
+use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -28,14 +30,18 @@ class RestaurantCartController extends CartController
     use ResponseHelper;
 
     private $customer;
+    private $messageService;
+    private $paymentService;
     private $resMes;
 
-    public function __construct(Request $request)
+    public function __construct(Request $request, MessagingService $messageService, PaymentService $paymentService)
     {
         if ($request->customer_slug) {
             $this->customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
         }
 
+        $this->messageService = $messageService;
+        $this->paymentService = $paymentService;
         $this->resMes = config('response-en');
     }
 
@@ -377,7 +383,7 @@ class RestaurantCartController extends CartController
         $request['promo_code'] = $menuCart->promocode;
         $request['order_items'] = $this->getOrderItems($menuCart->menuCartItems);
 
-        $order = new RestaurantOrderController($this->getMessageService(), $this->getPaymentService($request->payment_mode));
+        $order = new RestaurantOrderController($this->messageService, $this->paymentService);
         $result = $order->store($request);
 
         if (json_decode($result->getContent(), true)['status'] === 201) {
@@ -447,7 +453,7 @@ class RestaurantCartController extends CartController
                     return $value;
                 })->toArray(),
                 'option_items' => collect($cartItem->menu['options'])->pluck('slug')->toArray(),
-                'special_instruction' => $cartItem->menu['special_instruction'],
+                'special_instruction' => isset($cartItem->menu['special_instruction']) ? $cartItem->menu['special_instruction'] : null,
             ];
         })->toArray();
     }
