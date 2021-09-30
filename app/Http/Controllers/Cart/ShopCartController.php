@@ -12,6 +12,8 @@ use App\Models\Product;
 use App\Models\ProductCart;
 use App\Models\ProductCartItem;
 use App\Models\ProductVariant;
+use App\Services\MessageService\MessagingService;
+use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -22,14 +24,18 @@ class ShopCartController extends CartController
     use ResponseHelper;
 
     private $customer;
+    private $messageService;
+    private $paymentService;
     private $resMes;
 
-    public function __construct(Request $request)
+    public function __construct(Request $request, MessagingService $messageService, PaymentService $paymentService)
     {
         if ($request->customer_slug) {
             $this->customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
         }
 
+        $this->messageService = $messageService;
+        $this->paymentService = $paymentService;
         $this->resMes = config('response-en');
     }
 
@@ -280,7 +286,7 @@ class ShopCartController extends CartController
         $request['promo_code'] = $productCart->promocode;
         $request['order_items'] = $this->getOrderItems($productCart->productCartItems);
 
-        $order = new ShopOrderController($this->getMessageService(), $this->getPaymentService($request->payment_mode));
+        $order = new ShopOrderController($this->messageService, $this->paymentService);
         $result = $order->store($request);
 
         if (json_decode($result->getContent(), true)['status'] === 201) {

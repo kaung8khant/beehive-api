@@ -37,11 +37,25 @@ class ProductController extends Controller
             $sorting['orderBy'] = 'products.' . $sorting['orderBy'];
         }
 
-        $products = Product::select('products.*')
+        $products = Product::select(CollectionHelper::selectExclusiveColumns('products'))
             ->join('product_variants as pv', function ($query) {
                 $query->on('pv.id', '=', DB::raw('(SELECT id FROM product_variants WHERE product_variants.product_id = products.id ORDER BY price ASC LIMIT 1)'));
             })
-            ->with('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants')
+            ->with([
+                'shop' => function ($query) {
+                    $query->exclude(['created_by', 'updated_by']);
+                },
+                'shopCategory' => function ($query) {
+                    $query->exclude(['created_by', 'updated_by']);
+                },
+                'shopSubCategory' => function ($query) {
+                    $query->exclude(['created_by', 'updated_by']);
+                },
+                'brand' => function ($query) {
+                    $query->exclude(['created_by', 'updated_by']);
+                },
+            ])
+            ->with('productVariations', 'productVariations.productVariationValues', 'productVariants')
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhereHas('shop', function ($q) use ($request) {
@@ -73,7 +87,11 @@ class ProductController extends Controller
 
         $products = $products->paginate($request->size);
 
-        return $this->generateProductResponse($products, 200, 'array', $products->lastPage());
+        $imageFilteredProducts = $products->map(function ($product) {
+            return $product->images->count() > 0 ? $product : null;
+        })->filter()->values();
+
+        return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $products->lastPage(), true);
     }
 
     public function show(Product $product)
@@ -130,7 +148,11 @@ class ProductController extends Controller
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 
-        return $this->generateProductResponse($products, 200, 'array', $products->lastPage());
+        $imageFilteredProducts = $products->map(function ($product) {
+            return $product->images->count() > 0 ? $product : null;
+        })->filter()->values();
+
+        return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $products->lastPage(), true);
     }
 
     public function getByShop(Request $request, Shop $shop)
@@ -145,8 +167,12 @@ class ProductController extends Controller
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 
+        $imageFilteredProducts = $products->map(function ($product) {
+            return $product->images->count() > 0 ? $product : null;
+        })->filter()->values();
+
         $data = new stdClass();
-        $data->products = $products->items();
+        $data->products = $imageFilteredProducts;
         $data->total = $products->total();
         $data->join_date = Carbon::parse($shop->created_at)->format('Y-m-d');
 
@@ -161,7 +187,7 @@ class ProductController extends Controller
 
     public function getByBrand(Request $request, Brand $brand)
     {
-        $product = Product::where('brand_id', $brand->id)
+        $products = Product::where('brand_id', $brand->id)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
@@ -169,10 +195,13 @@ class ProductController extends Controller
             ->exclude(['created_by', 'updated_by'])
             ->orderBy('shop_sub_category_id', 'asc')
             ->orderBy('id', 'desc')
-            ->paginate($request->size)
-            ->items();
+            ->paginate($request->size);
 
-        return $this->generateProductResponse($product, 200);
+        $imageFilteredProducts = $products->map(function ($product) {
+            return $product->images->count() > 0 ? $product : null;
+        })->filter()->values();
+
+        return $this->generateProductResponse($imageFilteredProducts, 200);
     }
 
     // fav
