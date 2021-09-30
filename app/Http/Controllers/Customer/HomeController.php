@@ -283,7 +283,7 @@ class HomeController extends Controller
             throw new ForbiddenException('Your application is out of date. Please update your application to get the latest features.');
         }
 
-        if ($platform === 'android' || $platform === 'ios') {
+        if ($platform === 'android') {
             if ($platform === 'android') {
                 $currentVersion = Setting::where('key', 'android_version')->value('value');
             } else {
