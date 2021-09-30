@@ -77,7 +77,7 @@ class MenuController extends Controller
                     ->where('is_available', 1);
             })
             ->orderBy('search_index', 'desc')
-            ->orderBy('id', 'desc')
+            ->orderBy('name', 'asc')
             ->get();
     }
 
