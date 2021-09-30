@@ -65,7 +65,7 @@ class RestaurantBranchController extends Controller
 
         Cache::forget('all_restaurant_branches_restaurant_id' . $validatedData['restaurant_id']);
 
-        return response()->json($restaurantBranch->load('restaurant'), 201);
+        return response()->json($restaurantBranch->refresh()->load('restaurant'), 201);
     }
 
     public function show(RestaurantBranch $restaurantBranch)
@@ -110,6 +110,7 @@ class RestaurantBranchController extends Controller
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'is_enable' => 'required|boolean',
             'free_delivery' => 'nullable|boolean',
+            'pre_order' => 'nullable|boolean',
         ];
 
         if ($slug) {

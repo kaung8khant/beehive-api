@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
-use App\Events\OrderAssignEvent;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
@@ -186,7 +185,6 @@ class RestaurantOrderController extends Controller
 
         return $order;
     }
-
 
     public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
     {

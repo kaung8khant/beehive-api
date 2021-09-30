@@ -35,7 +35,7 @@ class MenuController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('menus', 'id', $request->by ? $request->by : 'desc', $request->order);
+        $sorting = CollectionHelper::getSorting('menus', 'search_index', $request->by ? $request->by : 'desc', $request->order);
 
         $menus = Menu::with(['restaurant', 'restaurantCategory', 'menuVariants'])
             ->where(function ($query) use ($request) {
@@ -315,7 +315,7 @@ class MenuController extends Controller
 
     public function getMenusByRestaurant(Request $request, Restaurant $restaurant)
     {
-        $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
+        $sorting = CollectionHelper::getSorting('menus', 'search_index', $request->by ? $request->by : 'desc', $request->order);
 
         $menus = Menu::with(['restaurant', 'restaurantCategory', 'menuVariants'])
             ->where('restaurant_id', $restaurant->id)
@@ -337,7 +337,7 @@ class MenuController extends Controller
 
     public function getMenusByBranch(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
+        $sorting = CollectionHelper::getSorting('menus', 'search_index', $request->by ? $request->by : 'desc', $request->order);
 
         $menus = $restaurantBranch->availableMenus()
             ->with(['restaurant', 'restaurantCategory', 'menuVariants'])
@@ -365,7 +365,7 @@ class MenuController extends Controller
 
     public function getMenusByCategory(Request $request, RestaurantCategory $restaurantCategory)
     {
-        $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
+        $sorting = CollectionHelper::getSorting('menus', 'search_index', $request->by ? $request->by : 'desc', $request->order);
 
         $menus = Menu::with('restaurant', 'restaurantCategory')
             ->where('restaurant_category_id', $restaurantCategory->id)
