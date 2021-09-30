@@ -418,6 +418,6 @@ class MenuController extends Controller
         CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         DataChanged::dispatch($this->user, 'update', 'menus', $menu->slug, $request->url(), 'success', $request->all());
 
-        return response()->json($menu->load('restaurant'), 200);
+        return response()->json($menu->load('restaurant', 'restaurantCategory'), 200);
     }
 }
