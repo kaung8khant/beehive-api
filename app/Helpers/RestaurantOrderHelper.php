@@ -395,6 +395,7 @@ trait RestaurantOrderHelper
             'order_items.*.topping_slugs.*.value' => 'required|integer',
             'order_items.*.option_items' => 'nullable|array',
             'order_items.*.option_items.*' => 'required|exists:App\Models\MenuOptionItem,slug',
+            'order_items.*.special_instruction' => 'nullable|string',
         ];
 
         if ($customerSlug) {
@@ -431,7 +432,6 @@ trait RestaurantOrderHelper
             $toppings = collect(self::prepareToppings($value['topping_slugs'], $menuId));
             $options = collect(self::prepareOptions($value['option_items'], $menuId));
 
-
             $item['slug'] = $value['slug'];
             $item['name'] = $menuVariant->menu->name;
             $item['quantity'] = $value['quantity'];
@@ -441,6 +441,7 @@ trait RestaurantOrderHelper
             $item['variant'] = $menuVariant->variant;
             $item['toppings'] = $toppings;
             $item['options'] = $options;
+            $item['special_instruction'] = isset($value['special_instruction']) ? $value['special_instruction'] : null;
             $item['menu_id'] = $menuId;
 
             $subTotal += ($item['amount'] - $menuVariant->discount) * $value['quantity'];
