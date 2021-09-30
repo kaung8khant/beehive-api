@@ -332,7 +332,7 @@ class MenuController extends Controller
         }
 
         return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+            ->get();
     }
 
     public function getMenusByBranch(Request $request, RestaurantBranch $restaurantBranch)
@@ -354,7 +354,7 @@ class MenuController extends Controller
         }
 
         $menus = $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+            ->get();
 
         foreach ($menus as $menu) {
             $menu->setAppends(['is_available', 'images']);
