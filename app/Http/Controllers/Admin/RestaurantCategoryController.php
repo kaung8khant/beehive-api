@@ -111,7 +111,7 @@ class RestaurantCategoryController extends Controller
             });
     }
 
-    public function updateSearchIndex(Request $request, Restaurant $restaurant)
+    public function updateMultipleSearchIndex(Request $request, Restaurant $restaurant)
     {
         $validatedData = $request->validate([
             '*' => 'required|array',
@@ -120,25 +120,39 @@ class RestaurantCategoryController extends Controller
         ]);
 
         foreach ($validatedData as $category) {
-            $restaurantCategory = RestaurantCategory::where('slug', $category['category_slug'])->first();
-
-            $categorySorting = RestaurantCategorySorting::where('restaurant_id', $restaurant->id)
-                ->where('restaurant_category_id', $restaurantCategory->id)
-                ->first();
-
-            if ($categorySorting) {
-                $categorySorting->update([
-                    'search_index' => $category['search_index'],
-                ]);
-            } else {
-                RestaurantCategorySorting::create([
-                    'search_index' => $category['search_index'],
-                    'restaurant_id' => $restaurant->id,
-                    'restaurant_category_id' => $restaurantCategory->id,
-                ]);
-            }
+            $categoryId = RestaurantCategory::where('slug', $category['category_slug'])->value('id');
+            $this->createOrUpdateCategorySorting($restaurant->id, $categoryId, $category['search_index']);
         }
 
         return response()->json(['message' => 'success'], 200);
+    }
+
+    public function updateSearchIndex(Request $request, Restaurant $restaurant, RestaurantCategory $restaurantCategory)
+    {
+        $validatedData = $request->validate([
+            'search_index' => 'required|integer',
+        ]);
+
+        $this->createOrUpdateCategorySorting($restaurant->id, $restaurantCategory->id, $validatedData['search_index']);
+        return response()->json(['message' => 'success'], 200);
+    }
+
+    private function createOrUpdateCategorySorting($restaurantId, $restaurantCategoryId, $searchIndex)
+    {
+        $categorySorting = RestaurantCategorySorting::where('restaurant_id', $restaurantId)
+            ->where('restaurant_category_id', $restaurantCategoryId)
+            ->first();
+
+        if ($categorySorting) {
+            $categorySorting->update([
+                'search_index' => $searchIndex,
+            ]);
+        } else {
+            RestaurantCategorySorting::create([
+                'search_index' => $searchIndex,
+                'restaurant_id' => $restaurantId,
+                'restaurant_category_id' => $restaurantCategoryId,
+            ]);
+        }
     }
 }

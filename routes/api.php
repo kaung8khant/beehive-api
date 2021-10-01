@@ -103,7 +103,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('restaurants/status', 'Admin\RestaurantController@multipleStatusUpdate');
             Route::patch('restaurants/toggle-official/{slug}', 'Admin\RestaurantController@toggleOfficial');
 
-            Route::put('restaurants/{restaurant}/categories/index', 'Admin\RestaurantCategoryController@updateSearchIndex');
+            Route::put('restaurants/{restaurant}/categories/{restaurantCategory}/index', 'Admin\RestaurantCategoryController@updateSearchIndex');
+            Route::put('restaurants/{restaurant}/categories/index', 'Admin\RestaurantCategoryController@updateMultipleSearchIndex');
             Route::get('restaurants/{restaurant}/categories', 'Admin\RestaurantCategoryController@getCategoriesByRestaurant');
             Route::get('restaurants/{slug}/restaurant-tags', 'Admin\RestaurantTagController@getTagsByRestaurant');
 
