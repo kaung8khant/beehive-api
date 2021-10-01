@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class MenuOptionItem extends BaseModel
+class RestaurantCategorySorting extends BaseModel
 {
     use HasFactory;
 
@@ -12,17 +12,7 @@ class MenuOptionItem extends BaseModel
 
     protected $hidden = [
         'id',
-        'menu_option_id',
         'created_at',
         'updated_at',
     ];
-
-    protected $casts = [
-        'price' => 'float',
-    ];
-
-    public function menuOption()
-    {
-        return $this->belongsTo(MenuOption::class);
-    }
 }

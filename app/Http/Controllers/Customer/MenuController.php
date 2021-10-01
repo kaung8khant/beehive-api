@@ -7,6 +7,7 @@ use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\RestaurantBranch;
+use App\Models\RestaurantCategorySorting;
 use Illuminate\Http\Request;
 
 class MenuController extends Controller
@@ -24,7 +25,7 @@ class MenuController extends Controller
         }])->makeHidden(['created_by', 'updated_by']);
 
         $restaurantBranch->restaurant->is_favorite = $this->checkFavoriteRestaurant($restaurantBranch->restaurant->id);
-        $restaurantBranch['available_categories'] = $this->getAvailableCategories($restaurantBranch->id);
+        $restaurantBranch['available_categories'] = $this->getAvailableCategories($restaurantBranch->id, $restaurantBranch->restaurant->id);
 
         if ($request->lat && $request->lng) {
             $distance = GeoHelper::calculateDistance($request->lat, $request->lng, $restaurantBranch['latitude'], $restaurantBranch['longitude']);
@@ -37,12 +38,23 @@ class MenuController extends Controller
         return $this->generateResponse($restaurantBranch, 200);
     }
 
-    private function getAvailableCategories($branchId)
+    private function getAvailableCategories($branchId, $restaurantId)
     {
         $availableMenus = $this->getAvailableMenus($branchId);
 
         return $availableMenus->pluck('restaurantCategory')
             ->unique()
+            ->map(function ($category) use ($restaurantId) {
+                $searchIndex = RestaurantCategorySorting::where('restaurant_id', $restaurantId)
+                    ->where('restaurant_category_id', $category->id)
+                    ->value('search_index');
+                $category['search_index'] = $searchIndex ? $searchIndex : 0;
+                return $category;
+            })
+            ->sortBy([
+                ['search_index', 'desc'],
+                ['name', 'asc'],
+            ])
             ->values()
             ->map(function ($category) use ($availableMenus) {
                 $categoryMenus = $availableMenus->map(function ($menu) use ($category) {
@@ -77,8 +89,7 @@ class MenuController extends Controller
                     ->where('is_available', 1);
             })
             ->orderBy('search_index', 'desc')
-            ->orderBy('id', 'desc')
+            ->orderBy('name', 'asc')
             ->get();
     }
-
 }

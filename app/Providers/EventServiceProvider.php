@@ -2,14 +2,15 @@
 
 namespace App\Providers;
 
+use App\Events\DataChanged;
 use App\Events\DriverStatusChanged;
 use App\Events\OrderAssignEvent;
 use App\Listeners\OrderAssignListener;
+use App\Listeners\StoreAuditInformation;
 use App\Listeners\UpdateOrderStatus;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -27,7 +28,10 @@ class EventServiceProvider extends ServiceProvider
         ],
         OrderAssignEvent::class => [
             OrderAssignListener::class,
-        ]
+        ],
+        DataChanged::class => [
+            StoreAuditInformation::class,
+        ],
     ];
 
     /**

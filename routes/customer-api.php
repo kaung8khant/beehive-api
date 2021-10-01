@@ -128,4 +128,6 @@ Route::group([
         //Promo code
         Route::post('promocode/validate', 'PromocodeController@validatePromoCode');
     });
+
+    Route::get('restaurants/branches', 'RestaurantBranchController@getAllBranches');
 });

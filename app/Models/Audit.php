@@ -3,8 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class MenuOptionItem extends BaseModel
+class Audit extends Model
 {
     use HasFactory;
 
@@ -12,17 +13,15 @@ class MenuOptionItem extends BaseModel
 
     protected $hidden = [
         'id',
-        'menu_option_id',
-        'created_at',
-        'updated_at',
     ];
 
     protected $casts = [
-        'price' => 'float',
+        'request' => 'array',
+        'response' => 'array',
     ];
 
-    public function menuOption()
+    public function user()
     {
-        return $this->belongsTo(MenuOption::class);
+        return $this->belongsTo(User::class);
     }
 }

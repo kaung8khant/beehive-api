@@ -102,7 +102,12 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('restaurants/toggle-enable/{restaurant}', 'Admin\RestaurantController@toggleEnable');
             Route::post('restaurants/status', 'Admin\RestaurantController@multipleStatusUpdate');
             Route::patch('restaurants/toggle-official/{slug}', 'Admin\RestaurantController@toggleOfficial');
+
+            Route::put('restaurants/{restaurant}/categories/{restaurantCategory}/index', 'Admin\RestaurantCategoryController@updateSearchIndex');
+            Route::put('restaurants/{restaurant}/categories/index', 'Admin\RestaurantCategoryController@updateMultipleSearchIndex');
+            Route::get('restaurants/{restaurant}/categories', 'Admin\RestaurantCategoryController@getCategoriesByRestaurant');
             Route::get('restaurants/{slug}/restaurant-tags', 'Admin\RestaurantTagController@getTagsByRestaurant');
+
             Route::resource('menus', 'Admin\MenuController', ['except' => ['create', 'edit']]);
             Route::resource('menu-variations', 'Admin\MenuVariationController', ['except' => ['create', 'edit']]);
             Route::resource('menu-variation-values', 'Admin\MenuVariationValueController', ['except' => ['create', 'edit']]);

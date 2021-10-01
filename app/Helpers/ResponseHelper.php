@@ -70,7 +70,7 @@ trait ResponseHelper
         return $this->generateResponse($data, $status, false, $paginate);
     }
 
-    public function generateProductResponse($data, $status, $type = 'array', $paginate = false)
+    public function generateProductResponse($data, $status, $type = 'array', $paginate = false, $filter = false)
     {
         if (empty($data)) {
             if ($type === 'home') {
@@ -80,7 +80,9 @@ trait ResponseHelper
         }
 
         if ($type === 'array' || $type === 'home') {
-            $data = $paginate ? $data->items() : $data;
+            if (!$filter) {
+                $data = $paginate ? $data->items() : $data;
+            }
 
             foreach ($data as $product) {
                 $product->is_favorite = $this->checkFavoriteProduct($product->id);

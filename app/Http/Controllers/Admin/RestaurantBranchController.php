@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\DataChanged;
 use App\Helpers\CacheHelper;
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
@@ -14,12 +15,22 @@ use App\Models\RestaurantCategory;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class RestaurantBranchController extends Controller
 {
     use StringHelper;
+
+    private $user;
+
+    public function __construct()
+    {
+        if (Auth::guard('users')->check()) {
+            $this->user = Auth::guard('users')->user();
+        }
+    }
 
     /**
      * Do not delete this method. This route is only for debugging purpose.
@@ -54,7 +65,7 @@ class RestaurantBranchController extends Controller
 
         Cache::forget('all_restaurant_branches_restaurant_id' . $validatedData['restaurant_id']);
 
-        return response()->json($restaurantBranch->load('restaurant'), 201);
+        return response()->json($restaurantBranch->refresh()->load('restaurant'), 201);
     }
 
     public function show(RestaurantBranch $restaurantBranch)
@@ -99,6 +110,7 @@ class RestaurantBranchController extends Controller
             'restaurant_slug' => 'required|exists:App\Models\Restaurant,slug',
             'is_enable' => 'required|boolean',
             'free_delivery' => 'nullable|boolean',
+            'pre_order' => 'nullable|boolean',
         ];
 
         if ($slug) {
@@ -239,12 +251,13 @@ class RestaurantBranchController extends Controller
             'is_available' => 'required|boolean',
         ]);
 
+        DataChanged::dispatch($this->user, 'update', 'restaurant_branch_menu_map', $menu->slug, $request->url(), 'success', $request->all());
+
         $restaurantBranch->availableMenus()->sync([
             $menu->id => ['is_available' => $validatedData['is_available']],
         ], false);
 
         CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
-
         return response()->json(['message' => 'Success.'], 200);
     }
 
