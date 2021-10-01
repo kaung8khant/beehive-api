@@ -24,6 +24,7 @@ class BoomSmsService extends MessagingService
                         'to' => str_replace('+', '', $phoneNumber),
                         'text' => $text,
                     ],
+                    'verify' => false,
                 ]
             );
 
