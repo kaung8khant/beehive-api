@@ -290,7 +290,18 @@ class HomeController extends Controller
                 $currentVersion = Setting::where('key', 'ios_version')->value('value');
             }
 
-            if ($appVersion < $currentVersion) {
+            $appVersion = str_replace('.', '', $appVersion);
+            $correctVersion = '';
+
+            for ($i = 0; $i < strlen($appVersion); $i++) {
+                $correctVersion .= $appVersion[$i];
+
+                if ($i !== strlen($appVersion) - 1) {
+                    $correctVersion .= '.';
+                }
+            }
+
+            if ($correctVersion < $currentVersion) {
                 throw new ForbiddenException('Your application is out of date. Please update your application to get the latest features.');
             }
         }
