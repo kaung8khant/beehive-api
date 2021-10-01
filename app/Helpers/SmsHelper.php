@@ -27,6 +27,7 @@ trait SmsHelper
                         'to' => str_replace('+', '', $phoneNumber),
                         'text' => $text,
                     ],
+                    'verify' => false,
                 ]
             );
 
