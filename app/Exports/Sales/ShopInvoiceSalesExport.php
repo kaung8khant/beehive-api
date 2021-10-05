@@ -4,19 +4,23 @@ namespace App\Exports\Sales;
 
 use App\Models\ShopOrder;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithDrawings;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ShopInvoiceSalesExport implements FromCollection, WithColumnFormatting, WithColumnWidths, WithDrawings, WithEvents, WithHeadings, WithStyles, WithTitle
+class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollection, WithColumnFormatting, WithColumnWidths, WithCustomValueBinder, WithDrawings, WithEvents, WithHeadings, WithStyles, WithTitle
 {
     protected $from;
     protected $to;
@@ -36,7 +40,8 @@ class ShopInvoiceSalesExport implements FromCollection, WithColumnFormatting, Wi
 
     public function collection()
     {
-        $shopOrders = ShopOrder::whereBetween('order_date', [$this->from, $this->to])
+        $shopOrders = ShopOrder::with('contact')
+            ->whereBetween('order_date', [$this->from, $this->to])
             ->orderBy('id')
             ->get();
 
@@ -69,6 +74,8 @@ class ShopInvoiceSalesExport implements FromCollection, WithColumnFormatting, Wi
                 $order->payment_status,
                 $order->order_status,
                 $order->special_instruction,
+                $order->contact->customer_name,
+                $order->contact->phone_number,
             ];
         });
 
@@ -103,6 +110,8 @@ class ShopInvoiceSalesExport implements FromCollection, WithColumnFormatting, Wi
                 'payment status',
                 'order status',
                 'special instructions',
+                'customer name',
+                'phone number',
             ],
         ];
     }
@@ -125,6 +134,8 @@ class ShopInvoiceSalesExport implements FromCollection, WithColumnFormatting, Wi
             'M' => 17,
             'N' => 20,
             'O' => 30,
+            'P' => 25,
+            'Q' => 20,
         ];
     }
 
@@ -140,6 +151,8 @@ class ShopInvoiceSalesExport implements FromCollection, WithColumnFormatting, Wi
             'M' => ['alignment' => ['horizontal' => 'center']],
             'N' => ['alignment' => ['horizontal' => 'center']],
             'O' => ['alignment' => ['horizontal' => 'center']],
+            'P' => ['alignment' => ['horizontal' => 'center']],
+            'Q' => ['alignment' => ['horizontal' => 'right']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -211,5 +224,19 @@ class ShopInvoiceSalesExport implements FromCollection, WithColumnFormatting, Wi
     public function title(): string
     {
         return 'Shop Invoice Sales report';
+    }
+
+    public function bindValue(Cell $cell, $value)
+    {
+        $validator = Validator::make(['phone' => $value], [
+            'phone' => 'required|phone:MM',
+        ]);
+
+        if (!$validator->fails()) {
+            $cell->setValueExplicit($value, 's');
+            return true;
+        }
+
+        return parent::bindValue($cell, $value);
     }
 }
