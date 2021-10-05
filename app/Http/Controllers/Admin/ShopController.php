@@ -22,6 +22,9 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
+        $shop = Shop::search($request->filter)->get();
+        return $shop;
+
         $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
 
         return Shop::with('availableCategories', 'availableTags')

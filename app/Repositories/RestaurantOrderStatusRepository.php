@@ -8,7 +8,7 @@ use App\Repositories\Abstracts\RestaurantOrderStatusRepositoryInterface;
 
 class RestaurantOrderStatusRepository implements RestaurantOrderStatusRepositoryInterface
 {
-    private RestaurantOrderStatus $model;
+    private $model;
 
     public function __construct(RestaurantOrderStatus $model)
     {
