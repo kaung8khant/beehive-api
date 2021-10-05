@@ -122,7 +122,7 @@ class RestaurantOrderController extends Controller
             'commission_sum' => $commissionSum,
             'commission_ct_sum' => $commissionCtSum,
             'balance_sum' => $balanceSum,
-            'total' =>sizeof($restaurantOrders),
+            'total' => sizeof($restaurantOrders),
             'invoice' => $data,
         ];
 

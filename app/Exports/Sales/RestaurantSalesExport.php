@@ -6,19 +6,23 @@ use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithDrawings;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class RestaurantSalesExport implements FromCollection, WithColumnFormatting, WithColumnWidths, WithDrawings, WithEvents, WithHeadings, WithStyles, WithTitle
+class RestaurantSalesExport extends DefaultValueBinder implements FromCollection, WithColumnFormatting, WithColumnWidths, WithCustomValueBinder, WithDrawings, WithEvents, WithHeadings, WithStyles, WithTitle
 {
     protected $from;
     protected $to;
@@ -38,7 +42,8 @@ class RestaurantSalesExport implements FromCollection, WithColumnFormatting, Wit
 
     public function collection()
     {
-        $restaurantOrders = RestaurantOrder::whereBetween('order_date', [$this->from, $this->to])
+        $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
+            ->whereBetween('order_date', [$this->from, $this->to])
             ->orderBy('restaurant_id')
             ->orderBy('restaurant_branch_id')
             ->orderBy('id')
@@ -79,6 +84,8 @@ class RestaurantSalesExport implements FromCollection, WithColumnFormatting, Wit
                 $order->order_status,
                 $order->order_type,
                 $order->special_instruction,
+                $order->restaurantOrderContact->customer_name,
+                $order->restaurantOrderContact->phone_number,
             ];
         });
 
@@ -117,6 +124,8 @@ class RestaurantSalesExport implements FromCollection, WithColumnFormatting, Wit
                 'order status',
                 "type\n(deli/self pick up)",
                 'special instructions',
+                'customer name',
+                'phone number',
             ],
         ];
     }
@@ -143,6 +152,8 @@ class RestaurantSalesExport implements FromCollection, WithColumnFormatting, Wit
             'Q' => 15,
             'R' => 20,
             'S' => 30,
+            'T' => 25,
+            'U' => 20,
         ];
     }
 
@@ -161,6 +172,8 @@ class RestaurantSalesExport implements FromCollection, WithColumnFormatting, Wit
             'Q' => ['alignment' => ['horizontal' => 'center']],
             'R' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
             'S' => ['alignment' => ['horizontal' => 'center']],
+            'T' => ['alignment' => ['horizontal' => 'center']],
+            'U' => ['alignment' => ['horizontal' => 'right']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -233,5 +246,19 @@ class RestaurantSalesExport implements FromCollection, WithColumnFormatting, Wit
     public function title(): string
     {
         return 'Sales report';
+    }
+
+    public function bindValue(Cell $cell, $value)
+    {
+        $validator = Validator::make(['phone' => $value], [
+            'phone' => 'required|phone:MM',
+        ]);
+
+        if (!$validator->fails()) {
+            $cell->setValueExplicit($value, 's');
+            return true;
+        }
+
+        return parent::bindValue($cell, $value);
     }
 }
