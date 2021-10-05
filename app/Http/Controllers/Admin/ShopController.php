@@ -22,22 +22,20 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        $shop = Shop::search($request->filter)->get();
-        return $shop;
+        return Shop::search($request->filter)->paginate(10);
 
-        $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
+        // $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        return Shop::with('availableCategories', 'availableTags')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        // return Shop::with('availableCategories', 'availableTags')
+        //     ->where('name', 'LIKE', '%' . $request->filter . '%')
+        //     ->orWhere('slug', $request->filter)
+        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        //     ->paginate(10);
     }
 
     public function store(Request $request)
     {
         $validatedData = $this->validateShop($request, true);
-
         $shop = Shop::create($validatedData);
 
         if ($request->image_slug) {
@@ -70,7 +68,6 @@ class ShopController extends Controller
     public function update(Request $request, Shop $shop)
     {
         $validatedData = $this->validateShop($request, false, $shop->id);
-
         $shop->update($validatedData);
 
         if ($request->image_slug) {
@@ -193,43 +190,45 @@ class ShopController extends Controller
 
     public function getShopsByBrand(Request $request, Brand $brand)
     {
-        $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
+        $shopIds = Shop::whereHas('products', function ($query) use ($brand) {
+            $query->where('brand_id', $brand->id);
+        })->pluck('id')->toArray();
 
-        return Shop::with('availableCategories', 'availableTags')
-            ->whereHas('products', function ($q) use ($brand) {
-                $q->where('brand_id', $brand->id);
-            })
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        return Shop::search($request->filter)
+            ->whereIn('id', $shopIds)
             ->paginate(10);
+
+        // $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        // return Shop::with('availableCategories', 'availableTags')
+        //     ->whereHas('products', function ($q) use ($brand) {
+        //         $q->where('brand_id', $brand->id);
+        //     })
+        //     ->where(function ($query) use ($request) {
+        //         $query->where('name', 'LIKE', '%' . $request->filter . '%')
+        //             ->orWhere('slug', $request->filter);
+        //     })
+        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        //     ->paginate(10);
     }
 
-    public function getCustomersByShop(Request $request, $slug)
+    public function getCustomersByShop(Request $request, Shop $shop)
     {
-        $shop = Shop::where('slug', $slug)->firstOrFail();
-
-        $orderList = ShopOrder::whereHas('vendors', function ($query) use ($shop) {
+        $customerIds = ShopOrder::whereHas('vendors', function ($query) use ($shop) {
             $query->where('shop_id', $shop->id);
-        })->get();
+        })->pluck('customer_id')->filter()->unique()->values();
 
-        $customerlist = [];
+        $customerList = $customerIds->map(function ($customerId) use ($request) {
+            return Customer::where('id', $customerId)
+                ->where(function ($query) use ($request) {
+                    $query->where('email', 'LIKE', '%' . $request->filter . '%')
+                        ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                        ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                        ->orWhere('slug', $request->filter);
+                })
+                ->first();
+        })->unique('slug')->sortBy('name')->values();
 
-        foreach ($orderList as $order) {
-            $customer = Customer::where('id', $order->customer_id)->where(function ($query) use ($request) {
-                $query->where('email', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })->first();
-            $customer && array_push($customerlist, $customer);
-        }
-
-        $customerlist = collect($customerlist)->unique()->values()->all();
-        $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
-
-        return response()->json($customerlist, 200);
+        return CollectionHelper::paginate($customerList, $request->size);
     }
 }

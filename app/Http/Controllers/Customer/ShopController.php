@@ -35,16 +35,19 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        $shops = Shop::with('availableCategories', 'availableTags')
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })
-            ->where('is_enable', 1)
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        $shops = Shop::search($request->filter)->where('is_enable', 1)->paginate(10);
+        return $this->generateResponse($shops->makeHidden('id'), 200, false, $shops->lastPage());
 
-        return $this->generateResponse($shops->items(), 200, false, $shops->lastPage());
+        // $shops = Shop::with('availableCategories', 'availableTags')
+        //     ->where(function ($query) use ($request) {
+        //         $query->where('name', 'LIKE', '%' . $request->filter . '%')
+        //             ->orWhere('slug', $request->filter);
+        //     })
+        //     ->where('is_enable', 1)
+        //     ->orderBy('id', 'desc')
+        //     ->paginate(10);
+
+        // return $this->generateResponse($shops->items(), 200, false, $shops->lastPage());
     }
 
     public function show(Shop $shop)

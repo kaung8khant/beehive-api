@@ -71,7 +71,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('shops/toggle-enable/{shop}', 'Admin\ShopController@toggleEnable');
             Route::post('shops/status', 'Admin\ShopController@multipleStatusUpdate');
             Route::patch('shops/toggle-official/{slug}', 'Admin\ShopController@toggleOfficial');
-            Route::get('shops/{slug}/customers', 'Admin\ShopController@getCustomersByShop');
+            Route::get('shops/{shop}/customers', 'Admin\ShopController@getCustomersByShop');
             Route::get('shop-categories/{shopCategory}/sub-categories', 'Admin\ShopSubCategoryController@getSubCategoriesByCategory');
             Route::get('shops/{slug}/shop-tags', 'Admin\ShopTagController@getTagsByShop');
             Route::get('shops/{shop}/ratings', 'Admin\ShopRatingController@getShopRatings');
@@ -92,7 +92,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('brands', 'Admin\BrandController', ['except' => ['create', 'edit']]);
             Route::get('brands/{brand}/products', 'Admin\ProductController@getProductsByBrand');
-            Route::get('brands/{slug}/shops', 'Admin\ShopController@getShopsByBrand');
+            Route::get('brands/{brand}/shops', 'Admin\ShopController@getShopsByBrand');
             /* Shop */
 
             /* Restaurant */
