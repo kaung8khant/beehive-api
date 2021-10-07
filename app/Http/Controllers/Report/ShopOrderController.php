@@ -28,12 +28,12 @@ class ShopOrderController extends Controller
             $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
         })->get()->groupBy('shop_id');
         $shopOrders = ShopOrder::whereBetween('order_date', [$request->from, $request->to])
-        ->where('order_status', '!=', 'cancelled')
-        ->get();
+            ->where('order_status', '!=', 'cancelled')
+            ->get();
 
-        $promoDiscount=0;
+        $promoDiscount = 0;
         foreach ($shopOrders as $k => $order) {
-            $promoDiscount+=$order->promocode_amount;
+            $promoDiscount += $order->promocode_amount;
         }
         return $this->generateShopSaleReport($shopOrderVendors, $promoDiscount);
     }
@@ -54,9 +54,9 @@ class ShopOrderController extends Controller
             ->where('order_status', '!=', 'cancelled')
             ->get();
 
-        $promoDiscount=0;
+        $promoDiscount = 0;
         foreach ($shopOrders as $k => $order) {
-            $promoDiscount+=$order->promocode_amount;
+            $promoDiscount += $order->promocode_amount;
         }
 
         return $this->generateProductSaleReport($groups, $promoDiscount);
@@ -87,7 +87,7 @@ class ShopOrderController extends Controller
 
         foreach ($shopOrders as $order) {
             $amount = $order->order_status == 'cancelled' ? 0 : $order->amount;
-            $commission =  $order->order_status == 'cancelled' ? 0 : $order->commission;
+            $commission = $order->order_status == 'cancelled' ? 0 : $order->commission;
             $commissionCt = $commission * 0.05;
             $totalAmount = $order->order_status == 'cancelled' ? 0 : $order->total_amount;
             $balance = $totalAmount - $commissionCt;
@@ -101,6 +101,8 @@ class ShopOrderController extends Controller
             $data[] = [
                 'invoice_id' => $order->invoice_id,
                 'order_date' => Carbon::parse($order->order_date)->format('M d Y h:i a'),
+                'customer_name' => $order->contact->customer_name,
+                'phone_number' => $order->contact->phone_number,
                 'revenue' => $amount,
                 'commercial_tax' => $order->order_status != 'cancelled' && $order->tax ? $order->tax : 0,
                 'discount' => $order->order_status != 'cancelled' && $order->discount ? $order->discount : 0,
@@ -137,15 +139,14 @@ class ShopOrderController extends Controller
         $commissionCtSum = 0;
         $balanceSum = 0;
 
-
         foreach ($shopOrderVendors as $group) {
             foreach ($group as $vendor) {
                 $shop = Shop::where('id', $vendor->shop_id)->first();
 
                 $amount = $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->amount;
-                $commission =   $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->commission;
+                $commission = $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->commission;
                 $commissionCt = $commission * 0.05;
-                $totalAmount =  $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->total_amount;
+                $totalAmount = $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->total_amount;
                 $balance = $totalAmount - $commissionCt;
 
                 $amountSum += $amount;
@@ -200,7 +201,7 @@ class ShopOrderController extends Controller
 
             foreach ($group as $k => $item) {
                 $amount += ($item->amount * $item->quantity);
-                $commission +=  $item->commission;
+                $commission += $item->commission;
                 $totalAmount += $item->total_amount;
                 $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
                 $discount += $item->discount ? $item->discount * $item->quantity : 0;
@@ -223,7 +224,7 @@ class ShopOrderController extends Controller
                 'quantity' => $quantity,
                 'revenue' => $amount,
                 'commercial_tax' => $commercialTax ? $commercialTax : 0,
-                'discount' =>  $discount ? $discount : 0,
+                'discount' => $discount ? $discount : 0,
                 'total_amount' => $totalAmount,
                 'commission' => $commission ? $commission : 0,
                 'commission_ct' => $commissionCt ? $commissionCt : 0,
@@ -265,7 +266,7 @@ class ShopOrderController extends Controller
 
             foreach ($group as $k => $item) {
                 $amount += ($item->amount * $item->quantity);
-                $commission +=  $item->commission;
+                $commission += $item->commission;
                 $totalAmount += $item->total_amount;
                 $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
                 $discount += $item->discount ? $item->discount * $item->quantity : 0;
@@ -288,7 +289,7 @@ class ShopOrderController extends Controller
                 'quantity' => $quantity,
                 'revenue' => $amount,
                 'commercial_tax' => $commercialTax ? $commercialTax : 0,
-                'discount' =>  $discount ? $discount : 0,
+                'discount' => $discount ? $discount : 0,
                 'total_amount' => $totalAmount,
                 'commission' => $commission ? $commission : 0,
                 'commission_ct' => $commissionCt ? $commissionCt : 0,
