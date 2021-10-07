@@ -34,7 +34,25 @@ class ProductController extends Controller
         $products = $products->paginate(10);
 
         foreach ($products as $product) {
-            $product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariants');
+            $product->load([
+                'shop' => function ($query) {
+                    $query->select('id', 'slug', 'name');
+                },
+                'shopCategory' => function ($query) {
+                    $query->select('id', 'slug', 'name');
+                },
+                'brand' => function ($query) {
+                    $query->select('id', 'slug', 'name');
+                },
+            ]);
+
+            $product->makeHidden('id', 'description', 'variants', 'created_by', 'updated_by')->setAppends(['images']);
+            $product->shop->makeHidden('id')->setAppends([]);
+            $product->shopCategory->makeHidden('id')->setAppends([]);
+
+            if ($product->brand) {
+                $product->brand->makeHidden('id')->setAppends([]);
+            }
         }
 
         return $products;
