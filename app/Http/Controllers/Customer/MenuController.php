@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Helpers\CacheHelper;
 use App\Helpers\GeoHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
@@ -33,6 +34,7 @@ class MenuController extends Controller
             $restaurantBranch['distance'] = $distance;
             $restaurantBranch['time'] = GeoHelper::calculateDeliveryTime($distance);
             $restaurantBranch['delivery_fee'] = $restaurantBranch['free_delivery'] ? 0 : GeoHelper::calculateDeliveryFee($distance);
+            $restaurantBranch['instant_order'] = $distance < CacheHelper::getRestaurantSearchRadius() ? true : false;
         }
 
         return $this->generateResponse($restaurantBranch, 200);
