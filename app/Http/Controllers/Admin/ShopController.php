@@ -22,7 +22,10 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        return Shop::search($request->filter)->paginate(10);
+        $shops = Shop::search($request->filter)->paginate(10);
+
+        $this->optimizeShops($shops);
+        return $shops;
 
         // $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
 
@@ -194,9 +197,12 @@ class ShopController extends Controller
             $query->where('brand_id', $brand->id);
         })->pluck('id')->toArray();
 
-        return Shop::search($request->filter)
+        $shops = Shop::search($request->filter)
             ->whereIn('id', $shopIds)
             ->paginate(10);
+
+        $this->optimizeShops($shops);
+        return $shops;
 
         // $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
 
@@ -230,5 +236,12 @@ class ShopController extends Controller
         })->unique('slug')->sortBy('name')->values();
 
         return CollectionHelper::paginate($customerList, $request->size);
+    }
+
+    private function optimizeShops($shops)
+    {
+        foreach ($shops as $shop) {
+            $shop->makeHidden('id', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by');
+        }
     }
 }
