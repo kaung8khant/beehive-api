@@ -30,7 +30,12 @@ class Product extends BaseModel
 
     public function toSearchableArray(): array
     {
-        return $this->toArray();
+        $array = $this->toArray();
+        $array['shop_id'] = $this->shop->id;
+        $array['shop_category_id'] = $this->shopCategory->id;
+        $array['shop_sub_category_id'] = $this->shopSubCategory ? $this->shopSubCategory->id : null;
+        $array['brand_id'] = $this->brand ? $this->brand->id : null;
+        return $array;
     }
 
     public function getPriceAttribute($value)
