@@ -44,9 +44,10 @@ class ProductController extends Controller
                 'brand' => function ($query) {
                     $query->select('id', 'slug', 'name');
                 },
+                'productVariants',
             ]);
 
-            // $product->makeHidden('id', 'description', 'variants', 'created_by', 'updated_by')->setAppends(['images']);
+            $product->makeHidden('variants', 'created_by', 'updated_by')->setAppends(['images']);
             $product->shop->makeHidden('id')->setAppends([]);
             $product->shopCategory->makeHidden('id')->setAppends([]);
 
