@@ -27,7 +27,9 @@ class PromotionController extends Controller
         $request['slug'] = $this->generateUniqueSlug();
 
         $validatedData = $request->validate($this->getParamsToValidate(true));
-        $validatedData['promocode_id'] = $this->getPromocodeIdBySlug($request->promocode_slug);
+        if ($request->promocode_slug) {
+            $validatedData['promocode_id'] = $this->getPromocodeIdBySlug($request->promocode_slug);
+        }
         $promotion = Promotion::create($validatedData);
 
         if ($request->image_slug) {
@@ -49,7 +51,11 @@ class PromotionController extends Controller
 
         $validatedData = $request->validate($this->getParamsToValidate());
 
-        $validatedData['promocode_id'] = $this->getPromocodeIdBySlug($request->promocode_slug);
+        if ($request->promocode_slug) {
+            $validatedData['promocode_id'] = $this->getPromocodeIdBySlug($request->promocode_slug);
+        } else {
+            $validatedData['promocode_id'] = null;
+        }
 
         $promotion->update($validatedData);
         if ($request->image_slug) {
