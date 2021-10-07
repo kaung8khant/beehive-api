@@ -19,17 +19,7 @@ return [
     'searchableAttributes' => [
         'slug',
         'name',
-        'address',
-        'city',
-        'township',
-        'opening_time',
-        'closing_time',
-        'latitude',
-        'longitude',
-        'is_official',
-        'created_by',
-        'rating',
-        'first_order_date',
+        'description',
     ],
 
     /*
@@ -46,7 +36,7 @@ return [
     |
     */
 
-    'customRanking' => ['desc(contact_number)'],
+    'customRanking' => null,
 
     /*
     |--------------------------------------------------------------------------
@@ -61,7 +51,7 @@ return [
     |
     */
 
-    'removeStopWords' => null,
+    'removeStopWords' => ['desc(id)'],
 
     /*
     |--------------------------------------------------------------------------
@@ -93,7 +83,7 @@ return [
     |
     */
 
-    'attributesForFaceting' => ['city'],
+    'attributesForFaceting' => null,
 
     /*
     |--------------------------------------------------------------------------

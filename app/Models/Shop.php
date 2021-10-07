@@ -29,6 +29,11 @@ class Shop extends BaseModel
 
     protected $appends = ['rating', 'images', 'covers', 'first_order_date'];
 
+    public function toSearchableArray(): array
+    {
+        return $this->toArray();
+    }
+
     public function getFirstOrderDateAttribute()
     {
         $shopOrder = ShopOrder::whereHas('vendors', function ($query) {
