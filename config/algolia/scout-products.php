@@ -19,7 +19,7 @@ return [
     'searchableAttributes' => [
         'slug',
         'name',
-        'description',
+        'description'
     ],
 
     /*
@@ -36,7 +36,7 @@ return [
     |
     */
 
-    'customRanking' => null,
+    'customRanking' => ['desc(search_index)', 'desc(id)'],
 
     /*
     |--------------------------------------------------------------------------
@@ -51,7 +51,7 @@ return [
     |
     */
 
-    'removeStopWords' => ['desc(id)'],
+    'removeStopWords' => null,
 
     /*
     |--------------------------------------------------------------------------

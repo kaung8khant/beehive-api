@@ -20,28 +20,48 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        $products = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariations.productVariationValues', 'productVariants')
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
+        $products = Product::search($request->filter);
 
         if (isset($request->is_enable)) {
+            $productIds = Product::whereHas('shop', function ($query) use ($request) {
+                $query->where('is_enable', $request->is_enable);
+            })->pluck('id')->toArray();
+
             $products = $products->where('is_enable', $request->is_enable)
-                ->whereHas('shop', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
+                ->whereIn('id', $productIds);
         }
-        if ($request->by) {
-            $products = $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-                ->orderBy('search_index', 'desc');
-        } else {
-            $products = $products->orderBy('search_index', 'desc')
-                ->orderBy($sorting['orderBy'], $sorting['sortBy']);
+
+        $products = $products->paginate(10);
+
+        foreach ($products as $product) {
+            $product->load('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariants');
         }
-        return $products->paginate(10);
+
+        return $products;
+
+        // $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        // $products = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariations.productVariationValues', 'productVariants')
+        //     ->where(function ($query) use ($request) {
+        //         $query->where('name', 'LIKE', '%' . $request->filter . '%')
+        //             ->orWhere('slug', $request->filter);
+        //     });
+
+        // if (isset($request->is_enable)) {
+        //     $products = $products->where('is_enable', $request->is_enable)
+        //         ->whereHas('shop', function ($query) use ($request) {
+        //             $query->where('is_enable', $request->is_enable);
+        //         });
+        // }
+        // if ($request->by) {
+        //     $products = $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        //         ->orderBy('search_index', 'desc');
+        // } else {
+        //     $products = $products->orderBy('search_index', 'desc')
+        //         ->orderBy($sorting['orderBy'], $sorting['sortBy']);
+        // }
+
+        // return $products->paginate(10);
     }
 
     public function store(Request $request)
@@ -78,7 +98,6 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $validatedData = $this->validateRequest($request);
-
         $product->update($validatedData);
 
         if ($request->image_slugs) {
