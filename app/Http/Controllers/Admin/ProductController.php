@@ -46,7 +46,7 @@ class ProductController extends Controller
                 },
             ]);
 
-            $product->makeHidden('id', 'description', 'variants', 'created_by', 'updated_by')->setAppends(['images']);
+            // $product->makeHidden('id', 'description', 'variants', 'created_by', 'updated_by')->setAppends(['images']);
             $product->shop->makeHidden('id')->setAppends([]);
             $product->shopCategory->makeHidden('id')->setAppends([]);
 
