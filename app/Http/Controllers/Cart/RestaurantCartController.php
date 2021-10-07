@@ -57,12 +57,6 @@ class RestaurantCartController extends CartController
             $menuCart = MenuCart::where('customer_id', $this->customer->id)->first();
             $menuData = $this->prepareMenuData($menu, $request);
 
-            try {
-                $this->checkAddressAndBranch($request->address, [$menu->id], $restaurantBranch->id);
-            } catch (ForbiddenException $e) {
-                return $this->generateResponse($e->getMessage(), 400, true);
-            }
-
             if ($menuCart) {
                 if ($menuCart->restaurant_branch_id !== $restaurantBranch->id) {
                     $sameBranchError = $this->resMes['restaurant_cart']['same_branch_err'];
@@ -114,12 +108,12 @@ class RestaurantCartController extends CartController
             'option_items' => 'nullable|array',
             'option_items.*' => 'required|exists:App\Models\MenuOptionItem,slug',
             'special_instruction' => 'nullable|string',
-            'address' => 'required',
+            'address' => 'nullable',
             'address.house_number' => 'nullable|string',
             'address.floor' => 'nullable|integer',
             'address.street_name' => 'nullable|string',
-            'address.latitude' => 'required|numeric',
-            'address.longitude' => 'required|numeric',
+            'address.latitude' => 'nullable|numeric',
+            'address.longitude' => 'nullable|numeric',
         ]);
     }
 
@@ -370,14 +364,21 @@ class RestaurantCartController extends CartController
             return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
 
-        $address = $menuCart->address;
+        try {
+            $menuIds = $menuCart->menuCartItems->pluck('menu_id')->unique();
+            $this->checkAddressAndBranch($request->address, $menuIds, $menuCart->restaurant_branch_id, $request->order_type);
+        } catch (ForbiddenException $e) {
+            return $this->generateResponse($e->getMessage(), 400, true);
+        }
+
+        $address = $request->address;
         $branch = RestaurantBranch::with('restaurant')->where('id', $menuCart->restaurant_branch_id)->first();
 
         $distance = GeoHelper::calculateDistance($address['latitude'], $address['longitude'], $branch->latitude, $branch->longitude);
         $deliveryFee = $branch->free_delivery ? 0 : GeoHelper::calculateDeliveryFee($distance);
 
         $request['restaurant_branch_slug'] = RestaurantBranch::where('id', $menuCart->restaurant_branch_id)->value('slug');
-        $request['address'] = $menuCart->address;
+        $request['address'] = $address;
         $request['delivery_fee'] = $deliveryFee;
 
         $request['promo_code'] = $menuCart->promocode;
@@ -414,12 +415,12 @@ class RestaurantCartController extends CartController
         return $this->generateResponse($data, 200);
     }
 
-    private function checkAddressAndBranch($address, $menuIds, $restaurantBranchId)
+    private function checkAddressAndBranch($address, $menuIds, $restaurantBranchId, $orderType = null)
     {
         $restaurantBranch = RestaurantBranch::where('id', $restaurantBranchId)->first();
         $distance = GeoHelper::calculateDistance($address['latitude'], $address['longitude'], $restaurantBranch->latitude, $restaurantBranch->longitude);
 
-        if ($distance > CacheHelper::getRestaurantSearchRadius()) {
+        if ($orderType === 'instant' && $distance > CacheHelper::getRestaurantSearchRadius()) {
             throw new ForbiddenException($this->resMes['restaurant_cart']['address_err']);
         }
 
