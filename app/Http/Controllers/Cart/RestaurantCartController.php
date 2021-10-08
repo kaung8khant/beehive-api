@@ -364,16 +364,16 @@ class RestaurantCartController extends CartController
             return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
 
+        $address = $request->address ? $request->address : $menuCart->address;
+
         try {
             $menuIds = $menuCart->menuCartItems->pluck('menu_id')->unique();
-            $this->checkAddressAndBranch($request->address, $menuIds, $menuCart->restaurant_branch_id, $request->order_type);
+            $this->checkAddressAndBranch($address, $menuIds, $menuCart->restaurant_branch_id, $request->order_type);
         } catch (ForbiddenException $e) {
             return $this->generateResponse($e->getMessage(), 400, true);
         }
 
-        $address = $request->address;
         $branch = RestaurantBranch::with('restaurant')->where('id', $menuCart->restaurant_branch_id)->first();
-
         $distance = GeoHelper::calculateDistance($address['latitude'], $address['longitude'], $branch->latitude, $branch->longitude);
         $deliveryFee = $branch->free_delivery ? 0 : GeoHelper::calculateDeliveryFee($distance);
 
