@@ -42,9 +42,11 @@ class OrderDriverController extends Controller
                 $q->where('status', '!=', 'rejected');
                 $q->where('status', '!=', 'no_response');
                 $q->where('status', '!=', 'pending');
+                $q->where('user_id', $this->driver->id);
             })
             ->orderByDesc('id')
             ->get();
+
 
         //group by date and status
         $restaurantOrder = $restaurantOrder->map(function ($data) {
