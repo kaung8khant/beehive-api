@@ -75,9 +75,10 @@ class ShopController extends Controller
                     ->orWhere('slug', $request->filter);
             })
             ->orderBy('name', 'asc')
-            ->paginate($request->size);
+            ->get()
+            ->makeHidden(['created_by', 'updated_by']);
 
-        return $this->generateResponse($shopCategories->items(), 200, false, $shopCategories->lastPage());
+        return $this->generateResponse($shopCategories, 200, false, 1);
     }
 
     public function getCatgorizedProduct(Request $request)

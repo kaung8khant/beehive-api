@@ -26,6 +26,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Events\OrderAssignEvent;
 
 class RestaurantOrderController extends Controller
 {
@@ -177,8 +178,7 @@ class RestaurantOrderController extends Controller
         });
 
         // assign driver here.
-        // $this->assignOrder('restaurant', $order->slug);
-        //$this->assignOrder($order);
+        event(new OrderAssignEvent($order, [], 0));
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
         OrderHelper::notifySystem($order, $phoneNumber, $this->messageService);

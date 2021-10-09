@@ -6,6 +6,7 @@ use App\Events\DataChanged;
 use App\Events\DriverStatusChanged;
 use App\Events\OrderAssignEvent;
 use App\Listeners\OrderAssignListener;
+use App\Listeners\OrderFirstAssignListener;
 use App\Listeners\StoreAuditInformation;
 use App\Listeners\UpdateOrderStatus;
 use Illuminate\Auth\Events\Registered;
@@ -27,6 +28,7 @@ class EventServiceProvider extends ServiceProvider
             UpdateOrderStatus::class,
         ],
         OrderAssignEvent::class => [
+            OrderFirstAssignListener::class,
             OrderAssignListener::class,
         ],
         DataChanged::class => [
