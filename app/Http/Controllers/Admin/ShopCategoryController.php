@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Product;
+use App\Models\Shop;
 use App\Models\ShopCategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,13 +17,9 @@ class ShopCategoryController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('shop_categories', 'name', $request->by, $request->order);
-
-        return ShopCategory::with('shopSubCategories')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $shopCategories = ShopCategory::search($request->filter)->paginate(10);
+        $this->optimizeShopCategories($shopCategories);
+        return $shopCategories;
     }
 
     public function store(Request $request)
@@ -78,15 +75,18 @@ class ShopCategoryController extends Controller
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
-    public function getCategoriesByShop(Request $request, $slug)
+    public function getCategoriesByShop(Request $request, Shop $shop)
     {
-        return ShopCategory::whereHas('shops', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })
-            ->paginate(10);
+        $categoryIds = Product::where('shop_id', $shop->id)->pluck('shop_category_id')->unique()->values()->toArray();
+        $shopCategories = ShopCategory::search($request->filter)->whereIn('id', $categoryIds)->paginate(10);
+        $this->optimizeShopCategories($shopCategories);
+        return $shopCategories;
+    }
+
+    private function optimizeShopCategories($shopCategories)
+    {
+        foreach ($shopCategories as $category) {
+            $category->makeHidden('id', 'created_by', 'updated_by');
+        }
     }
 }
