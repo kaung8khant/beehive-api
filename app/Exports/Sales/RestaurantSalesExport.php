@@ -128,7 +128,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
                 'no.',
                 'invoice id',
                 'order date',
-                'deliver date',
+                'deliverd date',
                 'restaurant',
                 'branch',
                 'revenue',

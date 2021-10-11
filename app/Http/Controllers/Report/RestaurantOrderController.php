@@ -113,7 +113,7 @@ class RestaurantOrderController extends Controller
                 'order_status' => $order->order_status,
                 'order_type' => $order->order_type,
                 'special_instructions' => $order->special_instruction,
-                'delivery_date' => $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,
+                'delivered_date' => $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,
             ];
         }
 
