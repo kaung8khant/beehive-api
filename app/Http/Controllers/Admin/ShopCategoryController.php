@@ -17,7 +17,7 @@ class ShopCategoryController extends Controller
 
     public function index(Request $request)
     {
-        $shopCategories = ShopCategory::search($request->filter)->paginate(10);
+        $shopCategories = ShopCategory::search($request->filter)->simplePaginate(10);
         $this->optimizeShopCategories($shopCategories);
         return $shopCategories;
     }
@@ -78,7 +78,7 @@ class ShopCategoryController extends Controller
     public function getCategoriesByShop(Request $request, Shop $shop)
     {
         $categoryIds = Product::where('shop_id', $shop->id)->pluck('shop_category_id')->unique()->values()->toArray();
-        $shopCategories = ShopCategory::search($request->filter)->whereIn('id', $categoryIds)->paginate(10);
+        $shopCategories = ShopCategory::search($request->filter)->whereIn('id', $categoryIds)->simplePaginate(10);
         $this->optimizeShopCategories($shopCategories);
         return $shopCategories;
     }

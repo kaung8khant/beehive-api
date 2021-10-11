@@ -30,34 +30,9 @@ class ProductController extends Controller
                 ->whereIn('id', $productIds);
         }
 
-        $products = $products->paginate(10);
+        $products = $products->simplePaginate(10);
         $this->optimizeProducts($products);
-
         return $products;
-
-        // $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        // $products = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariations.productVariationValues', 'productVariants')
-        //     ->where(function ($query) use ($request) {
-        //         $query->where('name', 'LIKE', '%' . $request->filter . '%')
-        //             ->orWhere('slug', $request->filter);
-        //     });
-
-        // if (isset($request->is_enable)) {
-        //     $products = $products->where('is_enable', $request->is_enable)
-        //         ->whereHas('shop', function ($query) use ($request) {
-        //             $query->where('is_enable', $request->is_enable);
-        //         });
-        // }
-        // if ($request->by) {
-        //     $products = $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-        //         ->orderBy('search_index', 'desc');
-        // } else {
-        //     $products = $products->orderBy('search_index', 'desc')
-        //         ->orderBy($sorting['orderBy'], $sorting['sortBy']);
-        // }
-
-        // return $products->paginate(10);
     }
 
     public function store(Request $request)
@@ -252,36 +227,9 @@ class ProductController extends Controller
                 ->whereIn('id', $productIds);
         }
 
-        $products = $products->paginate(10);
+        $products = $products->simplePaginate(10);
         $this->optimizeProducts($products);
-
         return $products;
-
-        // $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        // $products = Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants')
-        //     ->where('shop_id', $shop->id)
-        //     ->where(function ($q) use ($request) {
-        //         $q->where('name', 'LIKE', '%' . $request->filter . '%')
-        //             ->orWhere('slug', $request->filter);
-        //     });
-
-        // if (isset($request->is_enable)) {
-        //     $products = $products->where('is_enable', $request->is_enable)
-        //         ->whereHas('shop', function ($query) use ($request) {
-        //             $query->where('is_enable', $request->is_enable);
-        //         });
-        // }
-
-        // if ($request->by) {
-        //     $products = $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-        //         ->orderBy('search_index', 'desc');
-        // } else {
-        //     $products = $products->orderBy('search_index', 'desc')
-        //         ->orderBy($sorting['orderBy'], $sorting['sortBy']);
-        // }
-
-        // return $products->paginate(10);
     }
 
     public function getProductsByBrand(Request $request, Brand $brand)
@@ -297,29 +245,9 @@ class ProductController extends Controller
                 ->whereIn('id', $productIds);
         }
 
-        $products = $products->paginate(10);
+        $products = $products->simplePaginate(10);
         $this->optimizeProducts($products);
-
         return $products;
-
-        // $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        // $products = Product::with('shop', 'shopCategory')
-        //     ->where('brand_id', $brand->id)
-        //     ->where(function ($q) use ($request) {
-        //         $q->where('name', 'LIKE', '%' . $request->filter . '%')
-        //             ->orWhere('slug', $request->filter);
-        //     });
-
-        // if (isset($request->is_enable)) {
-        //     $products = $products->where('is_enable', $request->is_enable)
-        //         ->whereHas('shop', function ($query) use ($request) {
-        //             $query->where('is_enable', $request->is_enable);
-        //         });
-        // }
-
-        // return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-        //     ->paginate(10);
     }
 
     public function getProductsByCategory(Request $request, ShopCategory $shopCategory)
@@ -335,29 +263,9 @@ class ProductController extends Controller
                 ->whereIn('id', $productIds);
         }
 
-        $products = $products->paginate(10);
+        $products = $products->simplePaginate(10);
         $this->optimizeProducts($products);
-
         return $products;
-
-        // $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        // $products = Product::with('shop', 'shopCategory')
-        //     ->where('shop_category_id', $shopCategory->id)
-        //     ->where(function ($q) use ($request) {
-        //         $q->where('name', 'LIKE', '%' . $request->filter . '%')
-        //             ->orWhere('slug', $request->filter);
-        //     });
-
-        // if (isset($request->is_enable)) {
-        //     $products = $products->where('is_enable', $request->is_enable)
-        //         ->whereHas('shop', function ($query) use ($request) {
-        //             $query->where('is_enable', $request->is_enable);
-        //         });
-        // }
-
-        // return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-        //     ->paginate(10);
     }
 
     public function updateSearchIndex(Request $request, Product $product)

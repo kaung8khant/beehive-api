@@ -22,7 +22,7 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        $shops = Shop::search($request->filter)->paginate(10);
+        $shops = Shop::search($request->filter)->simplePaginate(10);
         $this->optimizeShops($shops);
         return $shops;
     }
@@ -190,7 +190,7 @@ class ShopController extends Controller
 
         $shops = Shop::search($request->filter)
             ->whereIn('id', $shopIds)
-            ->paginate(10);
+            ->simplePaginate(10);
 
         $this->optimizeShops($shops);
         return $shops;
@@ -213,7 +213,7 @@ class ShopController extends Controller
                 ->first();
         })->unique('slug')->sortBy('name')->values();
 
-        return CollectionHelper::paginate($customerList, $request->size);
+        return CollectionHelper::simplePaginate($customerList, $request->size);
     }
 
     private function optimizeShops($shops)
