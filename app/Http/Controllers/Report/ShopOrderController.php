@@ -99,12 +99,6 @@ class ShopOrderController extends Controller
             $commissionCtSum += $commissionCt;
             $balanceSum += $balance;
 
-            $deliveryDate=null;
-            if ($order->order_status==='delivered') {
-                $orderStatus=ShopOrderStatus::where('shop_order_id', $order->id)->where('status', 'delivered')->first();
-                $deliveryDate=Carbon::parse($orderStatus->created_at)->format('M d Y h:i a');
-            }
-
             $data[] = [
                 'invoice_id' => $order->invoice_id,
                 'order_date' => Carbon::parse($order->order_date)->format('M d Y h:i a'),
@@ -122,7 +116,6 @@ class ShopOrderController extends Controller
                 'payment_status' => $order->payment_status,
                 'order_status' => $order->order_status,
                 'special_instructions' => $order->special_instruction,
-                'delivery_date' =>$deliveryDate,
             ];
         }
 
