@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\CacheHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
@@ -30,9 +31,9 @@ class ProductController extends Controller
                 ->whereIn('id', $productIds);
         }
 
-        $products = $products->simplePaginate(10);
+        $products = $products->paginate(10);
         $this->optimizeProducts($products);
-        return $products;
+        return CollectionHelper::removePaginateLinks($products);
     }
 
     public function store(Request $request)
@@ -227,9 +228,9 @@ class ProductController extends Controller
                 ->whereIn('id', $productIds);
         }
 
-        $products = $products->simplePaginate(10);
+        $products = $products->paginate(10);
         $this->optimizeProducts($products);
-        return $products;
+        return CollectionHelper::removePaginateLinks($products);
     }
 
     public function getProductsByBrand(Request $request, Brand $brand)
@@ -245,9 +246,9 @@ class ProductController extends Controller
                 ->whereIn('id', $productIds);
         }
 
-        $products = $products->simplePaginate(10);
+        $products = $products->paginate(10);
         $this->optimizeProducts($products);
-        return $products;
+        return CollectionHelper::removePaginateLinks($products);
     }
 
     public function getProductsByCategory(Request $request, ShopCategory $shopCategory)
@@ -263,9 +264,9 @@ class ProductController extends Controller
                 ->whereIn('id', $productIds);
         }
 
-        $products = $products->simplePaginate(10);
+        $products = $products->paginate(10);
         $this->optimizeProducts($products);
-        return $products;
+        return CollectionHelper::removePaginateLinks($products);
     }
 
     public function updateSearchIndex(Request $request, Product $product)

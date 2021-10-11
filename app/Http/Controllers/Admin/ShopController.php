@@ -22,9 +22,9 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        $shops = Shop::search($request->filter)->simplePaginate(10);
+        $shops = Shop::search($request->filter)->paginate(10);
         $this->optimizeShops($shops);
-        return $shops;
+        return CollectionHelper::removePaginateLinks($shops);
     }
 
     public function store(Request $request)
@@ -188,12 +188,9 @@ class ShopController extends Controller
             $query->where('brand_id', $brand->id);
         })->pluck('id')->toArray();
 
-        $shops = Shop::search($request->filter)
-            ->whereIn('id', $shopIds)
-            ->simplePaginate(10);
-
+        $shops = Shop::search($request->filter)->whereIn('id', $shopIds)->paginate(10);
         $this->optimizeShops($shops);
-        return $shops;
+        return CollectionHelper::removePaginateLinks($shops);
     }
 
     public function getCustomersByShop(Request $request, Shop $shop)
@@ -213,7 +210,7 @@ class ShopController extends Controller
                 ->first();
         })->unique('slug')->sortBy('name')->values();
 
-        return CollectionHelper::simplePaginate($customerList, $request->size);
+        return CollectionHelper::paginate($customerList, $request->size);
     }
 
     private function optimizeShops($shops)
