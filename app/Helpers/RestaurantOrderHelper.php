@@ -524,7 +524,7 @@ trait RestaurantOrderHelper
     {
         $orderID = RestaurantOrder::where('slug', $order['slug'])->pluck('id');
         $driverID = RestaurantOrderDriver::where('restaurant_order_id', $orderID)->whereHas('status', function ($q) {
-            $q->where('status', '!=', 'accepted');
+            $q->where('status', 'accepted');
         })->first();
 
         if ($driverID) {

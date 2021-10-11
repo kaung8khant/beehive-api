@@ -109,20 +109,22 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('restaurants/{slug}/restaurant-tags', 'Admin\RestaurantTagController@getTagsByRestaurant');
 
             Route::resource('menus', 'Admin\MenuController', ['except' => ['create', 'edit']]);
-            Route::resource('menu-variations', 'Admin\MenuVariationController', ['except' => ['create', 'edit']]);
-            Route::resource('menu-variation-values', 'Admin\MenuVariationValueController', ['except' => ['create', 'edit']]);
-            Route::resource('menu-toppings', 'Admin\MenuToppingController', ['except' => ['create', 'edit']]);
             Route::patch('menus/toggle-enable/{menu}', 'Admin\MenuController@toggleEnable');
-            Route::post('menus/status', 'Admin\MenuController@multipleStatusUpdate');
             Route::post('menus/multiple-delete', 'Admin\MenuController@multipleDelete');
-            Route::get('restaurants/{restaurant}/menus', 'Admin\MenuController@getMenusByRestaurant');
-            Route::get('menus/{menu}/menu-variations', 'Admin\MenuVariationController@getVariationsByMenu');
+            Route::post('menus/status', 'Admin\MenuController@multipleStatusUpdate');
+
+            Route::resource('menu-toppings', 'Admin\MenuToppingController', ['except' => ['create', 'edit']]);
             Route::get('menus/{menu}/menu-toppings', 'Admin\MenuToppingController@getToppingsByMenu');
-            Route::get('restaurant-branches/maps', 'Admin\RestaurantBranchController@getAll');
-            Route::resource('restaurant-branches', 'Admin\RestaurantBranchController', ['except' => ['create', 'edit']]);
+
+            Route::get('restaurants/{restaurant}/menus', 'Admin\MenuController@getMenusByRestaurant');
             Route::get('restaurant-branches/{restaurantBranch}/menus', 'Admin\MenuController@getMenusByBranch');
             Route::get('restaurant-categories/{restaurantCategory}/menus', 'Admin\MenuController@getMenusByCategory');
+            Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\MenuController@getAvailableMenusByBranch');
             Route::get('restaurant-branches/{restaurantBranch}/menus-with-additionals', 'Admin\MenuController@getMenusByBranchWithAdditionals');
+
+            Route::get('restaurant-branches/maps', 'Admin\RestaurantBranchController@getAll');
+            Route::resource('restaurant-branches', 'Admin\RestaurantBranchController', ['except' => ['create', 'edit']]);
+
             Route::post('restaurant-branches/{restaurantBranch}/menus/{menu}', 'Admin\RestaurantBranchController@toggleAvailable');
             Route::post('restaurant-branches/add-available-menus/{restaurantBranch}', 'Admin\RestaurantBranchController@addAvailableMenus');
             Route::post('restaurant-branches/remove-available-menus/{slug}', 'Admin\RestaurantBranchController@removeAvailableMenus');
@@ -131,10 +133,14 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('restaurant-branches/status', 'Admin\RestaurantBranchController@multipleStatusUpdate');
             Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\RestaurantBranchController@getRestaurantBranchByCustomers');
             Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
-            Route::get('restaurants/branches/{restaurantBranch}/menus', 'Customer\MenuController@getAvailableMenusByBranch');
 
             Route::put('restaurant-branches/{restaurantBranch}/index', 'Admin\RestaurantBranchController@updateSearchIndex');
+            Route::put('menus/{menu}/variants', 'Admin\MenuController@updateVariants');
             Route::put('menus/{menu}/index', 'Admin\MenuController@updateSearchIndex');
+
+            // Route::resource('menu-variations', 'Admin\MenuVariationController', ['except' => ['create', 'edit']]);
+            // Route::get('menus/{menu}/menu-variations', 'Admin\MenuVariationController@getVariationsByMenu');
+            // Route::resource('menu-variation-values', 'Admin\MenuVariationValueController', ['except' => ['create', 'edit']]);
 
             // Route::get('townships/{township}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByTownship');
 

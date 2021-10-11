@@ -76,10 +76,7 @@ class AdsController extends Controller
     {
         $params = [
             'label' => 'nullable',
-            'contact_person' => 'nullable',
-            'company_name' => 'nullable',
-            'phone_number' => 'nullable',
-            'email' => 'nullable',
+            'note' => 'nullable',
             'type' => 'required|in:banner',
             'source' => 'required|in:restaurant,shop',
             'image_slug' => 'nullable|exists:App\Models\File,slug',

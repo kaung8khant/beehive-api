@@ -6,10 +6,9 @@ use App\Events\OrderAssignEvent;
 use App\Models\RestaurantBranch;
 use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
 use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class OrderAssignListener implements ShouldQueue
+class OrderFirstAssignListener
 {
     use InteractsWithQueue;
 
@@ -18,7 +17,7 @@ class OrderAssignListener implements ShouldQueue
      *
      * @var int
      */
-    public $delay = 15;
+    public $delay = 0;
 
     // public $connection = 'database';
     private $repository;
@@ -42,9 +41,8 @@ class OrderAssignListener implements ShouldQueue
      */
     public function handle(OrderAssignEvent $event)
     {
-        $maxAssign = 4;
-        if (count($event->driver) > 0) {
 
+        if (count($event->driver) == 0) {
             $restaurantBranch = RestaurantBranch::where('slug', $event->order->restaurant_branch_info['slug'])->first();
 
             $driver = $this->driverRealtime->getAvailableDrivers($event->driver);
@@ -57,7 +55,7 @@ class OrderAssignListener implements ShouldQueue
             $assignedDriver = $event->driver;
             array_push($assignedDriver, $driverSlug);
 
-            if ($event->time + 1 < $maxAssign && count($driverData) > 1 && !$this->repository->checkOrderAccepted($event->order)) {
+            if (count($driverData) > 1 && !$this->repository->checkOrderAccepted($event->order)) {
                 event(new OrderAssignEvent($event->order, $assignedDriver, $event->time + 1));
             } else {
                 // send notification to admin for max assignment or no driver
