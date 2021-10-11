@@ -18,10 +18,12 @@ class PromocodeController extends Controller
         $totalAmountSum = 0;
         $shopOrders = ShopOrder::whereBetween('order_date', [$request->from, $request->to])
             ->where('order_status', '!=', 'cancelled')
+            ->whereNotNull('promocode')
             ->select('promocode_id', 'promocode', 'promocode_amount')
             ->get();
         $restaurantOrders = RestaurantOrder::whereBetween('order_date', [$request->from, $request->to])
             ->where('order_status', '!=', 'cancelled')
+            ->whereNotNull('promocode')
             ->select('promocode_id', 'promocode', 'promocode_amount')
             ->get();
         $orderList = collect($shopOrders)->merge($restaurantOrders)->groupBy('promocode_id');
