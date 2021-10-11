@@ -21,9 +21,12 @@ class MenuController extends Controller
             abort(404);
         }
 
-        $restaurantBranch->load(['restaurant' => function ($query) {
-            $query->exclude(['created_by', 'updated_by']);
-        }])->makeHidden(['created_by', 'updated_by']);
+        $restaurantBranch->load([
+            'restaurant' => function ($query) {
+                $query->exclude(['created_by', 'updated_by']);
+            },
+            'restaurant.availableTags',
+        ])->makeHidden(['created_by', 'updated_by']);
 
         $restaurantBranch->restaurant->is_favorite = $this->checkFavoriteRestaurant($restaurantBranch->restaurant->id);
         $restaurantBranch['available_categories'] = $this->getAvailableCategories($restaurantBranch->id, $restaurantBranch->restaurant->id);
