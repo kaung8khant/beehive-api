@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Cart;
 
 use App\Exceptions\ForbiddenException;
+use App\Helpers\CacheHelper;
 use App\Helpers\GeoHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
@@ -48,6 +49,7 @@ class CartController extends Controller
             'restaurant_branch' => $branch->makeHidden('restaurant', 'created_by', 'updated_by'),
             'address' => $menuCart->address,
             'distance' => $distance,
+            'instant_order' => $distance < CacheHelper::getRestaurantSearchRadius() ? true : false,
             'delivery_time' => GeoHelper::calculateDeliveryTime($distance),
             'delivery_fee' => $deliveryFee,
             'promocode' => $menuCart->promocode,
