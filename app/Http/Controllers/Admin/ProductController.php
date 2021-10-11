@@ -373,25 +373,25 @@ class ProductController extends Controller
 
     private function optimizeProducts($products)
     {
-        foreach ($products as $product) {
-            $product->load([
-                'shop' => function ($query) {
-                    $query->select('id', 'slug', 'name');
-                },
-                'shopCategory' => function ($query) {
-                    $query->select('id', 'slug', 'name');
-                },
-                'brand' => function ($query) {
-                    $query->select('id', 'slug', 'name');
-                },
-            ]);
+        $products->load([
+            'shop' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            },
+            'shopCategory' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            },
+            'brand' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            },
+        ]);
 
-            $product->makeHidden('id', 'variants', 'created_by', 'updated_by');
-            $product->shop->makeHidden('id')->setAppends([]);
-            $product->shopCategory->makeHidden('id')->setAppends([]);
+        foreach ($products as $product) {
+            $product->makeHidden(['id', 'variants', 'created_by', 'updated_by']);
+            $product->shop->makeHidden(['id'])->setAppends([]);
+            $product->shopCategory->makeHidden(['id'])->setAppends([]);
 
             if ($product->brand) {
-                $product->brand->makeHidden('id')->setAppends([]);
+                $product->brand->makeHidden(['id'])->setAppends([]);
             }
 
             $product->product_variants = $product->productVariants()->where('is_enable', 1)->orderBy('price', 'asc')->limit(1)->get();

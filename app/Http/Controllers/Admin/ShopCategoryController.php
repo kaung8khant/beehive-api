@@ -85,8 +85,6 @@ class ShopCategoryController extends Controller
 
     private function optimizeShopCategories($shopCategories)
     {
-        foreach ($shopCategories as $category) {
-            $category->makeHidden('id', 'created_by', 'updated_by');
-        }
+        $shopCategories->makeHidden(['id', 'created_by', 'updated_by']);
     }
 }

@@ -23,17 +23,8 @@ class ShopController extends Controller
     public function index(Request $request)
     {
         $shops = Shop::search($request->filter)->paginate(10);
-
         $this->optimizeShops($shops);
         return $shops;
-
-        // $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        // return Shop::with('availableCategories', 'availableTags')
-        //     ->where('name', 'LIKE', '%' . $request->filter . '%')
-        //     ->orWhere('slug', $request->filter)
-        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-        //     ->paginate(10);
     }
 
     public function store(Request $request)
@@ -203,19 +194,6 @@ class ShopController extends Controller
 
         $this->optimizeShops($shops);
         return $shops;
-
-        // $sorting = CollectionHelper::getSorting('shops', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        // return Shop::with('availableCategories', 'availableTags')
-        //     ->whereHas('products', function ($q) use ($brand) {
-        //         $q->where('brand_id', $brand->id);
-        //     })
-        //     ->where(function ($query) use ($request) {
-        //         $query->where('name', 'LIKE', '%' . $request->filter . '%')
-        //             ->orWhere('slug', $request->filter);
-        //     })
-        //     ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-        //     ->paginate(10);
     }
 
     public function getCustomersByShop(Request $request, Shop $shop)
@@ -240,8 +218,6 @@ class ShopController extends Controller
 
     private function optimizeShops($shops)
     {
-        foreach ($shops as $shop) {
-            $shop->makeHidden('id', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by');
-        }
+        $shops->makeHidden(['id', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
     }
 }

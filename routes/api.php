@@ -65,7 +65,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /* Shop */
             Route::resource('shop-categories', 'Admin\ShopCategoryController', ['except' => ['create', 'edit']]);
-            Route::resource('sub-categories', 'Admin\ShopSubCategoryController', ['except' => ['create', 'edit']]);
+            Route::resource('sub-categories', 'Admin\ShopSubCategoryController', ['except' => ['create', 'edit']])->parameter('sub-categories', 'shopSubCategory');
             Route::resource('shop-tags', 'Admin\ShopTagController', ['except' => ['create', 'edit']]);
             Route::resource('shops', 'Admin\ShopController', ['except' => ['create', 'edit']]);
             Route::patch('shops/toggle-enable/{shop}', 'Admin\ShopController@toggleEnable');
