@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
+use App\Models\RestaurantOrderStatus;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -13,48 +14,65 @@ class RestaurantOrderController extends Controller
 {
     public function getAllOrders(Request $request)
     {
-        // $request->validate([
-        //     'from' => 'required|date_format:Y-m-d',
-        //     'to' => 'required|date_format:Y-m-d',
-        // ]);
+        if ($request->filterBy === 'orderDate') {
+            $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
+                ->whereBetween('order_date', [$request->from, $request->to])
+                ->orderBy('restaurant_id')
+                ->orderBy('restaurant_branch_id')
+                ->orderBy('id')
+                ->get();
+        } else {
+            $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
+                ->whereHas('restaurantOrderStatuses', function ($query) use ($request) {
+                    $query->whereBetween('created_at', [$request->from, $request->to])->where('status', '=', 'delivered')->orderBy('created_at', 'desc');
+                })
+                ->orderBy('restaurant_id')
+                ->orderBy('restaurant_branch_id')
+                ->orderBy('id')
+                ->get();
+        }
 
-        $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
-            ->whereBetween('order_date', [$request->from, $request->to])
-            ->orderBy('restaurant_id')
-            ->orderBy('restaurant_branch_id')
-            ->orderBy('id')
-            ->get();
-
-        return $this->generateReport($restaurantOrders);
+        return $this->generateReport($restaurantOrders, $request->from, $request->to, $request->filterBy);
     }
 
     public function getVendorOrders(Request $request, $slug)
     {
-        // $request->validate([
-        //     'from' => 'required|date_format:Y-m-d',
-        //     'to' => 'required|date_format:Y-m-d',
-        // ]);
-
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
 
-        $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
-            ->where('restaurant_id', $restaurant->id)
-            ->whereBetween('order_date', [$request->from, $request->to])
-            ->orderBy('restaurant_id')
-            ->orderBy('restaurant_branch_id')
-            ->orderBy('id')
-            ->get();
+
+
+        if ($request->filterBy === 'orderDate') {
+            $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
+                ->where('restaurant_id', $restaurant->id)
+                ->whereBetween('order_date', [$request->from, $request->to])
+                ->orderBy('restaurant_id')
+                ->orderBy('restaurant_branch_id')
+                ->orderBy('id')
+                ->get();
+        } else {
+            $restaurantOrders =
+                RestaurantOrder::with('restaurantOrderContact')
+                ->where('restaurant_id', $restaurant->id)
+                ->whereBetween('order_date', [$request->from, $request->to])
+                ->orderBy('restaurant_id')
+                ->orderBy('restaurant_branch_id')
+                ->orderBy('id')
+                ->get();
+            RestaurantOrder::with('restaurantOrderContact', 'restaurantOrderStatuses')
+                    ->whereHas('restaurantOrderStatuses', function ($query) use ($request) {
+                        $query->whereBetween('created_at', [$request->from, $request->to])->where('status', '=', 'delivered')->orderBy('created_at', 'desc');
+                    })
+                    ->orderBy('restaurant_id')
+                    ->orderBy('restaurant_branch_id')
+                    ->orderBy('id')
+                    ->get();
+        }
 
         return $this->generateReport($restaurantOrders);
     }
 
     public function getBranchOrders(Request $request, $slug)
     {
-        // $request->validate([
-        //     'from' => 'required|date_format:Y-m-d',
-        //     'to' => 'required|date_format:Y-m-d',
-        // ]);
-
         $restaurantBranch = RestaurantBranch::where('slug', $slug)->firstOrFail();
 
         $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
@@ -68,7 +86,7 @@ class RestaurantOrderController extends Controller
         return $this->generateReport($restaurantOrders);
     }
 
-    private function generateReport($restaurantOrders)
+    private function generateReport($restaurantOrders, $from = null, $to = null, $filterBy = null)
     {
         $data = [];
         $amountSum = 0;
@@ -92,6 +110,11 @@ class RestaurantOrderController extends Controller
             $commissionCtSum += $commissionCt;
             $balanceSum += $balance;
 
+            if ($filterBy === 'deliveredDate') {
+                $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->whereBetween('created_at', array($from, $to))->orderBy('created_at', 'desc')->first();
+            } else {
+                $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->orderBy('created_at', 'desc')->first();
+            }
             $data[] = [
                 'invoice_id' => $order->invoice_id,
                 'order_date' => Carbon::parse($order->order_date)->format('M d Y h:i a'),
@@ -113,6 +136,7 @@ class RestaurantOrderController extends Controller
                 'order_status' => $order->order_status,
                 'order_type' => $order->order_type,
                 'special_instructions' => $order->special_instruction,
+                'delivery_date' => $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,
             ];
         }
 
