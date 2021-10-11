@@ -38,36 +38,13 @@ class RestaurantOrderController extends Controller
     public function getVendorOrders(Request $request, $slug)
     {
         $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
-
-
-
-        if ($request->filterBy === 'orderDate') {
-            $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
+        $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
                 ->where('restaurant_id', $restaurant->id)
                 ->whereBetween('order_date', [$request->from, $request->to])
                 ->orderBy('restaurant_id')
                 ->orderBy('restaurant_branch_id')
                 ->orderBy('id')
                 ->get();
-        } else {
-            $restaurantOrders =
-                RestaurantOrder::with('restaurantOrderContact')
-                ->where('restaurant_id', $restaurant->id)
-                ->whereBetween('order_date', [$request->from, $request->to])
-                ->orderBy('restaurant_id')
-                ->orderBy('restaurant_branch_id')
-                ->orderBy('id')
-                ->get();
-            RestaurantOrder::with('restaurantOrderContact', 'restaurantOrderStatuses')
-                    ->whereHas('restaurantOrderStatuses', function ($query) use ($request) {
-                        $query->whereBetween('created_at', [$request->from, $request->to])->where('status', '=', 'delivered')->orderBy('created_at', 'desc');
-                    })
-                    ->orderBy('restaurant_id')
-                    ->orderBy('restaurant_branch_id')
-                    ->orderBy('id')
-                    ->get();
-        }
-
         return $this->generateReport($restaurantOrders);
     }
 
