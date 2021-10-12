@@ -4,9 +4,8 @@ namespace App\Models;
 
 use App\Models\ShopOrder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class ShopOrderContact extends Model
+class ShopOrderContact extends BaseModel
 {
     use HasFactory;
 
