@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
+use App\Events\OrderAssignEvent;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
@@ -21,12 +22,10 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderItem;
 use App\Services\MessageService\MessagingService;
 use App\Services\PaymentService\PaymentService;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Events\OrderAssignEvent;
 
 class RestaurantOrderController extends Controller
 {
@@ -47,20 +46,35 @@ class RestaurantOrderController extends Controller
     {
         $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
+        $restaurantOrders = RestaurantOrder::exclude(['special_instruction', 'delivery_mode', 'promocode_amount', 'customer_id', 'created_by', 'updated_by'])
+            ->with(['RestaurantOrderContact' => function ($query) {
+                $query->exclude(['house_number', 'floor', 'street_name', 'latitude', 'longitude']);
+            }])
             ->whereBetween('order_date', array($request->from, $request->to))
             ->where(function ($query) use ($request) {
-                $query->whereHas('restaurantOrderContact', function ($q) use ($request) {
-                    $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
-                        ->orWhere('phone_number', $request->filter);
-                })
-                    ->orWhereHas('restaurant', function ($query) use ($request) {
-                        $query->where('name', $request->filter);
+                $query->where('id', ltrim(ltrim($request->filter, 'BHR'), '0'))
+                    ->orWhereHas('restaurantOrderContact', function ($q) use ($request) {
+                        $q->where('phone_number', $request->filter)
+                            ->orWhere('customer_name', 'LIKE', '%' . $request->filter . '%');
                     })
-                    ->orWhere('id', ltrim(ltrim($request->filter, 'BHR'), '0'));
+                    ->orWhereHas('restaurant', function ($q) use ($request) {
+                        $q->where('name', $request->filter);
+                    });
             })
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->get();
+            ->get()
+            ->map(function ($order) {
+                $order->makeHidden(['restaurantOrderItems']);
+                $order->restaurant_branch_info = [
+                    'slug' => $order->restaurant_branch_info['slug'],
+                    'name' => $order->restaurant_branch_info['name'],
+                    'restaurant' => [
+                        'slug' => $order->restaurant_branch_info['restaurant']['slug'],
+                        'name' => $order->restaurant_branch_info['restaurant']['name'],
+                    ],
+                ];
+                return $order;
+            });
 
         return $this->generateResponse($restaurantOrders, 200);
     }
@@ -87,7 +101,7 @@ class RestaurantOrderController extends Controller
             if ($validatedData['promo_code']) {
                 try {
                     $validatedData = $this->getPromoData($validatedData, $customer);
-                } catch (Exception $e) {
+                } catch (ForbiddenException $e) {
                     return $this->generateResponse($e->getMessage(), 403, true);
                 }
             }

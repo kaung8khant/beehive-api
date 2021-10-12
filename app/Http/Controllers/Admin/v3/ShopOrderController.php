@@ -47,19 +47,21 @@ class ShopOrderController extends Controller
     {
         $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $shopOrders = ShopOrder::with('contact')
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        $shopOrders = ShopOrder::exclude(['special_instruction', 'delivery_mode', 'promocode_amount', 'customer_id', 'created_by', 'updated_by'])
+            ->with(['contact' => function ($query) {
+                $query->exclude(['house_number', 'floor', 'street_name', 'latitude', 'longitude']);
+            }])
             ->whereBetween('order_date', array($request->from, $request->to))
             ->where(function ($query) use ($request) {
-                $query->orWhereHas('contact', function ($query) use ($request) {
-                    $query->where('phone_number', $request->filter)->orWhere('customer_name', 'LIKE', '%' . $request->filter . '%');
-                })
-                    ->orWhere('id', ltrim(ltrim($request->filter, 'BHS'), '0'));
+                $query->where('id', ltrim(ltrim($request->filter, 'BHS'), '0'))
+                    ->orWhereHas('contact', function ($q) use ($request) {
+                        $q->where('phone_number', $request->filter)
+                            ->orWhere('customer_name', 'LIKE', '%' . $request->filter . '%');
+                    });
             })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->get()
-            ->map(function ($shopOrder) {
-                return $shopOrder->makeHidden('vendors');
-            });
+            ->makeHidden(['vendors']);
 
         return $this->generateResponse($shopOrders, 200);
     }
