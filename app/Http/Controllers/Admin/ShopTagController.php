@@ -26,12 +26,10 @@ class ShopTagController extends Controller
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $tag = ShopTag::create($request->validate(
-            [
-                'name' => 'required|unique:shop_tags',
-                'slug' => 'required|unique:shop_tags',
-            ]
-        ));
+        $tag = ShopTag::create($request->validate([
+            'name' => 'required|unique:shop_tags',
+            'slug' => 'required|unique:shop_tags',
+        ]));
 
         return response()->json($tag, 201);
     }
