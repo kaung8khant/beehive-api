@@ -193,26 +193,6 @@ class ShopController extends Controller
         return CollectionHelper::removePaginateLinks($shops);
     }
 
-    public function getCustomersByShop(Request $request, Shop $shop)
-    {
-        $customerIds = ShopOrder::whereHas('vendors', function ($query) use ($shop) {
-            $query->where('shop_id', $shop->id);
-        })->pluck('customer_id')->filter()->unique()->values();
-
-        $customerList = $customerIds->map(function ($customerId) use ($request) {
-            return Customer::where('id', $customerId)
-                ->where(function ($query) use ($request) {
-                    $query->where('email', 'LIKE', '%' . $request->filter . '%')
-                        ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-                        ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-                        ->orWhere('slug', $request->filter);
-                })
-                ->first();
-        })->unique('slug')->sortBy('name')->values();
-
-        return CollectionHelper::paginate($customerList, $request->size);
-    }
-
     private function optimizeShops($shops)
     {
         $shops->makeHidden(['id', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);

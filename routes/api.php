@@ -71,7 +71,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('shops/toggle-enable/{shop}', 'Admin\ShopController@toggleEnable');
             Route::post('shops/status', 'Admin\ShopController@multipleStatusUpdate');
             Route::patch('shops/toggle-official/{slug}', 'Admin\ShopController@toggleOfficial');
-            Route::get('shops/{shop}/customers', 'Admin\ShopController@getCustomersByShop');
+            Route::get('shops/{shop}/customers', 'Admin\CustomerController@getCustomersByShop');
             Route::get('shop-categories/{shopCategory}/sub-categories', 'Admin\ShopSubCategoryController@getSubCategoriesByCategory');
             Route::get('shops/{shop}/shop-tags', 'Admin\ShopTagController@getTagsByShop');
             Route::get('shops/{shop}/ratings', 'Admin\ShopRatingController@getShopRatings');

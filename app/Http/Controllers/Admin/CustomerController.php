@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerGroup;
 use App\Models\RestaurantOrder;
+use App\Models\Shop;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,12 +22,16 @@ class CustomerController extends Controller
     {
         $sorting = CollectionHelper::getSorting('customers', 'name', $request->by, $request->order);
 
-        return Customer::with('customerGroups')->where('email', 'LIKE', '%' . $request->filter . '%')
+        $customers = Customer::with('customerGroups')
+            ->where('email', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
+
+        $this->optimizeCustomers($customers);
+        return CollectionHelper::removePaginateLinks($customers);
     }
 
     public function store(Request $request)
@@ -165,5 +170,30 @@ class CustomerController extends Controller
         $orderList = CollectionHelper::paginate(collect($orderList), $request->size);
 
         return response()->json($orderList, 200);
+    }
+
+    public function getCustomersByShop(Request $request, Shop $shop)
+    {
+        $customerIds = ShopOrder::whereHas('vendors', function ($query) use ($shop) {
+            $query->where('shop_id', $shop->id);
+        })->pluck('customer_id')->filter()->unique()->values();
+
+        $customers = Customer::whereIn('id', $customerIds)
+            ->where(function ($query) use ($request) {
+                $query->where('email', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy('name')
+            ->paginate($request->size);
+
+        $this->optimizeCustomers($customers);
+        return CollectionHelper::removePaginateLinks($customers);
+    }
+
+    private function optimizeCustomers($customers)
+    {
+        $customers->makeHidden(['id', 'device_token', 'primary_address']);
     }
 }
