@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
+use App\Models\ShopOrderStatus;
 use App\Models\ShopOrderVendor;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
