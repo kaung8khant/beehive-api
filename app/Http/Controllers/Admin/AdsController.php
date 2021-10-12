@@ -77,7 +77,7 @@ class AdsController extends Controller
         $params = [
             'label' => 'nullable',
             'note' => 'nullable',
-            'type' => 'required|in:banner',
+            'type' => 'required|in:banner,popup',
             'source' => 'required|in:restaurant,shop',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
             'target_type' => 'nullable|string',
