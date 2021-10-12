@@ -11,6 +11,7 @@ use App\Models\RestaurantOrder;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
@@ -147,29 +148,45 @@ class CustomerController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function getOrdersByCustomer(Request $request, $slug)
+    public function getOrdersByCustomer(Request $request, Customer $customer)
     {
-        $customer = Customer::where('slug', $slug)->firstOrFail();
+        $shopOrder = DB::table('shop_orders')->where('customer_id', $customer->id)->select('id', 'created_at');
+        $restaurantOrder = DB::table('restaurant_orders')->where('customer_id', $customer->id)->select('id', 'created_at');
 
-        $shopOrder = ShopOrder::with('contact')
-            ->where('customer_id', $customer->id)
-            ->get()
-            ->map(function ($shopOrder) {
-                return $shopOrder->makeHidden('vendors');
-            });
-
-        $restaurantOrder = RestaurantOrder::with('restaurantOrderContact')
-            ->where('customer_id', $customer->id)
-            ->get();
         if ($request->filter) {
             $shopOrder = $shopOrder->where('id', ltrim(ltrim($request->filter, 'BHS'), '0'));
             $restaurantOrder = $restaurantOrder->where('id', ltrim(ltrim($request->filter, 'BHR'), '0'));
         }
-        $orderList = collect($shopOrder)->merge($restaurantOrder);
 
-        $orderList = CollectionHelper::paginate(collect($orderList), $request->size);
+        $shopOrder = $shopOrder->get()->map(function ($shop) {
+            $shop->type = 'shop';
+            return $shop;
+        });
 
-        return response()->json($orderList, 200);
+        $restaurantOrder = $restaurantOrder->get()->map(function ($restaurant) {
+            $restaurant->type = 'restaurant';
+            return $restaurant;
+        });
+
+        $orders = $shopOrder->merge($restaurantOrder)->sortByDesc('created_at');
+        $orders = CollectionHelper::paginate($orders, $request->size);
+        $orders = CollectionHelper::removePaginateLinks($orders);
+
+        $orders['data'] = collect($orders['data'])->map(function ($item) {
+            if ($item->type === 'shop') {
+                return ShopOrder::where('id', $item->id)
+                    ->exclude(['delivery_mode', 'promocode', 'promocode_amount', 'promocode_id', 'customer_id', 'special_instruction', 'created_by', 'updated_by'])
+                    ->first()
+                    ->makeHidden(['vendors']);
+            } else {
+                return RestaurantOrder::where('id', $item->id)
+                    ->exclude(['delivery_mode', 'promocode', 'promocode_amount', 'promocode_id', 'customer_id', 'special_instruction', 'created_by', 'updated_by'])
+                    ->first()
+                    ->makeHidden(['restaurant_branch_info', 'restaurantOrderItems', 'driver_status']);
+            }
+        });
+
+        return $orders;
     }
 
     public function getCustomersByShop(Request $request, Shop $shop)
