@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Shop;
 use App\Models\ShopTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -16,12 +17,9 @@ class ShopTagController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('shop_tags', 'name', $request->by, $request->order);
-
-        return ShopTag::where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $shopTags = ShopTag::search($request->filter)->paginate(10);
+        $this->optimizeShopTags($shopTags);
+        return CollectionHelper::removePaginateLinks($shopTags);
     }
 
     public function store(Request $request)
@@ -63,15 +61,19 @@ class ShopTagController extends Controller
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
-    public function getTagsByShop(Request $request, $slug)
+    public function getTagsByShop(Request $request, Shop $shop)
     {
-        return ShopTag::whereHas('shops', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })
-            ->paginate(10);
+        $tagIds = ShopTag::whereHas('shops', function ($query) use ($shop) {
+            $query->where('id', $shop->id);
+        })->pluck('id')->toArray();
+
+        $shopTags = ShopTag::search($request->filter)->whereIn('id', $tagIds)->paginate(10);
+        $this->optimizeShopTags($shopTags);
+        return CollectionHelper::removePaginateLinks($shopTags);
+    }
+
+    private function optimizeShopTags($shopTags)
+    {
+        $shopTags->makeHidden(['id', 'created_by', 'updated_by']);
     }
 }

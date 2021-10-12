@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'searchableAttributes' => ['slug', 'name', 'description'],
+    'searchableAttributes' => ['slug', 'name'],
 
     /*
     |--------------------------------------------------------------------------
@@ -32,7 +32,7 @@ return [
     |
     */
 
-    'customRanking' => ['desc(search_index)', 'desc(id)'],
+    'customRanking' => ['asc(name)'],
 
     /*
     |--------------------------------------------------------------------------
