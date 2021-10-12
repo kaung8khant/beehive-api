@@ -20,9 +20,7 @@ class AdsController extends Controller
         $sorting = CollectionHelper::getSorting('ads', 'id', $request->by ? $request->by : 'desc', $request->order);
 
         $ads = Ads::where('label', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->orderBy('id')
-            ->get();
+            ->orWhere('slug', $request->filter);
 
         if ($request->by) {
             $ads = $ads->orderBy($sorting['orderBy'], $sorting['sortBy'])
@@ -31,7 +29,7 @@ class AdsController extends Controller
             $ads = $ads->orderBy('search_index', 'desc')
                 ->orderBy($sorting['orderBy'], $sorting['sortBy']);
         }
-        return $this->generateResponse($ads, 200);
+        return $this->generateResponse($ads->get(), 200);
     }
 
     public function store(Request $request)
