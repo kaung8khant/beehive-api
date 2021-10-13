@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Helpers\CacheHelper;
 use App\Helpers\CollectionHelper;
+use App\Helpers\CacheHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
@@ -20,28 +20,20 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        $products = Product::with('shop', 'shopCategory', 'brand', 'shopSubCategory', 'productVariations', 'productVariations.productVariationValues', 'productVariants')
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
+        $products = Product::search($request->filter);
 
         if (isset($request->is_enable)) {
+            $productIds = Product::whereHas('shop', function ($query) use ($request) {
+                $query->where('is_enable', $request->is_enable);
+            })->pluck('id')->toArray();
+
             $products = $products->where('is_enable', $request->is_enable)
-                ->whereHas('shop', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
+                ->whereIn('id', $productIds);
         }
-        if ($request->by) {
-            $products = $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-                ->orderBy('search_index', 'desc');
-        } else {
-            $products = $products->orderBy('search_index', 'desc')
-                ->orderBy($sorting['orderBy'], $sorting['sortBy']);
-        }
-        return $products->paginate(10);
+
+        $products = $products->paginate(10);
+        $this->optimizeProducts($products);
+        return CollectionHelper::removePaginateLinks($products);
     }
 
     public function store(Request $request)
@@ -78,7 +70,6 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $validatedData = $this->validateRequest($request);
-
         $product->update($validatedData);
 
         if ($request->image_slugs) {
@@ -226,75 +217,56 @@ class ProductController extends Controller
 
     public function getProductsByShop(Request $request, Shop $shop)
     {
-        $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        $products = Product::with('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants')
-            ->where('shop_id', $shop->id)
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
+        $products = Product::search($request->filter)->where('shop_id', $shop->id);
 
         if (isset($request->is_enable)) {
+            $productIds = Product::whereHas('shop', function ($query) use ($request) {
+                $query->where('is_enable', $request->is_enable);
+            })->pluck('id')->toArray();
+
             $products = $products->where('is_enable', $request->is_enable)
-                ->whereHas('shop', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
+                ->whereIn('id', $productIds);
         }
 
-        if ($request->by) {
-            $products = $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-                ->orderBy('search_index', 'desc');
-        } else {
-            $products = $products->orderBy('search_index', 'desc')
-                ->orderBy($sorting['orderBy'], $sorting['sortBy']);
-        }
-
-        return $products->paginate(10);
+        $products = $products->paginate(10);
+        $this->optimizeProducts($products);
+        return CollectionHelper::removePaginateLinks($products);
     }
 
     public function getProductsByBrand(Request $request, Brand $brand)
     {
-        $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        $products = Product::with('shop', 'shopCategory')
-            ->where('brand_id', $brand->id)
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
+        $products = Product::search($request->filter)->where('brand_id', $brand->id);
 
         if (isset($request->is_enable)) {
+            $productIds = Product::whereHas('shop', function ($query) use ($request) {
+                $query->where('is_enable', $request->is_enable);
+            })->pluck('id')->toArray();
+
             $products = $products->where('is_enable', $request->is_enable)
-                ->whereHas('shop', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
+                ->whereIn('id', $productIds);
         }
 
-        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $products = $products->paginate(10);
+        $this->optimizeProducts($products);
+        return CollectionHelper::removePaginateLinks($products);
     }
 
     public function getProductsByCategory(Request $request, ShopCategory $shopCategory)
     {
-        $sorting = CollectionHelper::getSorting('products', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        $products = Product::with('shop', 'shopCategory')
-            ->where('shop_category_id', $shopCategory->id)
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
+        $products = Product::search($request->filter)->where('shop_category_id', $shopCategory->id);
 
         if (isset($request->is_enable)) {
+            $productIds = Product::whereHas('shop', function ($query) use ($request) {
+                $query->where('is_enable', $request->is_enable);
+            })->pluck('id')->toArray();
+
             $products = $products->where('is_enable', $request->is_enable)
-                ->whereHas('shop', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
+                ->whereIn('id', $productIds);
         }
 
-        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $products = $products->paginate(10);
+        $this->optimizeProducts($products);
+        return CollectionHelper::removePaginateLinks($products);
     }
 
     public function updateSearchIndex(Request $request, Product $product)
@@ -306,5 +278,32 @@ class ProductController extends Controller
         $product->update($validatedData);
 
         return response()->json($product->load('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants'), 200);
+    }
+
+    private function optimizeProducts($products)
+    {
+        $products->load([
+            'shop' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            },
+            'shopCategory' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            },
+            'brand' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            },
+        ]);
+
+        foreach ($products as $product) {
+            $product->makeHidden(['id', 'variants', 'created_by', 'updated_by']);
+            $product->shop->makeHidden(['id'])->setAppends([]);
+            $product->shopCategory->makeHidden(['id'])->setAppends([]);
+
+            if ($product->brand) {
+                $product->brand->makeHidden(['id'])->setAppends([]);
+            }
+
+            $product->product_variants = $product->productVariants()->where('is_enable', 1)->orderBy('price', 'asc')->limit(1)->get();
+        }
     }
 }

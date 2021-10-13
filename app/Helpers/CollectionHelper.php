@@ -51,4 +51,17 @@ trait CollectionHelper
             }
         })->filter()->values()->toArray();
     }
+
+    public static function removePaginateLinks($paginator)
+    {
+        return [
+            'current_page' => $paginator->currentPage(),
+            'from' => $paginator->firstItem(),
+            'to' => $paginator->lastItem(),
+            'per_page' => $paginator->perPage(),
+            'last_page' => $paginator->lastPage(),
+            'total' => $paginator->total(),
+            'data' => $paginator->items(),
+        ];
+    }
 }

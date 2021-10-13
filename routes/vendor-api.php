@@ -71,7 +71,7 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::resource('shops', 'Admin\ShopController', ['as' => 'vendor']);
         Route::get('shop-tags', 'Admin\ShopTagController@index');
         Route::get('shop-categories', 'Admin\ShopCategoryController@index');
-        Route::get('shops/{slug}/shop-categories', 'Admin\ShopCategoryController@getCategoriesByShop');
+        Route::get('shops/{shop}/shop-categories', 'Admin\ShopCategoryController@getCategoriesByShop');
         Route::post('shops/add-shop-categories/{slug}', 'Admin\ShopController@addShopCategories');
         Route::post('shops/remove-shop-categories/{slug}', 'Admin\ShopController@removeShopCategories');
         Route::get('shop-categories/{shopCategory}/sub-categories', 'Admin\ShopSubCategoryController@getSubCategoriesByCategory');

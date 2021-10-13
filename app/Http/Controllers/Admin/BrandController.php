@@ -16,25 +16,20 @@ class BrandController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('brands', 'name', $request->by, $request->order);
-
-        return Brand::where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $brands = Brand::search($request->filter)->paginate(10);
+        $this->optimizeBrands($brands);
+        return CollectionHelper::removePaginateLinks($brands);
     }
 
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $brand = Brand::create($request->validate(
-            [
-                'name' => 'required|unique:brands',
-                'slug' => 'required|unique:brands',
-                'image_slug' => 'nullable|exists:App\Models\File,slug',
-            ]
-        ));
+        $brand = Brand::create($request->validate([
+            'name' => 'required|unique:brands',
+            'slug' => 'required|unique:brands',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
+        ]));
 
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'brands', $brand->slug);
@@ -75,5 +70,10 @@ class BrandController extends Controller
 
         $brand->delete();
         return response()->json(['message' => 'successfully deleted'], 200);
+    }
+
+    private function optimizeBrands($brands)
+    {
+        $brands->makeHidden(['id', 'created_by', 'updated_by']);
     }
 }

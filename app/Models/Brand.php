@@ -3,20 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 
 class Brand extends BaseModel
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $guarded = ['id'];
 
     protected $hidden = [
-        'id',
+        // 'id',
         'created_at',
         'updated_at',
     ];
 
     protected $appends = ['images'];
+
+    public function toSearchableArray(): array
+    {
+        return $this->toArray();
+    }
 
     public function getImagesAttribute()
     {
