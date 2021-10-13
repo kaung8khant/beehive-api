@@ -23,10 +23,13 @@ class MenuController extends Controller
 
         $restaurantBranch->load([
             'restaurant' => function ($query) {
-                $query->exclude(['created_by', 'updated_by']);
+                $query->exclude(['created_by', 'updated_by', 'commission']);
             },
             'restaurant.availableTags',
-        ])->makeHidden(['created_by', 'updated_by']);
+        ]);
+
+        $restaurantBranch->makeHidden(['address', 'contact_number', 'city', 'township', 'notify_numbers', 'created_by', 'updated_by']);
+        $restaurantBranch->restaurant->setAppends(['rating', 'images']);
 
         $restaurantBranch->restaurant->is_favorite = $this->checkFavoriteRestaurant($restaurantBranch->restaurant->id);
         $restaurantBranch['available_categories'] = $this->getAvailableCategories($restaurantBranch->id, $restaurantBranch->restaurant->id);
@@ -81,13 +84,19 @@ class MenuController extends Controller
     private function getAvailableMenus($branchId)
     {
         return Menu::exclude(['created_by', 'updated_by'])
-            ->with('restaurantCategory', function ($query) {
-                $query->exclude(['created_by', 'updated_by']);
-            })
-            ->with('menuVariations', 'menuVariations.menuVariationValues', 'menuToppings', 'menuOptions', 'menuOptions.options')
-            ->with('menuVariants', function ($query) {
-                $query->where('is_enable', 1);
-            })
+            ->with([
+                'restaurantCategory' => function ($query) {
+                    $query->exclude(['created_by', 'updated_by']);
+                },
+                'menuVariants' => function ($query) {
+                    $query->where('is_enable', 1);
+                },
+                'menuToppings' => function ($query) {
+                    $query->exclude(['created_by', 'updated_by']);
+                },
+                'menuOptions',
+                'menuOptions.options',
+            ])
             ->where('is_enable', 1)
             ->whereHas('restaurantBranches', function ($query) use ($branchId) {
                 $query->where('restaurant_branch_id', $branchId)

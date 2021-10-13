@@ -38,6 +38,7 @@ class RestaurantBranchController extends Controller
             ->orderBy('distance', 'asc')
             ->paginate($request->size);
 
+        $this->optimizeBranches($restaurantBranches);
         return $this->generateBranchResponse($restaurantBranches, 200, 'array', $restaurantBranches->lastPage());
     }
 
@@ -61,7 +62,7 @@ class RestaurantBranchController extends Controller
 
         return $query->with('restaurant')
             ->with('restaurant.availableTags')
-            ->selectRaw('id, slug, name, address, contact_number, opening_time, closing_time, is_enable, free_delivery, pre_order, restaurant_id,
+            ->selectRaw('id, search_index, slug, name, address, contact_number, opening_time, closing_time, is_enable, free_delivery, pre_order, restaurant_id,
             @distance := ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
                 + sin(radians(?)) * sin(radians(latitude)) )
@@ -71,5 +72,14 @@ class RestaurantBranchController extends Controller
                 $q->where('is_enable', 1);
             })
             ->where('is_enable', 1);
+    }
+
+    private function optimizeBranches($branches)
+    {
+        foreach ($branches as $branch) {
+            $branch->makeHidden(['address', 'contact_number']);
+            $branch->restaurant->makeHidden(['created_by', 'updated_by', 'commission']);
+            $branch->restaurant->setAppends(['rating', 'images']);
+        }
     }
 }
