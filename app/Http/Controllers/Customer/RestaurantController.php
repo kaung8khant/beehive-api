@@ -305,7 +305,7 @@ class RestaurantController extends Controller
         foreach ($branches as $branch) {
             $branch->makeHidden(['address', 'contact_number']);
             $branch->restaurant->makeHidden(['created_by', 'updated_by', 'commission']);
-            $branch->restaurant->setAppends(['rating', 'images']);
+            $branch->restaurant->setAppends(['rating', 'images', 'covers']);
         }
     }
 }
