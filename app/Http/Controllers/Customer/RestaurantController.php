@@ -52,9 +52,10 @@ class RestaurantController extends Controller
             }])
             ->paginate($request->size);
 
-        $data = $favoriteRestaurants->pluck('restaurantBranches')->collapse();
+        $branches = $favoriteRestaurants->pluck('restaurantBranches')->collapse();
+        $this->optimizeBranches($branches);
 
-        return $this->generateBranchResponse($data, 200, 'fav', $favoriteRestaurants->lastPage());
+        return $this->generateBranchResponse($branches, 200, 'fav', $favoriteRestaurants->lastPage());
     }
 
     public function getRecommendations(Request $request)
@@ -69,6 +70,7 @@ class RestaurantController extends Controller
             ->orderBy('distance', 'asc')
             ->paginate($request->size);
 
+        $this->optimizeBranches($recommendedBranches);
         return $this->generateBranchResponse($recommendedBranches, 200, 'array', $recommendedBranches->lastPage());
     }
 
@@ -85,6 +87,7 @@ class RestaurantController extends Controller
             ->paginate($request->size)
             ->items();
 
+        $this->optimizeBranches($newArrivals);
         return $this->generateBranchResponse($newArrivals, 200);
     }
 
@@ -113,6 +116,7 @@ class RestaurantController extends Controller
             ->orderBy('distance', 'asc')
             ->paginate($request->size);
 
+        $this->optimizeBranches($restaurantBranches);
         return $this->generateBranchResponse($restaurantBranches, 200, 'array', $restaurantBranches->lastPage());
     }
 
@@ -295,4 +299,13 @@ class RestaurantController extends Controller
 
     //     return $data;
     // }
+
+    private function optimizeBranches($branches)
+    {
+        foreach ($branches as $branch) {
+            $branch->makeHidden(['address', 'contact_number']);
+            $branch->restaurant->makeHidden(['created_by', 'updated_by', 'commission']);
+            $branch->restaurant->setAppends(['rating', 'images']);
+        }
+    }
 }
