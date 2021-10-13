@@ -135,20 +135,22 @@ class ProductController extends Controller
 
     public function getByCategory(Request $request, ShopCategory $category)
     {
-        $products = Product::with(['shop' => function ($query) {
-            $query->exclude(['created_by', 'updated_by']);
-        }])
+        $products = Product::exclude(['description', 'variants', 'created_by', 'updated_by'])
+            ->with(['shop' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            }])
             ->where('shop_category_id', $category->id)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
-            ->exclude(['created_by', 'updated_by'])
+            ->orderBy('search_index', 'desc')
             ->orderBy('shop_sub_category_id', 'asc')
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 
         $imageFilteredProducts = $products->map(function ($product) {
+            $product->shop->makeHidden(['rating', 'images', 'covers', 'first_order_date']);
             return $product->images->count() > 0 ? $product : null;
         })->filter()->values();
 
