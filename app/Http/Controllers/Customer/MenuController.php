@@ -29,7 +29,7 @@ class MenuController extends Controller
         ]);
 
         $restaurantBranch->makeHidden(['address', 'contact_number', 'city', 'township', 'notify_numbers', 'created_by', 'updated_by']);
-        $restaurantBranch->restaurant->setAppends(['rating', 'images']);
+        $restaurantBranch->restaurant->setAppends(['rating', 'images', 'covers']);
 
         $restaurantBranch->restaurant->is_favorite = $this->checkFavoriteRestaurant($restaurantBranch->restaurant->id);
         $restaurantBranch['available_categories'] = $this->getAvailableCategories($restaurantBranch->id, $restaurantBranch->restaurant->id);
