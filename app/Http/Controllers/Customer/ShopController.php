@@ -35,12 +35,13 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        $shops = Shop::with('availableCategories', 'availableTags')
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })
+        $shops = Shop::select('id', 'slug', 'name', 'opening_time', 'closing_time', 'is_official', 'is_enable')
+            ->with('availableTags')
+            ->withCount(['products' => function ($query) {
+                $query->where('is_enable', 1);
+            }])
             ->where('is_enable', 1)
+            ->having('products_count', '>', 0)
             ->orderBy('id', 'desc')
             ->paginate(10);
 
