@@ -201,6 +201,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /* Ads */
             Route::resource('ads', 'Admin\AdsController', ['except' => ['create', 'edit']]);
+            Route::put('ads/{ads}/index', 'Admin\AdsController@updateSearchIndex');
 
             /* Content */
             Route::resource('contents', 'Admin\ContentController', ['except' => ['create', 'edit']]);
