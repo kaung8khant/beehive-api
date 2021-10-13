@@ -100,6 +100,7 @@ class ShopController extends Controller
                 })
                 ->orderBy('search_index', 'desc')
                 ->orderBy('shop_sub_category_id', 'asc')
+                ->orderBy('id', 'desc')
                 ->get();
             return $category;
         });

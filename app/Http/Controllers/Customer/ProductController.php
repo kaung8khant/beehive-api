@@ -144,6 +144,7 @@ class ProductController extends Controller
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
+            ->orderBy('search_index', 'desc')
             ->orderBy('shop_sub_category_id', 'asc')
             ->orderBy('id', 'desc')
             ->paginate($request->size);
