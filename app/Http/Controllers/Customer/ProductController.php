@@ -29,33 +29,13 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('products', 'name', $request->by ? $request->by : 'asc', $request->order);
-
-        if ($sorting['orderBy'] === 'price') {
-            $sorting['orderBy'] = 'pv.price';
-        } else {
-            $sorting['orderBy'] = 'products.' . $sorting['orderBy'];
-        }
-
         $products = Product::select(CollectionHelper::selectExclusiveColumns('products'))
             ->join('product_variants as pv', function ($query) {
                 $query->on('pv.id', '=', DB::raw('(SELECT id FROM product_variants WHERE product_variants.product_id = products.id ORDER BY price ASC LIMIT 1)'));
             })
-            ->with([
-                'shop' => function ($query) {
-                    $query->exclude(['created_by', 'updated_by']);
-                },
-                'shopCategory' => function ($query) {
-                    $query->exclude(['created_by', 'updated_by']);
-                },
-                'shopSubCategory' => function ($query) {
-                    $query->exclude(['created_by', 'updated_by']);
-                },
-                'brand' => function ($query) {
-                    $query->exclude(['created_by', 'updated_by']);
-                },
-            ])
-            ->with('productVariations', 'productVariations.productVariationValues', 'productVariants')
+            ->with(['shop' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            }])
             ->where(function ($query) use ($request) {
                 $query->where('name', 'LIKE', '%' . $request->filter . '%')
                     ->orWhereHas('shop', function ($q) use ($request) {
@@ -75,22 +55,12 @@ class ProductController extends Controller
                 $query->where('is_enable', 1);
             })
             ->where('products.is_enable', 1)
-            ->whereNotNull('pv.price');
+            ->whereNotNull('pv.price')
+            ->orderBy('search_index', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate($request->size);
 
-        if ($request->by) {
-            $products = $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
-                ->orderBy('search_index', 'desc');
-        } else {
-            $products = $products->orderBy('search_index', 'desc')
-                ->orderBy($sorting['orderBy'], $sorting['sortBy']);
-        }
-
-        $products = $products->paginate($request->size);
-
-        $imageFilteredProducts = $products->map(function ($product) {
-            return $product->images->count() > 0 ? $product : null;
-        })->filter()->values();
-
+        $imageFilteredProducts = $this->optimizeProducts($products);
         return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $products->lastPage(), true);
     }
 
@@ -149,27 +119,25 @@ class ProductController extends Controller
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 
-        $imageFilteredProducts = $products->map(function ($product) {
-            $product->shop->makeHidden(['rating', 'images', 'covers', 'first_order_date']);
-            return $product->images->count() > 0 ? $product : null;
-        })->filter()->values();
-
+        $imageFilteredProducts = $this->optimizeProducts($products);
         return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $products->lastPage(), true);
     }
 
     public function getByShop(Request $request, Shop $shop)
     {
-        $products = Product::where('shop_id', $shop->id)
+        $products = Product::exclude(['description', 'variants', 'created_by', 'updated_by'])
+            ->where('shop_id', $shop->id)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
-            ->exclude(['created_by', 'updated_by'])
+            ->orderBy('search_index', 'desc')
             ->orderBy('shop_sub_category_id', 'asc')
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 
         $imageFilteredProducts = $products->map(function ($product) {
+            $product->makeHidden(['covers']);
             return $product->images->count() > 0 ? $product : null;
         })->filter()->values();
 
@@ -183,26 +151,30 @@ class ProductController extends Controller
 
     public function getAllBrand()
     {
-        $brand = Brand::orderBy('id', 'desc')->paginate(10)->items();
-        return $this->generateResponse($brand, 200);
+        $brands = Brand::exclude(['created_by', 'updated_by'])
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+
+        return $this->generateResponse($brands->items(), 200);
     }
 
     public function getByBrand(Request $request, Brand $brand)
     {
-        $products = Product::where('brand_id', $brand->id)
+        $products = Product::exclude(['description', 'variants', 'created_by', 'updated_by'])
+            ->with(['shop' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            }])
+            ->where('brand_id', $brand->id)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
-            ->exclude(['created_by', 'updated_by'])
+            ->orderBy('search_index', 'desc')
             ->orderBy('shop_sub_category_id', 'asc')
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 
-        $imageFilteredProducts = $products->map(function ($product) {
-            return $product->images->count() > 0 ? $product : null;
-        })->filter()->values();
-
+        $imageFilteredProducts = $this->optimizeProducts($products);
         return $this->generateProductResponse($imageFilteredProducts, 200);
     }
 
@@ -210,17 +182,25 @@ class ProductController extends Controller
     public function getFavorite(Request $request)
     {
         $favoriteProducts = $this->customer->favoriteProducts()
-            ->with('shopCategory', 'shopSubCategory', 'brand')
+            ->with(['shop' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            }])
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
-            ->exclude(['created_by', 'updated_by'])
+            ->orderBy('search_index', 'desc')
             ->orderBy('shop_sub_category_id', 'asc')
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 
-        return $this->generateProductResponse($favoriteProducts, 200, 'array', $favoriteProducts->lastPage());
+        $imageFilteredProducts = $favoriteProducts->map(function ($product) {
+            $product->makeHidden(['description', 'variants', 'created_by', 'updated_by', 'covers', 'pivot']);
+            $product->shop->makeHidden(['rating', 'images', 'covers', 'first_order_date']);
+            return $product->images->count() > 0 ? $product : null;
+        })->filter()->values();
+
+        return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $favoriteProducts->lastPage(), true);
     }
 
     public function setFavorite(Product $product)
@@ -242,7 +222,10 @@ class ProductController extends Controller
 
     public function getRecommendations(Request $request)
     {
-        $products = Product::with('shop')
+        $products = Product::exclude(['description', 'variants', 'created_by', 'updated_by'])
+            ->with(['shop' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            }])
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
@@ -250,6 +233,16 @@ class ProductController extends Controller
             ->inRandomOrder()
             ->paginate($request->size);
 
-        return $this->generateProductResponse($products, 200, 'array', $products->lastPage());
+        $imageFilteredProducts = $this->optimizeProducts($products);
+        return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $products->lastPage(), true);
+    }
+
+    private function optimizeProducts($products)
+    {
+        return $products->map(function ($product) {
+            $product->makeHidden(['covers']);
+            $product->shop->makeHidden(['rating', 'images', 'covers', 'first_order_date']);
+            return $product->images->count() > 0 ? $product : null;
+        })->filter()->values();
     }
 }
