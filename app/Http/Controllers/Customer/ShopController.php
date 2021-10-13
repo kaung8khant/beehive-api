@@ -33,21 +33,19 @@ class ShopController extends Controller
         return response()->json($branch['longitude']);
     }
 
-    public function index(Request $request)
+    public function index()
     {
-        $shops = Shop::search($request->filter)->where('is_enable', 1)->paginate(10);
-        return $this->generateResponse($shops->makeHidden('id'), 200, false, $shops->lastPage());
+        $shops = Shop::select('id', 'slug', 'name', 'opening_time', 'closing_time', 'is_official', 'is_enable')
+            ->with('availableTags')
+            ->withCount(['products' => function ($query) {
+                $query->where('is_enable', 1);
+            }])
+            ->where('is_enable', 1)
+            ->having('products_count', '>', 0)
+            ->orderBy('id', 'desc')
+            ->paginate(10);
 
-        // $shops = Shop::with('availableCategories', 'availableTags')
-        //     ->where(function ($query) use ($request) {
-        //         $query->where('name', 'LIKE', '%' . $request->filter . '%')
-        //             ->orWhere('slug', $request->filter);
-        //     })
-        //     ->where('is_enable', 1)
-        //     ->orderBy('id', 'desc')
-        //     ->paginate(10);
-
-        // return $this->generateResponse($shops->items(), 200, false, $shops->lastPage());
+        return $this->generateResponse($shops->items(), 200, false, $shops->lastPage());
     }
 
     public function show(Shop $shop)
@@ -59,53 +57,49 @@ class ShopController extends Controller
         return $this->generateResponse($shop->load('availableCategories', 'availableTags'), 200);
     }
 
-    public function getCategories(Request $request)
+    public function getCategories()
     {
-        $shopCategories = ShopCategory::withCount(['products' => function ($query) {
-            $query->where('is_enable', 1)
-                ->whereHas('shop', function ($q) {
-                    $q->where('is_enable', 1);
-                });
-        }])
+        $shopCategories = ShopCategory::exclude(['created_by', 'updated_by'])
+            ->withCount(['products' => function ($query) {
+                $query->where('is_enable', 1)
+                    ->whereHas('shop', function ($q) {
+                        $q->where('is_enable', 1);
+                    });
+            }])
             ->whereHas('products', function ($query) {
                 $query->where('is_enable', 1)
                     ->whereHas('shop', function ($q) {
                         $q->where('is_enable', 1);
                     });
             })
-            ->where(function ($query) use ($request) {
-                return $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })
+            ->having('products_count', '>', 0)
             ->orderBy('name', 'asc')
-            ->get()
-            ->makeHidden(['created_by', 'updated_by']);
+            ->get();
 
         return $this->generateResponse($shopCategories, 200, false, 1);
     }
 
     public function getCatgorizedProduct(Request $request)
     {
-        $shopCategories = ShopCategory::with('shopSubCategories')
+        $shopCategories = ShopCategory::exclude(['created_by', 'updated_by'])
             ->whereHas('products', function ($query) {
                 $query->where('is_enable', 1)
                     ->whereHas('shop', function ($q) {
                         $q->where('is_enable', 1);
                     });
             })
-            ->where(function ($query) use ($request) {
-                return $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })
-            ->orderBy('id', 'desc')
+            ->orderBy('name', 'asc')
             ->paginate(10);
 
         $categorizedProducts = $shopCategories->map(function ($category) {
-            $category->products = Product::where('shop_category_id', $category->id)
+            $category->products = Product::exclude(['created_by', 'updated_by'])
+                ->where('shop_category_id', $category->id)
                 ->where('is_enable', 1)
                 ->whereHas('shop', function ($query) {
                     $query->where('is_enable', 1);
                 })
+                ->orderBy('search_index', 'desc')
+                ->orderBy('shop_sub_category_id', 'asc')
                 ->orderBy('id', 'desc')
                 ->get();
             return $category;

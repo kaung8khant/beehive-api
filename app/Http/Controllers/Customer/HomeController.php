@@ -99,37 +99,52 @@ class HomeController extends Controller
 
     private function getRandomRestaurants($request)
     {
-        return RestaurantOrderHelper::getBranches($request)
+        $branches = RestaurantOrderHelper::getBranches($request)
             ->orderBy('search_index', 'desc')
             ->inRandomOrder()
             ->limit(10)
             ->get();
+
+        $this->optimizeBranches($branches);
+        return $branches;
     }
 
     private function getRandomProducts()
     {
-        return Product::with('shop')
+        $products = Product::exclude(['description', 'variants', 'created_by', 'updated_by'])
+            ->with(['shop' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            }])
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
+            ->orderBy('search_index', 'desc')
             ->inRandomOrder()
             ->limit(10)
             ->get();
+
+        return $this->optimizeProducts($products);
     }
 
     private function getNewRestaurants($request)
     {
-        return RestaurantOrderHelper::getBranches($request)
+        $branches = RestaurantOrderHelper::getBranches($request)
             ->orderBy('search_index', 'desc')
             ->orderBy('id', 'desc')
             ->limit(10)
             ->get();
+
+        $this->optimizeBranches($branches);
+        return $branches;
     }
 
     private function getNewProducts()
     {
-        return Product::with('shop')
+        $products = Product::exclude(['description', 'variants', 'created_by', 'updated_by'])
+            ->with(['shop' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            }])
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
@@ -137,6 +152,8 @@ class HomeController extends Controller
             ->orderBy('id', 'desc')
             ->limit(10)
             ->get();
+
+        return $this->optimizeProducts($products);
     }
 
     public function search(Request $request)
@@ -299,5 +316,23 @@ class HomeController extends Controller
                 throw new ForbiddenException('Your application is out of date. Please update your application to get the latest features.');
             }
         }
+    }
+
+    private function optimizeBranches($branches)
+    {
+        foreach ($branches as $branch) {
+            $branch->makeHidden(['address', 'contact_number']);
+            $branch->restaurant->makeHidden(['created_by', 'updated_by', 'commission']);
+            $branch->restaurant->setAppends(['rating', 'images', 'covers']);
+        }
+    }
+
+    private function optimizeProducts($products)
+    {
+        return $products->map(function ($product) {
+            $product->makeHidden(['covers']);
+            $product->shop->makeHidden(['rating', 'images', 'covers', 'first_order_date']);
+            return $product->images->count() > 0 ? $product : null;
+        })->filter()->values();
     }
 }

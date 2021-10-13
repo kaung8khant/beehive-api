@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class RestaurantOrderContact extends BaseModel
+class RestaurantOrderContact extends Model
 {
     use HasFactory;
 
@@ -34,8 +34,13 @@ class RestaurantOrderContact extends BaseModel
         return $this->belongsTo(RestaurantOrder::class);
     }
 
-    // public function township()
-    // {
-    //     return $this->belongsTo(Township::class);
-    // }
+    public function getTableColumns()
+    {
+        return $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
+    }
+
+    public function scopeExclude($query, $columns = [])
+    {
+        return $query->select(array_diff($this->getTableColumns(), (array) $columns));
+    }
 }

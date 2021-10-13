@@ -81,9 +81,13 @@ class RestaurantCategoryController extends Controller
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
-    public function getCategoriesByRestaurant(Restaurant $restaurant)
+    public function getCategoriesByRestaurant(Request $request, Restaurant $restaurant)
     {
         return Menu::where('restaurant_id', $restaurant->id)
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
             ->pluck('restaurant_category_id')
             ->unique()
             ->map(function ($categoryId) use ($restaurant) {
