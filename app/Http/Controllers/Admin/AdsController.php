@@ -7,6 +7,7 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Ads;
+use App\Helpers\CollectionHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,11 +17,19 @@ class AdsController extends Controller
 
     public function index(Request $request)
     {
+        $sorting = CollectionHelper::getSorting('ads', 'id', $request->by ? $request->by : 'desc', $request->order);
+
         $ads = Ads::where('label', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->orderBy('id')
-            ->get();
-        return $this->generateResponse($ads, 200);
+            ->orWhere('slug', $request->filter);
+
+        if ($request->by) {
+            $ads = $ads->orderBy($sorting['orderBy'], $sorting['sortBy'])
+                ->orderBy('search_index', 'desc');
+        } else {
+            $ads = $ads->orderBy('search_index', 'desc')
+                ->orderBy($sorting['orderBy'], $sorting['sortBy']);
+        }
+        return $this->generateResponse($ads->get(), 200);
     }
 
     public function store(Request $request)
@@ -89,5 +98,16 @@ class AdsController extends Controller
         }
 
         return $params;
+    }
+
+    public function updateSearchIndex(Request $request, Ads $ads)
+    {
+        $validatedData = $request->validate([
+            'search_index' => 'required|numeric',
+        ]);
+
+        $ads->update($validatedData);
+
+        return response()->json($ads, 200);
     }
 }
