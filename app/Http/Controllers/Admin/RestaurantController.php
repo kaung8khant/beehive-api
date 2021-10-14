@@ -27,7 +27,6 @@ class RestaurantController extends Controller
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
 
-        $restaurants->makeHidden(['covers']);
         return $restaurants;
     }
 
