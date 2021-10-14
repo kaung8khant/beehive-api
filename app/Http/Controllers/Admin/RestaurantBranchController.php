@@ -57,7 +57,6 @@ class RestaurantBranchController extends Controller
     public function store(Request $request)
     {
         $validatedData = $this->validateRestaurantBranch($request, true);
-
         $restaurantBranch = RestaurantBranch::create($validatedData);
 
         $menuIds = Menu::where('restaurant_id', $validatedData['restaurant_id'])->pluck('id');
@@ -76,8 +75,8 @@ class RestaurantBranchController extends Controller
     public function update(Request $request, RestaurantBranch $restaurantBranch)
     {
         $validatedData = $this->validateRestaurantBranch($request);
-
         $restaurantBranch->update($validatedData);
+
         Cache::forget('all_restaurant_branches_restaurant_id' . $validatedData['restaurant_id']);
 
         return response()->json($restaurantBranch->load('restaurant'), 200);
@@ -119,10 +118,6 @@ class RestaurantBranchController extends Controller
         }
 
         if ($tagsCategories) {
-            // $rules['name'] = [
-            //     'required',
-            //     Rule::unique('restaurant_branches')->ignore($branchId),
-            // ];
             $rules['restaurant_tags'] = 'required|array';
             $rules['restaurant_tags.*'] = 'exists:App\Models\RestaurantTag,slug';
             $rules['available_categories'] = 'nullable|array';
@@ -158,10 +153,16 @@ class RestaurantBranchController extends Controller
     {
         $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        return RestaurantBranch::where('restaurant_id', $restaurant->id)
+        $branches = RestaurantBranch::where('restaurant_id', $restaurant->id)
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
+
+        foreach ($branches as $branch) {
+            $branch->makeHidden(['id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
+        }
+
+        return $branches;
     }
 
     public function toggleEnable(RestaurantBranch $restaurantBranch)
