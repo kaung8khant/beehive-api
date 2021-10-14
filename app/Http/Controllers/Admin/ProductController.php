@@ -36,6 +36,27 @@ class ProductController extends Controller
         return CollectionHelper::removePaginateLinks($products);
     }
 
+    public function getPriceBook(Request $request)
+    {
+        $sorting = CollectionHelper::getSorting('products', 'search_index', $request->by ? $request->by : 'desc', $request->order);
+
+        $products = Product::with(['productVariants'])
+            ->where(function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            });
+        if (isset($request->is_enable)) {
+            $productIds = Product::whereHas('shop', function ($query) use ($request) {
+                $query->where('is_enable', $request->is_enable);
+            })->pluck('id')->toArray();
+
+            $products = $products->where('is_enable', $request->is_enable)
+                ->whereIn('id', $productIds);
+        }
+        return $products->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
+    }
+
     public function store(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -305,5 +326,17 @@ class ProductController extends Controller
 
             $product->product_variants = $product->productVariants()->where('is_enable', 1)->orderBy('price', 'asc')->limit(1)->get();
         }
+    }
+
+    public function updateVariantPrice(Request $request, ProductVariant $productVariant)
+    {
+        $validatedData = $request->validate([
+            'price' => 'required|numeric',
+            'vendor_price' => 'required|numeric',
+        ]);
+
+        $productVariant->update($validatedData);
+
+        return response()->json($productVariant->load('product'), 200);
     }
 }
