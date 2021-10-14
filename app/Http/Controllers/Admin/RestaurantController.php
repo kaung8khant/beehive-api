@@ -21,11 +21,14 @@ class RestaurantController extends Controller
     {
         $sorting = CollectionHelper::getSorting('restaurants', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        return Restaurant::with('availableTags')
+        $restaurants = Restaurant::exclude(['created_by', 'updated_by'])
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
+
+        $restaurants->makeHidden(['covers']);
+        return $restaurants;
     }
 
     public function store(Request $request)
