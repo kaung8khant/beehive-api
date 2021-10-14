@@ -44,14 +44,7 @@ class RestaurantBranchController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        $branches = RestaurantBranch::with('restaurant')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('contact_number', $request->filter)
-            ->orWhere('slug', $request->filter)
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $branches = RestaurantBranch::search($request->filter)->paginate(10);
 
         foreach ($branches as $branch) {
             $branch->makeHidden(['id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
