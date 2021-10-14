@@ -31,11 +31,16 @@ class Product extends BaseModel
     public function toSearchableArray(): array
     {
         $array = $this->toArray();
-        $array['shop_id'] = $this->shop->id;
-        $array['shop_category_id'] = $this->shopCategory->id;
-        $array['shop_category_name'] = $this->shopCategory->name;
-        $array['shop_sub_category_id'] = $this->shopSubCategory ? $this->shopSubCategory->id : null;
+
+        $array['shop_name'] = $this->shop ? $this->shop->name : null;
+        $array['brand_name'] = $this->brand ? $this->brand->name : null;
+        $array['shop_category_name'] = $this->shopCategory ? $this->shopCategory->name : null;
+
+        $array['shop_id'] = $this->shop ? $this->shop->id : null;
         $array['brand_id'] = $this->brand ? $this->brand->id : null;
+        $array['shop_category_id'] = $this->shopCategory ? $this->shopCategory->id : null;
+        $array['shop_sub_category_id'] = $this->shopSubCategory ? $this->shopSubCategory->id : null;
+
         return $array;
     }
 
