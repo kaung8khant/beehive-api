@@ -7,8 +7,9 @@ use App\Models\RestaurantBranch;
 use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
 use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class OrderFirstAssignListener
+class OrderFirstAssignListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
