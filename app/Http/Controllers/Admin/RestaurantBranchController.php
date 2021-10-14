@@ -46,12 +46,19 @@ class RestaurantBranchController extends Controller
     {
         $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        return RestaurantBranch::with('restaurant')
+        $branches = RestaurantBranch::with('restaurant')
             ->where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('contact_number', $request->filter)
             ->orWhere('slug', $request->filter)
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
+
+        foreach ($branches as $branch) {
+            $branch->makeHidden(['id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
+            $branch->restaurant->makeHidden(['id', 'is_enable', 'commission', 'rating', 'images', 'covers', 'first_order_date', 'created_by', 'updated_by']);
+        }
+
+        return CollectionHelper::removePaginateLinks($branches);
     }
 
     public function store(Request $request)
