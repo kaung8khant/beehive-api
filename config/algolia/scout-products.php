@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'searchableAttributes' => ['slug', 'name', 'description'],
+    'searchableAttributes' => ['slug', 'name', 'description', 'shop_category_name'],
 
     /*
     |--------------------------------------------------------------------------
