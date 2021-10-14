@@ -56,6 +56,8 @@ return [
         'promocode-sales' => 'Sales\PromocodeSalesExport',
         'promocode-used-customers' => 'Sales\PromocodeUsedCustomerExport',
         'promocode-invoice' => 'Sales\PromocodeInvoiceSalesExport',
+
+        'product-price-book' => 'ProductPriceBookExport',
     ],
     'name' => [
         'restaurant-vendor-sales',
