@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Helpers\CollectionHelper;
 use App\Helpers\CacheHelper;
+use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
@@ -295,7 +295,7 @@ class ProductController extends Controller
         ]);
 
         foreach ($products as $product) {
-            $product->makeHidden(['id', 'variants', 'created_by', 'updated_by']);
+            $product->makeHidden(['id', 'description', 'variants', 'created_by', 'updated_by', 'covers']);
             $product->shop->makeHidden(['id'])->setAppends([]);
             $product->shopCategory->makeHidden(['id'])->setAppends([]);
 
@@ -303,7 +303,12 @@ class ProductController extends Controller
                 $product->brand->makeHidden(['id'])->setAppends([]);
             }
 
-            $product->product_variants = $product->productVariants()->where('is_enable', 1)->orderBy('price', 'asc')->limit(1)->get();
+            $product->product_variants = $product->productVariants()
+                ->select('price', 'discount', 'vendor_price')
+                ->where('is_enable', 1)
+                ->orderBy('price', 'asc')
+                ->limit(1)
+                ->get();
         }
     }
 }
