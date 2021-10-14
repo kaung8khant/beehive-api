@@ -46,7 +46,7 @@ class RestaurantBranchController extends Controller
 
         foreach ($branches as $branch) {
             $branch->makeHidden(['id', 'restaurant_id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
-            $branch->restaurant->makeHidden(['id', 'is_enable', 'commission', 'rating', 'images', 'covers', 'first_order_date', 'created_by', 'updated_by']);
+            $branch->restaurant->makeHidden(['id', 'is_enable', 'commission', 'rating', 'covers', 'first_order_date', 'created_by', 'updated_by']);
         }
 
         return CollectionHelper::removePaginateLinks($branches);
