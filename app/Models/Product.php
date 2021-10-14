@@ -3,15 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 
 class Product extends BaseModel
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $guarded = ['id'];
 
     protected $hidden = [
-        'id',
+        // 'id',
         'shop_id',
         'shop_category_id',
         'shop_sub_category_id',
@@ -26,6 +27,16 @@ class Product extends BaseModel
     ];
 
     protected $appends = ['rating', 'images', 'covers'];
+
+    public function toSearchableArray(): array
+    {
+        $array = $this->toArray();
+        $array['shop_id'] = $this->shop->id;
+        $array['shop_category_id'] = $this->shopCategory->id;
+        $array['shop_sub_category_id'] = $this->shopSubCategory ? $this->shopSubCategory->id : null;
+        $array['brand_id'] = $this->brand ? $this->brand->id : null;
+        return $array;
+    }
 
     public function getPriceAttribute($value)
     {

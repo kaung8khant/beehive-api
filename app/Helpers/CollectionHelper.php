@@ -46,9 +46,22 @@ trait CollectionHelper
     public static function selectExclusiveColumns($table)
     {
         return collect(Schema::getColumnListing($table))->map(function ($column) {
-            if (!in_array($column, ['created_by', 'updated_by', 'created_at', 'updated_at'])) {
+            if (!in_array($column, ['description', 'variants', 'created_by', 'updated_by', 'created_at', 'updated_at'])) {
                 return 'products.' . $column;
             }
         })->filter()->values()->toArray();
+    }
+
+    public static function removePaginateLinks($paginator)
+    {
+        return [
+            'current_page' => $paginator->currentPage(),
+            'from' => $paginator->firstItem(),
+            'to' => $paginator->lastItem(),
+            'per_page' => $paginator->perPage(),
+            'last_page' => $paginator->lastPage(),
+            'total' => $paginator->total(),
+            'data' => $paginator->items(),
+        ];
     }
 }

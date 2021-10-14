@@ -16,13 +16,9 @@ class ShopSubCategoryController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('shop_sub_categories', 'name', $request->by, $request->order);
-
-        return ShopSubCategory::with('shopCategory')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $shopSubCategories = ShopSubCategory::search($request->filter)->paginate(10);
+        $this->optimizeShopSubCategories($shopSubCategories);
+        return CollectionHelper::removePaginateLinks($shopSubCategories);
     }
 
     public function store(Request $request)
@@ -79,19 +75,25 @@ class ShopSubCategoryController extends Controller
 
     private function getShopCategoryId($slug)
     {
-        return ShopCategory::where('slug', $slug)->first()->id;
+        return ShopCategory::where('slug', $slug)->value('id');
     }
 
     public function getSubCategoriesByCategory(Request $request, ShopCategory $shopCategory)
     {
-        $sorting = CollectionHelper::getSorting('shop_sub_categories', 'name', $request->by, $request->order);
+        $shopSubCategories = ShopSubCategory::search($request->filter)->where('shop_category_id', $shopCategory->id)->paginate(10);
+        $this->optimizeShopSubCategories($shopSubCategories);
+        return CollectionHelper::removePaginateLinks($shopSubCategories);
+    }
 
-        return ShopSubCategory::where('shop_category_id', $shopCategory->id)
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+    private function optimizeShopSubCategories($subCategories)
+    {
+        $subCategories->load(['shopCategory' => function ($query) {
+            $query->select('id', 'slug', 'name')->get();
+        }]);
+
+        foreach ($subCategories as $subCategory) {
+            $subCategory->makeHidden(['id', 'shop_category_id', 'created_by', 'updated_by']);
+            $subCategory->shopCategory->makeHidden(['id'])->setAppends([]);
+        }
     }
 }

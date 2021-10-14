@@ -127,7 +127,7 @@ class RestaurantCartController extends CartController
         $toppings = $this->getToppings($menu, $request->toppings);
         $optionItems = $this->getOptionItems($menu, $request->option_items);
 
-        $amount = $menuVariant->price + collect($toppings)->sum('price') + collect($optionItems)->sum('price');
+        $amount = $menuVariant->price + collect($toppings)->sum('topping_amount') + collect($optionItems)->sum('price');
         $tax = ($amount - $menuVariant->discount) * $menuVariant->tax * 0.01;
         $discount = $menuVariant->discount;
 
@@ -176,6 +176,7 @@ class RestaurantCartController extends CartController
                 'slug' => $menuTopping->slug,
                 'quantity' => $value['quantity'],
                 'price' => $menuTopping->price,
+                'topping_amount' => $menuTopping->price * $value['quantity'],
             ];
         });
 
