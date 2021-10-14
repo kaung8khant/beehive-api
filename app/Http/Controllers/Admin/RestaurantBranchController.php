@@ -7,12 +7,10 @@ use App\Helpers\CacheHelper;
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
 use App\Models\Menu;
 use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
-use App\Models\RestaurantOrder;
 use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,7 +45,7 @@ class RestaurantBranchController extends Controller
         $branches = RestaurantBranch::search($request->filter)->paginate(10);
 
         foreach ($branches as $branch) {
-            $branch->makeHidden(['id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
+            $branch->makeHidden(['id', 'restaurant_id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
             $branch->restaurant->makeHidden(['id', 'is_enable', 'commission', 'rating', 'images', 'covers', 'first_order_date', 'created_by', 'updated_by']);
         }
 
@@ -151,18 +149,13 @@ class RestaurantBranchController extends Controller
 
     public function getBranchesByRestaurant(Request $request, Restaurant $restaurant)
     {
-        $sorting = CollectionHelper::getSorting('restaurant_branches', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        $branches = RestaurantBranch::where('restaurant_id', $restaurant->id)
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $branches = RestaurantBranch::search($request->filter)->where('restaurant_id', $restaurant->id)->paginate(10);
 
         foreach ($branches as $branch) {
-            $branch->makeHidden(['id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
+            $branch->makeHidden(['id', 'restaurant_id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
         }
 
-        return $branches;
+        return CollectionHelper::removePaginateLinks($branches);
     }
 
     public function toggleEnable(RestaurantBranch $restaurantBranch)
@@ -260,31 +253,6 @@ class RestaurantBranchController extends Controller
 
         CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         return response()->json(['message' => 'Success.'], 200);
-    }
-
-    public function getRestaurantBranchByCustomers(Request $request, RestaurantBranch $restaurantBranch)
-    {
-        $orderList = RestaurantOrder::where('restaurant_branch_id', $restaurantBranch->id)->get();
-
-        $customerlist = [];
-
-        foreach ($orderList as $order) {
-            $customer = Customer::where('id', $order->customer_id)
-                ->where(function ($query) use ($request) {
-                    $query->where('email', 'LIKE', '%' . $request->filter . '%')
-                        ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-                        ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-                        ->orWhere('slug', $request->filter);
-                })
-                ->first();
-
-            $customer && array_push($customerlist, $customer);
-        }
-
-        $customerlist = collect($customerlist)->unique()->values()->all();
-        $customerlist = CollectionHelper::paginate(collect($customerlist), $request->size);
-
-        return response()->json($customerlist, 200);
     }
 
     public function updateSearchIndex(Request $request, RestaurantBranch $restaurantBranch)

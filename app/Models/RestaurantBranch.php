@@ -13,7 +13,7 @@ class RestaurantBranch extends BaseModel
 
     protected $hidden = [
         // 'id',
-        'restaurant_id',
+        // 'restaurant_id',
         'created_at',
         'updated_at',
         'pivot',
@@ -26,6 +26,8 @@ class RestaurantBranch extends BaseModel
         'pre_order' => 'boolean',
         'instant_order' => 'boolean',
     ];
+
+    protected $touches = ['restaurant'];
 
     public function toSearchableArray(): array
     {
