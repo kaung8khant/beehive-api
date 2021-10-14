@@ -11,7 +11,7 @@ class Menu extends BaseModel
     protected $guarded = ['id'];
 
     protected $hidden = [
-        'id',
+        // 'id',
         'restaurant_id',
         'restaurant_category_id',
         'created_at',
