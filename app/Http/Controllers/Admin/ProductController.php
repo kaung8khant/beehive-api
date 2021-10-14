@@ -327,16 +327,4 @@ class ProductController extends Controller
             $product->product_variants = $product->productVariants()->where('is_enable', 1)->orderBy('price', 'asc')->limit(1)->get();
         }
     }
-
-    public function updateVariantPrice(Request $request, ProductVariant $productVariant)
-    {
-        $validatedData = $request->validate([
-            'price' => 'required|numeric',
-            'vendor_price' => 'required|numeric',
-        ]);
-
-        $productVariant->update($validatedData);
-
-        return response()->json($productVariant->load('product'), 200);
-    }
 }

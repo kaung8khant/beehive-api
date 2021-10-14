@@ -84,7 +84,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('products/multiple-delete', 'Admin\ProductController@multipleDelete');
             Route::put('products/{product}/index', 'Admin\ProductController@updateSearchIndex');
             Route::get('products/variants/price-book', 'Admin\ProductController@getPriceBook');
-            Route::put('product-variants/{productVariant}/price-update', 'Admin\ProductController@updateVariantPrice');
+            Route::resource('product-variants', 'Admin\ProductVariantController', ['except' => ['create', 'edit']]);
 
             Route::resource('product-variations', 'Admin\ProductVariationController', ['except' => ['create', 'edit']]);
             Route::get('products/{product}/product-variations', 'Admin\ProductVariationController@getProductVariationsByProduct');
