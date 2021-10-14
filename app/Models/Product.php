@@ -33,6 +33,7 @@ class Product extends BaseModel
         $array = $this->toArray();
         $array['shop_id'] = $this->shop->id;
         $array['shop_category_id'] = $this->shopCategory->id;
+        $array['shop_category_name'] = $this->shopCategory->name;
         $array['shop_sub_category_id'] = $this->shopSubCategory ? $this->shopSubCategory->id : null;
         $array['brand_id'] = $this->brand ? $this->brand->id : null;
         return $array;
