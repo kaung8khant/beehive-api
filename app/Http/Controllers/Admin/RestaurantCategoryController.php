@@ -96,7 +96,6 @@ class RestaurantCategoryController extends Controller
                     ->where('restaurant_category_id', $category->id)
                     ->value('search_index');
                 $category['search_index'] = $searchIndex ? $searchIndex : 0;
-                $category->makeHidden(['images']);
 
                 return $category;
             })
