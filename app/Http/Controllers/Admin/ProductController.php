@@ -295,7 +295,7 @@ class ProductController extends Controller
         ]);
 
         foreach ($products as $product) {
-            $product->makeHidden(['id', 'description', 'variants', 'created_by', 'updated_by', 'covers']);
+            $product->makeHidden(['id', 'description', 'variants', 'created_by', 'updated_by']);
             $product->shop->makeHidden(['id'])->setAppends([]);
             $product->shopCategory->makeHidden(['id'])->setAppends([]);
 
