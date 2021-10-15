@@ -44,14 +44,14 @@ class CustomerController extends Controller
         $checkPhone = Customer::where('phone_number', $validatedData['phone_number'])->first();
 
         if ($checkPhone) {
-            return [
+            return response()->json([
                 'message' => 'The given data was invalid.',
                 'errors' => [
                     'phone_number' => [
                         'The phone number has already been taken.',
                     ],
                 ],
-            ];
+            ], 422);
         }
 
         $password = $validatedData['password'] ? $validatedData['password'] : $this->generateRandomPassword();
