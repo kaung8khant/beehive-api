@@ -24,9 +24,7 @@ class ProductVariantController extends Controller
         $validatedData = $request->validate([
             'price' => 'required|numeric',
             'vendor_price' => 'required|numeric',
-            'product_slug' => 'required|exists:App\Models\Product,slug',
         ]);
-        $validatedData['product_id'] = $this->getProductId($request->product_slug);
 
         $productVariant->update($validatedData);
 

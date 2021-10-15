@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 
 class RestaurantBranch extends BaseModel
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $guarded = ['id'];
 
@@ -25,6 +26,17 @@ class RestaurantBranch extends BaseModel
         'pre_order' => 'boolean',
         'instant_order' => 'boolean',
     ];
+
+    protected $touches = ['restaurant'];
+
+    public function toSearchableArray(): array
+    {
+        $array = $this->toArray();
+        $array = $this->transform($array);
+        $array['restaurant_id'] = $this->restaurant ? $this->restaurant->id : null;
+        $array['restaurant_name'] = $this->restaurant ? $this->restaurant->name : null;
+        return $array;
+    }
 
     public function getIsAvailableAttribute()
     {

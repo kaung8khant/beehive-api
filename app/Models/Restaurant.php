@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 
 class Restaurant extends BaseModel
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $guarded = ['id'];
 
@@ -24,10 +25,17 @@ class Restaurant extends BaseModel
 
     protected $appends = ['rating', 'images', 'covers', 'first_order_date'];
 
+    public function toSearchableArray(): array
+    {
+        $array = $this->toArray();
+        $array['id'] = $this->id;
+        return $array;
+    }
+
     public function getFirstOrderDateAttribute()
     {
         $restaurantOrder = RestaurantOrder::where('restaurant_id', $this->id)
-        ->orderBy('order_date', 'ASC')->first();
+            ->orderBy('order_date', 'ASC')->first();
 
         return $restaurantOrder ? $restaurantOrder->order_date : null;
     }
