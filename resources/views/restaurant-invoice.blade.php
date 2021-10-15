@@ -26,9 +26,16 @@
             margin-top: 0 !important;
         }
 
-        th,
-        td {
-            padding: 5px,
+        .info-col{
+            padding:5px;
+        }
+        .pdf-col {
+            padding: 5px 15px 5px 15px !important;
+            width: 20%;
+        }
+
+        .pdf-col-name {
+            width: 40%;
         }
 
         .border {
@@ -56,12 +63,12 @@
     <table align="right">
         <tbody>
             <tr>
-                <td><b>INVOICE NO.</b></td>
-                <td>{{ $restaurantOrder['invoice_id'] }}</td>
+                <td class="info-col"><b>INVOICE NO.</b></td>
+                <td class="info-col">{{ $restaurantOrder['invoice_id'] }}</td>
             </tr>
             <tr>
-                <td><b>Date.</b></td>
-                <td>{{ $date }}</td>
+                <td class="info-col"><b>Date.</b></td>
+                <td class="info-col">{{ $date }}</td>
             </tr>
 
         </tbody>
@@ -73,19 +80,19 @@
     <table>
         <tbody>
             <tr>
-                <td>NAME</td>
-                <td>:</td>
-                <td>{{ $restaurantOrderContact['customer_name'] }}</td>
+                <td class="info-col">NAME</td>
+                <td class="info-col">:</td>
+                <td class="info-col">{{ $restaurantOrderContact['customer_name'] }}</td>
             </tr>
             <tr>
-                <td>PHONE</td>
-                <td>:</td>
-                <td>{{ $restaurantOrderContact['phone_number'] }}</td>
+                <td class="info-col">PHONE</td>
+                <td class="info-col">:</td>
+                <td class="info-col">{{ $restaurantOrderContact['phone_number'] }}</td>
             </tr>
             <tr>
-                <td>ADDRESS</td>
-                <td>:</td>
-                <td>{{ $restaurantOrderContact['street_name'] }}</td>
+                <td class="info-col">ADDRESS</td>
+                <td class="info-col">:</td>
+                <td class="info-col">{{ $restaurantOrderContact['street_name'] }}</td>
             </tr>
         </tbody>
     </table>
@@ -94,16 +101,16 @@
     <table class="pdf-table" cellspacing="0">
         <thead>
             <tr>
-                <th class="border" align="left">Menu</th>
-                <th class="border" align="right">Unit Price</th>
-                <th class="border" align="right">Qty</th>
-                <th class="border" align="right">Line Total</th>
+                <th class="border pdf-col pdf-col-name" align="left">Menu</th>
+                <th class="border pdf-col" align="right">Unit Price</th>
+                <th class="border pdf-col" align="right">Qty</th>
+                <th class="border pdf-col" align="right">Line Total</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($restaurantOrderItems as $item)
             <tr>
-                <td class="border" align="left">
+                <td class="border pdf-col pdf-col-name" align="left">
                     {{ $item['menu_name'] }}
 
                     @if($item['variant'])
@@ -134,32 +141,32 @@
                     </div>
                     @endif
                 </td>
-                <td class="border" align="right" style="vertical-align: top;">{{ number_format($item['amount'] - $item['discount']) }} MMK</td>
-                <td class="border" align="right" style="vertical-align: top;">{{ $item['quantity'] }}</td>
-                <td class="border" align="right" style="vertical-align: top;">{{ number_format(($item['amount'] - $item['discount']) * $item['quantity']) }} MMK</td>
+                <td class="border pdf-col" align="right" style="vertical-align: top;">{{ number_format($item['amount'] - $item['discount']) }} MMK</td>
+                <td class="border pdf-col" align="right" style="vertical-align: top;">{{ $item['quantity'] }}</td>
+                <td class="border pdf-col" align="right" style="vertical-align: top;">{{ number_format(($item['amount'] - $item['discount']) * $item['quantity']) }} MMK</td>
             </tr>
             @endforeach
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="3" align="right">Sub Total</td>
-                <td align="right">{{ number_format(round($restaurantOrder['amount'] - $restaurantOrder['discount'])) }} MMK</td>
+                <td colspan="3" align="right" class="pdf-col">Sub Total</td>
+                <td align="right" class="pdf-col">{{ number_format(round($restaurantOrder['amount'] - $restaurantOrder['discount'])) }} MMK</td>
             </tr>
             <tr>
-                <td colspan="3" align="right">Delivery Fee</td>
-                <td align="right">{{ 0 }} MMK</td>
+                <td colspan="3" align="right" class="pdf-col">Delivery Fee</td>
+                <td align="right" class="pdf-col">{{ 0 }} MMK</td>
             </tr>
             <tr>
-                <td colspan="3" align="right">Tax</td>
-                <td align="right">{{ number_format(round($restaurantOrder['tax'])) }} MMK</td>
+                <td colspan="3" align="right" class="pdf-col">Tax</td>
+                <td align="right" class="pdf-col">{{ number_format(round($restaurantOrder['tax'])) }} MMK</td>
             </tr>
             <tr>
-                <td colspan="3" align="right" class="border">Discount</td>
-                <td align="right" class="border">{{ number_format(round($restaurantOrder['promocode_amount'])) }} MMK</td>
+                <td colspan="3" align="right" class="border pdf-col">Discount</td>
+                <td align="right" class="border pdf-col">{{ number_format(round($restaurantOrder['promocode_amount'])) }} MMK</td>
             </tr>
             <tr>
-                <td colspan="3" align="right">Total</td>
-                <td align="right">{{ number_format(round($restaurantOrder['total_amount'])) }} MMK</td>
+                <td colspan="3" align="right" class="pdf-col">Total</td>
+                <td align="right" class="pdf-col">{{ number_format(round($restaurantOrder['total_amount'])) }} MMK</td>
             </tr>
         </tfoot>
     </table>
