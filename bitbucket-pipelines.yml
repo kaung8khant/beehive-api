@@ -82,6 +82,8 @@ pipelines:
                   REDIS_HOST=${REDIS_HOST}
                   REDIS_PASSWORD=${REDIS_PASSWORD}
                   LOG_SLACK_WEBHOOK_URL=${LOG_SLACK_WEBHOOK_URL}
+                  ALGOLIA_APP_ID=${ALGOLIA_APP_ID}
+                  ALGOLIA_SECRET=${ALGOLIA_SECRET}
 
                 # add firebase credentials
                 - echo ${FIREBASE_CREDENTIALS} > storage/firebase/firebase_credentials.json

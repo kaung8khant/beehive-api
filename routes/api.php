@@ -50,7 +50,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::put('logistics-users/{user}', 'Admin\UserController@updateLogisticsUser');
 
             Route::resource('customers', 'Admin\CustomerController', ['except' => ['create', 'edit']]);
-            Route::get('customers/{slug}/orders', 'Admin\CustomerController@getOrdersByCustomer');
+            Route::get('customers/{customer}/orders', 'Admin\CustomerController@getOrdersByCustomer');
             Route::patch('customers/toggle-enable/{customer}', 'Admin\CustomerController@toggleEnable');
 
             Route::resource('drivers', 'Admin\Driver\DriverController', ['except' => ['create', 'edit']]);
@@ -65,15 +65,15 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             /* Shop */
             Route::resource('shop-categories', 'Admin\ShopCategoryController', ['except' => ['create', 'edit']]);
-            Route::resource('sub-categories', 'Admin\ShopSubCategoryController', ['except' => ['create', 'edit']]);
+            Route::resource('sub-categories', 'Admin\ShopSubCategoryController', ['except' => ['create', 'edit']])->parameter('sub-categories', 'shopSubCategory');
             Route::resource('shop-tags', 'Admin\ShopTagController', ['except' => ['create', 'edit']]);
             Route::resource('shops', 'Admin\ShopController', ['except' => ['create', 'edit']]);
             Route::patch('shops/toggle-enable/{shop}', 'Admin\ShopController@toggleEnable');
             Route::post('shops/status', 'Admin\ShopController@multipleStatusUpdate');
             Route::patch('shops/toggle-official/{slug}', 'Admin\ShopController@toggleOfficial');
-            Route::get('shops/{slug}/customers', 'Admin\ShopController@getCustomersByShop');
+            Route::get('shops/{shop}/customers', 'Admin\CustomerController@getCustomersByShop');
             Route::get('shop-categories/{shopCategory}/sub-categories', 'Admin\ShopSubCategoryController@getSubCategoriesByCategory');
-            Route::get('shops/{slug}/shop-tags', 'Admin\ShopTagController@getTagsByShop');
+            Route::get('shops/{shop}/shop-tags', 'Admin\ShopTagController@getTagsByShop');
             Route::get('shops/{shop}/ratings', 'Admin\ShopRatingController@getShopRatings');
 
             Route::resource('products', 'Admin\ProductController', ['except' => ['create', 'edit']]);
@@ -93,7 +93,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
 
             Route::resource('brands', 'Admin\BrandController', ['except' => ['create', 'edit']]);
             Route::get('brands/{brand}/products', 'Admin\ProductController@getProductsByBrand');
-            Route::get('brands/{slug}/shops', 'Admin\ShopController@getShopsByBrand');
+            Route::get('brands/{brand}/shops', 'Admin\ShopController@getShopsByBrand');
             /* Shop */
 
             /* Restaurant */
@@ -132,7 +132,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('restaurant-branches/toggle-enable/{restaurantBranch}', 'Admin\RestaurantBranchController@toggleEnable');
             Route::patch('restaurant-branches/toggle-free-delivery/{restaurantBranch}', 'Admin\RestaurantBranchController@toggleFreeDelivery');
             Route::post('restaurant-branches/status', 'Admin\RestaurantBranchController@multipleStatusUpdate');
-            Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\RestaurantBranchController@getRestaurantBranchByCustomers');
+            Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\CustomerController@getCustomersByBranch');
             Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
 
             Route::put('restaurant-branches/{restaurantBranch}/index', 'Admin\RestaurantBranchController@updateSearchIndex');
