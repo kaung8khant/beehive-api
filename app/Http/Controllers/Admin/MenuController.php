@@ -35,30 +35,19 @@ class MenuController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('menus', 'search_index', $request->by ? $request->by : 'desc', $request->order);
-
-        $menus = Menu::with(['restaurant', 'restaurantCategory', 'menuVariants'])
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
+        $menus = Menu::search($request->filter);
 
         if (isset($request->is_enable)) {
+            $menuIds = Menu::whereHas('restaurant', function ($query) use ($request) {
+                $query->where('is_enable', $request->is_enable);
+            })->pluck('id')->toArray();
+
             $menus = $menus->where('is_enable', $request->is_enable)
-                ->whereHas('restaurant', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
+                ->whereIn('id', $menuIds);
         }
 
-        $menus = $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
-
-        foreach ($menus as $menu) {
-            $menu->makeHidden(['id', 'variants', 'created_by', 'updated_by']);
-            $menu->restaurantCategory->makeHidden(['created_by', 'updated_by', 'images', 'covers']);
-            $menu->restaurant->makeHidden(['id', 'is_enable', 'commission', 'rating', 'first_order_date', 'created_by', 'updated_by', 'images', 'covers']);
-        }
-
+        $menus = $menus->paginate(10);
+        $this->optimizeMenus($menus);
         return CollectionHelper::removePaginateLinks($menus);
     }
 
@@ -484,5 +473,30 @@ class MenuController extends Controller
         }
 
         return response()->json($menu->refresh()->load('menuVariants'), 200);
+    }
+
+    private function optimizeMenus($menus)
+    {
+        $menus->load([
+            'restaurant' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            },
+            'restaurantCategory' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            },
+        ]);
+
+        foreach ($menus as $menu) {
+            $menu->makeHidden(['variants', 'created_by', 'updated_by']);
+            $menu->restaurantCategory->makeHidden(['created_by', 'updated_by', 'images', 'covers']);
+            $menu->restaurant->makeHidden(['is_enable', 'commission', 'rating', 'first_order_date', 'created_by', 'updated_by', 'images', 'covers']);
+
+            $menu->menu_variants = $menu->menuVariants()
+                ->select('price', 'discount')
+                ->where('is_enable', 1)
+                ->orderBy('price', 'asc')
+                ->limit(1)
+                ->get();
+        }
     }
 }
