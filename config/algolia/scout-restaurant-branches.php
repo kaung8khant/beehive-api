@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'searchableAttributes' => ['slug', 'name'],
+    'searchableAttributes' => ['slug', 'name', 'contact_number', 'restaurant_name'],
 
     /*
     |--------------------------------------------------------------------------
@@ -32,7 +32,7 @@ return [
     |
     */
 
-    'customRanking' => ['asc(name)'],
+    'customRanking' => ['desc(search_index)', 'desc(id)'],
 
     /*
     |--------------------------------------------------------------------------
@@ -79,7 +79,7 @@ return [
     |
     */
 
-    'attributesForFaceting' => null,
+    'attributesForFaceting' => ['city'],
 
     /*
     |--------------------------------------------------------------------------

@@ -50,8 +50,16 @@ class MenuController extends Controller
                 });
         }
 
-        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        $menus = $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
+
+        foreach ($menus as $menu) {
+            $menu->makeHidden(['id', 'variants', 'created_by', 'updated_by']);
+            $menu->restaurantCategory->makeHidden(['created_by', 'updated_by', 'images', 'covers']);
+            $menu->restaurant->makeHidden(['id', 'is_enable', 'commission', 'rating', 'first_order_date', 'created_by', 'updated_by', 'images', 'covers']);
+        }
+
+        return CollectionHelper::removePaginateLinks($menus);
     }
 
     public function store(Request $request)

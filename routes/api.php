@@ -83,6 +83,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('shop-categories/{shopCategory}/products', 'Admin\ProductController@getProductsByCategory');
             Route::post('products/multiple-delete', 'Admin\ProductController@multipleDelete');
             Route::put('products/{product}/index', 'Admin\ProductController@updateSearchIndex');
+            Route::put('products/{product}/variants', 'Admin\ProductController@updateVariants');
 
             Route::resource('product-variations', 'Admin\ProductVariationController', ['except' => ['create', 'edit']]);
             Route::get('products/{product}/product-variations', 'Admin\ProductVariationController@getProductVariationsByProduct');
@@ -131,7 +132,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('restaurant-branches/toggle-enable/{restaurantBranch}', 'Admin\RestaurantBranchController@toggleEnable');
             Route::patch('restaurant-branches/toggle-free-delivery/{restaurantBranch}', 'Admin\RestaurantBranchController@toggleFreeDelivery');
             Route::post('restaurant-branches/status', 'Admin\RestaurantBranchController@multipleStatusUpdate');
-            Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\RestaurantBranchController@getRestaurantBranchByCustomers');
+            Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\CustomerController@getCustomersByBranch');
             Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
 
             Route::put('restaurant-branches/{restaurantBranch}/index', 'Admin\RestaurantBranchController@updateSearchIndex');
