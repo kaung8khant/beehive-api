@@ -17,6 +17,7 @@ return [
         'restaurant-order' => 'RestaurantOrdersImport',
         'menu' => 'MenusImport',
         'customer-group' => 'CustomerGroupsImport',
+        'product-price-book' => 'ProductPriceBookImport',
     ],
     'export' => [
         'customer' => 'CustomersExport',
