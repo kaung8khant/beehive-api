@@ -19,6 +19,7 @@ use App\Models\RestaurantBranch;
 use App\Models\RestaurantCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MenuController extends Controller
 {
@@ -35,30 +36,19 @@ class MenuController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('menus', 'search_index', $request->by ? $request->by : 'desc', $request->order);
-
-        $menus = Menu::with(['restaurant', 'restaurantCategory', 'menuVariants'])
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
+        $menus = Menu::search($request->filter);
 
         if (isset($request->is_enable)) {
+            $menuIds = Menu::whereHas('restaurant', function ($query) use ($request) {
+                $query->where('is_enable', $request->is_enable);
+            })->pluck('id')->toArray();
+
             $menus = $menus->where('is_enable', $request->is_enable)
-                ->whereHas('restaurant', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
+                ->whereIn('id', $menuIds);
         }
 
-        $menus = $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
-
-        foreach ($menus as $menu) {
-            $menu->makeHidden(['id', 'variants', 'created_by', 'updated_by']);
-            $menu->restaurantCategory->makeHidden(['created_by', 'updated_by', 'images', 'covers']);
-            $menu->restaurant->makeHidden(['id', 'is_enable', 'commission', 'rating', 'first_order_date', 'created_by', 'updated_by', 'images', 'covers']);
-        }
-
+        $menus = $menus->paginate(10);
+        $this->optimizeMenus($menus);
         return CollectionHelper::removePaginateLinks($menus);
     }
 
@@ -323,97 +313,75 @@ class MenuController extends Controller
 
     public function getMenusByRestaurant(Request $request, Restaurant $restaurant)
     {
-        $sorting = CollectionHelper::getSorting('menus', 'search_index', $request->by ? $request->by : 'desc', $request->order);
-
-        $menus = Menu::with(['restaurant', 'restaurantCategory', 'menuVariants'])
-            ->where('restaurant_id', $restaurant->id)
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
+        $menus = Menu::search($request->filter)->where('restaurant_id', $restaurant->id);
 
         if (isset($request->is_enable)) {
+            $menuIds = Menu::whereHas('restaurant', function ($query) use ($request) {
+                $query->where('is_enable', $request->is_enable);
+            })->pluck('id')->toArray();
+
             $menus = $menus->where('is_enable', $request->is_enable)
-                ->whereHas('restaurant', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
+                ->whereIn('id', $menuIds);
         }
 
-        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->get();
+        $menus = $menus->get();
+        $this->optimizeMenus($menus);
+        return $menus;
     }
 
     public function getMenusByBranch(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $sorting = CollectionHelper::getSorting('menus', 'search_index', $request->by ? $request->by : 'desc', $request->order);
-
-        $menus = $restaurantBranch->availableMenus()
-            ->with(['restaurant', 'restaurantCategory', 'menuVariants'])
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
-
-        if (isset($request->is_enable)) {
-            $menus = $menus->where('is_enable', $request->is_enable)
-                ->whereHas('restaurant', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
-        }
-
-        $menus = $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        $availableMenus = DB::table('restaurant_branch_menu_map')
+            ->select('menu_id', 'is_available')
+            ->where('restaurant_branch_id', $restaurantBranch->id)
             ->get();
 
-        foreach ($menus as $menu) {
-            $menu->setAppends(['is_available', 'images']);
-        }
+        $menus = Menu::search($request->filter)
+            ->whereIn('id', $availableMenus->pluck('menu_id')->toArray())
+            ->take(1000)
+            ->get();
+
+        $this->optimizeMenus($menus);
+
+        $menus = $menus->map(function ($menu) use ($availableMenus) {
+            $menuId = $menu->id;
+            $menu = $menu->toArray();
+            $menu['is_available'] = boolval($availableMenus->firstWhere('menu_id', $menuId)->is_available);
+            return $menu;
+        });
 
         return $menus;
     }
 
     public function getMenusByCategory(Request $request, RestaurantCategory $restaurantCategory)
     {
-        $sorting = CollectionHelper::getSorting('menus', 'search_index', $request->by ? $request->by : 'desc', $request->order);
-
-        $menus = Menu::with('restaurant', 'restaurantCategory')
-            ->where('restaurant_category_id', $restaurantCategory->id)
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
-
-        if (isset($request->is_enable)) {
-            $menus = $menus->where('is_enable', $request->is_enable)
-                ->whereHas('restaurant', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
-        }
-
-        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $menus = Menu::search($request->filter)->where('restaurant_category_id', $restaurantCategory->id)->paginate(10);
+        return CollectionHelper::removePaginateLinks($menus);
     }
 
     public function getMenusByBranchWithAdditionals(Request $request, RestaurantBranch $restaurantBranch)
     {
-        $sorting = CollectionHelper::getSorting('menus', 'name', $request->by, $request->order);
+        $availableMenus = DB::table('restaurant_branch_menu_map')
+            ->select('menu_id', 'is_available')
+            ->where('restaurant_branch_id', $restaurantBranch->id)
+            ->get();
 
-        $menus = $restaurantBranch->availableMenus()
-            ->with('restaurantCategory', 'menuVariations', 'menuVariations.menuVariationValues', 'menuVariants', 'menuToppings', 'menuOptions', 'menuOptions.options')
-            ->where('is_available', true)
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
-
-        if (isset($request->is_enable)) {
-            $menus = $menus->where('is_enable', $request->is_enable)
-                ->whereHas('restaurant', function ($query) use ($request) {
-                    $query->where('is_enable', $request->is_enable);
-                });
-        }
-
-        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
+        $menus = Menu::search($request->filter)
+            ->whereIn('id', $availableMenus->pluck('menu_id')->toArray())
             ->paginate(10);
+
+        $this->optimizeMenus($menus);
+        $menus = CollectionHelper::removePaginateLinks($menus);
+
+        $menus['data'] = array_map(function ($menu) use ($availableMenus) {
+            $menu->load(['menuToppings', 'menuOptions', 'menuOptions.options']);
+            $menuId = $menu->id;
+            $menu = $menu->toArray();
+            $menu['is_available'] = boolval($availableMenus->firstWhere('menu_id', $menuId)->is_available);
+            return $menu;
+        }, $menus['data']);
+
+        return $menus;
     }
 
     public function updateSearchIndex(Request $request, Menu $menu)
@@ -484,5 +452,30 @@ class MenuController extends Controller
         }
 
         return response()->json($menu->refresh()->load('menuVariants'), 200);
+    }
+
+    private function optimizeMenus($menus)
+    {
+        $menus->load([
+            'restaurant' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            },
+            'restaurantCategory' => function ($query) {
+                $query->select('id', 'slug', 'name');
+            },
+        ]);
+
+        foreach ($menus as $menu) {
+            $menu->makeHidden(['variants', 'created_by', 'updated_by']);
+            $menu->restaurantCategory->makeHidden(['created_by', 'updated_by', 'images', 'covers']);
+            $menu->restaurant->makeHidden(['is_enable', 'commission', 'rating', 'first_order_date', 'created_by', 'updated_by', 'images', 'covers']);
+
+            $menu->menu_variants = $menu->menuVariants()
+                ->select('price', 'discount')
+                ->where('is_enable', 1)
+                ->orderBy('price', 'asc')
+                ->limit(1)
+                ->get();
+        }
     }
 }

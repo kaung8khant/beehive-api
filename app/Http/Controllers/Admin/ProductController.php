@@ -14,10 +14,20 @@ use App\Models\ProductVariant;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
     use FileHelper, StringHelper;
+
+    private $user;
+
+    public function __construct()
+    {
+        if (Auth::guard('users')->check()) {
+            $this->user = Auth::guard('users')->user();
+        }
+    }
 
     public function index(Request $request)
     {

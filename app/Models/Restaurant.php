@@ -12,7 +12,7 @@ class Restaurant extends BaseModel
     protected $guarded = ['id'];
 
     protected $hidden = [
-        // 'id',
+        'id',
         'created_at',
         'updated_at',
         'pivot',
@@ -27,7 +27,9 @@ class Restaurant extends BaseModel
 
     public function toSearchableArray(): array
     {
-        return $this->toArray();
+        $array = $this->toArray();
+        $array['id'] = $this->id;
+        return $array;
     }
 
     public function getFirstOrderDateAttribute()

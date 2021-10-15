@@ -20,9 +20,8 @@ return [
         'slug',
         'name',
         'description',
-        'shop_name',
-        'brand_name',
-        'shop_category_name',
+        'restaurant_name',
+        'restaurant_category_name',
     ],
 
     /*
@@ -86,7 +85,7 @@ return [
     |
     */
 
-    'attributesForFaceting' => ['shop_category_name'],
+    'attributesForFaceting' => ['restaurant_category_name'],
 
     /*
     |--------------------------------------------------------------------------

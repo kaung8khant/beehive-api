@@ -12,8 +12,8 @@ class RestaurantBranch extends BaseModel
     protected $guarded = ['id'];
 
     protected $hidden = [
-        // 'id',
-        // 'restaurant_id',
+        'id',
+        'restaurant_id',
         'created_at',
         'updated_at',
         'pivot',
@@ -33,7 +33,8 @@ class RestaurantBranch extends BaseModel
     {
         $array = $this->toArray();
         $array = $this->transform($array);
-        $array['restaurant_name'] = $this->restaurant->name;
+        $array['restaurant_id'] = $this->restaurant ? $this->restaurant->id : null;
+        $array['restaurant_name'] = $this->restaurant ? $this->restaurant->name : null;
         return $array;
     }
 
