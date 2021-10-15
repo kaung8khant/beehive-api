@@ -89,6 +89,7 @@ class MenuController extends Controller
                     $query->exclude(['created_by', 'updated_by']);
                 },
                 'menuVariations',
+                'menuVariations.menuVariationValues',
                 'menuVariants' => function ($query) {
                     $query->where('is_enable', 1);
                 },
