@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 
 class Menu extends BaseModel
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $guarded = ['id'];
 
@@ -25,6 +26,20 @@ class Menu extends BaseModel
     ];
 
     protected $appends = ['images'];
+
+    public function toSearchableArray(): array
+    {
+        $array = $this->toArray();
+
+        $array['id'] = $this->id;
+        $array['restaurant_id'] = $this->restaurant ? $this->restaurant->id : null;
+        $array['restaurant_category_id'] = $this->restaurantCategory ? $this->restaurantCategory->id : null;
+
+        $array['restaurant_name'] = $this->restaurant ? $this->restaurant->name : null;
+        $array['restaurant_category_name'] = $this->restaurantCategory ? $this->restaurantCategory->name : null;
+
+        return $array;
+    }
 
     public function getPriceAttribute($value)
     {

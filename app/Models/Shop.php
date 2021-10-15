@@ -3,15 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 
 class Shop extends BaseModel
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $guarded = ['id'];
 
     protected $hidden = [
-        'id',
+        // 'id',
         'created_at',
         'updated_at',
         'pivot',
@@ -26,7 +27,12 @@ class Shop extends BaseModel
         'is_enable' => 'boolean',
     ];
 
-    protected $appends = ['rating', 'images','covers','first_order_date'];
+    protected $appends = ['rating', 'images', 'covers', 'first_order_date'];
+
+    public function toSearchableArray(): array
+    {
+        return $this->toArray();
+    }
 
     public function getFirstOrderDateAttribute()
     {
@@ -88,6 +94,7 @@ class Shop extends BaseModel
     {
         return $this->belongsToMany(Customer::class, 'favorite_product');
     }
+
     public function vendor()
     {
         return $this->hasOne(ShopOrderVendor::class);
