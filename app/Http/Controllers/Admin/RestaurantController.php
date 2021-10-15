@@ -20,7 +20,7 @@ class RestaurantController extends Controller
     public function index(Request $request)
     {
         $restaurants = Restaurant::search($request->filter)->paginate(10);
-        $restaurants->makeHidden(['created_by', 'updated_by', 'covers']);
+        $restaurants->makeHidden(['created_by', 'updated_by']);
         return CollectionHelper::removePaginateLinks($restaurants);
     }
 
