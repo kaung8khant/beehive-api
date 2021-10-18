@@ -37,7 +37,15 @@ class RestaurantBranchController extends Controller
      */
     public function getAll()
     {
-        return RestaurantBranch::with('restaurant')->get();
+        return RestaurantBranch::exclude(['search_index', 'city', 'township', 'contact_number', 'notify_numbers', 'opening_time', 'closing_time', 'is_enable', 'free_delivery', 'pre_order', 'created_by', 'updated_by'])
+            ->with(['restaurant' => function ($query) {
+                $query->exclude(['is_enable', 'created_by', 'updated_by', 'commission']);
+            }])
+            ->get()
+            ->map(function ($branch) {
+                $branch->restaurant->setAppends([]);
+                return $branch;
+            });
     }
 
     public function index(Request $request)

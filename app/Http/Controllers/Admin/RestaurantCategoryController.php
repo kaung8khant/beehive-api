@@ -20,12 +20,9 @@ class RestaurantCategoryController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('restaurant_categories', 'name', $request->by, $request->order);
-
-        return RestaurantCategory::where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $categories = RestaurantCategory::search($request->filter)->paginate(10);
+        $categories->makeHidden(['created_by', 'updated_by']);
+        return CollectionHelper::removePaginateLinks($categories);
     }
 
     public function store(Request $request)
