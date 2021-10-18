@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Restaurant;
 use App\Models\RestaurantTag;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,12 +16,9 @@ class RestaurantTagController extends Controller
 
     public function index(Request $request)
     {
-        $sorting = CollectionHelper::getSorting('restaurant_tags', 'name', $request->by, $request->order);
-
-        return RestaurantTag::where('name', 'LIKE', '%' . $request->filter . '%')
-            ->orWhere('slug', $request->filter)
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $tags = RestaurantTag::search($request->filter)->paginate(10);
+        $this->optimizeTags($tags);
+        return CollectionHelper::removePaginateLinks($tags);
     }
 
     public function store(Request $request)
@@ -60,18 +58,19 @@ class RestaurantTagController extends Controller
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
-    public function getTagsByRestaurant(Request $request, $slug)
+    public function getTagsByRestaurant(Request $request, Restaurant $restaurant)
     {
-        $sorting = CollectionHelper::getSorting('restaurant_tags', 'name', $request->by, $request->order);
+        $tagIds = RestaurantTag::whereHas('restaurants', function ($query) use ($restaurant) {
+            $query->where('id', $restaurant->id);
+        })->pluck('id')->unique()->values()->toArray();
 
-        return RestaurantTag::whereHas('restaurants', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })
-            ->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
+        $tags = RestaurantTag::search($request->filter)->whereIn('id', $tagIds)->paginate(10);
+        $this->optimizeTags($tags);
+        return CollectionHelper::removePaginateLinks($tags);
+    }
+
+    private function optimizeTags($tags)
+    {
+        $tags->makeHidden(['created_by', 'updated_by']);
     }
 }
