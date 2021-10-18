@@ -3,6 +3,8 @@
 namespace App\Exports\Sales;
 
 use App\Models\ShopOrder;
+use App\Models\ShopOrderStatus;
+use App\Models\ShopOrderVendor;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -57,11 +59,18 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             $this->commissionSum += $commission;
             $this->commissionCtSum += $commissionCt;
             $this->balanceSum += $balance;
-
+            $vendorIds = ShopOrderVendor::whereHas('shopOrder', function ($query) use ($order) {
+                $query->where('shop_order_id', $order->id);
+            })->pluck('id')->toArray();
+            $orderStatus = ShopOrderStatus::where('status', 'delivered')
+                ->whereHas('shopOrderVendor', function ($query) use ($vendorIds) {
+                    $query->whereIn('id', $vendorIds);
+                })->latest('created_at')->first();
             return [
                 $key + 1,
                 $order->invoice_id,
                 Carbon::parse($order->order_date)->format('M d Y h:i a'),
+                $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,
                 $amount,
                 $order->order_status != 'cancelled' && $order->tax ? $order->tax : '0',
                 $order->order_status != 'cancelled' && $order->discount ? $order->discount : '0',
@@ -98,6 +107,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
                 'no.',
                 'invoice id',
                 'order date',
+                'delivered date',
                 'revenue',
                 'commercial tax',
                 'discount',
@@ -122,9 +132,9 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'A' => 15,
             'B' => 12,
             'C' => 20,
-            'D' => 15,
+            'D' => 20,
             'E' => 20,
-            'F' => 10,
+            'F' => 15,
             'G' => 15,
             'H' => 15,
             'I' => 15,
@@ -136,6 +146,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'O' => 30,
             'P' => 25,
             'Q' => 20,
+            'R' => 20,
         ];
     }
 
@@ -147,12 +158,13 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'A' => ['alignment' => ['horizontal' => 'center']],
             'B' => ['alignment' => ['horizontal' => 'center']],
             'C' => ['alignment' => ['horizontal' => 'center']],
-            'L' => ['alignment' => ['horizontal' => 'center']],
+            'D' => ['alignment' => ['horizontal' => 'center']],
             'M' => ['alignment' => ['horizontal' => 'center']],
             'N' => ['alignment' => ['horizontal' => 'center']],
             'O' => ['alignment' => ['horizontal' => 'center']],
             'P' => ['alignment' => ['horizontal' => 'center']],
             'Q' => ['alignment' => ['horizontal' => 'right']],
+            'R' => ['alignment' => ['horizontal' => 'right']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -163,7 +175,6 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
     public function columnFormats(): array
     {
         return [
-            'D' => '#,##0',
             'E' => '#,##0',
             'F' => '#,##0',
             'G' => '#,##0',
@@ -171,6 +182,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'I' => '#,##0',
             'J' => '#,##0',
             'K' => '#,##0',
+            'L' => '#,##0',
         ];
     }
 
@@ -194,17 +206,17 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             AfterSheet::class => function (AfterSheet $event) {
                 $lastRow = count($this->result) + 6 + 1;
 
-                $event->sheet->getStyle(sprintf('D%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('D%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('H%d:K%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('H%d:K%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('K%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('E%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('E%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('I%d:L%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('I%d:L%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('L%d', $lastRow))->getFont()->setBold(true);
 
-                $event->sheet->setCellValue(sprintf('D%d', $lastRow), $this->amountSum);
-                $event->sheet->setCellValue(sprintf('H%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('I%d', $lastRow), $this->commissionSum);
-                $event->sheet->setCellValue(sprintf('J%d', $lastRow), $this->commissionCtSum);
-                $event->sheet->setCellValue(sprintf('K%d', $lastRow), $this->balanceSum);
+                $event->sheet->setCellValue(sprintf('E%d', $lastRow), $this->amountSum);
+                $event->sheet->setCellValue(sprintf('I%d', $lastRow), $this->totalAmountSum);
+                $event->sheet->setCellValue(sprintf('J%d', $lastRow), $this->commissionSum);
+                $event->sheet->setCellValue(sprintf('K%d', $lastRow), $this->commissionCtSum);
+                $event->sheet->setCellValue(sprintf('L%d', $lastRow), $this->balanceSum);
 
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
 
