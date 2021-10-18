@@ -18,6 +18,7 @@ return [
         'menu' => 'MenusImport',
         'customer-group' => 'CustomerGroupsImport',
         'product-price-book' => 'ProductPriceBookImport',
+        'menu-price-book' => 'MenuPriceBookImport',
     ],
     'export' => [
         'customer' => 'CustomersExport',
@@ -59,6 +60,7 @@ return [
         'promocode-invoice' => 'Sales\PromocodeInvoiceSalesExport',
 
         'product-price-book' => 'ProductPriceBookExport',
+        'menu-price-book' => 'MenuPriceBookExport',
     ],
     'name' => [
         'restaurant-vendor-sales',

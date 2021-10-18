@@ -2,14 +2,14 @@
 
 namespace App\Exports;
 
-use App\Models\ProductVariant;
+use App\Models\MenuVariant;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
-class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles, WithColumnWidths
+class MenuPriceBookExport implements FromCollection, WithHeadings, WithStyles, WithColumnWidths
 {
     public function stringifyVariant($variants)
     {
@@ -22,17 +22,16 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
 
     public function collection()
     {
-        $productVariants = ProductVariant::with("product")->get()->groupBy('product_id')->all();
+        $menuVariants = MenuVariant::with("menu")->get()->groupBy('menu_id')->all();
         $exportData = [];
-        foreach ($productVariants as $group) {
+        foreach ($menuVariants as $group) {
             foreach ($group as $variant) {
                 $data = [
-                'id' => $variant->product->slug,
-                'name' => $variant->product->name,
+                'id' => $variant->menu->slug,
+                'name' => $variant->menu->name,
                 'variant_slug' =>  $variant->slug,
                 'variant' =>  $this->stringifyVariant($variant->variant),
                 'price' =>$variant->price ? $variant->price : '0',
-                'vendor_price' =>$variant->vendor_price ? $variant->vendor_price : '0',
                 'is_enable' =>  $variant->is_enable ? '1' : '0',
             ];
                 array_push($exportData, $data);
@@ -53,7 +52,6 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
             'variant_slug',
             'variant',
             'price',
-            'vendor_price',
             'is_enable',
         ];
     }
@@ -69,7 +67,6 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
             'D' => ['alignment' => ['horizontal' => 'center']],
             'E' => ['alignment' => ['horizontal' => 'center']],
             'F' => ['alignment' => ['horizontal' => 'center']],
-            'G' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -82,7 +79,6 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
             'D' => 30,
             'E' => 20,
             'F' => 20,
-            'G' => 20,
         ];
     }
 }
