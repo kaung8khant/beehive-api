@@ -15,7 +15,7 @@ class ShopOrderController extends Controller
 {
     public function getShopSaleInvoiceReport(Request $request)
     {
-        $shopOrders = ShopOrder::with('contact')
+        $shopOrders = ShopOrder::with('contact', 'vendors')
             ->whereBetween('order_date', [$request->from, $request->to])
             ->orderBy('id')
             ->get();
@@ -98,6 +98,13 @@ class ShopOrderController extends Controller
             $commissionSum += $commission;
             $commissionCtSum += $commissionCt;
             $balanceSum += $balance;
+            $vendorIds = ShopOrderVendor::whereHas('shopOrder', function ($query) use ($order) {
+                $query->where('shop_order_id', $order->id);
+            })->pluck('id')->toArray();
+            $orderStatus = ShopOrderStatus::where('status', 'delivered')
+                ->whereHas('shopOrderVendor', function ($query) use ($vendorIds) {
+                    $query->whereIn('id', $vendorIds);
+                })->latest('created_at')->first();
 
             $data[] = [
                 'invoice_id' => $order->invoice_id,
@@ -116,6 +123,7 @@ class ShopOrderController extends Controller
                 'payment_status' => $order->payment_status,
                 'order_status' => $order->order_status,
                 'special_instructions' => $order->special_instruction,
+                'delivered_date' => $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,
             ];
         }
 
