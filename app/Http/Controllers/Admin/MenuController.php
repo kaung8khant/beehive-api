@@ -471,7 +471,7 @@ class MenuController extends Controller
             $menu->restaurant->makeHidden(['is_enable', 'commission', 'rating', 'first_order_date', 'created_by', 'updated_by', 'images', 'covers']);
 
             $menu->menu_variants = $menu->menuVariants()
-                ->select('slug', 'price', 'discount')
+                ->select('slug', 'variant', 'price', 'discount')
                 ->where('is_enable', 1)
                 ->orderBy('price', 'asc')
                 ->limit(1)
