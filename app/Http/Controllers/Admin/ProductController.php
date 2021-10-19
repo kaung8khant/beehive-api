@@ -372,7 +372,7 @@ class ProductController extends Controller
             }
 
             $product->product_variants = $product->productVariants()
-                ->select('price', 'discount', 'vendor_price')
+                ->select('slug', 'price', 'discount', 'vendor_price')
                 ->where('is_enable', 1)
                 ->orderBy('price', 'asc')
                 ->limit(1)
