@@ -363,7 +363,7 @@ class ProductController extends Controller
         ]);
 
         foreach ($products as $product) {
-            $product->makeHidden(['id', 'description', 'variants', 'created_by', 'updated_by']);
+            $product->makeHidden(['id', 'description', 'created_by', 'updated_by']);
             $product->shop->makeHidden(['id'])->setAppends([]);
             $product->shopCategory->makeHidden(['id'])->setAppends([]);
 
@@ -375,7 +375,6 @@ class ProductController extends Controller
                 ->select('slug', 'variant', 'price', 'discount', 'vendor_price')
                 ->where('is_enable', 1)
                 ->orderBy('price', 'asc')
-                ->limit(1)
                 ->get();
         }
     }
