@@ -466,7 +466,7 @@ class MenuController extends Controller
         ]);
 
         foreach ($menus as $menu) {
-            $menu->makeHidden(['variants', 'created_by', 'updated_by']);
+            $menu->makeHidden(['created_by', 'updated_by']);
             $menu->restaurantCategory->makeHidden(['created_by', 'updated_by', 'images', 'covers']);
             $menu->restaurant->makeHidden(['is_enable', 'commission', 'rating', 'first_order_date', 'created_by', 'updated_by', 'images', 'covers']);
 
@@ -474,7 +474,6 @@ class MenuController extends Controller
                 ->select('slug', 'variant', 'price', 'discount')
                 ->where('is_enable', 1)
                 ->orderBy('price', 'asc')
-                ->limit(1)
                 ->get();
         }
     }
