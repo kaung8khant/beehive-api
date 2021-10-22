@@ -30,7 +30,7 @@ class KbzPayController extends Controller
 
             $data = [
                 'payment_status' => 'success',
-                'merchant_reference' => $requestData['Request']['mm_order_id'],
+                'payment_reference' => $requestData['Request']['mm_order_id'],
             ];
 
             if ($orderType === 'SHOP') {
