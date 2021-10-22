@@ -37,8 +37,8 @@ class ShopOrderStatus extends Model
         return DB::table('users')->where('id', $value)->select('slug', 'username', 'name', 'phone_number')->first();
     }
 
-    public function shopOrderVendor()
+    public function vendor()
     {
-        return $this->belongsTo(ShopOrderVendor::class);
+        return $this->belongsTo(ShopOrderVendor::class, 'shop_order_vendor_id');
     }
 }

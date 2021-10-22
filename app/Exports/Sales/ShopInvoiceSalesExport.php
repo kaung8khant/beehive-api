@@ -26,6 +26,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
 {
     protected $from;
     protected $to;
+    protected $filterBy;
 
     protected $result;
     protected $amountSum;
@@ -34,18 +35,30 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
     protected $commissionCtSum;
     protected $balanceSum;
 
-    public function __construct($from, $to)
+    public function __construct($from, $to, $filterBy)
     {
         $this->from = $from;
         $this->to = $to;
+        $this->filterBy = $filterBy;
     }
 
     public function collection()
     {
-        $shopOrders = ShopOrder::with('contact')
+        if ($this->filterBy === 'orderDate') {
+            $shopOrders = ShopOrder::with('contact', 'vendors')
             ->whereBetween('order_date', [$this->from, $this->to])
             ->orderBy('id')
             ->get();
+        } else {
+            $shopOrders = ShopOrder::with('contact', 'vendors')
+                ->whereHas('vendors', function ($query) {
+                    $query->whereHas('shopOrderStatuses', function ($q) {
+                        $q->whereBetween('created_at', [$this->from, $this->to])->where('status', '=', 'delivered')->latest();
+                    });
+                })
+                ->orderBy('id')
+                ->get();
+        }
 
         $this->result = $shopOrders->map(function ($order, $key) {
             $amount = $order->order_status == 'cancelled' ? '0' : $order->amount;
@@ -62,10 +75,18 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             $vendorIds = ShopOrderVendor::whereHas('shopOrder', function ($query) use ($order) {
                 $query->where('shop_order_id', $order->id);
             })->pluck('id')->toArray();
-            $orderStatus = ShopOrderStatus::where('status', 'delivered')
-                ->whereHas('shopOrderVendor', function ($query) use ($vendorIds) {
+
+
+            if ($this->filterBy === 'deliveredDate') {
+                $orderStatus = ShopOrderStatus::where('status', 'delivered')->whereBetween('created_at', array($this->from, $this->to))->whereHas('vendor', function ($query) use ($vendorIds) {
                     $query->whereIn('id', $vendorIds);
                 })->latest('created_at')->first();
+            } else {
+                $orderStatus = ShopOrderStatus::where('status', 'delivered')
+                    ->whereHas('shopOrderVendor', function ($query) use ($vendorIds) {
+                        $query->whereIn('id', $vendorIds);
+                    })->latest('created_at')->first();
+            }
             return [
                 $key + 1,
                 $order->invoice_id,
