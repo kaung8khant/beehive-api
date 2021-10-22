@@ -463,18 +463,17 @@ class MenuController extends Controller
             'restaurantCategory' => function ($query) {
                 $query->select('id', 'slug', 'name');
             },
+            'menuVariants' => function ($query) {
+                $query->select('menu_id', 'slug', 'variant', 'price', 'discount')
+                    ->where('is_enable', 1)
+                    ->orderBy('price', 'asc');
+            },
         ]);
 
         foreach ($menus as $menu) {
             $menu->makeHidden(['created_by', 'updated_by']);
             $menu->restaurantCategory->makeHidden(['created_by', 'updated_by', 'images', 'covers']);
             $menu->restaurant->makeHidden(['is_enable', 'commission', 'rating', 'first_order_date', 'created_by', 'updated_by', 'images', 'covers']);
-
-            $menu->menu_variants = $menu->menuVariants()
-                ->select('slug', 'variant', 'price', 'discount')
-                ->where('is_enable', 1)
-                ->orderBy('price', 'asc')
-                ->get();
         }
     }
 }
