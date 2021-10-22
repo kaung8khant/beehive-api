@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 
 class RestaurantTag extends BaseModel
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $guarded = ['id'];
 
@@ -16,6 +17,13 @@ class RestaurantTag extends BaseModel
         'updated_at',
         'pivot',
     ];
+
+    public function toSearchableArray(): array
+    {
+        $array = $this->toArray();
+        $array['id'] = $this->id;
+        return $array;
+    }
 
     public function restaurants()
     {

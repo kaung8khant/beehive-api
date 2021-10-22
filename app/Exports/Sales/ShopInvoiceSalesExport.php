@@ -76,14 +76,13 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
                 $query->where('shop_order_id', $order->id);
             })->pluck('id')->toArray();
 
-
             if ($this->filterBy === 'deliveredDate') {
                 $orderStatus = ShopOrderStatus::where('status', 'delivered')->whereBetween('created_at', array($this->from, $this->to))->whereHas('vendor', function ($query) use ($vendorIds) {
                     $query->whereIn('id', $vendorIds);
                 })->latest('created_at')->first();
             } else {
                 $orderStatus = ShopOrderStatus::where('status', 'delivered')
-                    ->whereHas('shopOrderVendor', function ($query) use ($vendorIds) {
+                    ->whereHas('vendor', function ($query) use ($vendorIds) {
                         $query->whereIn('id', $vendorIds);
                     })->latest('created_at')->first();
             }
@@ -102,6 +101,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
                 round($balance),
                 $order->payment_mode,
                 $order->payment_status,
+                $order->merchant_reference,
                 $order->order_status,
                 $order->special_instruction,
                 $order->contact->customer_name,
@@ -139,6 +139,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
                 'balance',
                 'payment mode',
                 'payment status',
+                'payment reference',
                 'order status',
                 'special instructions',
                 'customer name',
@@ -168,6 +169,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'P' => 25,
             'Q' => 20,
             'R' => 20,
+            'S' => 20,
         ];
     }
 
@@ -184,8 +186,9 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'N' => ['alignment' => ['horizontal' => 'center']],
             'O' => ['alignment' => ['horizontal' => 'center']],
             'P' => ['alignment' => ['horizontal' => 'center']],
-            'Q' => ['alignment' => ['horizontal' => 'right']],
-            'R' => ['alignment' => ['horizontal' => 'right']],
+            'Q' => ['alignment' => ['horizontal' => 'center']],
+            'R' => ['alignment' => ['horizontal' => 'center']],
+            'S' => ['alignment' => ['horizontal' => 'right']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],

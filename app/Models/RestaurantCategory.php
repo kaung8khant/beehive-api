@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Scout\Searchable;
 
 class RestaurantCategory extends BaseModel
 {
-    use HasFactory;
+    use HasFactory, Searchable;
 
     protected $guarded = ['id'];
 
@@ -18,6 +19,13 @@ class RestaurantCategory extends BaseModel
     ];
 
     protected $appends = ['images'];
+
+    public function toSearchableArray(): array
+    {
+        $array = $this->toArray();
+        $array['id'] = $this->id;
+        return $array;
+    }
 
     public function getImagesAttribute()
     {
