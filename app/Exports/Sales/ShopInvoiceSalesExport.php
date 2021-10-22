@@ -72,6 +72,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
                 round($balance),
                 $order->payment_mode,
                 $order->payment_status,
+                $order->merchant_reference,
                 $order->order_status,
                 $order->special_instruction,
                 $order->contact->customer_name,
@@ -108,6 +109,8 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
                 'balance',
                 'payment mode',
                 'payment status',
+                'payment status',
+                'merchant reference',
                 'order status',
                 'special instructions',
                 'customer name',
@@ -136,6 +139,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'O' => 30,
             'P' => 25,
             'Q' => 20,
+            'R' => 20,
         ];
     }
 
@@ -152,7 +156,8 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'N' => ['alignment' => ['horizontal' => 'center']],
             'O' => ['alignment' => ['horizontal' => 'center']],
             'P' => ['alignment' => ['horizontal' => 'center']],
-            'Q' => ['alignment' => ['horizontal' => 'right']],
+            'Q' => ['alignment' => ['horizontal' => 'center']],
+            'R' => ['alignment' => ['horizontal' => 'right']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
