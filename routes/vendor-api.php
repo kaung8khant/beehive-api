@@ -60,6 +60,8 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::put('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@update');
         Route::delete('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@destroy');
 
+        Route::put('menus/{menu}/variants', 'Admin\MenuController@updateVariants');
+
         Route::get('restaurant-branches/{restaurantBranch}/orders', 'Admin\RestaurantOrderController@getBranchOrders');
         Route::post('restaurant-orders/{restaurantOrder}/change-status', 'Admin\RestaurantOrderController@changeStatus');
         Route::resource('restaurant-orders', 'Admin\RestaurantOrderController', ['as' => 'vendor']);
@@ -100,6 +102,8 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::post('product-variation-values', 'Admin\ProductVariationValueController@store');
         Route::put('product-variation-values/{slug}', 'Admin\ProductVariationValueController@update');
         Route::delete('product-variation-values/{slug}', 'Admin\ProductVariationValueController@destroy');
+
+        Route::put('products/{product}/variants', 'Admin\ProductController@updateVariants');
 
         Route::get('brands', 'Admin\BrandController@index');
         Route::post('brands', 'Admin\BrandController@store');
