@@ -110,6 +110,7 @@ class RestaurantOrderController extends Controller
                 'balance' => round($balance),
                 'payment_mode' => $order->payment_mode,
                 'payment_status' => $order->payment_status,
+                'payment_reference' => $order->payment_reference,
                 'order_status' => $order->order_status,
                 'order_type' => $order->order_type,
                 'special_instructions' => $order->special_instruction,

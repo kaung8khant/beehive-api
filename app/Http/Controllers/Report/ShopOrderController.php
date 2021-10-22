@@ -15,12 +15,23 @@ class ShopOrderController extends Controller
 {
     public function getShopSaleInvoiceReport(Request $request)
     {
-        $shopOrders = ShopOrder::with('contact')
+        if ($request->filterBy === 'orderDate') {
+            $shopOrders = ShopOrder::with('contact', 'vendors')
             ->whereBetween('order_date', [$request->from, $request->to])
             ->orderBy('id')
             ->get();
+        } else {
+            $shopOrders = ShopOrder::with('contact', 'vendors')
+                ->whereHas('vendors', function ($query) use ($request) {
+                    $query->whereHas('shopOrderStatuses', function ($q) use ($request) {
+                        $q->whereBetween('created_at', [$request->from, $request->to])->where('status', '=', 'delivered')->latest();
+                    });
+                })
+                ->orderBy('id')
+                ->get();
+        }
 
-        return $this->generateReport($shopOrders);
+        return $this->generateReport($shopOrders, $request->from, $request->to, $request->filterBy);
     }
 
     public function getShopSaleReport(Request $request)
@@ -77,7 +88,7 @@ class ShopOrderController extends Controller
         return $this->generateShopProductSaleReport($groups);
     }
 
-    private function generateReport($shopOrders)
+    private function generateReport($shopOrders, $from = null, $to = null, $filterBy = null)
     {
         $data = [];
         $amountSum = 0;
@@ -98,6 +109,20 @@ class ShopOrderController extends Controller
             $commissionSum += $commission;
             $commissionCtSum += $commissionCt;
             $balanceSum += $balance;
+            $vendorIds = ShopOrderVendor::whereHas('shopOrder', function ($query) use ($order) {
+                $query->where('shop_order_id', $order->id);
+            })->pluck('id')->toArray();
+
+            if ($filterBy === 'deliveredDate') {
+                $orderStatus = ShopOrderStatus::where('status', 'delivered')->whereBetween('created_at', array($from, $to))->whereHas('vendor', function ($query) use ($vendorIds) {
+                    $query->whereIn('id', $vendorIds);
+                })->latest('created_at')->first();
+            } else {
+                $orderStatus = ShopOrderStatus::where('status', 'delivered')
+                    ->whereHas('vendor', function ($query) use ($vendorIds) {
+                        $query->whereIn('id', $vendorIds);
+                    })->latest('created_at')->first();
+            }
 
             $data[] = [
                 'invoice_id' => $order->invoice_id,
@@ -114,8 +139,10 @@ class ShopOrderController extends Controller
                 'balance' => round($balance),
                 'payment_mode' => $order->payment_mode,
                 'payment_status' => $order->payment_status,
+                'payment_reference' => $order->payment_reference,
                 'order_status' => $order->order_status,
                 'special_instructions' => $order->special_instruction,
+                'delivered_date' => $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,
             ];
         }
 
