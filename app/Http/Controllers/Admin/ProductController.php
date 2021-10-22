@@ -360,10 +360,15 @@ class ProductController extends Controller
             'brand' => function ($query) {
                 $query->select('id', 'slug', 'name');
             },
+            'productVariants' => function ($query) {
+                $query->select('product_id', 'slug', 'variant', 'price', 'discount', 'vendor_price')
+                    ->where('is_enable', 1)
+                    ->orderBy('price', 'asc');
+            },
         ]);
 
         foreach ($products as $product) {
-            $product->makeHidden(['id', 'description', 'created_by', 'updated_by']);
+            $product->makeHidden(['id', 'description', 'created_by', 'updated_by', 'covers']);
             $product->shop->makeHidden(['id'])->setAppends([]);
             $product->shopCategory->makeHidden(['id'])->setAppends([]);
 
@@ -371,11 +376,11 @@ class ProductController extends Controller
                 $product->brand->makeHidden(['id'])->setAppends([]);
             }
 
-            $product->product_variants = $product->productVariants()
-                ->select('slug', 'variant', 'price', 'discount', 'vendor_price')
-                ->where('is_enable', 1)
-                ->orderBy('price', 'asc')
-                ->get();
+            // $product->product_variants = $product->productVariants()
+            //     ->select('slug', 'variant', 'price', 'discount', 'vendor_price')
+            //     ->where('is_enable', 1)
+            //     ->orderBy('price', 'asc')
+            //     ->get();
         }
     }
 }
