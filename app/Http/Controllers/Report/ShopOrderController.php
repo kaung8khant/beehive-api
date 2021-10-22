@@ -139,7 +139,7 @@ class ShopOrderController extends Controller
                 'balance' => round($balance),
                 'payment_mode' => $order->payment_mode,
                 'payment_status' => $order->payment_status,
-                'merchant_reference' => $order->merchant_reference,
+                'payment_reference' => $order->payment_reference,
                 'order_status' => $order->order_status,
                 'special_instructions' => $order->special_instruction,
                 'delivered_date' => $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,

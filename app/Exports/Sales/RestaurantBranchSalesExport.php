@@ -75,7 +75,7 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
                 round($balance),
                 $order->payment_mode,
                 $order->payment_status,
-                $order->merchant_reference,
+                $order->payment_reference,
                 $order->order_status,
                 $order->delivery_mode,
                 $order->special_instruction,
