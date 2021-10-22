@@ -101,7 +101,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
                 round($balance),
                 $order->payment_mode,
                 $order->payment_status,
-                $order->merchant_reference,
+                $order->payment_reference,
                 $order->order_status,
                 $order->special_instruction,
                 $order->contact->customer_name,

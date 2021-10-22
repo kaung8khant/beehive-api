@@ -101,7 +101,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
                 round($balance),
                 $order->payment_mode,
                 $order->payment_status,
-                $order->merchant_reference,
+                $order->payment_reference,
                 $order->order_status,
                 $order->order_type,
                 $order->special_instruction,
