@@ -375,12 +375,6 @@ class ProductController extends Controller
             if ($product->brand) {
                 $product->brand->makeHidden(['id'])->setAppends([]);
             }
-
-            // $product->product_variants = $product->productVariants()
-            //     ->select('slug', 'variant', 'price', 'discount', 'vendor_price')
-            //     ->where('is_enable', 1)
-            //     ->orderBy('price', 'asc')
-            //     ->get();
         }
     }
 }
