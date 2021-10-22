@@ -28,10 +28,15 @@ class KbzPayController extends Controller
             $orderType = $merchOrderId[0];
             $orderSlug = $merchOrderId[1];
 
+            $data = [
+                'payment_status' => 'success',
+                'merchant_reference' => $requestData['Request']['mm_order_id'],
+            ];
+
             if ($orderType === 'SHOP') {
-                ShopOrder::where('slug', $orderSlug)->update(['payment_status' => 'success']);
+                ShopOrder::where('slug', $orderSlug)->update($data);
             } elseif ($orderType === 'RESTAURANT') {
-                RestaurantOrder::where('slug', $orderSlug)->update(['payment_status' => 'success']);
+                RestaurantOrder::where('slug', $orderSlug)->update($data);
             }
 
             return 'success';
