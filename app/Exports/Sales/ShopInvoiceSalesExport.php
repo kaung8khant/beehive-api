@@ -110,7 +110,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
                 'payment mode',
                 'payment status',
                 'payment status',
-                'merchant reference',
+                'payment reference',
                 'order status',
                 'special instructions',
                 'customer name',

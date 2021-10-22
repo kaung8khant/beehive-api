@@ -114,7 +114,7 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
                 'balance',
                 'payment mode',
                 'payment status',
-                'merchant reference',
+                'payment reference',
                 'order status',
                 "type\n(deli/self pick up)",
                 'special instructions',
