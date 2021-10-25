@@ -230,7 +230,6 @@ class ProductController extends Controller
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
-            ->orderBy('search_index', 'desc')
             ->inRandomOrder()
             ->paginate($request->size);
 

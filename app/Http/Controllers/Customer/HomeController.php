@@ -102,7 +102,6 @@ class HomeController extends Controller
     private function getRandomRestaurants($request)
     {
         $branches = RestaurantOrderHelper::getBranches($request)
-            ->orderBy('search_index', 'desc')
             ->inRandomOrder()
             ->limit(10)
             ->get();
@@ -121,7 +120,6 @@ class HomeController extends Controller
                 $query->where('is_enable', 1);
             })
             ->where('is_enable', 1)
-            ->orderBy('search_index', 'desc')
             ->inRandomOrder()
             ->limit(10)
             ->get();
