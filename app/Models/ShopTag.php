@@ -12,7 +12,7 @@ class ShopTag extends BaseModel
     protected $guarded = ['id'];
 
     protected $hidden = [
-        // 'id',
+        'id',
         'created_at',
         'updated_at',
         'pivot',
@@ -20,7 +20,9 @@ class ShopTag extends BaseModel
 
     public function toSearchableArray(): array
     {
-        return $this->toArray();
+        $array = $this->toArray();
+        $array['id'] = $this->id;
+        return $array;
     }
 
     public function shops()

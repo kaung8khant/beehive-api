@@ -27,6 +27,8 @@ class Menu extends BaseModel
 
     protected $appends = ['images'];
 
+    protected $touches = ['restaurant', 'restaurantCategory'];
+
     public function toSearchableArray(): array
     {
         $array = $this->toArray();
@@ -38,6 +40,7 @@ class Menu extends BaseModel
         $array['restaurant_name'] = $this->restaurant ? $this->restaurant->name : null;
         $array['restaurant_category_name'] = $this->restaurantCategory ? $this->restaurantCategory->name : null;
 
+        $array['is_restaurant_enable'] = $this->restaurant ? $this->restaurant->is_enable : null;
         return $array;
     }
 

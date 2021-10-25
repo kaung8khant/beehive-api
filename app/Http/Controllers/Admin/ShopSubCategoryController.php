@@ -92,8 +92,8 @@ class ShopSubCategoryController extends Controller
         }]);
 
         foreach ($subCategories as $subCategory) {
-            $subCategory->makeHidden(['id', 'shop_category_id', 'created_by', 'updated_by']);
-            $subCategory->shopCategory->makeHidden(['id'])->setAppends([]);
+            $subCategory->makeHidden(['created_by', 'updated_by']);
+            $subCategory->shopCategory->setAppends([]);
         }
     }
 }
