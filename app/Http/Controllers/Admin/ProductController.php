@@ -368,12 +368,12 @@ class ProductController extends Controller
         ]);
 
         foreach ($products as $product) {
-            $product->makeHidden(['id', 'description', 'created_by', 'updated_by', 'covers']);
-            $product->shop->makeHidden(['id'])->setAppends([]);
-            $product->shopCategory->makeHidden(['id'])->setAppends([]);
+            $product->makeHidden(['description', 'created_by', 'updated_by', 'covers']);
+            $product->shop->setAppends([]);
+            $product->shopCategory->setAppends([]);
 
             if ($product->brand) {
-                $product->brand->makeHidden(['id'])->setAppends([]);
+                $product->brand->setAppends([]);
             }
         }
     }
