@@ -195,6 +195,6 @@ class ShopController extends Controller
 
     private function optimizeShops($shops)
     {
-        $shops->makeHidden(['id', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
+        $shops->makeHidden(['city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
     }
 }

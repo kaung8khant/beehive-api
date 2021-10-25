@@ -74,6 +74,6 @@ class BrandController extends Controller
 
     private function optimizeBrands($brands)
     {
-        $brands->makeHidden(['id', 'created_by', 'updated_by']);
+        $brands->makeHidden(['created_by', 'updated_by']);
     }
 }
