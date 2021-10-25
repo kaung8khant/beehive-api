@@ -103,26 +103,26 @@ class MenuController extends Controller
             $this->updateFile($request->image_slug, 'menus', $menu->slug, $this->user, $request->url());
         }
 
-        if (isset($validatedData['menu_variants'])) {
-            $menu->menuVariants()->delete();
-            $this->createMenuVariants($request, $menu->id, $validatedData['menu_variants']);
-        } else {
-            $menu->menuVariants()->delete();
-        }
+        // if (isset($validatedData['menu_variants'])) {
+        //     $menu->menuVariants()->delete();
+        //     $this->createMenuVariants($request, $menu->id, $validatedData['menu_variants']);
+        // } else {
+        //     $menu->menuVariants()->delete();
+        // }
 
-        if (isset($validatedData['menu_toppings'])) {
-            $menu->menuToppings()->delete();
-            $this->createToppings($request, $menu->id, $validatedData['menu_toppings']);
-        } else {
-            $menu->menuToppings()->delete();
-        }
+        // if (isset($validatedData['menu_toppings'])) {
+        //     $menu->menuToppings()->delete();
+        //     $this->createToppings($request, $menu->id, $validatedData['menu_toppings']);
+        // } else {
+        //     $menu->menuToppings()->delete();
+        // }
 
-        if (isset($validatedData['menu_options'])) {
-            $menu->menuOptions()->delete();
-            $this->createOptions($request, $menu->id, $validatedData['menu_options']);
-        } else {
-            $menu->menuOptions()->delete();
-        }
+        // if (isset($validatedData['menu_options'])) {
+        //     $menu->menuOptions()->delete();
+        //     $this->createOptions($request, $menu->id, $validatedData['menu_options']);
+        // } else {
+        //     $menu->menuOptions()->delete();
+        // }
 
         if ($oldRestaurantId !== $validatedData['restaurant_id']) {
             $newBranches = CacheHelper::getAllRestaurantBranchesByRestaurantId($validatedData['restaurant_id']);
