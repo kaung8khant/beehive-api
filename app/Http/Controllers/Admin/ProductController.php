@@ -95,12 +95,12 @@ class ProductController extends Controller
             }
         }
 
-        if (isset($validatedData['product_variants'])) {
-            $product->productVariants()->delete();
-            $this->createProductVariants($product->id, $validatedData['product_variants']);
-        } else {
-            $product->productVariants()->delete();
-        }
+        // if (isset($validatedData['product_variants'])) {
+        //     $product->productVariants()->delete();
+        //     $this->createProductVariants($product->id, $validatedData['product_variants']);
+        // } else {
+        //     $product->productVariants()->delete();
+        // }
 
         return response()->json($product, 200);
     }
