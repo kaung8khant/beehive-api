@@ -12,10 +12,10 @@ class ShopSubCategory extends BaseModel
     protected $guarded = ['id'];
 
     protected $hidden = [
-        // 'id',
+        'id',
         'created_at',
         'updated_at',
-        // 'shop_category_id',
+        'shop_category_id',
     ];
 
     protected $touches = ['shopCategory'];
@@ -23,8 +23,9 @@ class ShopSubCategory extends BaseModel
     public function toSearchableArray(): array
     {
         $array = $this->toArray();
-        $array = $this->transform($array);
-        $array['shop_category_name'] = $this->shopCategory->name;
+        $array['id'] = $this->id;
+        $array['shop_category_id'] = $this->shopCategory ? $this->shopCategory->id : null;
+        $array['shop_category_name'] = $this->shopCategory ? $this->shopCategory->name : null;
         return $array;
     }
 

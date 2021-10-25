@@ -8,7 +8,9 @@ use App\Helpers\RestaurantOrderHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Ads;
 use App\Models\Customer;
+use App\Models\Menu;
 use App\Models\Product;
+use App\Models\RestaurantBranch;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -178,24 +180,24 @@ class HomeController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
+        $restaurantBranches = RestaurantBranch::search($request->keyword)->where('is_enable', 1)->where('is_restaurant_enable', 1)->get($request->size);
+        $menus = Menu::search($request->keyword)->where('is_enable', 1)->where('is_restaurant_enable', 1)->get();
+
+        $restaurantIdsFromBranches = $restaurantBranches->pluck('restaurant_id');
+        $restaurantIdsFromMenus = $menus->pluck('restaurant_id');
+        $restaurantIds = $restaurantIdsFromBranches->merge($restaurantIdsFromMenus)->unique()->values()->toArray();
+
         $restaurantBranches = RestaurantOrderHelper::getBranches($request)
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
-                    ->orWhereHas('restaurant', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->keyword . '%');
-                    })
-                    ->orWhereHas('availableMenus', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->keyword . '%')
-                            ->orWhere('description', 'LIKE', '%' . $request->keyword . '%')
-                            ->orWhereHas('restaurantCategory', function ($p) use ($request) {
-                                $p->where('name', 'LIKE', '%' . $request->keyword . '%');
-                            });
-                    });
-            })
+            ->whereIn('restaurant_id', $restaurantIds)
             ->orderBy('search_index', 'desc')
             ->orderBy('distance', 'asc')
             ->paginate($request->size)
             ->items();
+
+        foreach ($restaurantBranches as $branch) {
+            $branch->restaurant->makeHidden(['created_by', 'updated_by', 'commission', 'first_order_date']);
+            $branch->restaurant->availableTags->makeHidden(['created_by', 'updated_by']);
+        }
 
         if ($homeSearch) {
             return $this->generateBranchResponse($restaurantBranches, 200, 'home');
@@ -214,37 +216,15 @@ class HomeController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $product = Product::with('shop')
-            ->whereHas('shop', function ($query) {
-                $query->where('is_enable', 1);
-            })
-            ->where('is_enable', 1)
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->keyword . '%')
-                    ->orWhere('description', 'LIKE', '%' . $request->keyword . '%')
-                    ->whereHas('shop', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->keyword . '%');
-                    })
-                    ->orWhereHas('shopCategory', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->keyword . '%');
-                    })
-                    ->orWhereHas('brand', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->keyword . '%');
-                    })
-                    ->orWhereHas('shopSubCategory', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->keyword . '%');
-                    });
-            })
-            ->with('productVariations')
-            ->with('productVariations.productVariationValues')
-            ->paginate($request->size)
-            ->items();
+        $products = Product::search($request->keyword)->where('is_enable', 1)->where('is_shop_enable', 1)->paginate($request->size);
+        $products->makeHidden(['description', 'variants', 'created_by', 'updated_by', 'covers']);
+        $products = $products->items();
 
         if ($homeSearch) {
-            return $this->generateProductResponse($product, 200, 'home');
+            return $this->generateProductResponse($products, 200, 'home');
         }
 
-        return $this->generateProductResponse($product, 200);
+        return $this->generateProductResponse($products, 200);
     }
 
     private function validateSearch($request)

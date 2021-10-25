@@ -23,6 +23,7 @@ return [
         'shop_name',
         'brand_name',
         'shop_category_name',
+        'shop_sub_category_name',
     ],
 
     /*
@@ -39,7 +40,7 @@ return [
     |
     */
 
-    'customRanking' => ['desc(search_index)', 'desc(id)'],
+    'customRanking' => ['desc(search_index)', 'asc(shop_sub_category_name)', 'desc(id)'],
 
     /*
     |--------------------------------------------------------------------------

@@ -326,7 +326,7 @@ trait RestaurantOrderHelper
 
         return $query->with('restaurant')
             ->with('restaurant.availableTags')
-            ->selectRaw('id, search_index, slug, name, address, contact_number, opening_time, closing_time, is_enable, restaurant_id,
+            ->selectRaw('id, search_index, slug, name, opening_time, closing_time, is_enable, restaurant_id,
             ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
                 + sin(radians(?)) * sin(radians(latitude)) )

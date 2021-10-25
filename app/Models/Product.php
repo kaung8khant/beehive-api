@@ -12,7 +12,7 @@ class Product extends BaseModel
     protected $guarded = ['id'];
 
     protected $hidden = [
-        // 'id',
+        'id',
         'shop_id',
         'shop_category_id',
         'shop_sub_category_id',
@@ -28,19 +28,24 @@ class Product extends BaseModel
 
     protected $appends = ['rating', 'images', 'covers'];
 
+    protected $touches = ['shop', 'brand', 'shopCategory', 'shopSubCategory'];
+
     public function toSearchableArray(): array
     {
         $array = $this->toArray();
 
-        $array['shop_name'] = $this->shop ? $this->shop->name : null;
-        $array['brand_name'] = $this->brand ? $this->brand->name : null;
-        $array['shop_category_name'] = $this->shopCategory ? $this->shopCategory->name : null;
-
+        $array['id'] = $this->id;
         $array['shop_id'] = $this->shop ? $this->shop->id : null;
         $array['brand_id'] = $this->brand ? $this->brand->id : null;
         $array['shop_category_id'] = $this->shopCategory ? $this->shopCategory->id : null;
         $array['shop_sub_category_id'] = $this->shopSubCategory ? $this->shopSubCategory->id : null;
 
+        $array['shop_name'] = $this->shop ? $this->shop->name : null;
+        $array['brand_name'] = $this->brand ? $this->brand->name : null;
+        $array['shop_category_name'] = $this->shopCategory ? $this->shopCategory->name : null;
+        $array['shop_sub_category_name'] = $this->shopSubCategory ? $this->shopSubCategory->name : null;
+
+        $array['is_shop_enable'] = $this->shop ? $this->shop->is_enable : null;
         return $array;
     }
 
