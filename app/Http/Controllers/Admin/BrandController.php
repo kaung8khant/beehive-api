@@ -16,7 +16,12 @@ class BrandController extends Controller
 
     public function index(Request $request)
     {
-        $brands = Brand::search($request->filter)->paginate(10);
+        if ($request->filter) {
+            $brands = Brand::search($request->filter)->paginate(10);
+        } else {
+            $brands = Brand::orderBy('name', 'asc')->paginate(10);
+        }
+
         $this->optimizeBrands($brands);
         return CollectionHelper::removePaginateLinks($brands);
     }
