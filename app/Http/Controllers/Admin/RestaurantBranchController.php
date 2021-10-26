@@ -50,7 +50,11 @@ class RestaurantBranchController extends Controller
 
     public function index(Request $request)
     {
-        $branches = RestaurantBranch::search($request->filter)->paginate(10);
+        if ($request->filter) {
+            $branches = RestaurantBranch::search($request->filter)->paginate(10);
+        } else {
+            $branches = RestaurantBranch::orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
+        }
 
         foreach ($branches as $branch) {
             $branch->makeHidden(['restaurant_id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
@@ -157,7 +161,11 @@ class RestaurantBranchController extends Controller
 
     public function getBranchesByRestaurant(Request $request, Restaurant $restaurant)
     {
-        $branches = RestaurantBranch::search($request->filter)->where('restaurant_id', $restaurant->id)->paginate(10);
+        if ($request->filter) {
+            $branches = RestaurantBranch::search($request->filter)->where('restaurant_id', $restaurant->id)->paginate(10);
+        } else {
+            $branches = RestaurantBranch::where('restaurant_id', $restaurant->id)->orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
+        }
 
         foreach ($branches as $branch) {
             $branch->makeHidden(['id', 'restaurant_id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);

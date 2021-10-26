@@ -36,7 +36,11 @@ class MenuController extends Controller
 
     public function index(Request $request)
     {
-        $menus = Menu::search($request->filter);
+        if ($request->filter) {
+            $menus = Menu::search($request->filter);
+        } else {
+            $menus = Menu::orderBy('search_index', 'desc')->orderBy('id', 'desc');
+        }
 
         if (isset($request->is_enable)) {
             $menuIds = Menu::whereHas('restaurant', function ($query) use ($request) {
@@ -313,7 +317,11 @@ class MenuController extends Controller
 
     public function getMenusByRestaurant(Request $request, Restaurant $restaurant)
     {
-        $menus = Menu::search($request->filter)->where('restaurant_id', $restaurant->id);
+        if ($request->filter) {
+            $menus = Menu::search($request->filter)->where('restaurant_id', $restaurant->id);
+        } else {
+            $menus = Menu::where('restaurant_id', $restaurant->id)->orderBy('search_index', 'desc')->orderBy('id', 'desc');
+        }
 
         if (isset($request->is_enable)) {
             $menuIds = Menu::whereHas('restaurant', function ($query) use ($request) {
@@ -336,10 +344,13 @@ class MenuController extends Controller
             ->where('restaurant_branch_id', $restaurantBranch->id)
             ->get();
 
-        $menus = Menu::search($request->filter)
-            ->whereIn('id', $availableMenus->pluck('menu_id')->toArray())
-            ->take(1000)
-            ->get();
+        $menuIds = $availableMenus->pluck('menu_id')->toArray();
+
+        if ($request->filter) {
+            $menus = Menu::search($request->filter)->whereIn('id', $menuIds)->get();
+        } else {
+            $menus = Menu::whereIn('id', $menuIds)->orderBy('search_index', 'desc')->orderBy('id', 'desc')->get();
+        }
 
         $this->optimizeMenus($menus);
 
@@ -355,7 +366,12 @@ class MenuController extends Controller
 
     public function getMenusByCategory(Request $request, RestaurantCategory $restaurantCategory)
     {
-        $menus = Menu::search($request->filter)->where('restaurant_category_id', $restaurantCategory->id)->paginate(10);
+        if ($request->filter) {
+            $menus = Menu::search($request->filter)->where('restaurant_category_id', $restaurantCategory->id)->paginate(10);
+        } else {
+            $menus = Menu::where('restaurant_category_id', $restaurantCategory->id)->orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
+        }
+
         return CollectionHelper::removePaginateLinks($menus);
     }
 
@@ -366,9 +382,13 @@ class MenuController extends Controller
             ->where('restaurant_branch_id', $restaurantBranch->id)
             ->get();
 
-        $menus = Menu::search($request->filter)
-            ->whereIn('id', $availableMenus->pluck('menu_id')->toArray())
-            ->paginate(10);
+        $menuIds = $availableMenus->pluck('menu_id')->toArray();
+
+        if ($request->filter) {
+            $menus = Menu::search($request->filter)->whereIn('id', $menuIds)->paginate(10);
+        } else {
+            $menus = Menu::whereIn('id', $menuIds)->orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
+        }
 
         $this->optimizeMenus($menus);
         $menus = CollectionHelper::removePaginateLinks($menus);

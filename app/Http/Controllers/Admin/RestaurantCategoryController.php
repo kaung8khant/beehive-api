@@ -20,7 +20,12 @@ class RestaurantCategoryController extends Controller
 
     public function index(Request $request)
     {
-        $categories = RestaurantCategory::search($request->filter)->paginate(10);
+        if ($request->filter) {
+            $categories = RestaurantCategory::search($request->filter)->paginate(10);
+        } else {
+            $categories = RestaurantCategory::orderBy('name', 'asc')->paginate(10);
+        }
+
         $categories->makeHidden(['created_by', 'updated_by']);
         return CollectionHelper::removePaginateLinks($categories);
     }

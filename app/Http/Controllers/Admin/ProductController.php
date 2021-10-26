@@ -31,7 +31,11 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $products = Product::search($request->filter);
+        if ($request->filter) {
+            $products = Product::search($request->filter);
+        } else {
+            $products = Product::orderBy('search_index', 'desc')->orderBy('id', 'desc');
+        }
 
         if (isset($request->is_enable)) {
             $productIds = Product::whereHas('shop', function ($query) use ($request) {
@@ -228,7 +232,11 @@ class ProductController extends Controller
 
     public function getProductsByShop(Request $request, Shop $shop)
     {
-        $products = Product::search($request->filter)->where('shop_id', $shop->id);
+        if ($request->filter) {
+            $products = Product::search($request->filter)->where('shop_id', $shop->id);
+        } else {
+            $products = Product::where('shop_id', $shop->id)->orderBy('search_index', 'desc')->orderBy('id', 'desc');
+        }
 
         if (isset($request->is_enable)) {
             $productIds = Product::whereHas('shop', function ($query) use ($request) {
@@ -246,7 +254,11 @@ class ProductController extends Controller
 
     public function getProductsByBrand(Request $request, Brand $brand)
     {
-        $products = Product::search($request->filter)->where('brand_id', $brand->id);
+        if ($request->filter) {
+            $products = Product::search($request->filter)->where('brand_id', $brand->id);
+        } else {
+            $products = Product::where('brand_id', $brand->id)->orderBy('search_index', 'desc')->orderBy('id', 'desc');
+        }
 
         if (isset($request->is_enable)) {
             $productIds = Product::whereHas('shop', function ($query) use ($request) {
@@ -264,7 +276,11 @@ class ProductController extends Controller
 
     public function getProductsByCategory(Request $request, ShopCategory $shopCategory)
     {
-        $products = Product::search($request->filter)->where('shop_category_id', $shopCategory->id);
+        if ($request->filter) {
+            $products = Product::search($request->filter)->where('shop_category_id', $shopCategory->id);
+        } else {
+            $products = Product::where('shop_category_id', $shopCategory->id)->orderBy('search_index', 'desc')->orderBy('id', 'desc');
+        }
 
         if (isset($request->is_enable)) {
             $productIds = Product::whereHas('shop', function ($query) use ($request) {
