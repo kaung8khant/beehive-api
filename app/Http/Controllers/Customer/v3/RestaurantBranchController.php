@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer\v3;
 use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Menu;
 use App\Models\RestaurantBranch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -20,23 +21,25 @@ class RestaurantBranchController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantBranches = $this->getBranches($request)
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhereHas('restaurant', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->filter . '%');
-                    })
-                    ->orWhereHas('availableMenus', function ($q) use ($request) {
-                        $q->where('name', 'LIKE', '%' . $request->filter . '%')
-                            ->orWhere('description', 'LIKE', '%' . $request->filter . '%')
-                            ->orWhereHas('restaurantCategory', function ($p) use ($request) {
-                                $p->where('name', 'LIKE', '%' . $request->filter . '%');
-                            });
-                    });
-            })
-            ->orderBy('search_index', 'desc')
-            ->orderBy('distance', 'asc')
-            ->paginate($request->size);
+        if ($request->filter) {
+            $restaurantBranches = RestaurantBranch::search($request->filter)->where('is_enable', 1)->where('is_restaurant_enable', 1)->get($request->size);
+            $menus = Menu::search($request->filter)->where('is_enable', 1)->where('is_restaurant_enable', 1)->get();
+
+            $restaurantIdsFromBranches = $restaurantBranches->pluck('restaurant_id');
+            $restaurantIdsFromMenus = $menus->pluck('restaurant_id');
+            $restaurantIds = $restaurantIdsFromBranches->merge($restaurantIdsFromMenus)->unique()->values()->toArray();
+
+            $restaurantBranches = $this->getBranches($request)
+                ->whereIn('restaurant_id', $restaurantIds)
+                ->orderBy('search_index', 'desc')
+                ->orderBy('distance', 'asc')
+                ->paginate($request->size);
+        } else {
+            $restaurantBranches = $this->getBranches($request)
+                ->orderBy('search_index', 'desc')
+                ->orderBy('distance', 'asc')
+                ->paginate($request->size);
+        }
 
         $this->optimizeBranches($restaurantBranches);
         return $this->generateBranchResponse($restaurantBranches, 200, 'array', $restaurantBranches->lastPage());
@@ -62,7 +65,7 @@ class RestaurantBranchController extends Controller
 
         return $query->with('restaurant')
             ->with('restaurant.availableTags')
-            ->selectRaw('id, search_index, slug, name, address, contact_number, opening_time, closing_time, is_enable, free_delivery, pre_order, restaurant_id,
+            ->selectRaw('id, search_index, slug, name, opening_time, closing_time, is_enable, free_delivery, pre_order, restaurant_id,
             @distance := ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
                 + sin(radians(?)) * sin(radians(latitude)) )
@@ -77,9 +80,8 @@ class RestaurantBranchController extends Controller
     private function optimizeBranches($branches)
     {
         foreach ($branches as $branch) {
-            $branch->makeHidden(['address', 'contact_number']);
-            $branch->restaurant->makeHidden(['created_by', 'updated_by', 'commission']);
-            $branch->restaurant->setAppends(['rating', 'images', 'covers']);
+            $branch->restaurant->makeHidden(['created_by', 'updated_by', 'commission', 'first_order_date']);
+            $branch->restaurant->availableTags->makeHidden(['created_by', 'updated_by']);
         }
     }
 }
