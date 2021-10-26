@@ -16,7 +16,12 @@ class ShopSubCategoryController extends Controller
 
     public function index(Request $request)
     {
-        $shopSubCategories = ShopSubCategory::search($request->filter)->paginate(10);
+        if ($request->filter) {
+            $shopSubCategories = ShopSubCategory::search($request->filter)->paginate(10);
+        } else {
+            $shopSubCategories = ShopSubCategory::orderBy('name', 'asc')->paginate(10);
+        }
+
         $this->optimizeShopSubCategories($shopSubCategories);
         return CollectionHelper::removePaginateLinks($shopSubCategories);
     }
@@ -80,7 +85,12 @@ class ShopSubCategoryController extends Controller
 
     public function getSubCategoriesByCategory(Request $request, ShopCategory $shopCategory)
     {
-        $shopSubCategories = ShopSubCategory::search($request->filter)->where('shop_category_id', $shopCategory->id)->paginate(10);
+        if ($request->filter) {
+            $shopSubCategories = ShopSubCategory::search($request->filter)->where('shop_category_id', $shopCategory->id)->paginate(10);
+        } else {
+            $shopSubCategories = ShopSubCategory::where('shop_category_id', $shopCategory->id)->orderBy('name', 'asc')->paginate(10);
+        }
+
         $this->optimizeShopSubCategories($shopSubCategories);
         return CollectionHelper::removePaginateLinks($shopSubCategories);
     }

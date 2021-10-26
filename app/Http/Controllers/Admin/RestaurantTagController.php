@@ -16,7 +16,12 @@ class RestaurantTagController extends Controller
 
     public function index(Request $request)
     {
-        $tags = RestaurantTag::search($request->filter)->paginate(10);
+        if ($request->filter) {
+            $tags = RestaurantTag::search($request->filter)->paginate(10);
+        } else {
+            $tags = RestaurantTag::orderBy('name', 'asc')->paginate(10);
+        }
+
         $this->optimizeTags($tags);
         return CollectionHelper::removePaginateLinks($tags);
     }
@@ -64,7 +69,12 @@ class RestaurantTagController extends Controller
             $query->where('id', $restaurant->id);
         })->pluck('id')->unique()->values()->toArray();
 
-        $tags = RestaurantTag::search($request->filter)->whereIn('id', $tagIds)->paginate(10);
+        if ($request->filter) {
+            $tags = RestaurantTag::search($request->filter)->whereIn('id', $tagIds)->paginate(10);
+        } else {
+            $tags = RestaurantTag::whereIn('id', $tagIds)->orderBy('name', 'asc')->paginate(10);
+        }
+
         $this->optimizeTags($tags);
         return CollectionHelper::removePaginateLinks($tags);
     }

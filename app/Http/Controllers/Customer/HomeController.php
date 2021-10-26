@@ -112,14 +112,10 @@ class HomeController extends Controller
 
     private function getRandomProducts()
     {
-        $products = Product::exclude(['description', 'variants', 'created_by', 'updated_by'])
-            ->with(['shop' => function ($query) {
-                $query->select('id', 'slug', 'name');
-            }])
+        $products = Product::where('is_enable', 1)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
-            ->where('is_enable', 1)
             ->inRandomOrder()
             ->limit(10)
             ->get();
@@ -130,7 +126,6 @@ class HomeController extends Controller
     private function getNewRestaurants($request)
     {
         $branches = RestaurantOrderHelper::getBranches($request)
-            ->orderBy('search_index', 'desc')
             ->orderBy('id', 'desc')
             ->limit(10)
             ->get();
@@ -141,14 +136,10 @@ class HomeController extends Controller
 
     private function getNewProducts()
     {
-        $products = Product::exclude(['description', 'variants', 'created_by', 'updated_by'])
-            ->with(['shop' => function ($query) {
-                $query->select('id', 'slug', 'name');
-            }])
+        $products = Product::where('is_enable', 1)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
             })
-            ->where('is_enable', 1)
             ->orderBy('id', 'desc')
             ->limit(10)
             ->get();
@@ -307,8 +298,12 @@ class HomeController extends Controller
 
     private function optimizeProducts($products)
     {
+        $products->load(['shop' => function ($query) {
+            $query->select('id', 'slug', 'name');
+        }]);
+
         return $products->map(function ($product) {
-            $product->makeHidden(['covers']);
+            $product->makeHidden(['description', 'variants', 'created_by', 'updated_by', 'covers']);
             $product->shop->makeHidden(['rating', 'images', 'covers', 'first_order_date']);
             return $product->images->count() > 0 ? $product : null;
         })->filter()->values();
