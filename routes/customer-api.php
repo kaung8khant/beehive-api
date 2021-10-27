@@ -127,9 +127,9 @@ Route::group([
 
         //Promo code
         Route::post('promocode/validate', 'PromocodeController@validatePromoCode');
-
-        Route::get('histories/search', 'SearchHistoryController@index');
     });
 
     Route::get('restaurants/branches', 'RestaurantBranchController@getAllBranches');
+
+    Route::get('histories/search', 'SearchHistoryController@index');
 });
