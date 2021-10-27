@@ -136,7 +136,7 @@ class SmsController extends Controller
             $to = $to->format('Y-m-d 23:59:59');
             $log = $log->whereBetween('created_at', [$from, $to]);
         }
-        return $log->paginate(10);
+        return $log->orderBy('created_at', 'desc')->paginate(10);
     }
 
     public function getLogsByBatchId($batchId)
