@@ -4,10 +4,8 @@ namespace App\Listeners;
 
 use App\Events\DataChanged;
 use App\Models\Audit;
-use App\Models\User;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class StoreAuditInformation implements ShouldQueue
+class StoreAuditInformation
 {
     /**
      * Create the event listener.

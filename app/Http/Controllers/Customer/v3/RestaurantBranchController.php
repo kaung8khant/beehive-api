@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Customer\v3;
 
+use App\Events\KeywordSearched;
+use App\Helpers\AuthHelper;
 use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
@@ -34,6 +36,8 @@ class RestaurantBranchController extends Controller
                 ->orderBy('search_index', 'desc')
                 ->orderBy('distance', 'asc')
                 ->paginate($request->size);
+
+            KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter);
         } else {
             $restaurantBranches = $this->getBranches($request)
                 ->orderBy('search_index', 'desc')

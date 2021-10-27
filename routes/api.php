@@ -280,6 +280,8 @@ Route::group([
 
     Route::resource('menu-option-items', 'MenuOptionItemController', ['as' => 'admin-v3-menu-option-item', 'except' => ['create', 'edit']]);
     Route::get('menu-options/{menuOption}/items', 'MenuOptionItemController@index');
+
+    Route::get('histories/search', 'SearchHistoryController@index');
 });
 
 Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {
@@ -317,6 +319,7 @@ Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], func
     Route::get('restaurants/invoice/{slug}/generate', 'Pdf\RestaurantInvoiceController@generateInvoice');
     Route::get('shops/invoice/{slug}/generate', 'Pdf\ShopInvoiceController@generateInvoice');
 });
+
 /*
  * -----------
  * Vendor API

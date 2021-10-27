@@ -6,8 +6,8 @@ use App\Events\OrderAssignEvent;
 use App\Models\RestaurantBranch;
 use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
 use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 
 class OrderFirstAssignListener implements ShouldQueue
 {

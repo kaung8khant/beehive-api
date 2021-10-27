@@ -2,12 +2,16 @@
 
 namespace App\Providers;
 
+use App\Events\CustomerLoggedIn;
 use App\Events\DataChanged;
 use App\Events\DriverStatusChanged;
+use App\Events\KeywordSearched;
 use App\Events\OrderAssignEvent;
+use App\Listeners\MergeSearchHistory;
 use App\Listeners\OrderAssignListener;
 use App\Listeners\OrderFirstAssignListener;
 use App\Listeners\StoreAuditInformation;
+use App\Listeners\StoreSearchHistory;
 use App\Listeners\UpdateOrderStatus;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -33,6 +37,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         DataChanged::class => [
             StoreAuditInformation::class,
+        ],
+        KeywordSearched::class => [
+            StoreSearchHistory::class,
+        ],
+        CustomerLoggedIn::class => [
+            MergeSearchHistory::class,
         ],
     ];
 
