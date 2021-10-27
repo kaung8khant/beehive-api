@@ -17,7 +17,12 @@ class ShopTagController extends Controller
 
     public function index(Request $request)
     {
-        $shopTags = ShopTag::search($request->filter)->paginate(10);
+        if ($request->filter) {
+            $shopTags = ShopTag::search($request->filter)->paginate(10);
+        } else {
+            $shopTags = ShopTag::orderBy('name', 'asc')->paginate(10);
+        }
+
         $this->optimizeShopTags($shopTags);
         return CollectionHelper::removePaginateLinks($shopTags);
     }
@@ -65,7 +70,12 @@ class ShopTagController extends Controller
             $query->where('id', $shop->id);
         })->pluck('id')->toArray();
 
-        $shopTags = ShopTag::search($request->filter)->whereIn('id', $tagIds)->paginate(10);
+        if ($request->filter) {
+            $shopTags = ShopTag::search($request->filter)->whereIn('id', $tagIds)->paginate(10);
+        } else {
+            $shopTags = ShopTag::whereIn('id', $tagIds)->orderBy('name', 'asc')->paginate(10);
+        }
+
         $this->optimizeShopTags($shopTags);
         return CollectionHelper::removePaginateLinks($shopTags);
     }

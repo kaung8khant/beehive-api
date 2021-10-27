@@ -31,7 +31,11 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $products = Product::search($request->filter);
+        if ($request->filter) {
+            $products = Product::search($request->filter);
+        } else {
+            $products = Product::orderBy('search_index', 'desc')->orderBy('id', 'desc');
+        }
 
         if (isset($request->is_enable)) {
             $productIds = Product::whereHas('shop', function ($query) use ($request) {
@@ -116,12 +120,12 @@ class ProductController extends Controller
             }
         }
 
-        if (isset($validatedData['product_variants'])) {
-            $product->productVariants()->delete();
-            $this->createProductVariants($product->id, $validatedData['product_variants']);
-        } else {
-            $product->productVariants()->delete();
-        }
+        // if (isset($validatedData['product_variants'])) {
+        //     $product->productVariants()->delete();
+        //     $this->createProductVariants($product->id, $validatedData['product_variants']);
+        // } else {
+        //     $product->productVariants()->delete();
+        // }
 
         return response()->json($product, 200);
     }
@@ -249,7 +253,11 @@ class ProductController extends Controller
 
     public function getProductsByShop(Request $request, Shop $shop)
     {
-        $products = Product::search($request->filter)->where('shop_id', $shop->id);
+        if ($request->filter) {
+            $products = Product::search($request->filter)->where('shop_id', $shop->id);
+        } else {
+            $products = Product::where('shop_id', $shop->id)->orderBy('search_index', 'desc')->orderBy('id', 'desc');
+        }
 
         if (isset($request->is_enable)) {
             $productIds = Product::whereHas('shop', function ($query) use ($request) {
@@ -267,7 +275,11 @@ class ProductController extends Controller
 
     public function getProductsByBrand(Request $request, Brand $brand)
     {
-        $products = Product::search($request->filter)->where('brand_id', $brand->id);
+        if ($request->filter) {
+            $products = Product::search($request->filter)->where('brand_id', $brand->id);
+        } else {
+            $products = Product::where('brand_id', $brand->id)->orderBy('search_index', 'desc')->orderBy('id', 'desc');
+        }
 
         if (isset($request->is_enable)) {
             $productIds = Product::whereHas('shop', function ($query) use ($request) {
@@ -285,7 +297,11 @@ class ProductController extends Controller
 
     public function getProductsByCategory(Request $request, ShopCategory $shopCategory)
     {
-        $products = Product::search($request->filter)->where('shop_category_id', $shopCategory->id);
+        if ($request->filter) {
+            $products = Product::search($request->filter)->where('shop_category_id', $shopCategory->id);
+        } else {
+            $products = Product::where('shop_category_id', $shopCategory->id)->orderBy('search_index', 'desc')->orderBy('id', 'desc');
+        }
 
         if (isset($request->is_enable)) {
             $productIds = Product::whereHas('shop', function ($query) use ($request) {
@@ -381,23 +397,21 @@ class ProductController extends Controller
             'brand' => function ($query) {
                 $query->select('id', 'slug', 'name');
             },
+            'productVariants' => function ($query) {
+                $query->select('product_id', 'slug', 'variant', 'price', 'discount', 'vendor_price')
+                    ->where('is_enable', 1)
+                    ->orderBy('price', 'asc');
+            },
         ]);
 
         foreach ($products as $product) {
-            $product->makeHidden(['id', 'description', 'variants', 'created_by', 'updated_by']);
-            $product->shop->makeHidden(['id'])->setAppends([]);
-            $product->shopCategory->makeHidden(['id'])->setAppends([]);
+            $product->makeHidden(['description', 'created_by', 'updated_by', 'covers']);
+            $product->shop->setAppends([]);
+            $product->shopCategory->setAppends([]);
 
             if ($product->brand) {
-                $product->brand->makeHidden(['id'])->setAppends([]);
+                $product->brand->setAppends([]);
             }
-
-            $product->product_variants = $product->productVariants()
-                ->select('price', 'discount', 'vendor_price')
-                ->where('is_enable', 1)
-                ->orderBy('price', 'asc')
-                ->limit(1)
-                ->get();
         }
     }
 

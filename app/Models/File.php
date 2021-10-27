@@ -13,8 +13,11 @@ class File extends Model
 
     protected $hidden = [
         'id',
+        'file_name',
+        'extension',
         'source',
         'source_id',
+        'type',
         'created_at',
         'updated_at',
     ];

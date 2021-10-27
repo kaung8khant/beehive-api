@@ -109,7 +109,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::put('restaurants/{restaurant}/categories/{restaurantCategory}/index', 'Admin\RestaurantCategoryController@updateSearchIndex');
             Route::put('restaurants/{restaurant}/categories/index', 'Admin\RestaurantCategoryController@updateMultipleSearchIndex');
             Route::get('restaurants/{restaurant}/categories', 'Admin\RestaurantCategoryController@getCategoriesByRestaurant');
-            Route::get('restaurants/{slug}/restaurant-tags', 'Admin\RestaurantTagController@getTagsByRestaurant');
+            Route::get('restaurants/{restaurant}/restaurant-tags', 'Admin\RestaurantTagController@getTagsByRestaurant');
 
             Route::resource('menus', 'Admin\MenuController', ['except' => ['create', 'edit']]);
             Route::patch('menus/toggle-enable/{menu}', 'Admin\MenuController@toggleEnable');

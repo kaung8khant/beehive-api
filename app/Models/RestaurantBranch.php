@@ -32,9 +32,11 @@ class RestaurantBranch extends BaseModel
     public function toSearchableArray(): array
     {
         $array = $this->toArray();
-        $array = $this->transform($array);
+
         $array['restaurant_id'] = $this->restaurant ? $this->restaurant->id : null;
         $array['restaurant_name'] = $this->restaurant ? $this->restaurant->name : null;
+        $array['is_restaurant_enable'] = $this->restaurant ? $this->restaurant->is_enable : null;
+
         return $array;
     }
 

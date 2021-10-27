@@ -19,11 +19,6 @@ return [
     'searchableAttributes' => [
         'slug',
         'name',
-        'description',
-        'shop_name',
-        'brand_name',
-        'shop_category_name',
-        'shop_sub_category_name',
     ],
 
     /*
@@ -40,7 +35,7 @@ return [
     |
     */
 
-    'customRanking' => ['desc(search_index)', 'asc(shop_sub_category_name)', 'desc(id)'],
+    'customRanking' => ['asc(name)'],
 
     /*
     |--------------------------------------------------------------------------
@@ -87,7 +82,7 @@ return [
     |
     */
 
-    'attributesForFaceting' => ['shop_category_name'],
+    'attributesForFaceting' => null,
 
     /*
     |--------------------------------------------------------------------------

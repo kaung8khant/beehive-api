@@ -98,7 +98,7 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
 
     /* Product */
     Route::get('products', 'Customer\ProductController@index');
-    Route::get('products/brands', 'Customer\ProductController@getAllBrand');
+    Route::get('products/brands', 'Customer\ProductController@getAllBrands');
     Route::get('products/search', 'Customer\HomeController@searchProduct');
     Route::get('products/recommendations', 'Customer\ProductController@getRecommendations');
     Route::get('products/{product}', 'Customer\ProductController@show');

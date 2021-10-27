@@ -18,7 +18,12 @@ class ShopCategoryController extends Controller
 
     public function index(Request $request)
     {
-        $shopCategories = ShopCategory::search($request->filter)->paginate(10);
+        if ($request->filter) {
+            $shopCategories = ShopCategory::search($request->filter)->paginate(10);
+        } else {
+            $shopCategories = ShopCategory::orderBy('name', 'asc')->paginate(10);
+        }
+
         $this->optimizeShopCategories($shopCategories);
         return CollectionHelper::removePaginateLinks($shopCategories);
     }
@@ -79,13 +84,19 @@ class ShopCategoryController extends Controller
     public function getCategoriesByShop(Request $request, Shop $shop)
     {
         $categoryIds = Product::where('shop_id', $shop->id)->pluck('shop_category_id')->unique()->values()->toArray();
-        $shopCategories = ShopCategory::search($request->filter)->whereIn('id', $categoryIds)->paginate(10);
+
+        if ($request->filter) {
+            $shopCategories = ShopCategory::search($request->filter)->whereIn('id', $categoryIds)->paginate(10);
+        } else {
+            $shopCategories = ShopCategory::whereIn('id', $categoryIds)->orderBy('name', 'asc')->paginate(10);
+        }
+
         $this->optimizeShopCategories($shopCategories);
         return CollectionHelper::removePaginateLinks($shopCategories);
     }
 
     private function optimizeShopCategories($shopCategories)
     {
-        $shopCategories->makeHidden(['id', 'created_by', 'updated_by']);
+        $shopCategories->makeHidden(['created_by', 'updated_by']);
     }
 }

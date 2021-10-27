@@ -7,9 +7,7 @@ use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
-use App\Models\Customer;
 use App\Models\Shop;
-use App\Models\ShopOrder;
 use App\Models\ShopTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -22,7 +20,12 @@ class ShopController extends Controller
 
     public function index(Request $request)
     {
-        $shops = Shop::search($request->filter)->paginate(10);
+        if ($request->filter) {
+            $shops = Shop::search($request->filter)->paginate(10);
+        } else {
+            $shops = Shop::orderBy('name', 'asc')->paginate(10);
+        }
+
         $this->optimizeShops($shops);
         return CollectionHelper::removePaginateLinks($shops);
     }
@@ -188,13 +191,18 @@ class ShopController extends Controller
             $query->where('brand_id', $brand->id);
         })->pluck('id')->toArray();
 
-        $shops = Shop::search($request->filter)->whereIn('id', $shopIds)->paginate(10);
+        if ($request->filter) {
+            $shops = Shop::search($request->filter)->whereIn('id', $shopIds)->paginate(10);
+        } else {
+            $shops = Shop::orderBy('name', 'asc')->whereIn('id', $shopIds)->paginate(10);
+        }
+
         $this->optimizeShops($shops);
         return CollectionHelper::removePaginateLinks($shops);
     }
 
     private function optimizeShops($shops)
     {
-        $shops->makeHidden(['id', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
+        $shops->makeHidden(['city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
     }
 }

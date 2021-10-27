@@ -37,12 +37,24 @@ class RestaurantBranchController extends Controller
      */
     public function getAll()
     {
-        return RestaurantBranch::with('restaurant')->get();
+        return RestaurantBranch::exclude(['search_index', 'city', 'township', 'contact_number', 'notify_numbers', 'opening_time', 'closing_time', 'is_enable', 'free_delivery', 'pre_order', 'created_by', 'updated_by'])
+            ->with(['restaurant' => function ($query) {
+                $query->exclude(['is_enable', 'created_by', 'updated_by', 'commission']);
+            }])
+            ->get()
+            ->map(function ($branch) {
+                $branch->restaurant->setAppends([]);
+                return $branch;
+            });
     }
 
     public function index(Request $request)
     {
-        $branches = RestaurantBranch::search($request->filter)->paginate(10);
+        if ($request->filter) {
+            $branches = RestaurantBranch::search($request->filter)->paginate(10);
+        } else {
+            $branches = RestaurantBranch::orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
+        }
 
         foreach ($branches as $branch) {
             $branch->makeHidden(['restaurant_id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
@@ -149,7 +161,11 @@ class RestaurantBranchController extends Controller
 
     public function getBranchesByRestaurant(Request $request, Restaurant $restaurant)
     {
-        $branches = RestaurantBranch::search($request->filter)->where('restaurant_id', $restaurant->id)->paginate(10);
+        if ($request->filter) {
+            $branches = RestaurantBranch::search($request->filter)->where('restaurant_id', $restaurant->id)->paginate(10);
+        } else {
+            $branches = RestaurantBranch::where('restaurant_id', $restaurant->id)->orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
+        }
 
         foreach ($branches as $branch) {
             $branch->makeHidden(['id', 'restaurant_id', 'address', 'city', 'township', 'notify_numbers', 'latitude', 'longitude', 'created_by', 'updated_by']);
