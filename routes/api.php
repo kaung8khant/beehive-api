@@ -84,6 +84,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::post('products/multiple-delete', 'Admin\ProductController@multipleDelete');
             Route::put('products/{product}/index', 'Admin\ProductController@updateSearchIndex');
             Route::put('products/{product}/variants', 'Admin\ProductController@updateVariants');
+            Route::put('products/{product}/update-price', 'Admin\ProductController@updateVariantPrice');
 
             Route::resource('product-variations', 'Admin\ProductVariationController', ['except' => ['create', 'edit']]);
             Route::get('products/{product}/product-variations', 'Admin\ProductVariationController@getProductVariationsByProduct');
@@ -113,6 +114,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('menus/toggle-enable/{menu}', 'Admin\MenuController@toggleEnable');
             Route::post('menus/multiple-delete', 'Admin\MenuController@multipleDelete');
             Route::post('menus/status', 'Admin\MenuController@multipleStatusUpdate');
+            Route::put('menus/{menu}/update-price', 'Admin\MenuController@updateVariantPrice');
 
             Route::resource('menu-toppings', 'Admin\MenuToppingController', ['except' => ['create', 'edit']]);
             Route::get('menus/{menu}/menu-toppings', 'Admin\MenuToppingController@getToppingsByMenu');
