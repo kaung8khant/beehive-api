@@ -497,27 +497,6 @@ class MenuController extends Controller
         }
     }
 
-    public function getPriceBook(Request $request)
-    {
-        $sorting = CollectionHelper::getSorting('menus', 'search_index', $request->by ? $request->by : 'desc', $request->order);
-
-        $menus = Menu::with(['menuVariants'])
-            ->where(function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            });
-        if (isset($request->is_enable)) {
-            $menusIds = Menu::whereHas('restaurant', function ($query) use ($request) {
-                $query->where('is_enable', $request->is_enable);
-            })->pluck('id')->toArray();
-
-            $menus = $menus->where('is_enable', $request->is_enable)
-                ->whereIn('id', $menusIds);
-        }
-        return $menus->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
-    }
-
     public function updateVariantPrice(Request $request, Menu $menu)
     {
         $validatedData = $request->validate([
