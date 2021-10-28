@@ -11,10 +11,6 @@ class Audit extends Model
 
     protected $guarded = ['id'];
 
-    protected $hidden = [
-        'id',
-    ];
-
     protected $casts = [
         'request' => 'array',
         'response' => 'array',

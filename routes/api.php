@@ -284,6 +284,8 @@ Route::group([
     Route::get('menu-options/{menuOption}/items', 'MenuOptionItemController@index');
 
     Route::get('histories/search', 'SearchHistoryController@index');
+
+    Route::resource('audit-logs', 'AuditLogsController', ['as' => 'admin-v3-audit-logs', 'except' => ['create', 'edit']]);
 });
 
 Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {
