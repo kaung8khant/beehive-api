@@ -130,4 +130,6 @@ Route::group([
     });
 
     Route::get('restaurants/branches', 'RestaurantBranchController@getAllBranches');
+
+    Route::get('histories/search', 'SearchHistoryController@index');
 });

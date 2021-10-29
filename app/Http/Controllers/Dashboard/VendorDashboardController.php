@@ -337,7 +337,7 @@ class VendorDashboardController extends Controller
 
         $result = [];
         foreach ($orders as $key) {
-            $orderSlug=ShopOrder::where('id', $key->shop_order_id)->firstOrFail()->slug;
+            $orderSlug = ShopOrder::where('id', $key->shop_order_id)->firstOrFail()->slug;
 
             $order = [
                 'order_id' => $orderSlug,

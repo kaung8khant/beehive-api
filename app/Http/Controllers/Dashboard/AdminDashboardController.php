@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\ShopOrderItem;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -40,9 +39,12 @@ class AdminDashboardController extends Controller
         $restaurantOrders = DB::table('restaurant_orders')
             ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
             ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
-            ->where('order_status', '!=', 'cancelled')->select('restaurant_branch_id', DB::raw('count(*) AS total_orders'))
+            ->where('order_status', '!=', 'cancelled')
+            ->select('restaurant_branch_id', DB::raw('count(*) AS total_orders'))
             ->groupBy('restaurant_branch_id')
-            ->orderby('total_orders', 'DESC')->limit(10)->get();
+            ->orderby('total_orders', 'DESC')
+            ->limit(10)
+            ->get();
 
         $data = [];
 
@@ -98,7 +100,6 @@ class AdminDashboardController extends Controller
             ->select('oi.shop_id', DB::raw('count(*) AS total_orders'))
             ->groupBy('oi.shop_id')
             ->orderBy('total_orders', 'DESC')->limit(10)->get();
-
 
         $data = [];
 
@@ -282,7 +283,7 @@ class AdminDashboardController extends Controller
             ->join('shop_order_items as soi', 'soi.shop_order_vendor_id', '=', 'sov.id')
             ->join('products as p', 'p.id', '=', 'soi.product_id')
             ->join('shop_categories as sc', 'sc.id', '=', 'p.shop_category_id')
-            ->select('sc.id',DB::raw('count(*) AS total'))
+            ->select('sc.id', DB::raw('count(*) AS total'))
             ->where('so.order_status', '!=', 'cancelled')->groupBy('sc.id')
             ->orderBy('total', 'DESC')
             ->limit(5)

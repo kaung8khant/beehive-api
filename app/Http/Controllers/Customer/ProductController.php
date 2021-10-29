@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Events\KeywordSearched;
+use App\Helpers\AuthHelper;
 use App\Helpers\CollectionHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
@@ -31,6 +33,8 @@ class ProductController extends Controller
     {
         if ($request->filter) {
             $products = Product::search($request->filter)->where('is_enable', 1)->where('is_shop_enable', 1)->paginate($request->size);
+
+            KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter);
         } else {
             $products = Product::select(CollectionHelper::selectExclusiveColumns('products'))
                 ->join('product_variants as pv', function ($query) {

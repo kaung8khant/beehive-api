@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Events\KeywordSearched;
 use App\Exceptions\ForbiddenException;
+use App\Helpers\AuthHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper;
 use App\Http\Controllers\Controller;
@@ -159,6 +161,7 @@ class HomeController extends Controller
             'products' => $this->searchProduct($request, true),
         ];
 
+        KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->keyword);
         return $this->generateResponse($result, 200);
     }
 
@@ -192,6 +195,7 @@ class HomeController extends Controller
             return $this->generateBranchResponse($restaurantBranches, 200, 'home');
         }
 
+        KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->keyword);
         return $this->generateBranchResponse($restaurantBranches, 200);
     }
 
@@ -213,6 +217,7 @@ class HomeController extends Controller
             return $this->generateProductResponse($products, 200, 'home');
         }
 
+        KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->keyword);
         return $this->generateProductResponse($products, 200);
     }
 

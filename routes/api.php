@@ -79,7 +79,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('shop-categories/{shopCategory}/products', 'Admin\ProductController@getProductsByCategory');
             Route::post('products/multiple-delete', 'Admin\ProductController@multipleDelete');
             Route::put('products/{product}/index', 'Admin\ProductController@updateSearchIndex');
+
             Route::put('products/{product}/variants', 'Admin\ProductVariantController@updateVariants');
+            Route::put('products/{product}/update-price', 'Admin\ProductController@updateVariantPrice');
             Route::patch('products/variants/{productVariant:slug}/enable', 'Admin\ProductVariantController@toggleEnable');
 
             Route::resource('brands', 'Admin\BrandController', ['except' => ['create', 'edit']]);
@@ -127,7 +129,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
 
             Route::put('restaurant-branches/{restaurantBranch}/index', 'Admin\RestaurantBranchController@updateSearchIndex');
+
             Route::put('menus/{menu}/variants', 'Admin\MenuVariantController@updateVariants');
+            Route::put('menus/{menu}/update-price', 'Admin\MenuController@updateVariantPrice');
             Route::patch('menus/variants/{menuVariant:slug}/enable', 'Admin\MenuVariantController@toggleEnable');
             /* Restaurant */
 
@@ -264,6 +268,10 @@ Route::group([
 
     Route::resource('menu-option-items', 'MenuOptionItemController', ['as' => 'admin-v3-menu-option-item', 'except' => ['create', 'edit']]);
     Route::get('menu-options/{menuOption}/items', 'MenuOptionItemController@index');
+
+    Route::get('histories/search', 'SearchHistoryController@index');
+
+    Route::resource('audit-logs', 'AuditLogsController', ['as' => 'admin-v3-audit-logs', 'except' => ['create', 'edit']]);
 });
 
 Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {
@@ -301,6 +309,7 @@ Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], func
     Route::get('restaurants/invoice/{slug}/generate', 'Pdf\RestaurantInvoiceController@generateInvoice');
     Route::get('shops/invoice/{slug}/generate', 'Pdf\ShopInvoiceController@generateInvoice');
 });
+
 /*
  * -----------
  * Vendor API
