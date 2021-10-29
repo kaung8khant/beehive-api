@@ -90,4 +90,17 @@ class MenuVariantController extends Controller
 
         return response()->json(['message' => 'Success.'], 200);
     }
+
+    public function updateVariantPrice(Request $request, Menu $menu)
+    {
+        $validatedData = $request->validate([
+            'price' => 'required|numeric',
+            'slug' => 'nullable|exists:App\Models\MenuVariant,slug',
+        ]);
+
+        $menuVariant = MenuVariant::where('slug', $validatedData['slug'])->first();
+        $menuVariant->update($validatedData);
+
+        return response()->json($menu->refresh()->load('menuVariants'), 200);
+    }
 }
