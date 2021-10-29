@@ -45,21 +45,10 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
 
         Route::post('restaurant-branches/{restaurantBranch}/menus/{menu}', 'Admin\RestaurantBranchController@toggleAvailable');
 
-        Route::get('menu-variations/{slug}', 'Admin\MenuVariationController@show');
-        Route::post('menu-variations', 'Admin\MenuVariationController@store');
-        Route::put('menu-variations/{slug}', 'Admin\MenuVariationController@update');
-        Route::delete('menu-variations/{slug}', 'Admin\MenuVariationController@destroy');
-
-        Route::get('menu-variation-values/{slug}', 'Admin\MenuVariationValueController@show');
-        Route::post('menu-variation-values', 'Admin\MenuVariationValueController@store');
-        Route::put('menu-variation-values/{slug}', 'Admin\MenuVariationValueController@update');
-        Route::delete('menu-variation-values/{slug}', 'Admin\MenuVariationValueController@destroy');
-
         Route::get('menu-toppings/{slug}', 'Admin\MenuToppingController@show');
         Route::post('menu-toppings', 'Admin\MenuToppingController@store');
         Route::put('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@update');
         Route::delete('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@destroy');
-
         Route::put('menus/{menu}/variants', 'Admin\MenuController@updateVariants');
 
         Route::get('restaurant-branches/{restaurantBranch}/orders', 'Admin\RestaurantOrderController@getBranchOrders');
@@ -90,27 +79,10 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::patch('products/toggle-enable/{product}', 'Admin\ProductController@toggleEnable');
         Route::post('products/status', 'Admin\ProductController@multipleStatusUpdate');
         Route::post('products/multiple-delete', 'Admin\ProductController@multipleDelete');
-
-        Route::get('products/{product}/product-variations', 'Admin\ProductVariationController@getProductVariationsByProduct');
-        Route::get('product-variations/{slug}', 'Admin\ProductVariationController@show');
-        Route::post('product-variations', 'Admin\ProductVariationController@store');
-        Route::put('product-variations/{slug}', 'Admin\ProductVariationController@update');
-        Route::delete('product-variations/{slug}', 'Admin\ProductVariationController@destroy');
-
-        Route::get('product-variations/{productVariation}/product-variation-values', 'Admin\ProductVariationValueController@getVariationValuesByVariation');
-        Route::get('product-variation-values/{slug}', 'Admin\ProductVariationValueController@show');
-        Route::post('product-variation-values', 'Admin\ProductVariationValueController@store');
-        Route::put('product-variation-values/{slug}', 'Admin\ProductVariationValueController@update');
-        Route::delete('product-variation-values/{slug}', 'Admin\ProductVariationValueController@destroy');
-
         Route::put('products/{product}/variants', 'Admin\ProductController@updateVariants');
 
         Route::get('brands', 'Admin\BrandController@index');
         Route::post('brands', 'Admin\BrandController@store');
-
-        // Route::get('cities', 'Admin\CityController@index');
-        // Route::get('townships', 'Admin\TownshipController@index');
-        // Route::get('cities/{city}/townships', 'Admin\TownshipController@getTownshipsByCity');
 
         Route::get('customers', 'Admin\CustomerController@index');
         Route::post('customers', 'Admin\CustomerController@store');
