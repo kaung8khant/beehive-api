@@ -111,25 +111,3 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
     Route::get('ads', 'Customer\HomeController@getAds');
     /* Ads */
 });
-
-Route::group([
-    'prefix' => 'v3/user',
-    'namespace' => '\App\\Http\\Controllers\\Customer\\v3',
-    'middleware' => ['cors', 'json.response'],
-], function () {
-    Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
-        Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'customer-v3-restaurant', 'except' => ['create', 'edit']]);
-        Route::resource('shop-orders', 'ShopOrderController', ['as' => 'customer-v3-shop', 'except' => ['create', 'edit']]);
-
-        Route::post('kbz/pay/{orderType}/{slug}', '\App\Http\Controllers\Payment\KbzPayController@pay');
-        Route::post('cb/pay/{orderType}/{slug}', '\App\Http\Controllers\Payment\CbPayController@pay');
-        Route::get('cb/check/{orderType}/{slug}', '\App\Http\Controllers\Payment\CbPayController@checkTransaction');
-
-        //Promo code
-        Route::post('promocode/validate', 'PromocodeController@validatePromoCode');
-    });
-
-    Route::get('restaurants/branches', 'RestaurantBranchController@getAllBranches');
-
-    Route::get('histories/search', 'SearchHistoryController@index');
-});
