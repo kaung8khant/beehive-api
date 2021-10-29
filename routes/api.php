@@ -323,3 +323,10 @@ require __DIR__ . '/vendor-api.php';
  * -----------
  */
 require __DIR__ . '/customer-api.php';
+
+/*
+ * -----------
+ * Mobile API v3
+ * -----------
+ */
+require __DIR__ . '/v3/mobile-api.php';

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use App\Models\Product;
 use App\Models\RestaurantOrder;
 use App\Models\Shop;

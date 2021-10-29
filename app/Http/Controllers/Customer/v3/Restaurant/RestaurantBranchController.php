@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Customer\v3;
+namespace App\Http\Controllers\Customer\v3\Restaurant;
 
 use App\Events\KeywordSearched;
 use App\Helpers\AuthHelper;
@@ -16,7 +16,7 @@ class RestaurantBranchController extends Controller
 {
     use ResponseHelper;
 
-    public function getAllBranches(Request $request)
+    public function index(Request $request)
     {
         $validator = $this->validateLocation($request);
         if ($validator->fails()) {
