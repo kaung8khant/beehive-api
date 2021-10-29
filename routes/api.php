@@ -81,7 +81,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::put('products/{product}/index', 'Admin\ProductController@updateSearchIndex');
 
             Route::put('products/{product}/variants', 'Admin\ProductVariantController@updateVariants');
-            Route::put('products/{product}/update-price', 'Admin\ProductVariantController@updateVariantPrice');
+            Route::put('products/variants/{productVariant:slug}/price', 'Admin\ProductVariantController@updateVariantPrice');
             Route::patch('products/variants/{productVariant:slug}/enable', 'Admin\ProductVariantController@toggleEnable');
 
             Route::resource('brands', 'Admin\BrandController', ['except' => ['create', 'edit']]);
@@ -131,7 +131,7 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::put('restaurant-branches/{restaurantBranch}/index', 'Admin\RestaurantBranchController@updateSearchIndex');
 
             Route::put('menus/{menu}/variants', 'Admin\MenuVariantController@updateVariants');
-            Route::put('menus/{menu}/update-price', 'Admin\MenuVariantController@updateVariantPrice');
+            Route::put('menus/variants/{menuVariant:slug}/price', 'Admin\MenuVariantController@updateVariantPrice');
             Route::patch('menus/variants/{menuVariant:slug}/enable', 'Admin\MenuVariantController@toggleEnable');
             /* Restaurant */
 

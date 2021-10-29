@@ -91,17 +91,17 @@ class ProductVariantController extends Controller
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function updateVariantPrice(Request $request, Product $product)
+    public function updateVariantPrice(Request $request, ProductVariant $productVariant)
     {
         $validatedData = $request->validate([
             'price' => 'required|numeric',
             'vendor_price' => 'required|numeric',
-            'slug' => 'nullable|exists:App\Models\ProductVariant,slug',
         ]);
 
-        $productVariant = ProductVariant::where('slug', $validatedData['slug'])->first();
         $productVariant->update($validatedData);
 
-        return response()->json($product->refresh()->load('productVariants'), 200);
+        return response()->json(Product::with('productVariants')
+        ->where('id', $productVariant->product_id)
+        ->first(), 200);
     }
 }
