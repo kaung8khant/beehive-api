@@ -7,6 +7,7 @@ use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Audit;
 use App\Models\Customer;
 use App\Models\RestaurantBranch;
 use App\Models\Role;
@@ -379,5 +380,12 @@ class UserController extends Controller
         }
 
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function getUserAuditLogs(Request $request, User $user)
+    {
+        return Audit::where('user_slug', $user->slug)
+            ->whereBetween('create_at', array($request->from, $request->to))
+            ->paginate(10);
     }
 }
