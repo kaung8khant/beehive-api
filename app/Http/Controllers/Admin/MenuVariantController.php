@@ -99,8 +99,10 @@ class MenuVariantController extends Controller
 
         $menuVariant->update($validatedData);
 
-        return response()->json(Menu::with('menuVariants')
-        ->where('id', $menuVariant->menu_id)
-        ->first(), 200);
+        $menu = Menu::with('menuVariants')
+            ->where('id', $menuVariant->menu_id)
+            ->first();
+
+        return response()->json($menu, 200);
     }
 }

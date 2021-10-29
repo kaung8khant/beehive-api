@@ -100,8 +100,10 @@ class ProductVariantController extends Controller
 
         $productVariant->update($validatedData);
 
-        return response()->json(Product::with('productVariants')
-        ->where('id', $productVariant->product_id)
-        ->first(), 200);
+        $product = Product::with('productVariants')
+            ->where('id', $productVariant->product_id)
+            ->first();
+
+        return response()->json($product, 200);
     }
 }
