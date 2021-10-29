@@ -6,7 +6,6 @@ use App\Events\DataChanged;
 use App\Helpers\CacheHelper;
 use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
-use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
@@ -23,7 +22,7 @@ use Illuminate\Support\Facades\DB;
 
 class MenuController extends Controller
 {
-    use FileHelper, ResponseHelper, StringHelper;
+    use FileHelper, StringHelper;
 
     private $user;
 
@@ -415,63 +414,6 @@ class MenuController extends Controller
         DataChanged::dispatch($this->user, 'update', 'menus', $menu->slug, $request->url(), 'success', $request->all());
 
         return response()->json($menu->load('restaurant', 'restaurantCategory'), 200);
-    }
-
-    public function updateVariants(Request $request, Menu $menu)
-    {
-        $validatedData = $request->validate([
-            'variants' => 'nullable|array',
-            'variants.*.name' => 'required|string',
-            'variants.*.values' => 'required|array',
-
-            'menu_variants' => 'required',
-            'menu_variants.*.slug' => 'nullable|exists:App\Models\MenuVariant,slug',
-            'menu_variants.*.variant' => 'required',
-            'menu_variants.*.price' => 'required|numeric',
-            'menu_variants.*.tax' => 'required|numeric',
-            'menu_variants.*.discount' => 'required|numeric',
-            'menu_variants.*.is_enable' => 'required|boolean',
-            'menu_variants.*.image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]);
-
-        if (isset($validatedData['variants'])) {
-            $menu->update([
-                'variants' => $validatedData['variants'],
-            ]);
-
-            DataChanged::dispatch($this->user, 'update', 'menus', $menu->slug, $request->url(), 'success', $validatedData['variants']);
-        }
-
-        $variantSlugs = $menu->menuVariants->pluck('slug');
-
-        foreach ($validatedData['menu_variants'] as $data) {
-            if (isset($data['slug']) && $variantSlugs->contains($data['slug'])) {
-                $menuVariant = MenuVariant::where('slug', $data['slug'])->first();
-                $menuVariant->update($data);
-
-                $arrKey = $variantSlugs->search($data['slug']);
-                unset($variantSlugs[$arrKey]);
-
-                DataChanged::dispatch($this->user, 'update', 'menu_variants', $data['slug'], $request->url(), 'success', $data);
-            } else {
-                $data['menu_id'] = $menu->id;
-                $data['slug'] = $this->generateUniqueSlug();
-
-                MenuVariant::create($data);
-                DataChanged::dispatch($this->user, 'create', 'menu_variants', $data['slug'], $request->url(), 'success', $data);
-            }
-
-            if (isset($data['image_slug'])) {
-                $this->updateFile($data['image_slug'], 'menu_variants', $data['slug']);
-            }
-        }
-
-        foreach ($variantSlugs as $slug) {
-            $menuVariant = MenuVariant::where('slug', $slug)->first();
-            $menuVariant->delete();
-        }
-
-        return response()->json($menu->refresh()->load('menuVariants'), 200);
     }
 
     private function optimizeMenus($menus)

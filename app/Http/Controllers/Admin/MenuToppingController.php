@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\DataChanged;
 use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
@@ -9,10 +10,20 @@ use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\MenuTopping;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MenuToppingController extends Controller
 {
     use FileHelper, StringHelper;
+
+    private $user;
+
+    public function __construct()
+    {
+        if (Auth::guard('users')->check()) {
+            $this->user = Auth::guard('users')->user();
+        }
+    }
 
     public function index(Request $request)
     {
@@ -64,6 +75,8 @@ class MenuToppingController extends Controller
         $validatedData['menu_id'] = $this->getMenuId($validatedData['menu_slug']);
         $menuTopping->update($validatedData);
 
+        DataChanged::dispatch($this->user, 'update', 'menu_toppings', $menuTopping->slug, $request->url(), 'success', $validatedData);
+
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'menu_toppings', $menuTopping->slug);
         }
@@ -71,12 +84,13 @@ class MenuToppingController extends Controller
         return response()->json($menuTopping->load('menu'), 200);
     }
 
-    public function destroy(MenuTopping $menuTopping)
+    public function destroy(Request $request, MenuTopping $menuTopping)
     {
         foreach ($menuTopping->images as $image) {
             $this->deleteFile($image->slug);
         }
 
+        DataChanged::dispatch($this->user, 'delete', 'menu_toppings', $menuTopping->slug, $request->url(), 'success');
         $menuTopping->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
