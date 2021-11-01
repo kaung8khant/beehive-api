@@ -16,4 +16,15 @@ trait AuthHelper
 
         return $customerId;
     }
+
+    public static function getCustomerSlug()
+    {
+        if ($customer = Auth::guard('customers')->user()) {
+            $customerSlug = $customer->slug;
+        } else {
+            $customerSlug = null;
+        }
+
+        return $customerSlug;
+    }
 }

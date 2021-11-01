@@ -61,6 +61,7 @@ class RestaurantBranchController extends Controller
             'aroundRadius' => 10000,
             'hitsPerPage' => 1000,
             'filters' => 'is_enable:true AND is_restaurant_enable:true',
+            'userToken' => AuthHelper::getCustomerSlug(),
         ]);
 
         return collect($result['hits'])->pluck('restaurant_id');
@@ -77,6 +78,7 @@ class RestaurantBranchController extends Controller
             'attributesToHighlight' => [],
             'hitsPerPage' => 1000,
             'filters' => 'is_enable:true AND is_restaurant_enable:true',
+            'userToken' => AuthHelper::getCustomerSlug(),
         ]);
 
         return collect($result['hits'])->pluck('restaurant_id');
