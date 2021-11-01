@@ -16,7 +16,11 @@ return [
     |
     */
 
-    'searchableAttributes' => ['slug', 'name', 'shop_category_name'],
+    'searchableAttributes' => [
+        'slug',
+        'name',
+        'shop_category_name',
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -79,7 +83,7 @@ return [
     |
     */
 
-    'attributesForFaceting' => null,
+    'attributesForFaceting' => ['shop_category_name'],
 
     /*
     |--------------------------------------------------------------------------
