@@ -33,6 +33,9 @@ class ProductController extends Controller
     {
         if ($request->filter) {
             $products = Product::search($request->filter)
+                ->with([
+                    'userToken' => AuthHelper::getCustomerSlug(),
+                ])
                 ->where('is_enable', 1)
                 ->where('is_shop_enable', 1)
                 ->paginate($request->size);
