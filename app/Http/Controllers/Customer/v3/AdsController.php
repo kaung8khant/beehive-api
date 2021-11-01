@@ -14,21 +14,21 @@ class AdsController extends Controller
 
     public function GetByBrand(Brand $brand)
     {
-        $ads = $this->getAds('brand', $brand->slug);
+        $ads = $this->getAds('brand', $brand->slug, 'shop');
         return $this->generateResponse($ads, 200);
     }
 
     public function getByShop(Shop $shop)
     {
-        $ads = $this->getAds('shop', $shop->slug);
+        $ads = $this->getAds('shop', $shop->slug, 'shop');
         return $this->generateResponse($ads, 200);
     }
 
-    private function getAds($targetType, $value)
+    private function getAds($targetType, $value, $source)
     {
         return Ads::exclude(['created_by', 'updated_by'])
             ->where('type', 'banner')
-            ->where('source', 'shop')
+            ->where('source', $source)
             ->where('target_type', $targetType)
             ->where('value', $value)
             ->orderBy('search_index', 'desc')

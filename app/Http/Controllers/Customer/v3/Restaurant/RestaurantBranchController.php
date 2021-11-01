@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer\v3\Restaurant;
 
+use Algolia\ScoutExtended\Facades\Algolia;
 use App\Events\KeywordSearched;
 use App\Helpers\AuthHelper;
 use App\Helpers\CacheHelper;
@@ -24,25 +25,15 @@ class RestaurantBranchController extends Controller
         }
 
         if ($request->filter) {
-            $restaurantBranches = RestaurantBranch::search($request->filter)->where('is_enable', 1)->where('is_restaurant_enable', 1)->get($request->size);
-            $menus = Menu::search($request->filter)->where('is_enable', 1)->where('is_restaurant_enable', 1)->get();
-
-            $restaurantIdsFromBranches = $restaurantBranches->pluck('restaurant_id');
-            $restaurantIdsFromMenus = $menus->pluck('restaurant_id');
+            $restaurantIdsFromBranches = $this->searchBranches($request);
+            $restaurantIdsFromMenus = $this->searchMenus($request);
             $restaurantIds = $restaurantIdsFromBranches->merge($restaurantIdsFromMenus)->unique()->values()->toArray();
 
-            $restaurantBranches = $this->getBranches($request)
-                ->whereIn('restaurant_id', $restaurantIds)
-                ->orderBy('search_index', 'desc')
-                ->orderBy('distance', 'asc')
-                ->paginate($request->size);
+            $restaurantBranches = $this->getBranches($request)->whereIn('restaurant_id', $restaurantIds)->paginate($request->size);
 
             KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter);
         } else {
-            $restaurantBranches = $this->getBranches($request)
-                ->orderBy('search_index', 'desc')
-                ->orderBy('distance', 'asc')
-                ->paginate($request->size);
+            $restaurantBranches = $this->getBranches($request)->paginate($request->size);
         }
 
         $this->optimizeBranches($restaurantBranches);
@@ -57,28 +48,56 @@ class RestaurantBranchController extends Controller
         ]);
     }
 
-    private function getBranches($request)
+    private function searchBranches($request)
     {
-        $query = RestaurantBranch::with('restaurant');
-        return $this->getBranchQuery($query, $request);
+        $index = Algolia::index(RestaurantBranch::class);
+
+        $result = $index->search($request->filter, [
+            'attributesToRetrieve' => [
+                'restaurant_id',
+            ],
+            'attributesToHighlight' => [],
+            'aroundLatLng' => $request->lat . ', ' . $request->lng,
+            'aroundRadius' => 10000,
+            'hitsPerPage' => 1000,
+            'filters' => 'is_enable:true AND is_restaurant_enable:true',
+        ]);
+
+        return collect($result['hits'])->pluck('restaurant_id');
     }
 
-    private function getBranchQuery($query, $request)
+    private function searchMenus($request)
     {
-        $radius = CacheHelper::getRestaurantSearchRadius();
+        $index = Algolia::index(Menu::class);
 
-        return $query->with('restaurant')
+        $result = $index->search($request->filter, [
+            'attributesToRetrieve' => [
+                'restaurant_id',
+            ],
+            'attributesToHighlight' => [],
+            'hitsPerPage' => 1000,
+            'filters' => 'is_enable:true AND is_restaurant_enable:true',
+        ]);
+
+        return collect($result['hits'])->pluck('restaurant_id');
+    }
+
+    private function getBranches($request)
+    {
+        return RestaurantBranch::with('restaurant')
             ->with('restaurant.availableTags')
             ->selectRaw('id, search_index, slug, name, opening_time, closing_time, is_enable, free_delivery, pre_order, restaurant_id,
             @distance := ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
                 + sin(radians(?)) * sin(radians(latitude)) )
             ) AS distance', [$request->lat, $request->lng, $request->lat])
-            ->selectRaw("IF(@distance < ?, true, false) AS instant_order", [$radius])
+            ->selectRaw("IF(@distance < ?, true, false) AS instant_order", [CacheHelper::getRestaurantSearchRadius()])
             ->whereHas('restaurant', function ($q) {
                 $q->where('is_enable', 1);
             })
-            ->where('is_enable', 1);
+            ->where('is_enable', 1)
+            ->orderBy('search_index', 'desc')
+            ->orderBy('distance', 'asc');
     }
 
     private function optimizeBranches($branches)

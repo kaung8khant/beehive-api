@@ -32,7 +32,10 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         if ($request->filter) {
-            $products = Product::search($request->filter)->where('is_enable', 1)->where('is_shop_enable', 1)->paginate($request->size);
+            $products = Product::search($request->filter)
+                ->where('is_enable', 1)
+                ->where('is_shop_enable', 1)
+                ->paginate($request->size);
 
             KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter);
         } else {
