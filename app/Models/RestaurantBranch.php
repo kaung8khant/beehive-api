@@ -33,9 +33,14 @@ class RestaurantBranch extends BaseModel
     {
         $array = $this->toArray();
 
+        $array['id'] = $this->id;
         $array['restaurant_id'] = $this->restaurant ? $this->restaurant->id : null;
         $array['restaurant_name'] = $this->restaurant ? $this->restaurant->name : null;
         $array['is_restaurant_enable'] = $this->restaurant ? $this->restaurant->is_enable : null;
+        $array['_geoloc'] = [
+            'lat' => $this->latitude,
+            'lng' => $this->longitude,
+        ];
 
         return $array;
     }
