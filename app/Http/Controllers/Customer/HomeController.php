@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use Algolia\ScoutExtended\Facades\Algolia;
 use App\Events\KeywordSearched;
 use App\Exceptions\ForbiddenException;
 use App\Helpers\AuthHelper;
@@ -172,11 +173,8 @@ class HomeController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $restaurantBranches = RestaurantBranch::search($request->keyword)->where('is_enable', 1)->where('is_restaurant_enable', 1)->get($request->size);
-        $menus = Menu::search($request->keyword)->where('is_enable', 1)->where('is_restaurant_enable', 1)->get();
-
-        $restaurantIdsFromBranches = $restaurantBranches->pluck('restaurant_id');
-        $restaurantIdsFromMenus = $menus->pluck('restaurant_id');
+        $restaurantIdsFromBranches = $this->searchBranches($request);
+        $restaurantIdsFromMenus = $this->searchMenus($request);
         $restaurantIds = $restaurantIdsFromBranches->merge($restaurantIdsFromMenus)->unique()->values()->toArray();
 
         $restaurantBranches = RestaurantOrderHelper::getBranches($request)
@@ -199,6 +197,42 @@ class HomeController extends Controller
         return $this->generateBranchResponse($restaurantBranches, 200);
     }
 
+    private function searchBranches($request)
+    {
+        $index = Algolia::index(RestaurantBranch::class);
+
+        $result = $index->search($request->filter, [
+            'attributesToRetrieve' => [
+                'restaurant_id',
+            ],
+            'attributesToHighlight' => [],
+            'aroundLatLng' => $request->lat . ', ' . $request->lng,
+            'aroundRadius' => 10000,
+            'hitsPerPage' => 1000,
+            'filters' => 'is_enable:true AND is_restaurant_enable:true',
+            'userToken' => AuthHelper::getCustomerSlug(),
+        ]);
+
+        return collect($result['hits'])->pluck('restaurant_id');
+    }
+
+    private function searchMenus($request)
+    {
+        $index = Algolia::index(Menu::class);
+
+        $result = $index->search($request->filter, [
+            'attributesToRetrieve' => [
+                'restaurant_id',
+            ],
+            'attributesToHighlight' => [],
+            'hitsPerPage' => 1000,
+            'filters' => 'is_enable:true AND is_restaurant_enable:true',
+            'userToken' => AuthHelper::getCustomerSlug(),
+        ]);
+
+        return collect($result['hits'])->pluck('restaurant_id');
+    }
+
     public function searchProduct(Request $request, $homeSearch = false)
     {
         $validator = Validator::make($request->all(), [
@@ -209,7 +243,14 @@ class HomeController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $products = Product::search($request->keyword)->where('is_enable', 1)->where('is_shop_enable', 1)->paginate($request->size);
+        $products = Product::search($request->keyword)
+            ->with([
+                'userToken' => AuthHelper::getCustomerSlug(),
+            ])
+            ->where('is_enable', 1)
+            ->where('is_shop_enable', 1)
+            ->paginate($request->size);
+
         $products->makeHidden(['description', 'variants', 'created_by', 'updated_by', 'covers']);
         $products = $products->items();
 

@@ -59,10 +59,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::resource('collectors', 'Admin\CollectorController', ['except' => ['create', 'edit']]);
             Route::patch('collectors/toggle-enable/{user}', 'Admin\CollectorController@toggleEnable');
 
-            // Route::resource('cities', 'Admin\CityController', ['except' => ['create', 'edit']]);
-            // Route::resource('townships', 'Admin\TownshipController', ['except' => ['create', 'edit']]);
-            // Route::get('cities/{city}/townships', 'Admin\TownshipController@getTownshipsByCity');
-
             /* Shop */
             Route::resource('shop-categories', 'Admin\ShopCategoryController', ['except' => ['create', 'edit']]);
             Route::resource('sub-categories', 'Admin\ShopSubCategoryController', ['except' => ['create', 'edit']])->parameter('sub-categories', 'shopSubCategory');
@@ -83,14 +79,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('shop-categories/{shopCategory}/products', 'Admin\ProductController@getProductsByCategory');
             Route::post('products/multiple-delete', 'Admin\ProductController@multipleDelete');
             Route::put('products/{product}/index', 'Admin\ProductController@updateSearchIndex');
-            Route::put('products/{product}/variants', 'Admin\ProductController@updateVariants');
-            Route::put('products/{product}/update-price', 'Admin\ProductController@updateVariantPrice');
 
-            Route::resource('product-variations', 'Admin\ProductVariationController', ['except' => ['create', 'edit']]);
-            Route::get('products/{product}/product-variations', 'Admin\ProductVariationController@getProductVariationsByProduct');
-
-            Route::resource('product-variation-values', 'Admin\ProductVariationValueController', ['except' => ['create', 'edit']]);
-            Route::get('product-variations/{productVariation}/product-variation-values', 'Admin\ProductVariationValueController@getVariationValuesByVariation');
+            Route::put('products/{product}/variants', 'Admin\ProductVariantController@updateVariants');
+            Route::put('products/variants/{productVariant:slug}/price', 'Admin\ProductVariantController@updateVariantPrice');
+            Route::patch('products/variants/{productVariant:slug}/enable', 'Admin\ProductVariantController@toggleEnable');
 
             Route::resource('brands', 'Admin\BrandController', ['except' => ['create', 'edit']]);
             Route::get('brands/{brand}/products', 'Admin\ProductController@getProductsByBrand');
@@ -114,7 +106,6 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::patch('menus/toggle-enable/{menu}', 'Admin\MenuController@toggleEnable');
             Route::post('menus/multiple-delete', 'Admin\MenuController@multipleDelete');
             Route::post('menus/status', 'Admin\MenuController@multipleStatusUpdate');
-            Route::put('menus/{menu}/update-price', 'Admin\MenuController@updateVariantPrice');
 
             Route::resource('menu-toppings', 'Admin\MenuToppingController', ['except' => ['create', 'edit']]);
             Route::get('menus/{menu}/menu-toppings', 'Admin\MenuToppingController@getToppingsByMenu');
@@ -138,15 +129,10 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('restaurants/{restaurant}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByRestaurant');
 
             Route::put('restaurant-branches/{restaurantBranch}/index', 'Admin\RestaurantBranchController@updateSearchIndex');
-            Route::put('menus/{menu}/variants', 'Admin\MenuController@updateVariants');
-            Route::put('menus/{menu}/index', 'Admin\MenuController@updateSearchIndex');
 
-            // Route::resource('menu-variations', 'Admin\MenuVariationController', ['except' => ['create', 'edit']]);
-            // Route::get('menus/{menu}/menu-variations', 'Admin\MenuVariationController@getVariationsByMenu');
-            // Route::resource('menu-variation-values', 'Admin\MenuVariationValueController', ['except' => ['create', 'edit']]);
-
-            // Route::get('townships/{township}/restaurant-branches', 'Admin\RestaurantBranchController@getBranchesByTownship');
-
+            Route::put('menus/{menu}/variants', 'Admin\MenuVariantController@updateVariants');
+            Route::put('menus/variants/{menuVariant:slug}/price', 'Admin\MenuVariantController@updateVariantPrice');
+            Route::patch('menus/variants/{menuVariant:slug}/enable', 'Admin\MenuVariantController@toggleEnable');
             /* Restaurant */
 
             /* Order */
@@ -337,3 +323,10 @@ require __DIR__ . '/vendor-api.php';
  * -----------
  */
 require __DIR__ . '/customer-api.php';
+
+/*
+ * -----------
+ * Mobile API v3
+ * -----------
+ */
+require __DIR__ . '/v3/mobile-api.php';

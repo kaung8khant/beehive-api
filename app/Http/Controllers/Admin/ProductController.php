@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Events\DataChanged;
 use App\Helpers\CacheHelper;
 use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
@@ -307,63 +306,6 @@ class ProductController extends Controller
         return response()->json($product->load('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants'), 200);
     }
 
-    public function updateVariants(Request $request, Product $product)
-    {
-        $validatedData = $request->validate([
-            'variants' => 'nullable|array',
-            'variants.*.name' => 'required|string',
-            'variants.*.values' => 'required|array',
-
-            'product_variants' => 'required',
-            'product_variants.*.slug' => 'nullable|exists:App\Models\ProductVariant,slug',
-            'product_variants.*.variant' => 'required',
-            'product_variants.*.price' => 'required|numeric',
-            'product_variants.*.tax' => 'required|numeric',
-            'product_variants.*.discount' => 'required|numeric',
-            'product_variants.*.is_enable' => 'required|boolean',
-            'product_variants.*.image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]);
-
-        if (isset($validatedData['variants'])) {
-            $product->update([
-                'variants' => $validatedData['variants'],
-            ]);
-
-            DataChanged::dispatch($this->user, 'update', 'products', $product->slug, $request->url(), 'success', $validatedData['variants']);
-        }
-
-        $variantSlugs = $product->productVariants->pluck('slug');
-
-        foreach ($validatedData['product_variants'] as $data) {
-            if (isset($data['slug']) && $variantSlugs->contains($data['slug'])) {
-                $productVariant = ProductVariant::where('slug', $data['slug'])->first();
-                $productVariant->update($data);
-
-                $arrKey = $variantSlugs->search($data['slug']);
-                unset($variantSlugs[$arrKey]);
-
-                DataChanged::dispatch($this->user, 'update', 'product_variants', $data['slug'], $request->url(), 'success', $data);
-            } else {
-                $data['product_id'] = $product->id;
-                $data['slug'] = $this->generateUniqueSlug();
-
-                ProductVariant::create($data);
-                DataChanged::dispatch($this->user, 'create', 'product_variants', $data['slug'], $request->url(), 'success', $data);
-            }
-
-            if (isset($data['image_slug'])) {
-                $this->updateFile($data['image_slug'], 'product_variants', $data['slug']);
-            }
-        }
-
-        foreach ($variantSlugs as $slug) {
-            $productVariant = ProductVariant::where('slug', $slug)->first();
-            $productVariant->delete();
-        }
-
-        return response()->json($product->refresh()->load('productVariants'), 200);
-    }
-
     private function optimizeProducts($products)
     {
         $products->load([
@@ -392,20 +334,5 @@ class ProductController extends Controller
                 $product->brand->setAppends([]);
             }
         }
-    }
-
-    public function updateVariantPrice(Request $request, Product $product)
-    {
-        $validatedData = $request->validate([
-            'price' => 'required|numeric',
-            'vendor_price' => 'required|numeric',
-            'slug' => 'nullable|exists:App\Models\ProductVariant,slug',
-        ]);
-
-        $productVariant = ProductVariant::where('slug', $validatedData['slug'])->first();
-
-        $productVariant->update($validatedData);
-
-        return response()->json($product->refresh()->load('productVariants'), 200);
     }
 }
