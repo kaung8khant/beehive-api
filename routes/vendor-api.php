@@ -49,7 +49,8 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::post('menu-toppings', 'Admin\MenuToppingController@store');
         Route::put('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@update');
         Route::delete('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@destroy');
-        Route::put('menus/{menu}/variants', 'Admin\MenuController@updateVariants');
+        Route::put('menus/{menu}/variants', 'Admin\MenuVariantController@updateVariants');
+        Route::patch('menus/variants/{menuVariant:slug}/enable', 'Admin\MenuVariantController@toggleEnable');
 
         Route::get('restaurant-branches/{restaurantBranch}/orders', 'Admin\RestaurantOrderController@getBranchOrders');
         Route::post('restaurant-orders/{restaurantOrder}/change-status', 'Admin\RestaurantOrderController@changeStatus');
@@ -79,7 +80,8 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::patch('products/toggle-enable/{product}', 'Admin\ProductController@toggleEnable');
         Route::post('products/status', 'Admin\ProductController@multipleStatusUpdate');
         Route::post('products/multiple-delete', 'Admin\ProductController@multipleDelete');
-        Route::put('products/{product}/variants', 'Admin\ProductController@updateVariants');
+        Route::put('products/{product}/variants', 'Admin\ProductVariantController@updateVariants');
+        Route::patch('products/variants/{productVariant:slug}/enable', 'Admin\ProductVariantController@toggleEnable');
 
         Route::get('brands', 'Admin\BrandController@index');
         Route::post('brands', 'Admin\BrandController@store');
