@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Helpers\StringHelper;
+use App\Jobs\Algolia\UpdateProduct;
+use App\Jobs\Algolia\UpdateShopSubCategory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
 
@@ -25,15 +28,11 @@ class ShopCategory extends BaseModel
         parent::boot();
 
         static::saved(function ($model) {
-            $model->shopSubCategories->filter(function ($item) {
-                return $item->shouldBeSearchable();
-            })->searchable();
-        });
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            UpdateShopSubCategory::dispatch($uniqueKey, $model);
 
-        static::saved(function ($model) {
-            $model->products->filter(function ($item) {
-                return $item->shouldBeSearchable();
-            })->searchable();
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            UpdateProduct::dispatch($uniqueKey, $model);
         });
     }
 

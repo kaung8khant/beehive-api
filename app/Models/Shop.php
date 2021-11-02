@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Helpers\StringHelper;
+use App\Jobs\Algolia\UpdateProduct;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
 
@@ -34,9 +36,8 @@ class Shop extends BaseModel
         parent::boot();
 
         static::saved(function ($model) {
-            $model->products->filter(function ($item) {
-                return $item->shouldBeSearchable();
-            })->searchable();
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            UpdateProduct::dispatch($uniqueKey, $model);
         });
     }
 

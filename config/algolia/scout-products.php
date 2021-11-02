@@ -87,7 +87,7 @@ return [
     |
     */
 
-    'attributesForFaceting' => ['brand_name', 'shop_name', 'shop_category_name', 'is_enable', 'is_shop_enable'],
+    'attributesForFaceting' => ['brand_name', 'shop_name', 'shop_category_name', 'shop_sub_category_name', 'is_enable', 'is_shop_enable'],
 
     /*
     |--------------------------------------------------------------------------
