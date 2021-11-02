@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Helpers\StringHelper;
+use App\Jobs\Algolia\UpdateMenu;
+use App\Jobs\Algolia\UpdateRestaurantBranch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
 
@@ -30,13 +33,11 @@ class Restaurant extends BaseModel
         parent::boot();
 
         static::saved(function ($model) {
-            $model->restaurantBranches->filter(function ($item) {
-                return $item->shouldBeSearchable();
-            })->searchable();
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            UpdateRestaurantBranch::dispatch($uniqueKey, $model);
 
-            $model->menus->filter(function ($item) {
-                return $item->shouldBeSearchable();
-            })->searchable();
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            UpdateMenu::dispatch($uniqueKey, $model);
         });
     }
 
