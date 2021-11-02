@@ -20,6 +20,23 @@ class ShopCategory extends BaseModel
 
     protected $appends = ['images'];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($model) {
+            $model->shopSubCategories->filter(function ($item) {
+                return $item->shouldBeSearchable();
+            })->searchable();
+        });
+
+        static::saved(function ($model) {
+            $model->products->filter(function ($item) {
+                return $item->shouldBeSearchable();
+            })->searchable();
+        });
+    }
+
     public function toSearchableArray(): array
     {
         $array = $this->toArray();

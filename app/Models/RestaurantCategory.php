@@ -20,6 +20,17 @@ class RestaurantCategory extends BaseModel
 
     protected $appends = ['images'];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($model) {
+            $model->menus->filter(function ($item) {
+                return $item->shouldBeSearchable();
+            })->searchable();
+        });
+    }
+
     public function toSearchableArray(): array
     {
         $array = $this->toArray();
