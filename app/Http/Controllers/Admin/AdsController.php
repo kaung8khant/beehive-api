@@ -19,7 +19,7 @@ class AdsController extends Controller
     {
         $sorting = CollectionHelper::getSorting('ads', 'id', $request->by ? $request->by : 'desc', $request->order);
 
-        $ads = Ads::where('label', 'LIKE', '%' . $request->filter . '%')
+        $ads = Ads::where('type', $request->type)->where('label', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter);
 
         if ($request->by) {
