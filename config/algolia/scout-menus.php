@@ -85,7 +85,7 @@ return [
     |
     */
 
-    'attributesForFaceting' => ['restaurant_category_name', 'is_enable', 'is_restaurant_enable'],
+    'attributesForFaceting' => ['restaurant_category_name', 'restaurant_name', 'is_enable', 'is_restaurant_enable'],
 
     /*
     |--------------------------------------------------------------------------

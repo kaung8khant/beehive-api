@@ -25,6 +25,21 @@ class Restaurant extends BaseModel
 
     protected $appends = ['rating', 'images', 'covers', 'first_order_date'];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($model) {
+            $model->restaurantBranches->filter(function ($item) {
+                return $item->shouldBeSearchable();
+            })->searchable();
+
+            $model->menus->filter(function ($item) {
+                return $item->shouldBeSearchable();
+            })->searchable();
+        });
+    }
+
     public function toSearchableArray(): array
     {
         $array = $this->toArray();
