@@ -33,7 +33,6 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
                 'variant' =>  $this->stringifyVariant($variant->variant),
                 'price' =>$variant->price ? $variant->price : '0',
                 'vendor_price' =>$variant->vendor_price ? $variant->vendor_price : '0',
-                'is_enable' =>  $variant->is_enable ? '1' : '0',
             ];
                 array_push($exportData, $data);
             }
@@ -54,7 +53,6 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
             'variant',
             'price',
             'vendor_price',
-            'is_enable',
         ];
     }
 
@@ -69,7 +67,6 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
             'D' => ['alignment' => ['horizontal' => 'center']],
             'E' => ['alignment' => ['horizontal' => 'center']],
             'F' => ['alignment' => ['horizontal' => 'center']],
-            'G' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -82,7 +79,6 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
             'D' => 30,
             'E' => 20,
             'F' => 20,
-            'G' => 20,
         ];
     }
 }
