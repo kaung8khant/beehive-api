@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Helpers\StringHelper;
+use App\Jobs\Algolia\UpdateMenu;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
 
@@ -25,9 +27,8 @@ class RestaurantCategory extends BaseModel
         parent::boot();
 
         static::saved(function ($model) {
-            $model->menus->filter(function ($item) {
-                return $item->shouldBeSearchable();
-            })->searchable();
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            UpdateMenu::dispatch($uniqueKey, $model);
         });
     }
 
