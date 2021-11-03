@@ -155,9 +155,9 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             /* Device Token */
 
             Route::resource('customer-groups', 'Group\CustomerGroupController', ['except' => ['create', 'edit']]);
-            Route::post('customer-groups/add/{slug}', 'Group\CustomerGroupController@addCustomersToGroup');
-            Route::delete('customer-groups/remove/{slug}', 'Group\CustomerGroupController@removeCustomersFromGroup');
-            Route::get('customer-groups/{slug}/customers', 'Group\CustomerGroupController@getCustomersByGroup');
+            Route::post('customer-groups/add/{customerGroup}', 'Group\CustomerGroupController@addCustomersToGroup');
+            Route::delete('customer-groups/remove/{customerGroup}', 'Group\CustomerGroupController@removeCustomersFromGroup');
+            Route::get('customer-groups/{customerGroup}/customers', 'Admin\CustomerController@getCustomersByGroup');
 
             Route::post('sms/send', 'Sms\SmsController@send');
             Route::post('sms/campaigns', 'Sms\SmsController@createCampaigns');
@@ -248,81 +248,26 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
     // Route::post('calculate-driver', 'FirebaseController@index');
 });
 
-Route::group([
-    'prefix' => 'v3/admin',
-    'namespace' => '\App\\Http\\Controllers\\Admin\\v3',
-    'middleware' => ['cors', 'json.response', 'auth:users', 'user.enable'],
-], function () {
-    Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'admin-v3-restaurant', 'except' => ['create', 'edit']]);
-    Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
-    Route::put('restaurant-orders/{restaurantOrder}/payment', 'RestaurantOrderController@updatePayment');
-    Route::delete('restaurant-orders/{restaurantOrder}/restaurant-order-items/{restaurantOrderItem}/cancel', 'RestaurantOrderController@cancelOrderItem');
-
-    Route::resource('shop-orders', 'ShopOrderController', ['as' => 'admin-v3-shop', 'except' => ['create', 'edit']]);
-    Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
-    Route::put('shop-orders/{shopOrder}/payment', 'ShopOrderController@updatePayment');
-    Route::delete('shop-orders/{shopOrder}/shop-order-items/{shopOrderItem}/cancel', 'ShopOrderController@cancelOrderItem');
-
-    Route::resource('menu-options', 'MenuOptionController', ['as' => 'admin-v3-menu-option', 'except' => ['create', 'edit']]);
-    Route::get('menus/{menu}/menu-options', 'MenuOptionController@index');
-
-    Route::resource('menu-option-items', 'MenuOptionItemController', ['as' => 'admin-v3-menu-option-item', 'except' => ['create', 'edit']]);
-    Route::get('menu-options/{menuOption}/items', 'MenuOptionItemController@index');
-
-    Route::get('histories/search', 'SearchHistoryController@index');
-
-    Route::resource('audit-logs', 'AuditLogsController', ['as' => 'admin-v3-audit-logs', 'except' => ['create', 'edit']]);
-});
-
-Route::group(['prefix' => 'v3', 'middleware' => ['cors', 'json.response']], function () {
-    /* Restaurant Cart */
-    Route::post('carts', 'Cart\CartController@viewCart');
-    Route::post('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@store');
-    Route::put('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@updateQuantity');
-
-    Route::delete('restaurants/carts/menus/{menu}', 'Cart\RestaurantCartController@delete');
-    Route::delete('restaurants/carts', 'Cart\RestaurantCartController@deleteCart');
-
-    Route::post('restaurants/carts/promocode', 'Cart\RestaurantCartController@applyPromocode');
-    Route::delete('restaurants/carts/promocode', 'Cart\RestaurantCartController@removePromocode');
-
-    Route::put('restaurants/carts/address', 'Cart\RestaurantCartController@updateAddress');
-    Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
-    /* Restaurant Cart */
-
-    /* Shop Cart */
-    Route::post('shops/carts/products/{product}', 'Cart\ShopCartController@store');
-    Route::put('shops/carts/products/{product}', 'Cart\ShopCartController@updateQuantity');
-
-    Route::delete('shops/carts/products/{product}', 'Cart\ShopCartController@delete');
-    Route::delete('shops/carts', 'Cart\ShopCartController@deleteCart');
-
-    Route::post('shops/carts/promocode', 'Cart\ShopCartController@applyPromocode');
-    Route::delete('shops/carts/promocode', 'Cart\ShopCartController@removePromocode');
-
-    Route::put('shops/carts/address', 'Cart\ShopCartController@updateAddress');
-    Route::post('shops/carts/checkout', 'Cart\ShopCartController@checkout');
-    /* Shop Cart */
-
-    Route::get('versions', 'SettingsController@getAppVersions');
-
-    Route::get('restaurants/invoice/{slug}/generate', 'Pdf\RestaurantInvoiceController@generateInvoice');
-    Route::get('shops/invoice/{slug}/generate', 'Pdf\ShopInvoiceController@generateInvoice');
-});
-
 /*
  * -----------
- * Vendor API
+ * Vendor API v2
  * -----------
  */
 require __DIR__ . '/vendor-api.php';
 
 /*
  * -----------
- * Customer API
+ * Customer API v2
  * -----------
  */
 require __DIR__ . '/customer-api.php';
+
+/*
+ * -----------
+ * Admin API v3
+ * -----------
+ */
+require __DIR__ . '/v3/admin-api.php';
 
 /*
  * -----------
