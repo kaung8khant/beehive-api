@@ -269,7 +269,7 @@ trait ShopOrderHelper
             'slug' => 'required|unique:products',
             'order_date' => 'nullable',
             'special_instruction' => 'nullable',
-            'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
+            'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay,Credit',
             'delivery_mode' => 'required|in:pickup,delivery',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
             'customer_info' => 'required',

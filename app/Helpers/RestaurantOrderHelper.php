@@ -371,7 +371,7 @@ trait RestaurantOrderHelper
             'slug' => 'required|unique:restaurant_orders',
             'order_date' => 'required_if:order_type,schedule',
             'special_instruction' => 'nullable',
-            'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
+            'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay,Credit',
             'delivery_mode' => 'nullable|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',
