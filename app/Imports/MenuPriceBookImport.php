@@ -44,6 +44,8 @@ class MenuPriceBookImport implements ToCollection, WithHeadingRow
             $rules = [
                 'variant_slug' => 'required|exists:App\Models\MenuVariant,slug',
                 'price' => 'required|numeric|max:99999999',
+                'discount' => 'required|numeric',
+                'tax' => 'required|numeric',
             ];
 
             $validator = Validator::make(
@@ -56,6 +58,8 @@ class MenuPriceBookImport implements ToCollection, WithHeadingRow
                     'row' => $key + 2,
                     'variant_slug' => $row['variant_slug'],
                     'price' => $row['price'],
+                    'tax' => $row['tax'],
+                    'discount' => $row['discount'],
                     'errors' => $validator->errors(),
                 ];
             }
