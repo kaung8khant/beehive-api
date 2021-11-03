@@ -95,6 +95,8 @@ class MenuVariantController extends Controller
     {
         $validatedData = $request->validate([
             'price' => 'required|numeric',
+            'discount' => 'required|numeric',
+            'tax' => 'required|numeric',
         ]);
 
         $menuVariant->update($validatedData);
