@@ -33,6 +33,8 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
                 'variant' =>  $this->stringifyVariant($variant->variant),
                 'price' =>$variant->price ? $variant->price : '0',
                 'vendor_price' =>$variant->vendor_price ? $variant->vendor_price : '0',
+                'discount' =>$variant->discount ? $variant->discount : '0',
+                'tax' =>$variant->tax ? $variant->tax : '0',
             ];
                 array_push($exportData, $data);
             }
@@ -53,6 +55,8 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
             'variant',
             'price',
             'vendor_price',
+            'discount',
+            'tax',
         ];
     }
 
@@ -67,6 +71,8 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
             'D' => ['alignment' => ['horizontal' => 'center']],
             'E' => ['alignment' => ['horizontal' => 'center']],
             'F' => ['alignment' => ['horizontal' => 'center']],
+            'G' => ['alignment' => ['horizontal' => 'center']],
+            'H' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -79,6 +85,8 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
             'D' => 30,
             'E' => 20,
             'F' => 20,
+            'G' => 20,
+            'H' => 20,
         ];
     }
 }

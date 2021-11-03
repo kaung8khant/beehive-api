@@ -61,6 +61,8 @@ class ImportMenuPriceBook implements ShouldQueue, ShouldBeUnique
             $rules = [
                 'variant_slug' => 'required|exists:App\Models\MenuVariant,slug',
                 'price' => 'required|numeric|max:99999999',
+                'discount' => 'required|numeric',
+                'tax' => 'required|numeric',
             ];
 
             $validator = Validator::make(
@@ -73,6 +75,8 @@ class ImportMenuPriceBook implements ShouldQueue, ShouldBeUnique
                 $menuVariantData = [
                         'slug' => $row['variant_slug'],
                         'price' => $row['price'],
+                        'discount' => $row['discount'],
+                        'tax' => $row['tax'],
                     ];
 
                 $menuVariant->update($menuVariantData);

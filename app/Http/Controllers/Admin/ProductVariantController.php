@@ -96,6 +96,8 @@ class ProductVariantController extends Controller
         $validatedData = $request->validate([
             'price' => 'required|numeric',
             'vendor_price' => 'required|numeric',
+            'discount' => 'required|numeric',
+            'tax' => 'required|numeric',
         ]);
 
         $productVariant->update($validatedData);
