@@ -16,7 +16,7 @@ class SearchHistoryController extends Controller
         $histories = DB::table('search_histories')
             ->select('keyword', 'created_at')
             ->where('device_id', $request->device_id)
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->limit($request->size ? $request->size : 10)
             ->get();
 

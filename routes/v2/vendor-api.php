@@ -2,7 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']], function () {
+Route::group([
+    'prefix' => 'v2/vendor',
+    'middleware' => ['cors', 'json.response'],
+], function () {
     Route::post('login', 'Auth\VendorAuthController@login');
     Route::post('register', 'Auth\VendorAuthController@register');
 
@@ -72,6 +75,7 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::get('shops/{shop}/shop-orders', 'Admin\ShopOrderController@getShopOrders');
         Route::post('shop-orders/{shopOrder}/change-status', 'Admin\ShopOrderController@changeStatus');
         Route::get('shops/{slug}/customers', 'Admin\ShopController@getCustomersByShop');
+        /* shop */
 
         /* products */
         Route::get('shops/{shop}/products', 'Admin\ProductController@getProductsByShop');
@@ -82,6 +86,7 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::post('products/multiple-delete', 'Admin\ProductController@multipleDelete');
         Route::put('products/{product}/variants', 'Admin\ProductVariantController@updateVariants');
         Route::patch('products/variants/{productVariant:slug}/enable', 'Admin\ProductVariantController@toggleEnable');
+        /* products */
 
         Route::get('brands', 'Admin\BrandController@index');
         Route::post('brands', 'Admin\BrandController@store');
@@ -95,8 +100,6 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
 
         Route::get('promocodes', 'Admin\PromocodeController@index');
 
-        /* shop */
-
         Route::post('/register-device', 'Admin\UserController@registerToken');
 
         Route::post('excels/import/{type}', 'Excel\ExportImportController@import');
@@ -107,34 +110,9 @@ Route::group(['prefix' => 'v2/vendor', 'middleware' => ['cors', 'json.response']
         Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
         Route::get('reports/shop-orders/vendor/{shop}/product-sales', 'Report\ShopOrderController@getShopProductSaleReport');
 
-
         Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
 
         Route::get('shops/{shop}/commissions', 'Admin\CommissionController@getOneShopOrderCommissions');
         Route::get('restaurant-branches/{restaurantBranch}/commissions', 'Admin\CommissionController@getRestaurantBranchOrderCommissions');
     });
-});
-
-Route::group([
-    'prefix' => 'v3/vendor',
-    'namespace' => '\App\\Http\\Controllers\\Admin\\v3',
-    'middleware' => ['cors', 'json.response', 'auth:vendors', 'user.enable'],
-], function () {
-    Route::resource('shop-orders', 'ShopOrderController', ['as' => 'vendor-v3-shop', 'except' => ['create', 'edit']]);
-    Route::post('shop-orders/{shopOrder}/status', 'ShopOrderController@changeStatus');
-    Route::get('shops/{shop}/orders', 'ShopOrderController@getVendorOrders');
-    Route::delete('shop-order-items/{shopOrderItem}/cancel', 'ShopOrderController@cancelOrderItem');
-    Route::delete('shop-orders/{shopOrder}/shop-order-items/{shopOrderItem}/cancel', 'ShopOrderController@cancelOrderItem');
-
-    Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'vendor-v3-restaurant', 'except' => ['create', 'edit']]);
-    Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
-    Route::get('restaurant-branches/{restaurantBranch}/orders', 'RestaurantOrderController@getBranchOrders');
-    Route::delete('restaurant-order-items/{restaurantOrderItem}/cancel', 'RestaurantOrderController@cancelOrderItem');
-    Route::delete('restaurant-orders/{restaurantOrder}/restaurant-order-items/{restaurantOrderItem}/cancel', 'RestaurantOrderController@cancelOrderItem');
-
-    Route::put('menu-options/{menuOption}', 'MenuOptionController@update');
-    Route::delete('menu-options/{menuOption}', 'MenuOptionController@destroy');
-    Route::post('menu-option-items', 'MenuOptionItemController@store');
-    Route::put('menu-option-items/{menuOptionItem}', 'MenuOptionItemController@update');
-    Route::delete('menu-option-items/{menuOptionItem}', 'MenuOptionItemController@destroy');
 });

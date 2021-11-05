@@ -3,15 +3,12 @@
 namespace App\Http\Controllers\Admin\v3;
 
 use App\Events\DataChanged;
+use App\Helpers\v3\OrderHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Credit;
 use App\Models\Customer;
-use App\Models\RestaurantOrder;
-use App\Models\ShopOrder;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class CreditController extends Controller
 {
@@ -27,7 +24,7 @@ class CreditController extends Controller
     public function index(Customer $customer)
     {
         $credit = $customer->credit;
-        $credit->remaining_amount = $this->getRemainingCredit($customer);
+        $credit->remaining_amount = OrderHelper::getRemainingCredit($customer);
         return $customer->credit;
     }
 
@@ -54,35 +51,5 @@ class CreditController extends Controller
         $customer->credit()->delete();
 
         return response()->json(['message' => 'Successfully deleted.'], 200);
-    }
-
-    public function getRemainingCredit($customer)
-    {
-        $restaurantOrders = DB::table('restaurant_orders')
-            ->select('id', 'created_at', DB::raw("'restaurant' as source"))
-            ->where('customer_id', $customer->id)
-            ->where('payment_mode', 'Credit')
-            ->where('payment_status', 'success')
-            ->whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()]);
-
-        $orders = DB::table('shop_orders')
-            ->select('id', 'created_at', DB::raw("'shop' as source"))
-            ->where('customer_id', $customer->id)
-            ->where('payment_mode', 'Credit')
-            ->where('payment_status', 'success')
-            ->whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
-            ->union($restaurantOrders)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $totalUsage = $orders->map(function ($item) {
-            if ($item->source === 'restaurant') {
-                return RestaurantOrder::where('id', $item->id)->first();
-            } else {
-                return ShopOrder::where('id', $item->id)->first();
-            }
-        })->sum('total_amount');
-
-        return $customer->credit->amount - $totalUsage;
     }
 }
