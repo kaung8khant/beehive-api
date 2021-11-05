@@ -21,11 +21,11 @@ class RestaurantOrderController extends Controller
         if ($request->filterBy === 'orderDate') {
             $restaurantOrders =$restaurantOrders->whereBetween('order_date', [$request->from, $request->to])->get();
         } elseif ($request->filterBy === 'deliveredDate') {
-            $restaurantOrders =$restaurantOrders  ->whereHas('restaurantOrderStatuses', function ($query) use ($request) {
+            $restaurantOrders =$restaurantOrders->whereHas('restaurantOrderStatuses', function ($query) use ($request) {
                 $query->whereBetween('created_at', [$request->from, $request->to])->where('status', '=', 'delivered')->orderBy('created_at', 'desc');
             })->get();
         } else {
-            $restaurantOrders =$restaurantOrders  ->whereHas('restaurantOrderStatuses', function ($query) use ($request) {
+            $restaurantOrders =$restaurantOrders->whereHas('restaurantOrderStatuses', function ($query) use ($request) {
                 $query->whereBetween('created_at', [$request->from, $request->to])->where('status', '=', 'pickUp')->orderBy('created_at', 'desc');
             })->get();
         }
