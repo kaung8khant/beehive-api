@@ -4,6 +4,7 @@ namespace App\Exports\Sales;
 
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
+use App\Models\RestaurantOrderStatus;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
@@ -58,10 +59,15 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
             $this->commissionCtSum += $commissionCt;
             $this->balanceSum += $balance;
 
+            $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->orderBy('created_at', 'desc')->first();
+            $invoiceOrderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'pickUp')->orderBy('created_at', 'desc')->first();
+
             return [
                 $key + 1,
                 $order->invoice_id,
                 Carbon::parse($order->order_date)->format('M d Y h:i a'),
+                $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,
+                $invoiceOrderStatus ? Carbon::parse($invoiceOrderStatus->created_at)->format('M d Y h:i a') : null,
                 $restaurantBranch->restaurant->name,
                 $restaurantBranch->name,
                 $amount,
@@ -101,6 +107,8 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
                 'no.',
                 'invoice id',
                 'order date',
+                'deliverd date',
+                'invoice date',
                 'restaurant',
                 'branch',
                 'revenue',
@@ -130,21 +138,23 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
             'C' => 20,
             'D' => 15,
             'E' => 20,
-            'F' => 10,
-            'G' => 15,
-            'H' => 10,
+            'F' => 30,
+            'G' => 30,
+            'H' => 15,
             'I' => 15,
             'J' => 15,
             'K' => 15,
             'L' => 15,
             'M' => 17,
-            'N' => 10,
+            'N' => 15,
             'O' => 17,
             'P' => 17,
             'Q' => 20,
             'R' => 20,
-            'S' => 30,
-            'T' => 30,
+            'S' => 20,
+            'T' => 20,
+            'U' => 30,
+            'V' => 30,
         ];
     }
 
@@ -158,12 +168,14 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
             'C' => ['alignment' => ['horizontal' => 'center']],
             'D' => ['alignment' => ['horizontal' => 'center']],
             'E' => ['alignment' => ['horizontal' => 'center']],
-            'O' => ['alignment' => ['horizontal' => 'center']],
-            'P' => ['alignment' => ['horizontal' => 'center']],
+            'F' => ['alignment' => ['horizontal' => 'center']],
+            'G' => ['alignment' => ['horizontal' => 'center']],
             'Q' => ['alignment' => ['horizontal' => 'center']],
             'R' => ['alignment' => ['horizontal' => 'center']],
             'S' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
             'T' => ['alignment' => ['horizontal' => 'center']],
+            'U' => ['alignment' => ['horizontal' => 'center']],
+            'V' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -174,8 +186,6 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
     public function columnFormats(): array
     {
         return [
-            'F' => '#,##0',
-            'G' => '#,##0',
             'H' => '#,##0',
             'I' => '#,##0',
             'J' => '#,##0',
@@ -183,6 +193,8 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
             'L' => '#,##0',
             'M' => '#,##0',
             'N' => '#,##0',
+            'O' => '#,##0',
+            'P' => '#,##0',
         ];
     }
 
@@ -206,17 +218,17 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
             AfterSheet::class => function (AfterSheet $event) {
                 $lastRow = count($this->result) + 6 + 1;
 
-                $event->sheet->getStyle(sprintf('F%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('F%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('J%d:N%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('J%d:N%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('N%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('H%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('H%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('L%d:P%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('L%d:P%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('P%d', $lastRow))->getFont()->setBold(true);
 
-                $event->sheet->setCellValue(sprintf('F%d', $lastRow), $this->amountSum);
-                $event->sheet->setCellValue(sprintf('J%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('L%d', $lastRow), $this->commissionSum);
-                $event->sheet->setCellValue(sprintf('M%d', $lastRow), $this->commissionCtSum);
-                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->balanceSum);
+                $event->sheet->setCellValue(sprintf('H%d', $lastRow), $this->amountSum);
+                $event->sheet->setCellValue(sprintf('L%d', $lastRow), $this->totalAmountSum);
+                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->commissionSum);
+                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->commissionCtSum);
+                $event->sheet->setCellValue(sprintf('P%d', $lastRow), $this->balanceSum);
 
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
 
