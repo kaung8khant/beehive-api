@@ -43,7 +43,9 @@ class CartController extends Controller
         $distance = GeoHelper::calculateDistance($address['latitude'], $address['longitude'], $branch->latitude, $branch->longitude);
         $deliveryFee = $branch->free_delivery ? 0 : GeoHelper::calculateDeliveryFee($distance);
         $instantOrder = $distance < CacheHelper::getRestaurantSearchRadius() ? true : false;
+        $deliveryTime = GeoHelper::calculateDeliveryTime($distance);
         $branch->instant_order = $instantOrder;
+        $branch->delivery_time = $deliveryTime;
 
         return [
             'slug' => $menuCart->slug,
@@ -52,7 +54,7 @@ class CartController extends Controller
             'address' => $menuCart->address,
             'distance' => $distance,
             'instant_order' => $instantOrder,
-            'delivery_time' => GeoHelper::calculateDeliveryTime($distance),
+            'delivery_time' => $deliveryTime,
             'delivery_fee' => $deliveryFee,
             'promocode' => $menuCart->promocode,
             'sub_total' => $this->getSubTotal($menuCart->menuCartItems->pluck('menu')),
