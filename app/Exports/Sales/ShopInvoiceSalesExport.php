@@ -75,22 +75,31 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             $vendorIds = ShopOrderVendor::whereHas('shopOrder', function ($query) use ($order) {
                 $query->where('shop_order_id', $order->id);
             })->pluck('id')->toArray();
+            $orderStatus = ShopOrderStatus::where('status', 'delivered')
+            ->whereHas('vendor', function ($query) use ($vendorIds) {
+                $query->whereIn('id', $vendorIds);
+            })->latest('created_at')->first();
+            $invoiceOrderStatus = ShopOrderStatus::where('status', 'pickUp')
+            ->whereHas('vendor', function ($query) use ($vendorIds) {
+                $query->whereIn('id', $vendorIds);
+            })->latest('created_at')->first();
 
             if ($this->filterBy === 'deliveredDate') {
                 $orderStatus = ShopOrderStatus::where('status', 'delivered')->whereBetween('created_at', array($this->from, $this->to))->whereHas('vendor', function ($query) use ($vendorIds) {
                     $query->whereIn('id', $vendorIds);
                 })->latest('created_at')->first();
-            } else {
-                $orderStatus = ShopOrderStatus::where('status', 'delivered')
-                    ->whereHas('vendor', function ($query) use ($vendorIds) {
-                        $query->whereIn('id', $vendorIds);
-                    })->latest('created_at')->first();
+            }
+            if ($this->filterBy === 'invoiceDate') {
+                $invoiceOrderStatus = ShopOrderStatus::where('status', 'pickUp')->whereBetween('created_at', array($this->from, $this->to))->whereHas('vendor', function ($query) use ($vendorIds) {
+                    $query->whereIn('id', $vendorIds);
+                })->latest('created_at')->first();
             }
             return [
                 $key + 1,
                 $order->invoice_id,
                 Carbon::parse($order->order_date)->format('M d Y h:i a'),
                 $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,
+                $invoiceOrderStatus ? Carbon::parse($invoiceOrderStatus->created_at)->format('M d Y h:i a') : null,
                 $amount,
                 $order->order_status != 'cancelled' && $order->tax ? $order->tax : '0',
                 $order->order_status != 'cancelled' && $order->discount ? $order->discount : '0',
@@ -129,6 +138,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
                 'invoice id',
                 'order date',
                 'delivered date',
+                'invoice date',
                 'revenue',
                 'commercial tax',
                 'discount',
@@ -156,7 +166,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'C' => 20,
             'D' => 20,
             'E' => 20,
-            'F' => 15,
+            'F' => 20,
             'G' => 15,
             'H' => 15,
             'I' => 15,
@@ -170,6 +180,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'Q' => 20,
             'R' => 20,
             'S' => 20,
+            'T' => 20,
         ];
     }
 
@@ -182,13 +193,14 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'B' => ['alignment' => ['horizontal' => 'center']],
             'C' => ['alignment' => ['horizontal' => 'center']],
             'D' => ['alignment' => ['horizontal' => 'center']],
-            'M' => ['alignment' => ['horizontal' => 'center']],
+            'E' => ['alignment' => ['horizontal' => 'center']],
             'N' => ['alignment' => ['horizontal' => 'center']],
             'O' => ['alignment' => ['horizontal' => 'center']],
             'P' => ['alignment' => ['horizontal' => 'center']],
             'Q' => ['alignment' => ['horizontal' => 'center']],
             'R' => ['alignment' => ['horizontal' => 'center']],
             'S' => ['alignment' => ['horizontal' => 'right']],
+            'T' => ['alignment' => ['horizontal' => 'right']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -199,7 +211,6 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
     public function columnFormats(): array
     {
         return [
-            'E' => '#,##0',
             'F' => '#,##0',
             'G' => '#,##0',
             'H' => '#,##0',
@@ -207,6 +218,7 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             'J' => '#,##0',
             'K' => '#,##0',
             'L' => '#,##0',
+            'M' => '#,##0',
         ];
     }
 
@@ -230,17 +242,17 @@ class ShopInvoiceSalesExport extends DefaultValueBinder implements FromCollectio
             AfterSheet::class => function (AfterSheet $event) {
                 $lastRow = count($this->result) + 6 + 1;
 
-                $event->sheet->getStyle(sprintf('E%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('E%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('I%d:L%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('I%d:L%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('L%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('F%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('F%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('J%d:M%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('J%d:M%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('M%d', $lastRow))->getFont()->setBold(true);
 
-                $event->sheet->setCellValue(sprintf('E%d', $lastRow), $this->amountSum);
-                $event->sheet->setCellValue(sprintf('I%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('J%d', $lastRow), $this->commissionSum);
-                $event->sheet->setCellValue(sprintf('K%d', $lastRow), $this->commissionCtSum);
-                $event->sheet->setCellValue(sprintf('L%d', $lastRow), $this->balanceSum);
+                $event->sheet->setCellValue(sprintf('F%d', $lastRow), $this->amountSum);
+                $event->sheet->setCellValue(sprintf('J%d', $lastRow), $this->totalAmountSum);
+                $event->sheet->setCellValue(sprintf('K%d', $lastRow), $this->commissionSum);
+                $event->sheet->setCellValue(sprintf('L%d', $lastRow), $this->commissionCtSum);
+                $event->sheet->setCellValue(sprintf('M%d', $lastRow), $this->balanceSum);
 
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
 
