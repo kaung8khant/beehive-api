@@ -15,3 +15,5 @@ php artisan jwt:secret
 php artisan serve
 
 php artisan serve
+
+php artisan scout:sync -n
