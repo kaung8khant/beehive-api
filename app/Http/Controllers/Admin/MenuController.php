@@ -426,7 +426,7 @@ class MenuController extends Controller
                 $query->select('id', 'slug', 'name');
             },
             'menuVariants' => function ($query) {
-                $query->select('menu_id', 'slug', 'variant', 'price', 'discount','tax')
+                $query->select('menu_id', 'slug', 'variant', 'price', 'discount', 'tax')
                     ->where('is_enable', 1)
                     ->orderBy('price', 'asc');
             },

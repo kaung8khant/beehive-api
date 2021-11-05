@@ -10,9 +10,10 @@ use App\Helpers\CollectionHelper;
 use App\Helpers\OrderAssignHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
-use App\Helpers\RestaurantOrderHelper as OrderHelper;
+use App\Helpers\RestaurantOrderHelper;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
+use App\Helpers\v3\OrderHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Customer;
@@ -83,14 +84,14 @@ class RestaurantOrderController extends Controller
     {
         try {
             $request['slug'] = $this->generateUniqueSlug();
-            $validatedData = OrderHelper::validateOrderV3($request, true);
+            $validatedData = RestaurantOrderHelper::validateOrderV3($request, true);
 
             if (gettype($validatedData) == 'string') {
                 return $this->generateResponse($validatedData, 422, true);
             }
 
             try {
-                $validatedData = OrderHelper::prepareRestaurantVariants($validatedData);
+                $validatedData = RestaurantOrderHelper::prepareRestaurantVariants($validatedData);
             } catch (ForbiddenException $e) {
                 return $this->generateResponse($e->getMessage(), 403, true);
             } catch (BadRequestException $e) {
@@ -106,8 +107,19 @@ class RestaurantOrderController extends Controller
                 }
             }
 
+            if ($validatedData['payment_mode'] === 'Credit') {
+                $totalAmount = OrderHelper::getTotalAmount($validatedData['order_items'], isset($validatedData['promocode_amount']) ? $validatedData['promocode_amount'] : 0) + $validatedData['delivery_fee'];
+                $remainingCredit = OrderHelper::getRemainingCredit($customer);
+
+                if ($totalAmount > $remainingCredit) {
+                    return $this->generateResponse('Insufficient credit.', 403, true);
+                }
+
+                $validatedData['payment_status'] = 'success';
+            }
+
             $paymentData = [];
-            if ($validatedData['payment_mode'] !== 'COD') {
+            if (!in_array($validatedData['payment_mode'], ['COD', 'Credit'])) {
                 try {
                     $paymentData = $this->paymentService->createTransaction($validatedData, 'restaurant');
                 } catch (ServerException $e) {
@@ -127,10 +139,13 @@ class RestaurantOrderController extends Controller
             return $this->generateResponse($order, 201);
         } catch (\Exception $e) {
             $url = explode('/', $request->path());
-            $auth = $url[2] === 'admin' ? 'Admin' : 'Vendor';
-            $phoneNumber = Customer::where('slug', $request->customer_slug)->value('phone_number');
 
-            Log::critical($auth . ' restaurant order ' . $url[1] . ' error: ' . $phoneNumber);
+            if ($url[2] === 'admin' || $url[2] === 'vendor') {
+                $auth = $url[2] === 'admin' ? 'Admin' : 'Vendor';
+                $phoneNumber = Customer::where('slug', $request->customer_slug)->value('phone_number');
+                Log::critical($auth . ' restaurant order ' . $url[1] . ' error: ' . $phoneNumber);
+            }
+
             throw $e;
         }
     }
@@ -152,7 +167,7 @@ class RestaurantOrderController extends Controller
         $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
-        OrderHelper::createOrderStatus($restaurantOrder->id, 'cancelled');
+        RestaurantOrderHelper::createOrderStatus($restaurantOrder->id, 'cancelled');
 
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
@@ -185,9 +200,9 @@ class RestaurantOrderController extends Controller
     {
         $order = DB::transaction(function () use ($validatedData) {
             $order = RestaurantOrder::create($validatedData);
-            OrderHelper::createOrderStatus($order->id);
-            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
-            OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
+            RestaurantOrderHelper::createOrderStatus($order->id);
+            RestaurantOrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            RestaurantOrderHelper::createOrderItems($order->id, $validatedData['order_items']);
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
         });
 
@@ -195,7 +210,7 @@ class RestaurantOrderController extends Controller
         event(new OrderAssignEvent($order, [], 0));
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::notifySystem($order, $phoneNumber, $this->messageService);
+        RestaurantOrderHelper::notifySystem($order, $phoneNumber, $this->messageService);
 
         return $order;
     }
@@ -215,10 +230,10 @@ class RestaurantOrderController extends Controller
             }
         }
 
-        OrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
+        RestaurantOrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
 
         $restaurantOrder['order_status'] = $request->status;
-        OrderHelper::sendPushNotifications($restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);
+        RestaurantOrderHelper::sendPushNotifications($restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);
 
         if ($request->status === 'cancelled') {
             $message = 'Your order has been cancelled.';

@@ -6,7 +6,6 @@ use App\Models\Promocode;
 use App\Models\ShopOrder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 trait PromocodeHelper
 {
@@ -38,7 +37,7 @@ trait PromocodeHelper
         $total = 0;
 
         foreach ($promocode->rules as $data) {
-            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category","menu","product", "before_date", "after_date"))) {
+            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category", "menu", "product", "before_date", "after_date"))) {
                 $isItemRule = true;
                 foreach ($orderItems as $item) {
                     if ($promocode->type === 'fix') {

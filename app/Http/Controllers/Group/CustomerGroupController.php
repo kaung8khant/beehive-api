@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Group;
 
+use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerGroup;
-use Propaganistas\LaravelPhone\PhoneNumber;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class CustomerGroupController extends Controller
@@ -17,11 +16,12 @@ class CustomerGroupController extends Controller
 
     public function index(Request $request)
     {
-        return CustomerGroup::with('customers')
-            ->where('name', 'LIKE', '%' . $request->filter . '%')
+        $customerGroups = CustomerGroup::where('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('description', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->paginate(10);
+
+        return CollectionHelper::removePaginateLinks($customerGroups);
     }
 
     public function store(Request $request)
@@ -31,42 +31,41 @@ class CustomerGroupController extends Controller
         return response()->json($group, 201);
     }
 
-    public function show($slug)
+    public function show(CustomerGroup $customerGroup)
     {
-        return CustomerGroup::with('customers')->where('slug', $slug)->firstOrFail();
+        return $customerGroup;
     }
 
-    public function update(Request $request, $slug)
+    public function update(Request $request, CustomerGroup $customerGroup)
     {
-        $group = $this->show($slug);
-        $group->update($this->validateGroup($request, $group->id));
-        return $group;
+        $customerGroup->update($this->validateGroup($request, $customerGroup->id));
+        return $customerGroup;
     }
 
-    public function destroy($slug)
+    public function destroy(CustomerGroup $customerGroup)
     {
-        $this->show($slug)->delete();
+        $customerGroup->delete();
         return response()->json(['message' => 'successfully deleted.'], 200);
     }
 
-    public function addCustomersToGroup(Request $request, $slug)
+    public function addCustomersToGroup(Request $request, CustomerGroup $customerGroup)
     {
-        $group = $this->show($slug);
         $this->validateCustomers($request);
 
         $customerIds = $this->getCustomerIds($request->customer_slugs);
-        $group->customers()->detach($customerIds);
-        $group->customers()->attach($customerIds);
+        $customerGroup->customers()->detach($customerIds);
+        $customerGroup->customers()->attach($customerIds);
+
         return response()->json(['message' => 'The selected customers have been added to the group.'], 200);
     }
 
-    public function removeCustomersFromGroup(Request $request, $slug)
+    public function removeCustomersFromGroup(Request $request, CustomerGroup $customerGroup)
     {
-        $group = $this->show($slug);
         $this->validateCustomers($request);
 
         $customerIds = $this->getCustomerIds($request->customer_slugs);
-        $group->customers()->detach($customerIds);
+        $customerGroup->customers()->detach($customerIds);
+
         return response()->json(['message' => 'The selected customers have been removed from the group.'], 200);
     }
 
@@ -99,17 +98,5 @@ class CustomerGroupController extends Controller
         return collect($slugs)->map(function ($slug) {
             return Customer::where('slug', $slug)->value('id');
         });
-    }
-
-    public function getCustomersByGroup(Request $request, $slug)
-    {
-        return Customer::whereHas('customerGroups', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        })->where(function ($q) use ($request) {
-            $q->where('email', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-                ->orWhere('slug', $request->filter);
-        })->paginate(10);
     }
 }

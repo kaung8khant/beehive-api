@@ -319,7 +319,7 @@ class ProductController extends Controller
                 $query->select('id', 'slug', 'name');
             },
             'productVariants' => function ($query) {
-                $query->select('product_id', 'slug', 'variant', 'price', 'discount', 'vendor_price','tax')
+                $query->select('product_id', 'slug', 'variant', 'price', 'discount', 'vendor_price', 'tax')
                     ->where('is_enable', 1)
                     ->orderBy('price', 'asc');
             },
