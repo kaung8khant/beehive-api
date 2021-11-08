@@ -31,7 +31,7 @@ class RestaurantBranchController extends Controller
 
             $restaurantBranches = $this->getBranches($request)->whereIn('restaurant_id', $restaurantIds)->paginate($request->size);
 
-            KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter);
+            KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter, 'restaurant');
         } else {
             $restaurantBranches = $this->getBranches($request)->paginate($request->size);
         }
