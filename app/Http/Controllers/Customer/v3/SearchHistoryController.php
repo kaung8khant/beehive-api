@@ -22,9 +22,10 @@ class SearchHistoryController extends Controller
         }
 
         $histories = $histories->orderBy('updated_at', 'desc')
-            ->groupBy('keyword')
             ->limit($request->size ? $request->size : 10)
-            ->get();
+            ->get()
+            ->unique()
+            ->values();
 
         return $this->generateResponse($histories, 200);
     }
