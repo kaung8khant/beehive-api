@@ -162,7 +162,6 @@ class HomeController extends Controller
             'products' => $this->searchProduct($request, true),
         ];
 
-        KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->keyword);
         return $this->generateResponse($result, 200);
     }
 
@@ -189,11 +188,12 @@ class HomeController extends Controller
             $branch->restaurant->availableTags->makeHidden(['created_by', 'updated_by']);
         }
 
+        KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->keyword, 'restaurant');
+
         if ($homeSearch) {
             return $this->generateBranchResponse($restaurantBranches, 200, 'home');
         }
 
-        KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->keyword);
         return $this->generateBranchResponse($restaurantBranches, 200);
     }
 
@@ -254,11 +254,12 @@ class HomeController extends Controller
         $products->makeHidden(['description', 'variants', 'created_by', 'updated_by', 'covers']);
         $products = $products->items();
 
+        KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->keyword, 'shop');
+
         if ($homeSearch) {
             return $this->generateProductResponse($products, 200, 'home');
         }
 
-        KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->keyword);
         return $this->generateProductResponse($products, 200);
     }
 

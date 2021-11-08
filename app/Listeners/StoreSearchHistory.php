@@ -29,16 +29,19 @@ class StoreSearchHistory
             $history = SearchHistory::where('keyword', $event->keyword)
                 ->where('customer_id', $event->customerId)
                 ->where('device_id', $event->deviceId)
+                ->where('type', $event->type)
                 ->first();
         } else if ($event->customerId && !$event->deviceId) {
             $history = SearchHistory::where('keyword', $event->keyword)
                 ->where('customer_id', $event->customerId)
                 ->whereNull('device_id')
+                ->where('type', $event->type)
                 ->first();
         } else if (!$event->customerId && $event->deviceId) {
             $history = SearchHistory::where('keyword', $event->keyword)
-                ->where('device_id', $event->deviceId)
                 ->whereNull('customer_id')
+                ->where('device_id', $event->deviceId)
+                ->where('type', $event->type)
                 ->first();
         }
 
@@ -47,17 +50,13 @@ class StoreSearchHistory
                 $history->hit_count += 1;
                 $history->save();
             } else {
-                $this->createSearchHistory($event->customerId, $event->deviceId, $event->keyword);
+                SearchHistory::create([
+                    'customer_id' => $event->customerId,
+                    'device_id' => $event->deviceId,
+                    'keyword' => $event->keyword,
+                    'type' => $event->type,
+                ]);
             }
         }
-    }
-
-    private function createSearchHistory($customerId, $deviceId, $keyword)
-    {
-        SearchHistory::create([
-            'customer_id' => $customerId,
-            'device_id' => $deviceId,
-            'keyword' => $keyword,
-        ]);
     }
 }
