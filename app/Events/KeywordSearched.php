@@ -14,17 +14,19 @@ class KeywordSearched
     public $customerId;
     public $deviceId;
     public $keyword;
+    public $type;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($customerId, $deviceId, $keyword)
+    public function __construct($customerId, $deviceId, $keyword, $type)
     {
         $this->customerId = $customerId;
         $this->deviceId = $deviceId;
         $this->keyword = $keyword;
+        $this->type = $type;
     }
 
     /**
