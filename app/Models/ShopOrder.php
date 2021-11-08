@@ -24,7 +24,7 @@ class ShopOrder extends BaseModel
         'commission' => 'float',
     ];
 
-    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount'];
+    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount','invoice_date'];
 
     public function getInvoiceIdAttribute()
     {
@@ -86,6 +86,22 @@ class ShopOrder extends BaseModel
 
         $totalAmount = $totalAmount - $this->promocode_amount;
         return $totalAmount < 0 ? 0 : $totalAmount;
+    }
+
+    public function getInvoiceDateAttribute()
+    {
+        $vendorIds = ShopOrderVendor::whereHas('shopOrder', function ($query) {
+            $query->where('shop_order_id', $this->id);
+        })->pluck('id')->toArray();
+
+        $orderStatus = ShopOrderStatus::where('status', 'pickUp')
+        ->whereHas('vendor', function ($query) use ($vendorIds) {
+            $query->whereIn('id', $vendorIds);
+        })->latest('created_at')->first();
+
+        $invoiceDate =$orderStatus ? $orderStatus->created_at : null;
+
+        return $invoiceDate;
     }
 
     public function contact()

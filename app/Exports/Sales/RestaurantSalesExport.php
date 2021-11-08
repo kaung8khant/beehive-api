@@ -45,21 +45,24 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
 
     public function collection()
     {
-        if ($this->filterBy === 'orderDate') {
-            $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
-            ->whereBetween('order_date', [$this->from, $this->to])
+        $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
             ->orderBy('restaurant_id')
             ->orderBy('restaurant_branch_id')
-            ->orderBy('id')
-            ->get();
-        } else {
-            $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
+            ->orderBy('id');
+        if ($this->filterBy === 'orderDate') {
+            $restaurantOrders =  $restaurantOrders
+                ->whereBetween('order_date', [$this->from, $this->to])
+                ->get();
+        } elseif ($this->filterBy === 'deliveredDate') {
+            $restaurantOrders =  $restaurantOrders
                 ->whereHas('restaurantOrderStatuses', function ($query) {
                     $query->whereBetween('created_at', [$this->from, $this->to])->where('status', '=', 'delivered')->orderBy('created_at', 'desc');
-                })                ->orderBy('restaurant_id')
-                ->orderBy('restaurant_branch_id')
-                ->orderBy('id')
-                ->get();
+                })->get();
+        } else {
+            $restaurantOrders =  $restaurantOrders
+            ->whereHas('restaurantOrderStatuses', function ($query) {
+                $query->whereBetween('created_at', [$this->from, $this->to])->where('status', '=', 'pickUp')->orderBy('created_at', 'desc');
+            })->get();
         }
 
         $this->result = $restaurantOrders->map(function ($order, $key) {
@@ -77,10 +80,14 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
             $this->commissionCtSum += $commissionCt;
             $this->balanceSum += $balance;
 
+            $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->orderBy('created_at', 'desc')->first();
+            $invoiceOrderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'pickUp')->orderBy('created_at', 'desc')->first();
+
             if ($this->filterBy === 'deliveredDate') {
                 $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->whereBetween('created_at', array($this->from, $this->to))->orderBy('created_at', 'desc')->first();
-            } else {
-                $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->orderBy('created_at', 'desc')->first();
+            }
+            if ($this->filterBy === 'invoiceDate') {
+                $invoiceOrderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'pickUp')->whereBetween('created_at', array($this->from, $this->to))->orderBy('created_at', 'desc')->first();
             }
 
             return [
@@ -88,6 +95,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
                 $order->invoice_id,
                 Carbon::parse($order->order_date)->format('M d Y h:i a'),
                 $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,
+                $invoiceOrderStatus ? Carbon::parse($invoiceOrderStatus->created_at)->format('M d Y h:i a') : null,
                 $restaurant->name,
                 RestaurantBranch::where('id', $order->restaurant_branch_id)->value('name'),
                 $amount,
@@ -130,6 +138,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
                 'invoice id',
                 'order date',
                 'deliverd date',
+                'invoice date',
                 'restaurant',
                 'branch',
                 'revenue',
@@ -160,11 +169,11 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
             'B' => 12,
             'C' => 20,
             'D' => 20,
-            'E' => 30,
+            'E' => 20,
             'F' => 30,
-            'G' => 15,
+            'G' => 30,
             'H' => 20,
-            'I' => 15,
+            'I' => 20,
             'J' => 15,
             'K' => 15,
             'L' => 15,
@@ -179,6 +188,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
             'U' => 20,
             'V' => 20,
             'W' => 20,
+            'X' => 20,
         ];
     }
 
@@ -193,7 +203,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
             'D' => ['alignment' => ['horizontal' => 'center']],
             'E' => ['alignment' => ['horizontal' => 'center']],
             'F' => ['alignment' => ['horizontal' => 'center']],
-            'P' => ['alignment' => ['horizontal' => 'center']],
+            'G' => ['alignment' => ['horizontal' => 'center']],
             'Q' => ['alignment' => ['horizontal' => 'center']],
             'R' => ['alignment' => ['horizontal' => 'center']],
             'S' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
@@ -201,6 +211,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
             'U' => ['alignment' => ['horizontal' => 'center']],
             'V' => ['alignment' => ['horizontal' => 'right']],
             'W' => ['alignment' => ['horizontal' => 'right']],
+            'X' => ['alignment' => ['horizontal' => 'right']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -211,7 +222,6 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
     public function columnFormats(): array
     {
         return [
-            'G' => '#,##0',
             'H' => '#,##0',
             'I' => '#,##0',
             'J' => '#,##0',
@@ -220,6 +230,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
             'M' => '#,##0',
             'N' => '#,##0',
             'O' => '#,##0',
+            'P' => '#,##0',
         ];
     }
 
@@ -243,17 +254,17 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
             AfterSheet::class => function (AfterSheet $event) {
                 $lastRow = count($this->result) + 6 + 1;
 
-                $event->sheet->getStyle(sprintf('G%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('G%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('K%d:O%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('K%d:O%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('O%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('H%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('H%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('L%d:P%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('L%d:P%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('P%d', $lastRow))->getFont()->setBold(true);
 
-                $event->sheet->setCellValue(sprintf('G%d', $lastRow), $this->amountSum);
-                $event->sheet->setCellValue(sprintf('K%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('M%d', $lastRow), $this->commissionSum);
-                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->commissionCtSum);
-                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->balanceSum);
+                $event->sheet->setCellValue(sprintf('H%d', $lastRow), $this->amountSum);
+                $event->sheet->setCellValue(sprintf('L%d', $lastRow), $this->totalAmountSum);
+                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->commissionSum);
+                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->commissionCtSum);
+                $event->sheet->setCellValue(sprintf('P%d', $lastRow), $this->balanceSum);
 
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
 
