@@ -22,7 +22,7 @@ class SearchHistoryController extends Controller
         }
 
         $histories = $histories->orderBy('updated_at', 'desc')
-            ->distinct()
+            ->groupBy('keyword')
             ->limit($request->size ? $request->size : 10)
             ->get();
 
