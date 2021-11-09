@@ -50,7 +50,7 @@ class PromocodeUsedCustomerExport implements FromCollection, WithColumnFormattin
             $totalAmount = 0;
             $totalPromoDiscount = 0;
             foreach ($orders as $order) {
-                $totalAmount += $order->total_amount;
+                $totalAmount +=  ($order->tax+$order->amount);
                 $totalPromoDiscount += $order->promocode_amount ? $order->promocode_amount : '0';
             }
             $this->key += 1;
