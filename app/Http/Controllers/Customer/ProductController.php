@@ -40,7 +40,7 @@ class ProductController extends Controller
                 ->where('is_shop_enable', 1)
                 ->paginate($request->size);
 
-            KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter);
+            KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter, 'shop');
         } else {
             $products = Product::select(CollectionHelper::selectExclusiveColumns('products'))
                 ->join('product_variants as pv', function ($query) {

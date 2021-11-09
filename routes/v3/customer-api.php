@@ -27,12 +27,14 @@ Route::group([
     Route::get('brands/{brand}/categories', 'Shop\ShopCategoryController@getByBrand');
     Route::get('shops/{shop}/categories', 'Shop\ShopCategoryController@getByShop');
 
+    Route::get('products', 'Shop\ProductController@index');
     Route::get('shops/{shop}/products/arrivals', 'Shop\ProductController@getNewArrivalsByShop');
     Route::get('brands/{brand}/categories/{category}/products', 'Shop\ProductController@getByBrandAndCategory');
     /* Shop */
 
     /* Restaurant */
     Route::get('restaurants/branches', 'Restaurant\RestaurantBranchController@index');
+    Route::get('restaurants/branches/{restaurantBranch}/menus', 'Restaurant\MenuController@getAvailableMenusByBranch');
     /* Restaurant */
 
     /* Ads */
@@ -41,4 +43,5 @@ Route::group([
     /* Ads */
 
     Route::get('histories/search', 'SearchHistoryController@index');
+    Route::post('histories/clear', 'SearchHistoryController@clearHistory');
 });
