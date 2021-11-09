@@ -61,6 +61,8 @@ return [
 
         'product-price-book' => 'ProductPriceBookExport',
         'menu-price-book' => 'MenuPriceBookExport',
+
+        'customer-credit-sales' => 'Sales\CustomerCreditSalesExport',
     ],
     'name' => [
         'restaurant-vendor-sales',

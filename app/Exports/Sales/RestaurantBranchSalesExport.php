@@ -83,7 +83,7 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
                 $order->payment_status,
                 $order->payment_reference,
                 $order->order_status,
-                $order->delivery_mode,
+                $order->order_type,
                 $order->special_instruction,
             ];
         });
