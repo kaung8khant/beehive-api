@@ -49,7 +49,7 @@ class UserAuthController extends Controller
             }
 
             $adminRole = $user->roles->contains(function ($role) {
-                return $role->name === 'Admin' || $role->name === 'SuperAdmin' || $role->name === "Logistics" || $role->name === "Driver";
+                return $role->name === 'Admin' || $role->name === 'SuperAdmin' || $role->name === "Logistics" || $role->name === "Driver" || $role->name === "Marketing";
             });
 
             if (!$adminRole) {
