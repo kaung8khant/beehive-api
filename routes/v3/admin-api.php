@@ -7,6 +7,10 @@ Route::group([
     'namespace' => '\App\\Http\\Controllers\\Admin\\v3',
     'middleware' => ['cors', 'json.response', 'auth:users', 'user.enable'],
 ], function () {
+    /* Shop Main Category */
+    Route::resource('shop-main-categories', 'ShopMainCategoryController', ['as' => 'admin-v3-shop-main-category', 'except' => ['create', 'edit']]);
+    /* Shop Main Category */
+
     /* Restaurant Order */
     Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'admin-v3-restaurant', 'except' => ['create', 'edit']]);
     Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
