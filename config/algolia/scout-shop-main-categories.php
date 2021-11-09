@@ -18,8 +18,7 @@ return [
 
     'searchableAttributes' => [
         'slug',
-        'name',
-        'shop_main_category_name',
+        'name'
     ],
 
     /*
@@ -83,7 +82,7 @@ return [
     |
     */
 
-    'attributesForFaceting' => ['shop_main_category_name'],
+    'attributesForFaceting' => null,
 
     /*
     |--------------------------------------------------------------------------

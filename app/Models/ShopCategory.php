@@ -16,6 +16,7 @@ class ShopCategory extends BaseModel
 
     protected $hidden = [
         'id',
+        'shop_main_category_id',
         'created_at',
         'updated_at',
         'pivot',
@@ -40,6 +41,8 @@ class ShopCategory extends BaseModel
     {
         $array = $this->toArray();
         $array['id'] = $this->id;
+        $array['shop_main_category_id'] = $this->shopMainCategory ? $this->shopMainCategory->id : null;
+        $array['shop_main_category_name'] = $this->shopMainCategory ? $this->shopMainCategory->name : null;
         return $array;
     }
 
@@ -50,6 +53,11 @@ class ShopCategory extends BaseModel
             ->where('type', 'image')
             ->whereIn('extension', ['png', 'jpg'])
             ->get();
+    }
+
+    public function shopMainCategory()
+    {
+        return $this->belongsTo(ShopMainCategory::class);
     }
 
     public function shopSubCategories()

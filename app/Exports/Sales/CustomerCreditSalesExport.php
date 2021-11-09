@@ -2,11 +2,11 @@
 
 namespace App\Exports\Sales;
 
-use App\Models\Promocode;
+use App\Models\Customer;
 use App\Models\RestaurantOrder;
 use App\Models\ShopOrder;
-use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithDrawings;
@@ -18,14 +18,15 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormatting, WithColumnWidths, WithDrawings, WithEvents, WithHeadings, WithStyles, WithTitle
+class CustomerCreditSalesExport implements FromCollection, WithColumnFormatting, WithColumnWidths, WithDrawings, WithEvents, WithHeadings, WithStyles, WithTitle
 {
+    protected $param;
     protected $from;
     protected $to;
 
     protected $result;
+    protected $amountSum;
     protected $totalAmountSum;
-    protected $totalPromoDiscount;
 
     public function __construct($param, $from, $to)
     {
@@ -36,29 +37,36 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
 
     public function collection()
     {
-        $promocode = Promocode::where('slug', $this->param)->first();
-        $shopOrders = ShopOrder::where('promocode_id', $promocode->id)
-            ->whereBetween('order_date', [$this->from, $this->to])
-            ->get();
-        $restaurantOrders = RestaurantOrder::where('promocode_id', $promocode->id)
-            ->whereBetween('order_date', [$this->from, $this->to])
-            ->get();
-        $orderList = collect($shopOrders)->merge($restaurantOrders);
+        $customer = Customer::where('slug', $this->param)->first();
 
-        $this->result = $orderList->map(function ($order, $key) {
-            $totalAmount = $order->order_status == 'cancelled' ? '0' :  ($order->tax+$order->amount);
-            $this->totalPromoDiscount += $order->order_status == 'cancelled' && $order->promocode_amount ? $order->promocode_amount : '0';
+        $shopOrders = ShopOrder::where('customer_id', $customer->id)
+            ->where('payment_mode', 'Credit')
+            ->whereBetween('order_date', [$this->from, $this->to])
+            ->get();
+        $restaurantOrders = RestaurantOrder::where('customer_id', $customer->id)->where('payment_mode', 'Credit')
+            ->whereBetween('order_date', [$this->from, $this->to])
+            ->get();
+        $orders = collect($shopOrders)->merge($restaurantOrders);
+
+        $this->result = $orders->map(function ($order, $key) {
+            $amount = $order->order_status == 'cancelled' ? '0' : $order->amount;
+            $totalAmount = $order->order_status == 'cancelled' ? '0' : $order->total_amount;
+
+            $this->amountSum += $amount;
             $this->totalAmountSum += $totalAmount;
 
             return [
                 $key + 1,
                 $order->invoice_id,
                 Carbon::parse($order->order_date)->format('M d Y h:i a'),
+                $amount,
+                $order->order_status != 'cancelled' && $order->tax ? $order->tax : '0',
+                $order->order_status != 'cancelled' && $order->discount ? $order->discount : '0',
                 $order->order_status != 'cancelled' && $order->promocode_amount ? $order->promocode_amount : '0',
                 $totalAmount,
-                $order->payment_mode,
-                $order->payment_status,
                 $order->order_status,
+                $order->order,
+                $order->special_instruction,
             ];
         });
 
@@ -81,11 +89,13 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
                 'no.',
                 'invoice id',
                 'order date',
+                'revenue',
+                'commercial tax',
+                'discount',
                 'promo discount',
                 "total amount\n(tax inclusive)",
-                'payment mode',
-                'payment status',
                 'order status',
+                "type\n(deli/self pick up)",
                 'special instructions',
             ],
         ];
@@ -94,15 +104,17 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
     public function columnWidths(): array
     {
         return [
-            'A' => 10,
-            'B' => 20,
+            'A' => 15,
+            'B' => 12,
             'C' => 20,
-            'D' => 20,
+            'D' => 15,
             'E' => 20,
             'F' => 20,
             'G' => 20,
             'H' => 20,
-            'I' => 30,
+            'I' => 15,
+            'J' => 20,
+            'K' => 30,
         ];
     }
 
@@ -114,10 +126,9 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
             'A' => ['alignment' => ['horizontal' => 'center']],
             'B' => ['alignment' => ['horizontal' => 'center']],
             'C' => ['alignment' => ['horizontal' => 'center']],
-            'F' => ['alignment' => ['horizontal' => 'center']],
-            'G' => ['alignment' => ['horizontal' => 'center']],
-            'H' => ['alignment' => ['horizontal' => 'center']],
             'I' => ['alignment' => ['horizontal' => 'center']],
+            'J' => ['alignment' => ['horizontal' => 'center']],
+            'K' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -128,8 +139,15 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
     public function columnFormats(): array
     {
         return [
-            'D' => '#,##0',
-            'E' => '#,##0',
+            'H' => '#,##0',
+            'I' => '#,##0',
+            'J' => '#,##0',
+            'K' => '#,##0',
+            'L' => '#,##0',
+            'M' => '#,##0',
+            'N' => '#,##0',
+            'O' => '#,##0',
+            'P' => '#,##0',
         ];
     }
 
@@ -153,12 +171,14 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
             AfterSheet::class => function (AfterSheet $event) {
                 $lastRow = count($this->result) + 6 + 1;
 
-                $event->sheet->getStyle(sprintf('D%d:E%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('D%d:E%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('E%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('D%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('D%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('H%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('H%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('H%d', $lastRow))->getFont()->setBold(true);
 
-                $event->sheet->setCellValue(sprintf('D%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('E%d', $lastRow), $this->totalPromoDiscount);
+                $event->sheet->setCellValue(sprintf('D%d', $lastRow), $this->amountSum);
+                $event->sheet->setCellValue(sprintf('H%d', $lastRow), $this->totalAmountSum);
 
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
 
@@ -177,6 +197,6 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
 
     public function title(): string
     {
-        return 'Promocode Invoice Sales report';
+        return 'Credit Sales report';
     }
 }

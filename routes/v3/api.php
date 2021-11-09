@@ -19,7 +19,6 @@ Route::group([
     Route::delete('restaurants/carts/promocode', 'Cart\RestaurantCartController@removePromocode');
 
     Route::put('restaurants/carts/address', 'Cart\RestaurantCartController@updateAddress');
-    Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
     /* Restaurant Cart */
 
     /* Shop Cart */
@@ -33,8 +32,14 @@ Route::group([
     Route::delete('shops/carts/promocode', 'Cart\ShopCartController@removePromocode');
 
     Route::put('shops/carts/address', 'Cart\ShopCartController@updateAddress');
-    Route::post('shops/carts/checkout', 'Cart\ShopCartController@checkout');
     /* Shop Cart */
+
+    /* Cart Checkout */
+    Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
+        Route::post('restaurants/carts/checkout', 'Cart\RestaurantCartController@checkout');
+        Route::post('shops/carts/checkout', 'Cart\ShopCartController@checkout');
+    });
+    /* Cart Checkout */
 
     Route::get('versions', 'SettingsController@getAppVersions');
 
