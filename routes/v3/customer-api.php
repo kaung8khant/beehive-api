@@ -19,6 +19,8 @@ Route::group([
         Route::post('promocode/validate', 'PromocodeController@validatePromoCode');
     });
 
+    Route::get('shop-main-categories', 'Shop\ShopMainCategoryController@index');
+
     /* Shop */
     Route::get('brands', 'Shop\BrandController@getAllBrands');
 
