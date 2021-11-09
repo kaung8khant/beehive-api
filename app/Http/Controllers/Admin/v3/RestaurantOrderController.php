@@ -274,12 +274,16 @@ class RestaurantOrderController extends Controller
 
     public function cancelOrderItem(RestaurantOrder $restaurantOrder, RestaurantOrderItem $restaurantOrderItem)
     {
-        $restaurantOrderItem->delete();
-        $restaurantOrder = RestaurantOrder::where('slug', $restaurantOrder->slug)->first();
-        $commission = $restaurantOrder->amount * $restaurantOrder->restaurant->commission * 0.01;
-        $restaurantOrder->update(['commission' => $commission]);
+        if ($restaurantOrder->promocode) {
+            return $this->generateResponse('Sorry, promocode used order item cannot be cancelled.', 403, true);
+        } else {
+            $restaurantOrderItem->delete();
+            $restaurantOrder = RestaurantOrder::where('slug', $restaurantOrder->slug)->first();
+            $commission = $restaurantOrder->amount * $restaurantOrder->restaurant->commission * 0.01;
+            $restaurantOrder->update(['commission' => $commission]);
 
-        return response()->json(['message' => 'Successfully cancelled.'], 200);
+            return response()->json(['message' => 'Successfully cancelled.'], 200);
+        }
     }
 
     public function updatePayment(Request $request, RestaurantOrder $restaurantOrder)
