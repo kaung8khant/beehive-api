@@ -14,12 +14,29 @@ class SearchHistoryController extends Controller
     public function index(Request $request)
     {
         $histories = DB::table('search_histories')
-            ->select('keyword', 'created_at')
-            ->where('device_id', $request->device_id)
-            ->orderBy('updated_at', 'desc')
+            ->select('keyword')
+            ->where('device_id', $request->device_id);
+
+        if ($request->type) {
+            $histories = $histories->where('type', $request->type);
+        }
+
+        $histories = $histories->orderBy('updated_at', 'desc')
             ->limit($request->size ? $request->size : 10)
-            ->get();
+            ->get()
+            ->unique()
+            ->values();
 
         return $this->generateResponse($histories, 200);
+    }
+
+    public function clearHistory(Request $request)
+    {
+        DB::table('search_histories')
+            ->where('device_id', $request->device_id)
+            ->where('type', $request->type)
+            ->delete();
+
+        return $this->generateResponse('success', 200, true);
     }
 }
