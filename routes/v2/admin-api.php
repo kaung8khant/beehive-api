@@ -186,6 +186,8 @@ Route::group([
         Route::get('reports/promocodes/{promocode}', 'Report\PromocodeController@getPromocodeUsedInvoiceReport');
         Route::get('reports/promocodes/{promocode}/customers', 'Report\PromocodeController@getPromocodeUsedCustomerReport');
 
+        Route::get('reports/customers/{customer}/credits', 'Report\CreditController@getCreditUsedCustomerOrderInvoiceReport');
+
         Route::get('pages', 'Admin\PageController@index');
         Route::get('pages/{page}', 'Admin\PageController@show');
         Route::patch('pages/{page}', 'Admin\PageController@update');
