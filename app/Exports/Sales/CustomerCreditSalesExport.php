@@ -2,11 +2,11 @@
 
 namespace App\Exports\Sales;
 
-use App\Models\RestaurantBranch;
+use App\Models\Customer;
 use App\Models\RestaurantOrder;
-use App\Models\RestaurantOrderStatus;
-use Carbon\Carbon;
+use App\Models\ShopOrder;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithDrawings;
@@ -18,7 +18,7 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class RestaurantBranchSalesExport implements FromCollection, WithColumnFormatting, WithColumnWidths, WithDrawings, WithEvents, WithHeadings, WithStyles, WithTitle
+class CustomerCreditSalesExport implements FromCollection, WithColumnFormatting, WithColumnWidths, WithDrawings, WithEvents, WithHeadings, WithStyles, WithTitle
 {
     protected $param;
     protected $from;
@@ -27,9 +27,6 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
     protected $result;
     protected $amountSum;
     protected $totalAmountSum;
-    protected $commissionSum;
-    protected $commissionCtSum;
-    protected $balanceSum;
 
     public function __construct($param, $from, $to)
     {
@@ -40,50 +37,35 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
 
     public function collection()
     {
-        $restaurantBranch = RestaurantBranch::with('restaurant')->where('slug', $this->param)->first();
+        $customer = Customer::where('slug', $this->param)->first();
 
-        $restaurantOrders = RestaurantOrder::where('restaurant_branch_id', $restaurantBranch->id)
+        $shopOrders = ShopOrder::where('customer_id', $customer->id)
+            ->where('payment_mode', 'Credit')
             ->whereBetween('order_date', [$this->from, $this->to])
             ->get();
+        $restaurantOrders = RestaurantOrder::where('customer_id', $customer->id)->where('payment_mode', 'Credit')
+            ->whereBetween('order_date', [$this->from, $this->to])
+            ->get();
+        $orders = collect($shopOrders)->merge($restaurantOrders);
 
-        $this->result = $restaurantOrders->map(function ($order, $key) use ($restaurantBranch) {
+        $this->result = $orders->map(function ($order, $key) {
             $amount = $order->order_status == 'cancelled' ? '0' : $order->amount;
-            $commission = $amount * $restaurantBranch->restaurant->commission * 0.01;
-            $commissionCt = $commission * 0.05;
             $totalAmount = $order->order_status == 'cancelled' ? '0' : $order->total_amount;
-            $balance = $totalAmount - $commissionCt;
 
             $this->amountSum += $amount;
             $this->totalAmountSum += $totalAmount;
-            $this->commissionSum += $commission;
-            $this->commissionCtSum += $commissionCt;
-            $this->balanceSum += $balance;
-
-            $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->orderBy('created_at', 'desc')->first();
-            $invoiceOrderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'pickUp')->orderBy('created_at', 'desc')->first();
 
             return [
                 $key + 1,
                 $order->invoice_id,
                 Carbon::parse($order->order_date)->format('M d Y h:i a'),
-                $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,
-                $invoiceOrderStatus ? Carbon::parse($invoiceOrderStatus->created_at)->format('M d Y h:i a') : null,
-                $restaurantBranch->restaurant->name,
-                $restaurantBranch->name,
                 $amount,
                 $order->order_status != 'cancelled' && $order->tax ? $order->tax : '0',
                 $order->order_status != 'cancelled' && $order->discount ? $order->discount : '0',
                 $order->order_status != 'cancelled' && $order->promocode_amount ? $order->promocode_amount : '0',
                 $totalAmount,
-                $restaurantBranch->restaurant->commission ? $restaurantBranch->restaurant->commission : '0',
-                $commission ? $commission : '0',
-                $commissionCt ? $commissionCt : '0',
-                round($balance),
-                $order->payment_mode,
-                $order->payment_status,
-                $order->payment_reference,
                 $order->order_status,
-                $order->order_type,
+                $order->order,
                 $order->special_instruction,
             ];
         });
@@ -107,22 +89,11 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
                 'no.',
                 'invoice id',
                 'order date',
-                'deliverd date',
-                'invoice date',
-                'restaurant',
-                'branch',
                 'revenue',
                 'commercial tax',
                 'discount',
                 'promo discount',
                 "total amount\n(tax inclusive)",
-                'commission rate',
-                'commission',
-                'ct on commision',
-                'balance',
-                'payment mode',
-                'payment status',
-                'payment reference',
                 'order status',
                 "type\n(deli/self pick up)",
                 'special instructions',
@@ -138,23 +109,12 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
             'C' => 20,
             'D' => 15,
             'E' => 20,
-            'F' => 30,
-            'G' => 30,
-            'H' => 15,
+            'F' => 20,
+            'G' => 20,
+            'H' => 20,
             'I' => 15,
-            'J' => 15,
-            'K' => 15,
-            'L' => 15,
-            'M' => 17,
-            'N' => 15,
-            'O' => 17,
-            'P' => 17,
-            'Q' => 20,
-            'R' => 20,
-            'S' => 20,
-            'T' => 20,
-            'U' => 30,
-            'V' => 30,
+            'J' => 20,
+            'K' => 30,
         ];
     }
 
@@ -166,16 +126,9 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
             'A' => ['alignment' => ['horizontal' => 'center']],
             'B' => ['alignment' => ['horizontal' => 'center']],
             'C' => ['alignment' => ['horizontal' => 'center']],
-            'D' => ['alignment' => ['horizontal' => 'center']],
-            'E' => ['alignment' => ['horizontal' => 'center']],
-            'F' => ['alignment' => ['horizontal' => 'center']],
-            'G' => ['alignment' => ['horizontal' => 'center']],
-            'Q' => ['alignment' => ['horizontal' => 'center']],
-            'R' => ['alignment' => ['horizontal' => 'center']],
-            'S' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
-            'T' => ['alignment' => ['horizontal' => 'center']],
-            'U' => ['alignment' => ['horizontal' => 'center']],
-            'V' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
+            'I' => ['alignment' => ['horizontal' => 'center']],
+            'J' => ['alignment' => ['horizontal' => 'center']],
+            'K' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -218,17 +171,14 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
             AfterSheet::class => function (AfterSheet $event) {
                 $lastRow = count($this->result) + 6 + 1;
 
+                $event->sheet->getStyle(sprintf('D%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('D%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
                 $event->sheet->getStyle(sprintf('H%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('H%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('L%d:P%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('L%d:P%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('P%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('H%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('H%d', $lastRow))->getFont()->setBold(true);
 
-                $event->sheet->setCellValue(sprintf('H%d', $lastRow), $this->amountSum);
-                $event->sheet->setCellValue(sprintf('L%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->commissionSum);
-                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->commissionCtSum);
-                $event->sheet->setCellValue(sprintf('P%d', $lastRow), $this->balanceSum);
+                $event->sheet->setCellValue(sprintf('D%d', $lastRow), $this->amountSum);
+                $event->sheet->setCellValue(sprintf('H%d', $lastRow), $this->totalAmountSum);
 
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
 
@@ -247,6 +197,6 @@ class RestaurantBranchSalesExport implements FromCollection, WithColumnFormattin
 
     public function title(): string
     {
-        return 'Sales report';
+        return 'Credit Sales report';
     }
 }

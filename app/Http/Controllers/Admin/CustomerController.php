@@ -75,7 +75,7 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
-        return $customer->load(['addresses', 'customerGroups']);
+        return $customer->load(['addresses', 'customerGroups','credit']);
     }
 
     public function update(Request $request, Customer $customer)
