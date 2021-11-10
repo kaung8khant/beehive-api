@@ -147,7 +147,7 @@ class ShopOrderController extends Controller
             $shopOrder['assign'] = null;
         }
 
-        return $this->generateResponse($shopOrder->load('contact', 'vendors', 'vendors.shop', 'vendors.shopOrderStatuses', 'drivers', 'drivers.status'), 200);
+        return $this->generateResponse($shopOrder->load('contact', 'vendors', 'vendors.shop', 'vendors.shopOrderStatuses', 'drivers', 'drivers.status', 'drivers.driver'), 200);
     }
 
     private function getPromoData($validatedData, $customer)

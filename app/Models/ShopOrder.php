@@ -24,7 +24,7 @@ class ShopOrder extends BaseModel
         'commission' => 'float',
     ];
 
-    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount','invoice_date'];
+    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount', 'driver_status', 'invoice_date'];
 
     public function getInvoiceIdAttribute()
     {
@@ -87,6 +87,17 @@ class ShopOrder extends BaseModel
         $totalAmount = $totalAmount - $this->promocode_amount;
         return $totalAmount < 0 ? 0 : $totalAmount;
     }
+    public function getDriverStatusAttribute()
+    {
+        $orderDriver = ShopOrderDriver::where('shop_order_id', $this->id)->latest()->first();
+
+        if (!empty($orderDriver)) {
+            $driverStatus = ShopOrderDriverStatus::where('shop_order_driver_id', $orderDriver->id)->latest()->value('status');
+        } else {
+            $driverStatus = null;
+        }
+        return $driverStatus;
+    }
 
     public function getInvoiceDateAttribute()
     {
@@ -95,11 +106,11 @@ class ShopOrder extends BaseModel
         })->pluck('id')->toArray();
 
         $orderStatus = ShopOrderStatus::where('status', 'pickUp')
-        ->whereHas('vendor', function ($query) use ($vendorIds) {
-            $query->whereIn('id', $vendorIds);
-        })->latest('created_at')->first();
+            ->whereHas('vendor', function ($query) use ($vendorIds) {
+                $query->whereIn('id', $vendorIds);
+            })->latest('created_at')->first();
 
-        $invoiceDate =$orderStatus ? $orderStatus->created_at : null;
+        $invoiceDate = $orderStatus ? $orderStatus->created_at : null;
 
         return $invoiceDate;
     }

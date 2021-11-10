@@ -10,6 +10,9 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderDriver;
 use App\Models\RestaurantOrderDriverStatus;
 use App\Models\RestaurantOrderStatus;
+use App\Models\ShopOrder;
+use App\Models\ShopOrderDriver;
+use App\Models\ShopOrderDriverStatus;
 use App\Models\User;
 use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
 use Illuminate\Http\Request;
@@ -47,6 +50,22 @@ class OrderDriverController extends Controller
             ->orderByDesc('id')
             ->get();
 
+        $shopOrder = ShopOrder::with('drivers', 'drivers.status', 'contact')
+            ->where('order_status', '!=', 'cancelled')
+            ->whereDate('created_at', '>=', Carbon::now()->subDays(3)->startOfDay())
+            ->whereHas('drivers', function ($q) {
+                $q->where('user_id', $this->driver->id);
+            })
+            ->whereHas('drivers.status', function ($q) {
+                $q->where('status', '!=', 'rejected');
+                $q->where('status', '!=', 'no_response');
+                $q->where('status', '!=', 'pending');
+                $q->where('user_id', $this->driver->id);
+            })
+            ->orderByDesc('id')
+            ->get();
+
+        $restaurantOrder = $restaurantOrder->merge($shopOrder);
 
         //group by date and status
         $restaurantOrder = $restaurantOrder->map(function ($data) {
@@ -81,27 +100,44 @@ class OrderDriverController extends Controller
         return response()->json($restaurantOrder, 200);
     }
 
-    public function jobDetail(RestaurantOrder $restaurantOrder)
+    public function jobDetail($slug)
     {
-        return $this->generateResponse($restaurantOrder->load('drivers', 'drivers.status', 'restaurantOrderContact', 'RestaurantOrderItems'), 200);
+        $order = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact', 'RestaurantOrderItems')->where('slug', $slug)->first();
+        if (!isset($order)) {
+            $order = ShopOrder::with('drivers', 'drivers.status', 'contact', 'vendors', 'vendors.shop', 'vendors.shopOrderStatuses')->where('slug', $slug)->first();
+        }
+        return $this->generateResponse($order, 200);
+        // $restaurantOrder->load('drivers', 'drivers.status', 'restaurantOrderContact', 'RestaurantOrderItems')
+
     }
 
-    public function changeStatus(Request $request, RestaurantOrder $restaurantOrder)
+    public function changeStatus(Request $request, $slug)
     {
         $request->validate(['status' => 'in:accepted,rejected,pickUp,delivered']);
 
         $driver = Auth::guard('users')->user();
 
-        $restaurantOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $restaurantOrder->id)->where('user_id', $driver->id)->firstOrFail();
-        $currentDriverStatus = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $restaurantOrderDriver->id)->latest()->value('status');
+        $type = 'restaurant';
+
+        $order = RestaurantOrder::with('drivers', 'drivers.status', 'restaurantOrderContact', 'RestaurantOrderItems')->where('slug', $slug)->first();
+        if (!isset($order)) {
+            $type = 'shop';
+            $order = ShopOrder::with('drivers', 'drivers.status', 'contact')->where('slug', $slug)->first();
+        }
+        if ($type == "restaurant") {
+            $orderDriver = RestaurantOrderDriver::where('restaurant_order_id', $order->id)->where('user_id', $driver->id)->firstOrFail();
+            $currentDriverStatus = RestaurantOrderDriverStatus::where('restaurant_order_driver_id', $orderDriver->id)->latest()->value('status');
+        } else {
+            $orderDriver = ShopOrderDriver::where('shop_order_id', $order->id)->where('user_id', $driver->id)->firstOrFail();
+            $currentDriverStatus = ShopOrderDriverStatus::where('shop_order_driver_id', $orderDriver->id)->latest()->value('status');
+        }
 
         try {
-            $this->repository->validateStatus($currentDriverStatus, $request->status, $restaurantOrder->order_status);
+            $this->repository->validateStatus($currentDriverStatus, $request->status, $order->order_status);
         } catch (BadRequestException $e) {
             return response()->json(['status' => 'failed', 'message' => $e->getMessage()], 406);
         }
-
-        $this->repository->changeStatus($restaurantOrder, $restaurantOrderDriver, $request->status);
+        $this->repository->changeStatus($order, $orderDriver, $request->status, $type);
 
         return response()->json(['status' => 'success'], 201);
     }
@@ -128,7 +164,23 @@ class OrderDriverController extends Controller
     public function manualAssignOrder($slug, $driverSlug)
     {
         $driverID = User::where('slug', $driverSlug)->first()->id;
-        $orderID = RestaurantOrder::where('slug', $slug)->first()->id;
+
+        $orderID = null;
+
+        $order = RestaurantOrder::where('slug', $slug)->first();
+
+        if ($order) {
+            $orderID = $order->id;
+            $orderDriverStatus = $this->assginToRes($orderID, $driverID);
+        } else {
+            $orderID = ShopOrder::where('slug', $slug)->first()->id;
+            $orderDriverStatus = $this->assginToShop($orderID, $driverID);
+        }
+
+        return $this->generateResponse($orderDriverStatus->refresh(), 201);
+    }
+    private function assginToRes($orderID, $driverID)
+    {
         $resOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $orderID)->where('user_id', $driverID)->first();
 
         if (empty($resOrderDriver)) {
@@ -138,11 +190,25 @@ class OrderDriverController extends Controller
             ]);
         }
 
-        $resOrderDriverStatus = RestaurantOrderDriverStatus::create([
+        return RestaurantOrderDriverStatus::create([
             'restaurant_order_driver_id' => $resOrderDriver->id,
             'status' => 'accepted',
         ]);
+    }
+    private function assginToShop($orderID, $driverID)
+    {
+        $shopOrderDriver = ShopOrderDriver::where('shop_order_id', $orderID)->where('user_id', $driverID)->first();
 
-        return $this->generateResponse($resOrderDriverStatus->refresh(), 201);
+        if (empty($shopOrderDriver)) {
+            $shopOrderDriver = ShopOrderDriver::create([
+                'shop_order_id' => $orderID,
+                'user_id' => $driverID,
+            ]);
+        }
+
+        return ShopOrderDriverStatus::create([
+            'shop_order_driver_id' => $shopOrderDriver->id,
+            'status' => 'accepted',
+        ]);
     }
 }

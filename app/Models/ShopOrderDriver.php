@@ -14,7 +14,6 @@ class ShopOrderDriver extends Model
     protected $hidden = [
         'id',
         'created_by',
-        'created_at',
         'updated_by',
         'updated_at',
     ];
@@ -26,7 +25,7 @@ class ShopOrderDriver extends Model
 
     public function driver()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function status()
