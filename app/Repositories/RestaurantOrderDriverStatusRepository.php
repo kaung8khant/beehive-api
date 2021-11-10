@@ -8,10 +8,12 @@ use App\Helpers\OneSignalHelper;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderDriver;
 use App\Models\RestaurantOrderDriverStatus;
+use App\Models\ShopOrderDriverStatus;
 use App\Models\User;
 use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStatusRepositoryInterface
 {
@@ -20,9 +22,10 @@ class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStat
     private $model;
     private $database;
 
-    public function __construct(RestaurantOrderDriverStatus $model)
+    public function __construct(RestaurantOrderDriverStatus $model, ShopOrderDriverStatus $shopModel)
     {
         $this->model = $model;
+        $this->shopModel = $shopModel;
         $this->database = app('firebase.database');
     }
     public function setJobToFirebase($slug, $driver)
@@ -86,14 +89,23 @@ class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStat
         throw new BadRequestException("This driver is already assigned to this order.");
     }
 
-    public function changeStatus(RestaurantOrder $restaurantOrder, $restaurantOrderDriver, $status): ?RestaurantOrderDriverStatus
+    public function changeStatus($order, $orderDriver, $status, $type)
     {
-        $domain = $this->model->create([
-            'restaurant_order_driver_id' => $restaurantOrderDriver->id,
-            'status' => $status,
-        ]);
+        if ($type == "restaurant") {
+            Log::info('here2');
+            $domain = $this->model->create([
+                'restaurant_order_driver_id' => $orderDriver->id,
+                'status' => $status,
+            ]);
+        } else {
+            Log::info('here3');
+            $domain = $this->shopModel->create([
+                'shop_order_driver_id' => $orderDriver->id,
+                'status' => $status,
+            ]);
+        }
 
-        event(new DriverStatusChanged($restaurantOrder, $status));
+        event(new DriverStatusChanged($order, $status));
 
         return $domain;
     }

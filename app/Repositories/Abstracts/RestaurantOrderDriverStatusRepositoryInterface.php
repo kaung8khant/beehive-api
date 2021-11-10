@@ -9,7 +9,7 @@ interface RestaurantOrderDriverStatusRepositoryInterface
 {
     public function assignDriver(RestaurantOrder $restaurantOrder, $driver): ?RestaurantOrderDriverStatus;
 
-    public function changeStatus(RestaurantOrder $restaurantOrder, $restaurantOrderDriver, $status): ?RestaurantOrderDriverStatus;
+    public function changeStatus($order, $orderDriver, $status, $type);
 
     public function validateStatus($currentDriverStatus, $newDriverStatus, $currentOrderStatus): bool;
 

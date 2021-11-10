@@ -24,7 +24,7 @@ class ShopOrder extends BaseModel
         'commission' => 'float',
     ];
 
-    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount'];
+    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount', 'driver_status'];
 
     public function getInvoiceIdAttribute()
     {
@@ -86,6 +86,17 @@ class ShopOrder extends BaseModel
 
         $totalAmount = $totalAmount - $this->promocode_amount;
         return $totalAmount < 0 ? 0 : $totalAmount;
+    }
+    public function getDriverStatusAttribute()
+    {
+        $orderDriver = ShopOrderDriver::where('shop_order_id', $this->id)->latest()->first();
+
+        if (!empty($orderDriver)) {
+            $driverStatus = ShopOrderDriverStatus::where('shop_order_driver_id', $orderDriver->id)->latest()->value('status');
+        } else {
+            $driverStatus = null;
+        }
+        return $driverStatus;
     }
 
     public function contact()

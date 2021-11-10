@@ -220,8 +220,8 @@ Route::group(['prefix' => 'v2', 'middleware' => ['cors', 'json.response']], func
             Route::get('profile/driver', 'Admin\Driver\DriverController@profile');
 
             Route::get('jobs', 'Admin\Driver\OrderDriverController@jobList');
-            Route::post('jobs/{restaurantOrder}/status', 'Admin\Driver\OrderDriverController@changeStatus');
-            Route::get('jobs/{restaurantOrder}', 'Admin\Driver\OrderDriverController@jobDetail');
+            Route::post('jobs/{slug}/status', 'Admin\Driver\OrderDriverController@changeStatus');
+            Route::get('jobs/{slug}', 'Admin\Driver\OrderDriverController@jobDetail');
             Route::post('jobs/assign/{slug}/drivers/{driverslug}', "Admin\Driver\OrderDriverController@manualAssignOrder");
 
             Route::post('attendances', 'Admin\Driver\DriverController@attendance');

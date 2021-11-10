@@ -143,7 +143,7 @@ class ShopOrderController extends Controller
 
         $validatedData['promocode_id'] = $promocode->id;
         $validatedData['promocode'] = $promocode->code;
-        $validatedData['promocode_amount'] = min($validatedData['subTotal']+$validatedData['tax'], $promocodeAmount);
+        $validatedData['promocode_amount'] = min($validatedData['subTotal'] + $validatedData['tax'], $promocodeAmount);
 
         return $validatedData;
     }
