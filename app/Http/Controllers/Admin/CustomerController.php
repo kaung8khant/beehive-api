@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
+use App\Helpers\v3\OrderHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerGroup;
@@ -29,7 +30,9 @@ class CustomerController extends Controller
             ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
             ->with([
-                'credit',
+                'credit' => function ($query) {
+                    $query->exclude(['created_by', 'updated_by']);
+                },
                 'customerGroups' => function ($query) {
                     $query->exclude(['created_by', 'updated_by']);
                 },
@@ -38,6 +41,13 @@ class CustomerController extends Controller
             ->paginate(10);
 
         $this->optimizeCustomers($customers);
+
+        foreach ($customers as $customer) {
+            if ($customer->credit) {
+                $customer->credit['remaining_amount'] = OrderHelper::getRemainingCredit($customer);
+            }
+        }
+
         return CollectionHelper::removePaginateLinks($customers);
     }
 
@@ -75,7 +85,19 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
-        return $customer->load(['addresses', 'customerGroups','credit']);
+        $customer = $customer->load([
+            'addresses',
+            'customerGroups',
+            'credit' => function ($query) {
+                $query->exclude(['created_by', 'updated_by']);
+            },
+        ]);
+
+        if ($customer->credit) {
+            $customer->credit['remaining_amount'] = OrderHelper::getRemainingCredit($customer);
+        }
+
+        return $customer;
     }
 
     public function update(Request $request, Customer $customer)

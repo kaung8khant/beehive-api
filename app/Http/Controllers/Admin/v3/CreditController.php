@@ -24,8 +24,13 @@ class CreditController extends Controller
     public function index(Customer $customer)
     {
         $credit = $customer->credit;
-        $credit->remaining_amount = OrderHelper::getRemainingCredit($customer);
-        return $customer->credit;
+
+        if ($credit) {
+            $credit->remaining_amount = OrderHelper::getRemainingCredit($customer);
+            return $credit;
+        }
+
+        return [];
     }
 
     public function updateOrCreate(Request $request, Customer $customer)
