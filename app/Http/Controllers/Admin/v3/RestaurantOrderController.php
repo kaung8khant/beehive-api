@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\v3;
 
 use App\Events\OrderAssignEvent;
+use App\Events\RestaurantOrderUpdated;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
@@ -242,6 +243,10 @@ class RestaurantOrderController extends Controller
             $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
             SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
+        }
+
+        if ($request->status === 'pickUp') {
+            event(new RestaurantOrderUpdated($restaurantOrder));
         }
 
         return $this->generateResponse(sprintf($this->resMes['order_sts_succ'], $request->status), 200, true);

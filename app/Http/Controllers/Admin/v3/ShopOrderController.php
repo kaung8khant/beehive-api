@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
+use App\Events\ShopOrderUpdated;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
@@ -227,6 +228,10 @@ class ShopOrderController extends Controller
             $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
 
             SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
+        }
+
+        if ($request->status === 'pickUp') {
+            event(new ShopOrderUpdated($shopOrder));
         }
 
         return $this->generateResponse(sprintf($this->resMes['order_sts_succ'], $request->status), 200, true);

@@ -7,6 +7,10 @@ use App\Events\DataChanged;
 use App\Events\DriverStatusChanged;
 use App\Events\KeywordSearched;
 use App\Events\OrderAssignEvent;
+use App\Events\RestaurantOrderUpdated;
+use App\Events\ShopOrderUpdated;
+use App\Listeners\GenerateRestaurantInvoice;
+use App\Listeners\GenerateShopInvoice;
 use App\Listeners\MergeSearchHistory;
 use App\Listeners\OrderAssignListener;
 use App\Listeners\OrderFirstAssignListener;
@@ -43,6 +47,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         CustomerLoggedIn::class => [
             MergeSearchHistory::class,
+        ],
+        RestaurantOrderUpdated::class => [
+            GenerateRestaurantInvoice::class,
+        ],
+        ShopOrderUpdated::class => [
+            GenerateShopInvoice::class,
         ],
     ];
 
