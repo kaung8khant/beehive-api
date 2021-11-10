@@ -33,7 +33,6 @@ class UpdateOrderStatus
     {
         $order = $event->getOrder();
         $driverStatus = $event->getDriverStatus();
-        Log::info($order);
         if (isset($order->vendors)) {
             $status = "";
             if ($driverStatus === 'pickUp') {
