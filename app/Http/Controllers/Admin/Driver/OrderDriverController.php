@@ -185,7 +185,8 @@ class OrderDriverController extends Controller
     private static function sendDriverPushNotifications($order, $driverID,$message = null)
     {
 
-        $driver = User::where('id', $driverID->user_id)->pluck('slug');
+        $driver = User::where('id', $driverID)->pluck('slug');
+
         $request = new Request();
         $request['slugs'] = $driver;
         $request['message'] = $message ? $message : 'An order has been updated.';
