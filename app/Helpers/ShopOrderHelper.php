@@ -14,6 +14,7 @@ use App\Models\ProductVariationValue;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderContact;
+use App\Models\ShopOrderDriver;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderStatus;
 use App\Models\ShopOrderVendor;
@@ -357,6 +358,7 @@ trait ShopOrderHelper
         $order = json_decode(json_encode($order), true);
         self::sendAdminPushNotifications($order, $message);
         self::sendVendorPushNotifications($order, $orderItems, $message);
+        self::sendDriverPushNotifications($order, $message);
     }
 
     private static function sendAdminPushNotifications($order, $message = null)
@@ -396,6 +398,32 @@ trait ShopOrderHelper
         $uniqueKey = StringHelper::generateUniqueSlug();
 
         SendPushNotification::dispatch($uniqueKey, $fields, 'vendor');
+    }
+
+    private static function sendDriverPushNotifications($order, $message = null)
+    {
+        $orderID = ShopOrder::where('slug', $order['slug'])->pluck('id');
+        $driverID = ShopOrderDriver::where('shop_order_id', $orderID)->whereHas('status', function ($q) {
+            $q->where('status', 'accepted');
+        })->first();
+
+        if ($driverID) {
+            $driver = User::where('id', $driverID->user_id)->pluck('slug');
+            $request = new Request();
+            $request['slugs'] = $driver;
+            $request['message'] = $message ? $message : 'An order has been updated.';
+
+            $request['data'] = self::preparePushData($order, "driver_order_update");
+            $request['android_channel_id'] = config('one-signal.android_channel_id');
+            $request['url'] = 'hive://beehivedriver/job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
+
+            $appId = config('one-signal.admin_app_id');
+
+            $fields = OneSignalHelper::prepareNotification($request, $appId);
+            $uniqueKey = StringHelper::generateUniqueSlug();
+
+            $response = OneSignalHelper::sendPush($fields, 'admin');
+        }
     }
 
     private static function preparePushData($order)
