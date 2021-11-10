@@ -18,7 +18,6 @@ use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class OrderDriverController extends Controller
 {
@@ -138,7 +137,6 @@ class OrderDriverController extends Controller
         } catch (BadRequestException $e) {
             return response()->json(['status' => 'failed', 'message' => $e->getMessage()], 406);
         }
-        Log::info('here');
         $this->repository->changeStatus($order, $orderDriver, $request->status, $type);
 
         return response()->json(['status' => 'success'], 201);

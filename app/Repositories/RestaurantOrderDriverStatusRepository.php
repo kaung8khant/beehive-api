@@ -13,7 +13,6 @@ use App\Models\User;
 use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStatusRepositoryInterface
 {
@@ -92,13 +91,12 @@ class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStat
     public function changeStatus($order, $orderDriver, $status, $type)
     {
         if ($type == "restaurant") {
-            Log::info('here2');
+
             $domain = $this->model->create([
                 'restaurant_order_driver_id' => $orderDriver->id,
                 'status' => $status,
             ]);
         } else {
-            Log::info('here3');
             $domain = $this->shopModel->create([
                 'shop_order_driver_id' => $orderDriver->id,
                 'status' => $status,
