@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin\Driver;
 
 use App\Events\DriverStatusChanged;
 use App\Exceptions\BadRequestException;
+use App\Helpers\OneSignalHelper;
 use App\Helpers\ResponseHelper;
+use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderDriver;
@@ -161,7 +163,7 @@ class OrderDriverController extends Controller
 
         $restaurantOrder->update(['order_status' => $status]);
     }
-    public function manualAssignOrder($slug, $driverSlug)
+    public function manualAssignOrder($slug, $driverSlug): \Illuminate\Http\JsonResponse
     {
         $driverID = User::where('slug', $driverSlug)->first()->id;
 
@@ -176,8 +178,41 @@ class OrderDriverController extends Controller
             $orderID = ShopOrder::where('slug', $slug)->first()->id;
             $orderDriverStatus = $this->assginToShop($orderID, $driverID);
         }
-
+        $this->sendDriverPushNotifications($order,$driverID,"You had been assigned to an order!");
         return $this->generateResponse($orderDriverStatus->refresh(), 201);
+    }
+
+    private static function sendDriverPushNotifications($order, $driverID,$message = null)
+    {
+
+        $driver = User::where('id', $driverID)->pluck('slug');
+
+        $request = new Request();
+        $request['slugs'] = $driver;
+        $request['message'] = $message ? $message : 'An order has been updated.';
+
+        $request['data'] = self::preparePushData($order, "driver_order_update");
+        $request['android_channel_id'] = config('one-signal.android_channel_id');
+        $request['url'] = 'hive://beehivedriver/job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
+
+        $appId = config('one-signal.admin_app_id');
+
+        $fields = OneSignalHelper::prepareNotification($request, $appId);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+
+        $response = OneSignalHelper::sendPush($fields, 'admin');
+
+    }
+    private static function preparePushData($order)
+    {
+        unset($order['created_by']);
+        unset($order['updated_by']);
+        unset($order['shop_order_items']);
+
+        return [
+            'type' => 'shop_order',
+            'body' => $order,
+        ];
     }
     private function assginToRes($orderID, $driverID)
     {
