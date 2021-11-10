@@ -203,6 +203,17 @@ class OrderDriverController extends Controller
         $response = OneSignalHelper::sendPush($fields, 'admin');
 
     }
+    private static function preparePushData($order)
+    {
+        unset($order['created_by']);
+        unset($order['updated_by']);
+        unset($order['shop_order_items']);
+
+        return [
+            'type' => 'shop_order',
+            'body' => $order,
+        ];
+    }
     private function assginToRes($orderID, $driverID)
     {
         $resOrderDriver = RestaurantOrderDriver::where('restaurant_order_id', $orderID)->where('user_id', $driverID)->first();
