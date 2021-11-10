@@ -7,7 +7,7 @@ image: php:8.0
 
 pipelines:
   branches:
-    staging:
+    develop:
       - step:
           name: Security Scan for Staging
           script:
