@@ -178,7 +178,7 @@ class OrderDriverController extends Controller
             $orderID = ShopOrder::where('slug', $slug)->first()->id;
             $orderDriverStatus = $this->assginToShop($orderID, $driverID);
         }
-        sendDriverPushNotifications($order,$driverID,"You had been assigned to an order!");
+        $this->sendDriverPushNotifications($order,$driverID,"You had been assigned to an order!");
         return $this->generateResponse($orderDriverStatus->refresh(), 201);
     }
 
