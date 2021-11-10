@@ -16,7 +16,12 @@ return [
     |
     */
 
-    'searchableAttributes' => ['slug', 'name', 'contact_number', 'restaurant_name'],
+    'searchableAttributes' => [
+        'slug',
+        'name',
+        'restaurant_name',
+        'available_tags',
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -79,7 +84,7 @@ return [
     |
     */
 
-    'attributesForFaceting' => ['city'],
+    'attributesForFaceting' => ['restaurant_name', 'available_tags', 'is_enable', 'is_restaurant_enable'],
 
     /*
     |--------------------------------------------------------------------------

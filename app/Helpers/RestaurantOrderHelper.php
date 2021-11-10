@@ -151,7 +151,15 @@ trait RestaurantOrderHelper
 
     public static function getRestaurantBranch($slug)
     {
-        return RestaurantBranch::with('restaurant')->where('slug', $slug)->first();
+        $branch = RestaurantBranch::exclude(['created_by', 'updated_by'])
+            ->with(['restaurant' => function ($query) {
+                $query->exclude(['created_by', 'updated_by']);
+            }])
+            ->where('slug', $slug)
+            ->first();
+
+        $branch->restaurant->setAppends(['rating']);
+        return $branch;
     }
 
     public static function getTax()
@@ -371,7 +379,7 @@ trait RestaurantOrderHelper
             'slug' => 'required|unique:restaurant_orders',
             'order_date' => 'required_if:order_type,schedule',
             'special_instruction' => 'nullable',
-            'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay',
+            'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay,Credit',
             'delivery_mode' => 'nullable|in:pickup,delivery',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'promo_code' => 'nullable|string|exists:App\Models\Promocode,code',

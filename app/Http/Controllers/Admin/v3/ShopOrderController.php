@@ -8,9 +8,10 @@ use App\Exceptions\ServerException;
 use App\Helpers\CollectionHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
-use App\Helpers\ShopOrderHelper as OrderHelper;
+use App\Helpers\ShopOrderHelper;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
+use App\Helpers\v3\OrderHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Customer;
@@ -70,14 +71,14 @@ class ShopOrderController extends Controller
     {
         try {
             $request['slug'] = $this->generateUniqueSlug();
-            $validatedData = OrderHelper::validateOrderV3($request, true);
+            $validatedData = ShopOrderHelper::validateOrderV3($request, true);
 
             if (gettype($validatedData) == 'string') {
                 return $this->generateResponse($validatedData, 422, true);
             }
 
             try {
-                $validatedData = OrderHelper::prepareProductVariants($validatedData);
+                $validatedData = ShopOrderHelper::prepareProductVariants($validatedData);
             } catch (ForbiddenException $e) {
                 return $this->generateResponse($e->getMessage(), 403, true);
             } catch (BadRequestException $e) {
@@ -85,7 +86,6 @@ class ShopOrderController extends Controller
             }
 
             $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
-
             if ($validatedData['promo_code']) {
                 try {
                     $validatedData = $this->getPromoData($validatedData, $customer);
@@ -94,8 +94,19 @@ class ShopOrderController extends Controller
                 }
             }
 
+            if ($validatedData['payment_mode'] === 'Credit') {
+                $totalAmount = OrderHelper::getTotalAmount($validatedData['order_items'], isset($validatedData['promocode_amount']) ? $validatedData['promocode_amount'] : 0) + $validatedData['delivery_fee'];
+                $remainingCredit = OrderHelper::getRemainingCredit($customer);
+
+                if ($totalAmount > $remainingCredit) {
+                    return $this->generateResponse('Insufficient credit.', 403, true);
+                }
+
+                $validatedData['payment_status'] = 'success';
+            }
+
             $paymentData = [];
-            if ($validatedData['payment_mode'] !== 'COD') {
+            if (!in_array($validatedData['payment_mode'], ['COD', 'Credit'])) {
                 try {
                     $paymentData = $this->paymentService->createTransaction($validatedData, 'shop');
                 } catch (ServerException $e) {
@@ -115,10 +126,13 @@ class ShopOrderController extends Controller
             return $this->generateShopOrderResponse($order, 201);
         } catch (\Exception $e) {
             $url = explode('/', $request->path());
-            $auth = $url[2] === 'admin' ? 'Admin' : 'Vendor';
-            $phoneNumber = Customer::where('slug', $request->customer_slug)->value('phone_number');
 
-            Log::critical($auth . ' shop order ' . $url[1] . ' error: ' . $phoneNumber);
+            if ($url[2] === 'admin' || $url[2] === 'vendor') {
+                $auth = $url[2] === 'admin' ? 'Admin' : 'Vendor';
+                $phoneNumber = Customer::where('slug', $request->customer_slug)->value('phone_number');
+                Log::critical($auth . ' shop order ' . $url[1] . ' error: ' . $phoneNumber);
+            }
+
             throw $e;
         }
     }
@@ -166,14 +180,14 @@ class ShopOrderController extends Controller
     {
         $order = DB::transaction(function () use ($validatedData) {
             $order = ShopOrder::create($validatedData);
-            OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
-            OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
-            OrderHelper::createOrderStatus($order->id);
+            ShopOrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            ShopOrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
+            ShopOrderHelper::createOrderStatus($order->id);
             return $order->refresh()->load('contact');
         });
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        OrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber, $this->messageService);
+        ShopOrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber, $this->messageService);
 
         return $order;
     }
@@ -193,7 +207,7 @@ class ShopOrderController extends Controller
             }
         }
 
-        OrderHelper::createOrderStatus($shopOrder->id, $request->status);
+        ShopOrderHelper::createOrderStatus($shopOrder->id, $request->status);
 
         $orderItems = $shopOrder->vendors->map(function ($vendor) {
             return $vendor->items;
@@ -204,7 +218,7 @@ class ShopOrderController extends Controller
         })->toArray();
 
         $shopOrder['order_status'] = $request->status;
-        OrderHelper::sendPushNotifications($shopOrder, $orderItems, 'Order Number:' . $shopOrder->invoice_id . ', is now ' . $request->status);
+        ShopOrderHelper::sendPushNotifications($shopOrder, $orderItems, 'Order Number:' . $shopOrder->invoice_id . ', is now ' . $request->status);
 
         if ($request->status === 'cancelled') {
             $message = 'Your order has successfully been ' . $request->status . '.';

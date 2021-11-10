@@ -46,6 +46,7 @@ class Product extends BaseModel
         $array['shop_sub_category_name'] = $this->shopSubCategory ? $this->shopSubCategory->name : null;
 
         $array['is_shop_enable'] = $this->shop ? $this->shop->is_enable : null;
+        $array['available_tags'] = $this->shop ? $this->shop->availableTags->pluck('name') : null;
         return $array;
     }
 

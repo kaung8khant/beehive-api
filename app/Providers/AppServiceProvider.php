@@ -11,6 +11,7 @@ use App\Services\MessageService\MessagingService;
 use App\Services\MessageService\SlackMessagingService;
 use App\Services\PaymentService\CbPayService;
 use App\Services\PaymentService\CodService;
+use App\Services\PaymentService\CreditService;
 use App\Services\PaymentService\KbzPayService;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
@@ -42,6 +43,8 @@ class AppServiceProvider extends ServiceProvider
                 return new KbzPayService();
             } elseif ($request->input('payment_mode') === 'CBPay') {
                 return new CbPayService();
+            } elseif ($request->input('payment_mode') === 'Credit') {
+                return new CreditService();
             } else {
                 return new CodService();
             }

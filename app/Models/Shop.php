@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Helpers\StringHelper;
+use App\Jobs\Algolia\UpdateProduct;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Scout\Searchable;
 
@@ -28,6 +30,16 @@ class Shop extends BaseModel
     ];
 
     protected $appends = ['rating', 'images', 'covers', 'first_order_date'];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($model) {
+            $uniqueKey = StringHelper::generateUniqueSlug();
+            UpdateProduct::dispatch($uniqueKey, $model);
+        });
+    }
 
     public function toSearchableArray(): array
     {

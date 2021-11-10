@@ -82,7 +82,7 @@ class PromocodeController extends Controller
             $totalAmount=0;
             $totalPromoDiscount=0;
             foreach ($orders as $order) {
-                $totalAmount += $order->total_amount;
+                $totalAmount += ($order->tax+$order->amount);
                 $totalPromoDiscount += $order->promocode_amount ? $order->promocode_amount : 0;
             }
             $customer = Customer::where('id', $orders[0]->customer_id)->first();
@@ -118,7 +118,7 @@ class PromocodeController extends Controller
         $totalPromoDiscount = 0;
 
         foreach ($orderList as $order) {
-            $totalAmount = $order->order_status == 'cancelled' ? 0 : $order->total_amount;
+            $totalAmount = $order->order_status == 'cancelled' ? 0 : ($order->tax+$order->amount);
             $totalAmountSum += $totalAmount;
             $totalPromoDiscount += $order->order_status == 'cancelled' && $order->promocode_amount ? $order->promocode_amount : 0;
 

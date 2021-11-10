@@ -7,6 +7,7 @@ use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Models\Audit;
 use App\Models\Customer;
 use App\Models\RestaurantBranch;
 use App\Models\Role;
@@ -29,7 +30,7 @@ class UserController extends Controller
 
         return User::with('roles')
             ->whereHas('roles', function ($q) {
-                $q->where('name', 'Admin')->orWhere('name', 'SuperAdmin');
+                $q->where('name', '!=', 'Shop')->where('name', '!=', 'Restaurant');
             })
             ->where(function ($q) use ($request) {
                 $q->where('username', 'LIKE', '%' . $request->filter . '%')
@@ -184,7 +185,7 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $validatedData = $this->validateUserUpdate($request, $user->id);
+        $validatedData = $this->validateUserUpdate($request, $user->id, 'admin');
 
         $user->update($validatedData);
 
@@ -193,7 +194,6 @@ class UserController extends Controller
         }
 
         $user->roles()->detach();
-
         if ($request->roles) {
             $roles = Role::whereIn('name', $request->roles)->pluck('id');
             $user->roles()->attach($roles);
@@ -379,5 +379,12 @@ class UserController extends Controller
         }
 
         return response()->json(['message' => 'Success.'], 200);
+    }
+
+    public function getUserAuditLogs(Request $request, User $user)
+    {
+        return Audit::where('user_slug', $user->slug)
+            ->whereBetween('create_at', array($request->from, $request->to))
+            ->paginate(10);
     }
 }

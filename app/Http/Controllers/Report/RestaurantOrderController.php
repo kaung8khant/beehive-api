@@ -14,22 +14,20 @@ class RestaurantOrderController extends Controller
 {
     public function getAllOrders(Request $request)
     {
+        $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
+        ->orderBy('restaurant_id')
+        ->orderBy('restaurant_branch_id')
+        ->orderBy('id');
         if ($request->filterBy === 'orderDate') {
-            $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
-                ->whereBetween('order_date', [$request->from, $request->to])
-                ->orderBy('restaurant_id')
-                ->orderBy('restaurant_branch_id')
-                ->orderBy('id')
-                ->get();
+            $restaurantOrders =$restaurantOrders->whereBetween('order_date', [$request->from, $request->to])->get();
+        } elseif ($request->filterBy === 'deliveredDate') {
+            $restaurantOrders =$restaurantOrders->whereHas('restaurantOrderStatuses', function ($query) use ($request) {
+                $query->whereBetween('created_at', [$request->from, $request->to])->where('status', '=', 'delivered')->orderBy('created_at', 'desc');
+            })->get();
         } else {
-            $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
-                ->whereHas('restaurantOrderStatuses', function ($query) use ($request) {
-                    $query->whereBetween('created_at', [$request->from, $request->to])->where('status', '=', 'delivered')->orderBy('created_at', 'desc');
-                })
-                ->orderBy('restaurant_id')
-                ->orderBy('restaurant_branch_id')
-                ->orderBy('id')
-                ->get();
+            $restaurantOrders =$restaurantOrders->whereHas('restaurantOrderStatuses', function ($query) use ($request) {
+                $query->whereBetween('created_at', [$request->from, $request->to])->where('status', '=', 'pickUp')->orderBy('created_at', 'desc');
+            })->get();
         }
 
         return $this->generateReport($restaurantOrders, $request->from, $request->to, $request->filterBy);
@@ -87,11 +85,16 @@ class RestaurantOrderController extends Controller
             $commissionCtSum += $commissionCt;
             $balanceSum += $balance;
 
+            $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->orderBy('created_at', 'desc')->first();
+            $invoiceOrderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'pickUp')->orderBy('created_at', 'desc')->first();
+
             if ($filterBy === 'deliveredDate') {
                 $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->whereBetween('created_at', array($from, $to))->orderBy('created_at', 'desc')->first();
-            } else {
-                $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->orderBy('created_at', 'desc')->first();
             }
+            if ($filterBy === 'invoiceDate') {
+                $invoiceOrderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'pickUp')->whereBetween('created_at', array($from, $to))->orderBy('created_at', 'desc')->first();
+            }
+
             $data[] = [
                 'invoice_id' => $order->invoice_id,
                 'order_date' => Carbon::parse($order->order_date)->format('M d Y h:i a'),
@@ -115,6 +118,7 @@ class RestaurantOrderController extends Controller
                 'order_type' => $order->order_type,
                 'special_instructions' => $order->special_instruction,
                 'delivered_date' => $orderStatus ? Carbon::parse($orderStatus->created_at)->format('M d Y h:i a') : null,
+                'invoice_date' => $invoiceOrderStatus ? Carbon::parse($invoiceOrderStatus->created_at)->format('M d Y h:i a') : null,
             ];
         }
 

@@ -72,4 +72,9 @@ class Customer extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(CustomerGroup::class, 'customer_customer_group_map');
     }
+
+    public function credit()
+    {
+        return $this->hasOne(Credit::class);
+    }
 }

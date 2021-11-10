@@ -18,7 +18,7 @@ return [
 
     'searchableAttributes' => [
         'slug', 
-        'name'
+        'name',
     ],
 
     /*

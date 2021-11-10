@@ -24,11 +24,16 @@ class CustomerController extends Controller
     {
         $sorting = CollectionHelper::getSorting('customers', 'name', $request->by, $request->order);
 
-        $customers = Customer::with('customerGroups')
-            ->where('email', 'LIKE', '%' . $request->filter . '%')
+        $customers = Customer::where('email', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
             ->orWhere('slug', $request->filter)
+            ->with([
+                'credit',
+                'customerGroups' => function ($query) {
+                    $query->exclude(['created_by', 'updated_by']);
+                },
+            ])
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
 
@@ -70,7 +75,7 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
-        return $customer->load(['addresses', 'customerGroups']);
+        return $customer->load(['addresses', 'customerGroups','credit']);
     }
 
     public function update(Request $request, Customer $customer)
@@ -223,6 +228,23 @@ class CustomerController extends Controller
             })
             ->orderBy('name')
             ->paginate($request->size);
+
+        $this->optimizeCustomers($customers);
+        return CollectionHelper::removePaginateLinks($customers);
+    }
+
+    public function getCustomersByGroup(Request $request, CustomerGroup $customerGroup)
+    {
+        $customers = Customer::whereHas('customerGroups', function ($query) use ($customerGroup) {
+            $query->where('slug', $customerGroup->slug);
+        })
+            ->where(function ($query) use ($request) {
+                $query->where('email', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->paginate(10);
 
         $this->optimizeCustomers($customers);
         return CollectionHelper::removePaginateLinks($customers);

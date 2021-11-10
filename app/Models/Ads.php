@@ -13,7 +13,7 @@ class Ads extends BaseModel
     protected $hidden = [
         'id',
         'created_at',
-        'updatd_at',
+        'updated_at',
     ];
 
     protected $appends = ['images'];

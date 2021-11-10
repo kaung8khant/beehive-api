@@ -17,6 +17,8 @@ return [
         'restaurant-order' => 'RestaurantOrdersImport',
         'menu' => 'MenusImport',
         'customer-group' => 'CustomerGroupsImport',
+        'product-price-book' => 'ProductPriceBookImport',
+        'menu-price-book' => 'MenuPriceBookImport',
     ],
     'export' => [
         'customer' => 'CustomersExport',
@@ -56,6 +58,11 @@ return [
         'promocode-sales' => 'Sales\PromocodeSalesExport',
         'promocode-used-customers' => 'Sales\PromocodeUsedCustomerExport',
         'promocode-invoice' => 'Sales\PromocodeInvoiceSalesExport',
+
+        'product-price-book' => 'ProductPriceBookExport',
+        'menu-price-book' => 'MenuPriceBookExport',
+
+        'customer-credit-sales' => 'Sales\CustomerCreditSalesExport',
     ],
     'name' => [
         'restaurant-vendor-sales',

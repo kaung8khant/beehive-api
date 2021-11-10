@@ -14,6 +14,7 @@ class CustomerGroup extends BaseModel
         'id',
         'created_at',
         'updated_at',
+        'pivot',
     ];
 
     public function customers()
