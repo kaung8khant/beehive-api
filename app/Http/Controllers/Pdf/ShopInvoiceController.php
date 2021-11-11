@@ -2,23 +2,31 @@
 
 namespace App\Http\Controllers\Pdf;
 
+use App\Events\ShopOrderUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\ShopOrder;
-use Carbon\Carbon;
-use niklasravnsborg\LaravelPdf\Facades\Pdf as PDF;
+use Illuminate\Support\Facades\Storage;
 
 class ShopInvoiceController extends Controller
 {
+    const PATH = 'pdf/shops/';
+
     public function generateInvoice($slug)
     {
         $shopOrder = ShopOrder::where('slug', $slug)->firstOrFail();
-        $vendors = $shopOrder->vendors;
-        $contact = $shopOrder->contact;
-        $date = Carbon::parse($shopOrder->order_date)->format('d M Y');
+        event(new ShopOrderUpdated($shopOrder));
 
         $fileName = $shopOrder->slug . '-' . $shopOrder->invoice_id . '.pdf';
+        return Storage::download(self::PATH . $fileName);
+    }
 
-        $pdf = PDF::loadView('shop-invoice', compact('shopOrder', 'vendors', 'contact', 'date'));
-        return $pdf->download($fileName);
+    public function getInvoice($fileName)
+    {
+        if (Storage::exists(self::PATH . $fileName)) {
+            return Storage::download(self::PATH . $fileName);
+        }
+
+        $slug = explode('-', $fileName)[0];
+        return $this->generateInvoice($slug);
     }
 }

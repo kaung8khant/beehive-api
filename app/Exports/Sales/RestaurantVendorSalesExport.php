@@ -24,6 +24,7 @@ class RestaurantVendorSalesExport implements FromCollection, WithColumnFormattin
     protected $param;
     protected $from;
     protected $to;
+    protected $filterBy;
 
     protected $result;
     protected $amountSum;
@@ -32,21 +33,38 @@ class RestaurantVendorSalesExport implements FromCollection, WithColumnFormattin
     protected $commissionCtSum;
     protected $balanceSum;
 
-    public function __construct($param, $from, $to)
+    public function __construct($param, $from, $to, $filterBy)
     {
         $this->param = $param;
         $this->from = $from;
         $this->to = $to;
+        $this->filterBy = $filterBy;
     }
 
     public function collection()
     {
         $restaurant = Restaurant::where('slug', $this->param)->first();
-        $restaurantOrders = RestaurantOrder::where('restaurant_id', $restaurant->id)
-            ->whereBetween('order_date', [$this->from, $this->to])
+
+        $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
+            ->where('restaurant_id', $restaurant->id)
+            ->orderBy('restaurant_id')
             ->orderBy('restaurant_branch_id')
-            ->orderBy('id')
-            ->get();
+            ->orderBy('id');
+        if ($this->filterBy === 'orderDate') {
+            $restaurantOrders =  $restaurantOrders
+                ->whereBetween('order_date', [$this->from, $this->to])
+                ->get();
+        } elseif ($this->filterBy === 'deliveredDate') {
+            $restaurantOrders =  $restaurantOrders
+                ->whereHas('restaurantOrderStatuses', function ($query) {
+                    $query->whereBetween('created_at', [$this->from, $this->to])->where('status', '=', 'delivered')->orderBy('created_at', 'desc');
+                })->get();
+        } else {
+            $restaurantOrders =  $restaurantOrders
+            ->whereHas('restaurantOrderStatuses', function ($query) {
+                $query->whereBetween('created_at', [$this->from, $this->to])->where('status', '=', 'pickUp')->orderBy('created_at', 'desc');
+            })->get();
+        }
 
         $this->result = $restaurantOrders->map(function ($order, $key) use ($restaurant) {
             $amount = $order->order_status == 'cancelled' ? '0' : $order->amount;
@@ -63,6 +81,13 @@ class RestaurantVendorSalesExport implements FromCollection, WithColumnFormattin
 
             $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->orderBy('created_at', 'desc')->first();
             $invoiceOrderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'pickUp')->orderBy('created_at', 'desc')->first();
+
+            if ($this->filterBy === 'deliveredDate') {
+                $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'delivered')->whereBetween('created_at', array($this->from, $this->to))->orderBy('created_at', 'desc')->first();
+            }
+            if ($this->filterBy === 'invoiceDate') {
+                $invoiceOrderStatus = RestaurantOrderStatus::where('restaurant_order_id', $order->id)->where('status', 'pickUp')->whereBetween('created_at', array($this->from, $this->to))->orderBy('created_at', 'desc')->first();
+            }
 
             return [
                 $key + 1,
@@ -87,6 +112,8 @@ class RestaurantVendorSalesExport implements FromCollection, WithColumnFormattin
                 $order->order_status,
                 $order->order_type,
                 $order->special_instruction,
+                $order->restaurantOrderContact->customer_name,
+                $order->restaurantOrderContact->phone_number,
             ];
         });
 
@@ -129,6 +156,8 @@ class RestaurantVendorSalesExport implements FromCollection, WithColumnFormattin
                 'order status',
                 "type\n(deli/self pick up)",
                 'special instructions',
+                'customer name',
+                'phone number',
             ],
         ];
     }
@@ -158,6 +187,8 @@ class RestaurantVendorSalesExport implements FromCollection, WithColumnFormattin
             'T' => 20,
             'U' => 30,
             'V' => 30,
+            'W' => 20,
+            'X' => 20,
         ];
     }
 
@@ -177,8 +208,10 @@ class RestaurantVendorSalesExport implements FromCollection, WithColumnFormattin
             'R' => ['alignment' => ['horizontal' => 'center']],
             'S' => ['alignment' => ['horizontal' => 'center']],
             'T' => ['alignment' => ['horizontal' => 'center']],
-            'U' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
+            'U' => ['alignment' => ['horizontal' => 'center']],
             'V' => ['alignment' => ['horizontal' => 'center']],
+            'W' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
+            'X' => ['alignment' => ['horizontal' => 'center']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
