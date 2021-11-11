@@ -67,7 +67,8 @@ class OrderDriverController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        $restaurantOrder = $restaurantOrder->merge($shopOrder);
+
+        $restaurantOrder = collect($restaurantOrder)->merge(collect($shopOrder));
 
         //group by date and status
         $restaurantOrder = $restaurantOrder->map(function ($data) {
@@ -84,9 +85,20 @@ class OrderDriverController extends Controller
 
         $restaurantOrder['accepted'] = isset($restaurantOrder['pending']) ? $restaurantOrder['pending'] : [];
 
-        $restaurantOrder['accepted'] = array_merge($restaurantOrder['accepted'], isset($restaurantOrder['preparing']) ? $restaurantOrder['preparing'] : []);
+        if (isset($restaurantOrder['preparing'])) {
+            foreach ($restaurantOrder['preparing'] as $key => $value) {
+                $v = array_merge($restaurantOrder['accepted'][$key], $value);
+                $restaurantOrder['accepted'][$key] = $v;
+            }
+        }
 
-        $restaurantOrder['accepted'] = array_merge($restaurantOrder['accepted'], isset($restaurantOrder['pickUp']) ? $restaurantOrder['pickUp'] : []);
+        if (isset($restaurantOrder['pickUp'])) {
+            foreach ($restaurantOrder['pickUp'] as $key => $value) {
+                $v = array_merge($restaurantOrder['accepted'][$key], $value);
+                $restaurantOrder['accepted'][$key] = $v;
+            }
+        }
+
         unset($restaurantOrder['pending']);
         unset($restaurantOrder['preparing']);
         unset($restaurantOrder['pickUp']);
@@ -175,14 +187,15 @@ class OrderDriverController extends Controller
             $orderID = $order->id;
             $orderDriverStatus = $this->assginToRes($orderID, $driverID);
         } else {
-            $orderID = ShopOrder::where('slug', $slug)->first()->id;
+            $order = ShopOrder::where('slug', $slug)->first();
+            $orderID = $order->id;
             $orderDriverStatus = $this->assginToShop($orderID, $driverID);
         }
-        $this->sendDriverPushNotifications($order,$driverID,"You had been assigned to an order!");
+        $this->sendDriverPushNotifications($order, $driverID, "You had been assigned to an order!");
         return $this->generateResponse($orderDriverStatus->refresh(), 201);
     }
 
-    private static function sendDriverPushNotifications($order, $driverID,$message = null)
+    private static function sendDriverPushNotifications($order, $driverID, $message = null)
     {
 
         $driver = User::where('id', $driverID)->pluck('slug');
@@ -193,7 +206,7 @@ class OrderDriverController extends Controller
 
         $request['data'] = self::preparePushData($order, "driver_order_update");
         $request['android_channel_id'] = config('one-signal.android_channel_id');
-        $request['url'] = 'hive://beehivedriver/job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
+        $request['url'] = 'hive://beehivedriver/job?&slug=' . $order->slug . '&orderStatus=' . $order->order_status;
 
         $appId = config('one-signal.admin_app_id');
 
@@ -201,7 +214,6 @@ class OrderDriverController extends Controller
         $uniqueKey = StringHelper::generateUniqueSlug();
 
         $response = OneSignalHelper::sendPush($fields, 'admin');
-
     }
     private static function preparePushData($order)
     {

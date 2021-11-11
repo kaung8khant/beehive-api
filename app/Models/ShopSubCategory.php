@@ -20,8 +20,6 @@ class ShopSubCategory extends BaseModel
         'shop_category_id',
     ];
 
-    protected $touches = ['shopCategory'];
-
     public static function boot()
     {
         parent::boot();

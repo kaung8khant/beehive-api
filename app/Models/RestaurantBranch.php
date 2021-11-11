@@ -27,8 +27,6 @@ class RestaurantBranch extends BaseModel
         'instant_order' => 'boolean',
     ];
 
-    protected $touches = ['restaurant'];
-
     public function toSearchableArray(): array
     {
         $array = $this->toArray();
