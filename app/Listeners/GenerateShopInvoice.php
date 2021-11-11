@@ -8,6 +8,8 @@ use niklasravnsborg\LaravelPdf\Facades\Pdf as PDF;
 
 class GenerateShopInvoice
 {
+    const PATH = 'pdf/shops/';
+
     /**
      * Create the event listener.
      *
@@ -33,8 +35,7 @@ class GenerateShopInvoice
 
         $fileName = $shopOrder->slug . '-' . $shopOrder->invoice_id . '.pdf';
 
-        $pdf = PDF::loadView('shop-invoice', compact('shopOrder', 'vendors', 'contact', 'date'));
-
-        Storage::put('pdf/shops/' . $fileName, $pdf);
+        $pdf = PDF::loadView('shop-invoice', compact('shopOrder', 'vendors', 'contact', 'date'))->output();
+        Storage::put(self::PATH . $fileName, $pdf);
     }
 }

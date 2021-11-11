@@ -210,6 +210,8 @@ class RestaurantOrderController extends Controller
         // assign driver here.
         event(new OrderAssignEvent($order, [], 0));
 
+        event(new RestaurantOrderUpdated($order));
+
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
         RestaurantOrderHelper::notifySystem($order, $phoneNumber, $this->messageService);
 

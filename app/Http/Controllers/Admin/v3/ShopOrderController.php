@@ -187,6 +187,8 @@ class ShopOrderController extends Controller
             return $order->refresh()->load('contact');
         });
 
+        event(new ShopOrderUpdated($order));
+
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
         ShopOrderHelper::notifySystem($order, $validatedData['order_items'], $phoneNumber, $this->messageService);
 
