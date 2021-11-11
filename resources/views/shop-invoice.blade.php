@@ -108,7 +108,6 @@
         </tbody>
     </table>
 
-
     <div class="customer-detail">
         <h4>CUSTOMER DETAILS</h4>
 

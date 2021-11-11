@@ -105,13 +105,14 @@ class ShopOrder extends BaseModel
             $query->where('shop_order_id', $this->id);
         })->pluck('id')->toArray();
 
-        $orderStatus = ShopOrderStatus::where('status', 'pickUp')
+        $orderStatus = ShopOrderStatus::whereIn('status', ['pickUp', 'delivered'])
             ->whereHas('vendor', function ($query) use ($vendorIds) {
                 $query->whereIn('id', $vendorIds);
-            })->latest('created_at')->first();
+            })
+            ->latest('created_at')
+            ->first();
 
         $invoiceDate = $orderStatus ? $orderStatus->created_at : null;
-
         return $invoiceDate;
     }
 

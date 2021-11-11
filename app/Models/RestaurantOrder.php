@@ -27,7 +27,7 @@ class RestaurantOrder extends BaseModel
         'commission' => 'float',
     ];
 
-    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount', 'driver_status','invoice_date'];
+    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount', 'driver_status', 'invoice_date'];
 
     public function getInvoiceIdAttribute()
     {
@@ -99,10 +99,12 @@ class RestaurantOrder extends BaseModel
 
     public function getInvoiceDateAttribute()
     {
-        $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $this->id)->where('status', 'pickUp')->latest('created_at')->first();
+        $orderStatus = RestaurantOrderStatus::where('restaurant_order_id', $this->id)
+            ->whereIn('status', ['pickUp', 'delivered'])
+            ->latest('created_at')
+            ->first();
 
-        $invoiceDate =$orderStatus ? $orderStatus->created_at : null;
-
+        $invoiceDate = $orderStatus ? $orderStatus->created_at : null;
         return $invoiceDate;
     }
 
