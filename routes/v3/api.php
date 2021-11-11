@@ -45,4 +45,7 @@ Route::group([
 
     Route::get('restaurants/invoice/{slug}/generate', 'Pdf\RestaurantInvoiceController@generateInvoice');
     Route::get('shops/invoice/{slug}/generate', 'Pdf\ShopInvoiceController@generateInvoice');
+
+    Route::get('restaurants/invoices/{fileName}', 'Pdf\RestaurantInvoiceController@getInvoice');
+    Route::get('shops/invoices/{fileName}', 'Pdf\ShopInvoiceController@getInvoice');
 });

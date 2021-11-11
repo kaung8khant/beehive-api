@@ -36,7 +36,7 @@ trait OrderHelper
             }
         })->sum('total_amount');
 
-        return $customer->credit->amount - $totalUsage;
+        return $customer->creidt ? $customer->credit->amount - $totalUsage : 0;
     }
 
     public static function getTotalAmount($cartItems, $promoAmount)
