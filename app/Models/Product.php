@@ -28,8 +28,6 @@ class Product extends BaseModel
 
     protected $appends = ['rating', 'images', 'covers'];
 
-    protected $touches = ['shop', 'brand', 'shopCategory', 'shopSubCategory'];
-
     public function toSearchableArray(): array
     {
         $array = $this->toArray();
