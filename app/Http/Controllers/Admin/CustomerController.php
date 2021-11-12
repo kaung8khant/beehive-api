@@ -86,9 +86,13 @@ class CustomerController extends Controller
     public function show(Customer $customer)
     {
         $customer = $customer->load([
-            'addresses',
-            'customerGroups',
             'credit' => function ($query) {
+                $query->exclude(['created_by', 'updated_by']);
+            },
+            'customerGroups' => function ($query) {
+                $query->exclude(['created_by', 'updated_by']);
+            },
+            'addresses' => function ($query) {
                 $query->exclude(['created_by', 'updated_by']);
             },
         ]);
