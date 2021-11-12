@@ -151,15 +151,12 @@ trait RestaurantOrderHelper
 
     public static function getRestaurantBranch($slug)
     {
-        $branch = RestaurantBranch::exclude(['created_by', 'updated_by'])
+        return RestaurantBranch::exclude(['created_by', 'updated_by'])
             ->with(['restaurant' => function ($query) {
                 $query->exclude(['created_by', 'updated_by']);
             }])
             ->where('slug', $slug)
             ->first();
-
-        $branch->restaurant->setAppends(['rating']);
-        return $branch;
     }
 
     public static function getTax()
