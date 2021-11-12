@@ -38,7 +38,7 @@
         }
 
         .pdf-table {
-            width: 100px;
+            width: 100%;
             font-weight: light;
             font-size: 15px;
             line-height: 1.4em;
