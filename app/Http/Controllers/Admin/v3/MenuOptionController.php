@@ -2,79 +2,132 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
+use App\Events\DataChanged;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\MenuOption;
+use App\Models\MenuOptionItem;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MenuOptionController extends Controller
 {
     use ResponseHelper, StringHelper;
 
+    private $user;
+
+    public function __construct()
+    {
+        if (Auth::guard('users')->check()) {
+            $this->user = Auth::guard('users')->user();
+        }
+    }
+
     public function index(Menu $menu)
     {
-        return MenuOption::with('options')->where('menu_id', $menu->id)->get();
+        return MenuOption::exclude(['created_by', 'updated_by'])
+            ->with(['options' => function ($query) {
+                $query->exclude(['created_by', 'updated_by']);
+            }])
+            ->where('menu_id', $menu->id)
+            ->get();
     }
 
-    public function store(Request $request)
+    public function store(Request $request, Menu $menu)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-        $validatedData = $this->validateMenuOption($request);
+        $validatedData = $this->validateCreateMenuOption($request);
 
         try {
-            $menuOption = MenuOption::create($validatedData);
-            return response()->json($menuOption, 201);
+            DB::transaction(function () use ($request, $menu, $validatedData) {
+                $this->createMenuOptions($request, $menu->id, $validatedData);
+            });
+
+            $menu->refresh()->load([
+                'menuOptions' => function ($query) {
+                    $query->exclude(['created_by', 'updated_by']);
+                },
+                'menuOptions.options' => function ($query) {
+                    $query->exclude(['created_by', 'updated_by']);
+                },
+            ]);
+
+            return response()->json($menu, 201);
         } catch (QueryException $e) {
             return $this->generateResponse('There is already same option name for this menu.', 409, true);
         }
     }
 
-    public function show(MenuOption $menuOption)
+    public function show(Menu $menu, MenuOption $option)
     {
-        return $menuOption->load('options');
+        return $option->makeHidden(['created_by', 'updated_by'])
+            ->load(['options' => function ($query) {
+                $query->exclude(['created_by', 'updated_by']);
+            }]);
     }
 
-    public function update(Request $request, MenuOption $menuOption)
+    public function update(Request $request, Menu $menu, MenuOption $option)
     {
-        $validatedData = $this->validateMenuOption($request);
+        $validatedData = $this->validateUpdateMenuOption($request);
 
         try {
-            $menuOption->update($validatedData);
-            return response()->json($menuOption, 200);
+            $validatedData['menu_id'] = $menu->id;
+            $option->update($validatedData);
+
+            return $option->makeHidden(['created_by', 'updated_by'])
+                ->load(['options' => function ($query) {
+                    $query->exclude(['created_by', 'updated_by']);
+                }]);
         } catch (QueryException $e) {
             return $this->generateResponse('There is already same option name for this menu.', 409, true);
         }
     }
 
-    public function destroy(MenuOption $menuOption)
+    public function destroy(Menu $menu, MenuOption $option)
     {
-        $menuOption->delete();
+        $option->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    private function validateMenuOption($request)
+    private function createMenuOptions($request, $menuId, $options)
     {
-        $rules = [
-            'name' => 'required|string',
-            'max_choice' => 'required|integer',
-            'menu_slug' => 'required|exists:App\Models\Menu,slug',
-        ];
+        foreach ($options as $option) {
+            $option['slug'] = $this->generateUniqueSlug();
+            $option['menu_id'] = $menuId;
 
-        if ($request->slug) {
-            $rules['slug'] = 'required|unique:menu_options';
+            $menuOption = MenuOption::create($option);
+            DataChanged::dispatch($this->user, 'create', 'menu_options', $option['slug'], $request->url(), 'success', $option);
+
+            foreach ($option['options'] as $item) {
+                $item['menu_option_id'] = $menuOption->id;
+                $item['slug'] = $this->generateUniqueSlug();
+                MenuOptionItem::create($item);
+
+                DataChanged::dispatch($this->user, 'create', 'menu_option_items', $item['slug'], $request->url(), 'success', $item);
+            }
         }
-
-        $validatedData = $request->validate($rules);
-        $validatedData['menu_id'] = $this->getMenuIdBySlug($validatedData['menu_slug']);
-
-        return $validatedData;
     }
 
-    private function getMenuIdBySlug($slug)
+    private function validateCreateMenuOption($request)
     {
-        return Menu::where('slug', $slug)->value('id');
+        return $request->validate([
+            '*' => 'array',
+            '*.name' => 'required|string',
+            '*.max_choice' => 'required',
+            '*.options' => 'required|array',
+            '*.options.*.name' => 'required|string',
+            '*.options.*.price' => 'required|numeric',
+        ]);
+    }
+
+    private function validateUpdateMenuOption($request)
+    {
+        return $request->validate([
+            'name' => 'required|string',
+            'max_choice' => 'required|integer',
+        ]);
     }
 }

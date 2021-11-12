@@ -26,11 +26,8 @@ Route::group([
     /* Shop Order */
 
     /* Menu Option */
-    Route::resource('menu-options', 'MenuOptionController', ['as' => 'admin-v3-menu-option', 'except' => ['create', 'edit']]);
-    Route::get('menus/{menu}/menu-options', 'MenuOptionController@index');
-
-    Route::resource('menu-option-items', 'MenuOptionItemController', ['as' => 'admin-v3-menu-option-item', 'except' => ['create', 'edit']]);
-    Route::get('menu-options/{menuOption}/items', 'MenuOptionItemController@index');
+    Route::resource('menus/{menu}/options', 'MenuOptionController', ['as' => 'admin-v3-menu-option', 'except' => ['create', 'edit']]);
+    Route::resource('options/{option}/items', 'MenuOptionItemController', ['as' => 'admin-v3-menu-option-item', 'except' => ['create', 'edit']]);
     /* Menu Option */
 
     Route::get('customers/{customer}/credits', 'CreditController@index');
