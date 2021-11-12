@@ -2,6 +2,7 @@
 
 namespace App\Helpers\v3;
 
+use App\Models\Credit;
 use App\Models\RestaurantOrder;
 use App\Models\ShopOrder;
 use Carbon\Carbon;
@@ -36,7 +37,8 @@ trait OrderHelper
             }
         })->sum('total_amount');
 
-        return $customer->creidt ? $customer->credit->amount - $totalUsage : 0;
+        $credit = Credit::where('customer_id', $customer->id)->first();
+        return $credit ? $credit->amount - $totalUsage : 0;
     }
 
     public static function getTotalAmount($cartItems, $promoAmount)
