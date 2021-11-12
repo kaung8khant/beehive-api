@@ -138,7 +138,7 @@
         @endif
     </div>
 
-    <table class="pdf-table" cellspacing="0">
+    <table class="pdf-table">
         <thead>
             <tr>
                 <th class="pdf-col" align="left">No.</th>
