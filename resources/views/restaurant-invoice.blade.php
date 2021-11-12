@@ -28,7 +28,9 @@
 
         .customer-detail {
             margin-left: 3px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            display: inline-block;
+            width: 100%;
         }
 
         h4 {
@@ -36,29 +38,28 @@
         }
 
         .pdf-table {
-            width: 100%;
+            width: 100px;
             font-weight: light;
             font-size: 15px;
             line-height: 1.4em;
-        }
+            border-collapse: collapse;
 
-        .border {
-            border-bottom: 1px solid rgb(162, 164, 165);
         }
+        .pdf-col{
+                border-bottom: 1px solid rgb(162, 164, 165);
+                padding: 5px 10px;
+            }
+            .pdf-footer-col{
+                padding: 5px 10px;
+            }
 
-        .pdf-col {
-            padding: 5px 3px;
-            width: 20%;
-        }
+            .border{
+                border-top: 1px solid rgb(162, 164, 165);
+            }
 
-        .pdf-number {
-            width: 5%;
-        }
-
-        .pdf-col-name {
-            width: 40%;
-            padding-right: 10px;
-        }
+            .pdf-amount-col{
+                white-space: nowrap;
+            }
     </style>
 </head>
 
@@ -117,39 +118,44 @@
         <h4>CUSTOMER DETAILS</h4>
 
         <div>
-            <div style="width: 80px; float: left;"><strong>Name</strong></div>
+            <div style="width: 90px; float: left;"><strong>Name</strong></div>
             <div>: {{ $restaurantOrderContact['customer_name'] }}</div>
         </div>
 
         <div>
-            <div style="width: 80px; float: left;"><strong>Phone</strong></div>
+            <div style="width: 90px; float: left;"><strong>Phone</strong></div>
             <div>: {{ $restaurantOrderContact['phone_number'] }}</div>
         </div>
 
         <div>
-            <div style="width: 80px; float: left;"><strong>Address</strong></div>
+            <div style="width: 90px; float: left;"><strong>Address</strong></div>
             <div>: {{ $restaurantOrderContact['street_name'] }}</div>
         </div>
+        @if($restaurantOrder['special_instruction'])   <div>
+            <div style="width: 90px; float: left;"><strong>Special Instructions</strong></div>
+            <div>: {{ $restaurantOrder['special_instruction'] }}</div>
+        </div>
+        @endif
     </div>
 
-    <table class="pdf-table" cellspacing="0">
+    <table class="pdf-table">
         <thead>
             <tr>
-                <th class="border pdf-col pdf-number" align="left">No.</th>
-                <th class="border pdf-col pdf-col-name" align="left">Menu</th>
-                <th class="border pdf-col" align="right">Unit Price</th>
-                <th class="border pdf-col" align="right">Qty</th>
-                <th class="border pdf-col" align="right">Line Total</th>
+                <th class="pdf-col" align="left">No.</th>
+                <th class="pdf-col" align="left">Menu</th>
+                <th class="pdf-col" align="right">Unit Price</th>
+                <th class="pdf-col" align="right">Qty</th>
+                <th class="pdf-col" align="right">Line Total</th>
             </tr>
         </thead>
 
         <tbody>
             @foreach ($restaurantOrderItems as $item)
             <tr>
-                <td class="border pdf-col pdf-number" align="left" style="vertical-align: top;">
+                <td class="pdf-col" align="left" style="vertical-align: top;">
                     {{ $loop->iteration }}
                 </td>
-                <td class="border pdf-col pdf-col-name" align="left">
+                <td class="pdf-col" align="left">
                     {{ $item['menu_name'] }}
 
                     @if($item['variant'])
@@ -180,13 +186,13 @@
                     </div>
                     @endif
                 </td>
-                <td class="border pdf-col" align="right" style="vertical-align: top;">
+                <td class="pdf-col pdf-amount-col" align="right" style="vertical-align: top;">
                     {{ number_format($item['amount'] - $item['discount']) }} MMK
                 </td>
-                <td class="border pdf-col" align="right" style="vertical-align: top;">
+                <td class="pdf-col" align="right" style="vertical-align: top;">
                     {{ $item['quantity'] }}
                 </td>
-                <td class="border pdf-col" align="right" style="vertical-align: top;">
+                <td class="pdf-col pdf-amount-col" align="right" style="vertical-align: top;">
                     {{ number_format(($item['amount'] - $item['discount']) * $item['quantity']) }} MMK
                 </td>
             </tr>
@@ -195,46 +201,49 @@
 
         <tfoot>
             <tr>
-                <td colspan="4" align="right" class="pdf-col">
+                <td colspan="4" align="right"  class="pdf-footer-col">
                     <strong>Sub Total</strong>
                 </td>
-                <td align="right" class="pdf-col">
+                <td align="right"  class="pdf-footer-col pdf-amount-col">
                     {{ number_format(round($restaurantOrder['amount'] - $restaurantOrder['discount'])) }} MMK
                 </td>
             </tr>
 
             <tr>
-                <td colspan="4" align="right" class="pdf-col">
+                <td colspan="4" align="right" class="pdf-footer-col">
                     <strong>Delivery Fee</strong>
                 </td>
-                <td align="right" class="pdf-col">
+                <td align="right"  class="pdf-footer-col pdf-amount-col">
                     {{ 0 }} MMK
                 </td>
             </tr>
 
             <tr>
-                <td colspan="4" align="right" class="pdf-col">
+                <td colspan="4" align="right"  class="pdf-footer-col">
                     <strong>Tax</strong>
                 </td>
-                <td align="right" class="pdf-col">
+                <td align="right" class="pdf-footer-col pdf-amount-col">
                     {{ number_format(round($restaurantOrder['tax'])) }} MMK
                 </td>
             </tr>
 
+            @if(number_format(round($restaurantOrder['promocode_amount'])))
             <tr>
-                <td colspan="4" align="right" class="border pdf-col">
-                    <strong>Discount</strong>
+                <td colspan="4" align="right" class="pdf-footer-col">
+                    <strong>Promotion</strong>
                 </td>
-                <td align="right" class="border pdf-col">
+                <td align="right" class="pdf-footer-col pdf-amount-col">
                     {{ number_format(round($restaurantOrder['promocode_amount'])) }} MMK
                 </td>
             </tr>
-
+@endif
             <tr>
-                <td colspan="4" align="right" class="pdf-col">
+                <td colspan="3" class="pdf-footer-col">
+                </td>
+                <td align="right" class="pdf-footer-col border">
                     <strong>Total</strong>
                 </td>
-                <td align="right" class="pdf-col">
+                <td align="right" class="pdf-footer-col border pdf-amount-col">
                     {{ number_format(round($restaurantOrder['total_amount'])) }} MMK
                 </td>
             </tr>
