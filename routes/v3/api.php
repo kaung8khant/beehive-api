@@ -6,6 +6,8 @@ Route::group([
     'prefix' => 'v3',
     'middleware' => ['cors', 'json.response'],
 ], function () {
+    Route::get('images/{size}/{fileName}', 'File\v3\FileController@getImage');
+
     Route::post('carts', 'Cart\CartController@viewCart');
 
     /* Restaurant Cart */
