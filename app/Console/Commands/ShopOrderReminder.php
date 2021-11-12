@@ -48,7 +48,7 @@ class ShopOrderReminder extends Command
 
         $orders = ShopOrder::with('drivers', 'drivers.status')
             ->where('order_status', '!=', 'cancelled')
-            ->whereDate('created_at', '>=', Carbon::now()->subDays(3)->startOfDay())
+            ->whereDate('created_at', '>=', Carbon::now()->subDays(2)->startOfDay())
             ->whereHas('drivers.status', function ($q) {
                 $q->where('status', 'rejected');
                 $q->orWhere('status', 'pending');
@@ -70,8 +70,6 @@ class ShopOrderReminder extends Command
             $uniqueKey = StringHelper::generateUniqueSlug();
 
             $response = OneSignalHelper::sendPush($fields, 'admin');
-
-            Log::info($response);
         }
     }
 }
