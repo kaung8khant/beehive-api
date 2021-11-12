@@ -87,14 +87,22 @@ class OrderDriverController extends Controller
 
         if (isset($restaurantOrder['preparing'])) {
             foreach ($restaurantOrder['preparing'] as $key => $value) {
-                $v = array_merge($restaurantOrder['accepted'][$key], $value);
+                if (isset($restaurantOrder['accepted'][$key])) {
+                    $v = array_merge($restaurantOrder['accepted'][$key], $value);
+                } else {
+                    $v = $value;
+                }
                 $restaurantOrder['accepted'][$key] = $v;
             }
         }
 
         if (isset($restaurantOrder['pickUp'])) {
             foreach ($restaurantOrder['pickUp'] as $key => $value) {
-                $v = array_merge($restaurantOrder['accepted'][$key], $value);
+                if (isset($restaurantOrder['accepted'][$key])) {
+                    $v = array_merge($restaurantOrder['accepted'][$key], $value);
+                } else {
+                    $v = $value;
+                }
                 $restaurantOrder['accepted'][$key] = $v;
             }
         }
