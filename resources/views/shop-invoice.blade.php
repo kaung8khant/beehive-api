@@ -28,7 +28,9 @@
 
         .customer-detail {
             margin-left: 3px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            display: inline-block;
+            width: 100%;
         }
 
         h4 {
@@ -40,24 +42,24 @@
             font-weight: light;
             font-size: 15px;
             line-height: 1.4em;
-        }
+            border-collapse: collapse;
 
-        .border {
-            border-bottom: 1px solid rgb(162, 164, 165);
         }
+        .pdf-col{
+                border-bottom: 1px solid rgb(162, 164, 165);
+                padding: 5px 10px;
+            }
+            .pdf-footer-col{
+                padding: 5px 10px;
+            }
 
-        .pdf-col {
-            padding: 5px 3px;
-        }
+            .border{
+                border-top: 1px solid rgb(162, 164, 165);
+            }
 
-        .pdf-number {
-            width: 5%;
-        }
-
-        .pdf-col-name {
-            width: 30%;
-            padding-right: 10px;
-        }
+            .pdf-amount-col{
+                white-space: nowrap;
+            }
     </style>
 </head>
 
@@ -112,30 +114,35 @@
         <h4>CUSTOMER DETAILS</h4>
 
         <div>
-            <div style="width: 80px; float: left;"><strong>Name</strong></div>
+            <div style="width: 90px; float: left;"><strong>Name</strong></div>
             <div>: {{ $contact['customer_name'] }}</div>
         </div>
 
         <div>
-            <div style="width: 80px; float: left;"><strong>Phone</strong></div>
+            <div style="width: 90px; float: left;"><strong>Phone</strong></div>
             <div>: {{ $contact['phone_number'] }}</div>
         </div>
 
         <div>
-            <div style="width: 80px; float: left;"><strong>Address</strong></div>
+            <div style="width: 90px; float: left;"><strong>Address</strong></div>
             <div>: {{ $contact['street_name'] }}</div>
         </div>
+      @if($shopOrder['special_instruction'])   <div>
+            <div style="width: 90px; float: left;"><strong>Special Instructions</strong></div>
+            <div>: {{ $shopOrder['special_instruction'] }}</div>
+        </div>
+        @endif
     </div>
 
-    <table class="pdf-table" cellspacing="0">
+    <table class="pdf-table">
         <thead>
             <tr>
-                <th class="border pdf-col pdf-number" align="left">No.</th>
-                <th class="border pdf-col pdf-col-name" align="left">Product</th>
-                <th class="border pdf-col" align="left">Shop</th>
-                <th class="border pdf-col" align="right">Unit Price</th>
-                <th class="border pdf-col" style="width: 8%;" align="right">Qty</th>
-                <th class="border pdf-col" style="width: 18%;" align="right">Line Total</th>
+                <th class="pdf-col" align="left">No.</th>
+                <th class="pdf-col" align="left">Product</th>
+                <th class="pdf-col" align="left">Shop</th>
+                <th class="pdf-col" align="right">Unit Price</th>
+                <th class="pdf-col" align="right">Qty</th>
+                <th class="pdf-col" align="right">Line Total</th>
             </tr>
         </thead>
 
@@ -148,10 +155,10 @@
                 @foreach ($vendor['items'] as $item)
 
                 <tr>
-                    <td class="border pdf-col pdf-number" align="left" style="vertical-align: top;">
+                    <td class="pdf-col" align="left" style="vertical-align: top;">
                         {{ $currentLoop }}
                     </td>
-                    <td class="border pdf-col pdf-col-name" align="left">
+                    <td class="pdf-col" align="left">
                         {{ $item['product_name'] }}
 
                         @if($item['variant'])
@@ -164,16 +171,16 @@
                         </div>
                         @endif
                     </td>
-                    <td class="border pdf-col" align="left" style="vertical-align: top;">
+                    <td class="pdf-col" align="left" style="vertical-align: top;">
                         {{ $vendor['shop']['name'] }}
                     </td>
-                    <td class="border pdf-col" align="right" style="vertical-align: top;">
+                    <td class="pdf-col pdf-amount-col" align="right" style="vertical-align: top;">
                         {{ number_format($item['amount'] - $item['discount']) }} MMK
                     </td>
-                    <td class="border pdf-col" align="right" style="vertical-align: top;">
+                    <td class="pdf-col" align="right" style="vertical-align: top;">
                         {{ $item['quantity'] }}
                     </td>
-                    <td class="border pdf-col" align="right" style="vertical-align: top;">
+                    <td class="pdf-col pdf-amount-col" align="right" style="vertical-align: top;">
                         {{ number_format(($item['amount'] - $item['discount']) * $item['quantity']) }} MMK
                     </td>
                 </tr>
@@ -188,46 +195,48 @@
 
         <tfoot>
             <tr>
-                <td colspan="5" align="right" class="pdf-col">
+                <td colspan="5" align="right" class="pdf-footer-col">
                     <strong>Sub Total</strong>
                 </td>
-                <td align="right" class="pdf-col">
+                <td align="right" class="pdf-footer-col pdf-amount-col">
                     {{ number_format(round($shopOrder['amount'] - $shopOrder['discount']))}} MMK
                 </td>
             </tr>
 
             <tr>
-                <td colspan="5" align="right" class="pdf-col">
+                <td colspan="5" align="right" class="pdf-footer-col">
                     <strong>Delivery Fee</strong>
                 </td>
-                <td align="right" class="pdf-col">
+                <td align="right" class="pdf-footer-col pdf-amount-col">
                     {{ 0 }} MMK
                 </td>
             </tr>
 
             <tr>
-                <td colspan="5" align="right" class="pdf-col">
+                <td colspan="5" align="right" class="pdf-footer-col">
                     <strong>Tax</strong>
                 </td>
-                <td align="right" class="pdf-col">
+                <td align="right" class="pdf-footer-col pdf-amount-col">
                     {{ number_format(round($shopOrder['tax'])) }} MMK
                 </td>
             </tr>
-
+            @if(number_format(round($shopOrder['promocode_amount'])))
             <tr>
-                <td colspan="5" align="right" class="border pdf-col">
-                    <strong>Discount</strong>
+                <td colspan="5" align="right" class="pdf-footer-col">
+                    <strong>Promotion</strong>
                 </td>
-                <td align="right" class="border pdf-col">
+                <td align="right" class="pdf-footer-col pdf-amount-col">
                     {{ number_format(round($shopOrder['promocode_amount'])) }} MMK
                 </td>
             </tr>
-
+@endif
             <tr>
-                <td colspan="5" align="right" class="pdf-col">
+                <td colspan="4" class="pdf-footer-col">
+                </td>
+                <td align="right" class="pdf-footer-col border">
                     <strong>Total</strong>
                 </td>
-                <td align="right" class="pdf-col">
+                <td align="right" class="pdf-footer-col border pdf-amount-col">
                     {{ number_format(round($shopOrder['total_amount'])) }} MMK
                 </td>
             </tr>
