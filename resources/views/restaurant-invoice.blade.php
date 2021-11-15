@@ -214,7 +214,7 @@
                     <strong>Delivery Fee</strong>
                 </td>
                 <td align="right"  class="pdf-footer-col pdf-amount-col">
-                    {{ 0 }} MMK
+                    {{ number_format(round($restaurantOrder['delivery_fee'])) }} MMK
                 </td>
             </tr>
 
