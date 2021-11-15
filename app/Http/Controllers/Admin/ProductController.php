@@ -297,11 +297,9 @@ class ProductController extends Controller
 
     public function updateSearchIndex(Request $request, Product $product)
     {
-        $validatedData = $request->validate([
+        $product->update($request->validate([
             'search_index' => 'required|numeric',
-        ]);
-
-        $product->update($validatedData);
+        ]));
 
         return response()->json($product->load('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants'), 200);
     }

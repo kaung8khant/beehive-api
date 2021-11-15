@@ -35,7 +35,7 @@ return [
     |
     */
 
-    'customRanking' => ['asc(name)'],
+    'customRanking' => ['desc(search_index)', 'asc(name)'],
 
     /*
     |--------------------------------------------------------------------------

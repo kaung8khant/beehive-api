@@ -19,7 +19,7 @@ class ShopSubCategoryController extends Controller
         if ($request->filter) {
             $shopSubCategories = ShopSubCategory::search($request->filter)->paginate(10);
         } else {
-            $shopSubCategories = ShopSubCategory::orderBy('name', 'asc')->paginate(10);
+            $shopSubCategories = ShopSubCategory::orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
         }
 
         $this->optimizeShopSubCategories($shopSubCategories);
@@ -44,7 +44,7 @@ class ShopSubCategoryController extends Controller
 
     public function show(ShopSubCategory $shopSubCategory)
     {
-        return response()->json($shopSubCategory->load('shopCategory'), 200);
+        return $shopSubCategory->load('shopCategory');
     }
 
     public function update(Request $request, ShopSubCategory $shopSubCategory)
@@ -67,7 +67,7 @@ class ShopSubCategoryController extends Controller
             ]);
         }
 
-        return response()->json($shopSubCategory->load('shopCategory')->unsetRelation('products'), 200);
+        return $shopSubCategory->load('shopCategory')->unsetRelation('products');
     }
 
     public function destroy(ShopSubCategory $shopSubCategory)
@@ -88,7 +88,7 @@ class ShopSubCategoryController extends Controller
         if ($request->filter) {
             $shopSubCategories = ShopSubCategory::search($request->filter)->where('shop_category_id', $shopCategory->id)->paginate(10);
         } else {
-            $shopSubCategories = ShopSubCategory::where('shop_category_id', $shopCategory->id)->orderBy('name', 'asc')->paginate(10);
+            $shopSubCategories = ShopSubCategory::where('shop_category_id', $shopCategory->id)->orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
         }
 
         $this->optimizeShopSubCategories($shopSubCategories);
@@ -105,5 +105,14 @@ class ShopSubCategoryController extends Controller
             $subCategory->makeHidden(['created_by', 'updated_by']);
             $subCategory->shopCategory->setAppends([]);
         }
+    }
+
+    public function updateSearchIndex(Request $request, ShopSubCategory $shopSubCategory)
+    {
+        $shopSubCategory->update($request->validate([
+            'search_index' => 'required|numeric',
+        ]));
+
+        return $shopSubCategory;
     }
 }

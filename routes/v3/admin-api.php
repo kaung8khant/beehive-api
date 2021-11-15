@@ -9,6 +9,7 @@ Route::group([
 ], function () {
     /* Shop Main Category */
     Route::resource('shop-main-categories', 'ShopMainCategoryController', ['as' => 'admin-v3-shop-main-category', 'except' => ['create', 'edit']]);
+    Route::put('shop-main-categories/{shopMainCategory}/index', 'ShopMainCategoryController@updateSearchIndex');
     /* Shop Main Category */
 
     /* Restaurant Order */
