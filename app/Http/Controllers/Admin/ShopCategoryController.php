@@ -21,7 +21,7 @@ class ShopCategoryController extends Controller
         if ($request->filter) {
             $shopCategories = ShopCategory::search($request->filter)->paginate(10);
         } else {
-            $shopCategories = ShopCategory::orderBy('name', 'asc')->paginate(10);
+            $shopCategories = ShopCategory::orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
         }
 
         $this->optimizeShopCategories($shopCategories);
@@ -49,7 +49,7 @@ class ShopCategoryController extends Controller
 
     public function show(ShopCategory $shopCategory)
     {
-        return response()->json($shopCategory->load('shopSubCategories'), 200);
+        return $shopCategory->load('shopSubCategories');
     }
 
     public function update(Request $request, ShopCategory $shopCategory)
@@ -66,7 +66,7 @@ class ShopCategoryController extends Controller
             $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
         }
 
-        return response()->json($shopCategory, 200);
+        return $shopCategory;
     }
 
     public function destroy(ShopCategory $shopCategory)
@@ -88,7 +88,7 @@ class ShopCategoryController extends Controller
         if ($request->filter) {
             $shopCategories = ShopCategory::search($request->filter)->whereIn('id', $categoryIds)->paginate(10);
         } else {
-            $shopCategories = ShopCategory::whereIn('id', $categoryIds)->orderBy('name', 'asc')->paginate(10);
+            $shopCategories = ShopCategory::whereIn('id', $categoryIds)->orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
         }
 
         $this->optimizeShopCategories($shopCategories);
@@ -98,5 +98,14 @@ class ShopCategoryController extends Controller
     private function optimizeShopCategories($shopCategories)
     {
         $shopCategories->makeHidden(['created_by', 'updated_by']);
+    }
+
+    public function updateSearchIndex(Request $request, ShopCategory $shopCategory)
+    {
+        $shopCategory->update($request->validate([
+            'search_index' => 'required|numeric',
+        ]));
+
+        return $shopCategory;
     }
 }

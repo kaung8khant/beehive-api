@@ -14,7 +14,7 @@ class ShopMainCategoryController extends Controller
 
     public function index()
     {
-        return ShopMainCategory::orderBy('name', 'asc')->get();
+        return ShopMainCategory::orderBy('search_index', 'desc')->orderBy('name', 'asc')->get();
     }
 
     public function store(Request $request)
@@ -45,7 +45,7 @@ class ShopMainCategoryController extends Controller
             ],
         ]));
 
-        return response()->json($shopMainCategory, 200);
+        return $shopMainCategory;
     }
 
     public function destroy(ShopMainCategory $shopMainCategory)
@@ -54,5 +54,14 @@ class ShopMainCategoryController extends Controller
 
         $shopMainCategory->delete();
         return response()->json(['message' => 'successfully deleted'], 200);
+    }
+
+    public function updateSearchIndex(Request $request, ShopMainCategory $shopMainCategory)
+    {
+        $shopMainCategory->update($request->validate([
+            'search_index' => 'required|numeric',
+        ]));
+
+        return $shopMainCategory;
     }
 }

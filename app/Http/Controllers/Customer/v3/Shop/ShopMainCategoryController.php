@@ -10,7 +10,7 @@ class ShopMainCategoryController extends Controller
 {
     public function index(Request $request)
     {
-        $shopMainCategories = ShopMainCategory::exclude(['created_by', 'updated_by'])->orderBy('name', 'asc');
+        $shopMainCategories = ShopMainCategory::exclude(['created_by', 'updated_by'])->orderBy('search_index', 'desc')->orderBy('name', 'asc');
 
         if ($request->populate && (bool) $request->populate) {
             $shopMainCategories->with(['shopCategories' => function ($query) {
