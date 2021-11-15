@@ -19,9 +19,8 @@ Route::group([
     Route::delete('restaurant-order-items/{restaurantOrderItem}/cancel', 'RestaurantOrderController@cancelOrderItem');
     Route::delete('restaurant-orders/{restaurantOrder}/restaurant-order-items/{restaurantOrderItem}/cancel', 'RestaurantOrderController@cancelOrderItem');
 
-    Route::put('menu-options/{menuOption}', 'MenuOptionController@update');
-    Route::delete('menu-options/{menuOption}', 'MenuOptionController@destroy');
-    Route::post('menu-option-items', 'MenuOptionItemController@store');
-    Route::put('menu-option-items/{menuOptionItem}', 'MenuOptionItemController@update');
-    Route::delete('menu-option-items/{menuOptionItem}', 'MenuOptionItemController@destroy');
+    /* Menu Option */
+    Route::resource('menus/{menu}/options', 'MenuOptionController', ['as' => 'vendor-v3-menu-option', 'except' => ['create', 'edit']]);
+    Route::resource('options/{option}/items', 'MenuOptionItemController', ['as' => 'vendor-v3-menu-option-item', 'except' => ['create', 'edit']]);
+    /* Menu Option */
 });
