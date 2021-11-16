@@ -19,6 +19,8 @@ class ShopMainCategory extends BaseModel
         'updated_at',
     ];
 
+    protected $appends = ['images'];
+
     public static function boot()
     {
         parent::boot();
@@ -34,6 +36,15 @@ class ShopMainCategory extends BaseModel
         $array = $this->toArray();
         $array['id'] = $this->id;
         return $array;
+    }
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'shop_main_categories')
+            ->where('source_id', $this->id)
+            ->where('type', 'image')
+            ->whereIn('extension', ['png', 'jpg'])
+            ->get();
     }
 
     public function shopCategories()

@@ -17,6 +17,8 @@ Route::group([
 
         //Promo code
         Route::post('promocode/validate', 'PromocodeController@validatePromoCode');
+
+        Route::get('credits', 'CreditController@index');
     });
 
     Route::get('shop-main-categories', 'Shop\ShopMainCategoryController@index');

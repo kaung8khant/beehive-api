@@ -45,21 +45,23 @@
             border-collapse: collapse;
 
         }
-        .pdf-col{
-                border-bottom: 1px solid rgb(162, 164, 165);
-                padding: 5px 10px;
-            }
-            .pdf-footer-col{
-                padding: 5px 10px;
-            }
 
-            .border{
-                border-top: 1px solid rgb(162, 164, 165);
-            }
+        .pdf-col {
+            border-bottom: 1px solid rgb(162, 164, 165);
+            padding: 5px 10px;
+        }
 
-            .pdf-amount-col{
-                white-space: nowrap;
-            }
+        .pdf-footer-col {
+            padding: 5px 10px;
+        }
+
+        .border {
+            border-top: 1px solid rgb(162, 164, 165);
+        }
+
+        .pdf-amount-col {
+            white-space: nowrap;
+        }
     </style>
 </head>
 
@@ -131,7 +133,7 @@
             <div style="width: 90px; float: left;"><strong>Address</strong></div>
             <div>: {{ $restaurantOrderContact['street_name'] }}</div>
         </div>
-        @if($restaurantOrder['special_instruction'])   <div>
+        @if($restaurantOrder['special_instruction']) <div>
             <div style="width: 90px; float: left;"><strong>Special Instructions</strong></div>
             <div>: {{ $restaurantOrder['special_instruction'] }}</div>
         </div>
@@ -201,10 +203,10 @@
 
         <tfoot>
             <tr>
-                <td colspan="4" align="right"  class="pdf-footer-col">
+                <td colspan="4" align="right" class="pdf-footer-col">
                     <strong>Sub Total</strong>
                 </td>
-                <td align="right"  class="pdf-footer-col pdf-amount-col">
+                <td align="right" class="pdf-footer-col pdf-amount-col">
                     {{ number_format(round($restaurantOrder['amount'] - $restaurantOrder['discount'])) }} MMK
                 </td>
             </tr>
@@ -213,13 +215,13 @@
                 <td colspan="4" align="right" class="pdf-footer-col">
                     <strong>Delivery Fee</strong>
                 </td>
-                <td align="right"  class="pdf-footer-col pdf-amount-col">
+                <td align="right" class="pdf-footer-col pdf-amount-col">
                     {{ number_format(round($restaurantOrder['delivery_fee'])) }} MMK
                 </td>
             </tr>
 
             <tr>
-                <td colspan="4" align="right"  class="pdf-footer-col">
+                <td colspan="4" align="right" class="pdf-footer-col">
                     <strong>Tax</strong>
                 </td>
                 <td align="right" class="pdf-footer-col pdf-amount-col">
@@ -236,7 +238,7 @@
                     {{ number_format(round($restaurantOrder['promocode_amount'])) }} MMK
                 </td>
             </tr>
-@endif
+            @endif
             <tr>
                 <td colspan="3" class="pdf-footer-col">
                 </td>

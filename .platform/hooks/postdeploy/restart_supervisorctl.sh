@@ -22,6 +22,6 @@ php artisan migrate --force
 
 php artisan event:cache
 
-# php artisan scout:reimport
-
 php artisan scout:sync -n
+
+php artisan scout:reimport
