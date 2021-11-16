@@ -59,11 +59,12 @@ class ShopMainCategoryController extends Controller
     public function destroy(ShopMainCategory $shopMainCategory)
     {
         return response()->json(['message' => 'Permission denied.'], 403);
+
         foreach ($shopMainCategory->images as $image) {
             $this->deleteFile($image->slug);
         }
-        $shopMainCategory->delete();
 
+        $shopMainCategory->delete();
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 

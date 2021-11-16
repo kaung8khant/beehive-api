@@ -20,9 +20,9 @@ class ShopCategoryController extends Controller
     public function index(Request $request)
     {
         if ($request->filter) {
-            $shopCategories = ShopCategory::with('shopMainCategory')->search($request->filter)->paginate(10);
+            $shopCategories = ShopCategory::search($request->filter)->paginate(10);
         } else {
-            $shopCategories = ShopCategory::with('shopMainCategory')->orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
+            $shopCategories = ShopCategory::orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
         }
 
         $this->optimizeShopCategories($shopCategories);
@@ -41,7 +41,6 @@ class ShopCategoryController extends Controller
         ]);
 
         $validatedData['shop_main_category_id'] = $this->getShopMainCategoryId($request->shop_main_category_slug);
-
         $shopCategory = ShopCategory::create($validatedData);
 
         if ($request->image_slug) {
@@ -68,8 +67,8 @@ class ShopCategoryController extends Controller
         ]);
 
         $validatedData['shop_main_category_id'] = $this->getShopMainCategoryId($request->shop_main_category_slug);
-
         $shopCategory->update($validatedData);
+
         if ($request->image_slug) {
             $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
         }
@@ -103,14 +102,18 @@ class ShopCategoryController extends Controller
         return CollectionHelper::removePaginateLinks($shopCategories);
     }
 
-    public function getShopCategoriesByMainCategory(Request $request, ShopMainCategory $shopMainCategory)
+    public function getCategoriesByMainCategory(Request $request, ShopMainCategory $shopMainCategory)
     {
         if ($request->filter) {
-            $shopCategories = ShopCategory::search($request->filter)->where('shop_main_category_id', $shopMainCategory->id)->paginate(10);
+            $shopCategories = ShopCategory::search($request->filter)
+                ->where('shop_main_category_id', $shopMainCategory->id)
+                ->paginate(10);
         } else {
-            $shopCategories = ShopCategory::where('shop_main_category_id', $shopMainCategory->id)->orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
+            $shopCategories = ShopCategory::where('shop_main_category_id', $shopMainCategory->id)
+                ->orderBy('search_index', 'desc')
+                ->orderBy('name', 'asc')
+                ->paginate(10);
         }
-
 
         $this->optimizeShopCategories($shopCategories);
         return CollectionHelper::removePaginateLinks($shopCategories);
@@ -118,6 +121,7 @@ class ShopCategoryController extends Controller
 
     private function optimizeShopCategories($shopCategories)
     {
+        $shopCategories->load('shopMainCategory');
         $shopCategories->makeHidden(['created_by', 'updated_by']);
     }
 

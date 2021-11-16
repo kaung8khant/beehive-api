@@ -65,7 +65,7 @@ Route::group([
         Route::resource('shop-categories', 'Admin\ShopCategoryController', ['except' => ['create', 'edit']]);
         Route::put('shop-categories/{shopCategory}/index', 'Admin\ShopCategoryController@updateSearchIndex');
 
-        Route::get('shop-main-categories/{shopMainCategory}/shop-categories', 'Admin\ShopCategoryController@getShopCategoriesByMainCategory');
+        Route::get('shop-main-categories/{shopMainCategory}/shop-categories', 'Admin\ShopCategoryController@getCategoriesByMainCategory');
 
         Route::resource('sub-categories', 'Admin\ShopSubCategoryController', ['except' => ['create', 'edit']])->parameter('sub-categories', 'shopSubCategory');
         Route::get('shop-categories/{shopCategory}/sub-categories', 'Admin\ShopSubCategoryController@getSubCategoriesByCategory');

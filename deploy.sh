@@ -19,4 +19,4 @@ php artisan event:cache
 php artisan scout:sync -n
 
 # Scout reimport
-php artisan scout:reimport
+# php artisan scout:reimport
