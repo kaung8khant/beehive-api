@@ -110,6 +110,7 @@ class RestaurantOrderController extends Controller
                 'commercial_tax' => $order->order_status != 'cancelled' && $order->tax ? $order->tax : 0,
                 'discount' => $order->order_status != 'cancelled' && $order->discount ? $order->discount : 0,
                 'promo_discount' => $order->order_status != 'cancelled' && $order->promocode_amount ? $order->promocode_amount : 0,
+                'delivery_fee' => $order->order_status != 'cancelled' && $order->delivery_fee ? $order->delivery_fee : 0,
                 'total_amount' => $totalAmount,
                 'commission_rate' => $restaurant->commission ? $restaurant->commission : 0,
                 'commission' => $commission ? $commission : 0,
