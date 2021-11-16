@@ -24,16 +24,19 @@ class ShopMainCategoryController extends Controller
         $shopMainCategory = ShopMainCategory::create($request->validate([
             'slug' => 'required|unique:shop_main_categories',
             'name' => 'required|unique:shop_main_categories',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'shop_main_categories', $shopMainCategory->slug);
+        }
 
         return response()->json($shopMainCategory, 201);
     }
 
     public function show(ShopMainCategory $shopMainCategory)
     {
-        return $shopMainCategory->load(['shopCategories' => function ($query) {
-            $query->exclude(['created_by', 'updated_by'])->orderBy('name', 'asc');
-        }]);
+        return $shopMainCategory;
     }
 
     public function update(Request $request, ShopMainCategory $shopMainCategory)
@@ -43,7 +46,12 @@ class ShopMainCategoryController extends Controller
                 'required',
                 Rule::unique('shop_main_categories')->ignore($shopMainCategory->id),
             ],
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]));
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'shop_main_categories', $shopMainCategory->slug);
+        }
 
         return $shopMainCategory;
     }
@@ -51,6 +59,10 @@ class ShopMainCategoryController extends Controller
     public function destroy(ShopMainCategory $shopMainCategory)
     {
         return response()->json(['message' => 'Permission denied.'], 403);
+
+        foreach ($shopMainCategory->images as $image) {
+            $this->deleteFile($image->slug);
+        }
 
         $shopMainCategory->delete();
         return response()->json(['message' => 'successfully deleted'], 200);
