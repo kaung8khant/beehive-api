@@ -2,12 +2,12 @@
 
 namespace App\Providers;
 
-use App\Interfaces\RestaurantOrderRepositoryInterface;
 use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
 use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
 use App\Repositories\DriverRealtimeDataRepository;
 use App\Repositories\RestaurantOrderDriverStatusRepository;
-use App\Repositories\RestaurantOrderRepository;
+use App\Repositories\RestaurantOrder\RestaurantOrderRepository;
+use App\Repositories\RestaurantOrder\RestaurantOrderRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider

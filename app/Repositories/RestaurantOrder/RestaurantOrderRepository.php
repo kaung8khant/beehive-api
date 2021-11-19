@@ -1,13 +1,11 @@
 <?php
 
-namespace App\Repositories;
-
-use App\Interfaces\RestaurantOrderRepositoryInterface;
+namespace App\Repositories\RestaurantOrder;
 
 class RestaurantOrderRepository implements RestaurantOrderRepositoryInterface
 {
     public function index()
     {
-        
+
     }
 }
