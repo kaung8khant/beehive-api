@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
 use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
+use App\Repositories\Brand\BrandRepository;
+use App\Repositories\Brand\BrandRepositoryInterface;
 use App\Repositories\DriverRealtimeDataRepository;
 use App\Repositories\RestaurantOrderDriverStatusRepository;
 use App\Repositories\RestaurantOrder\RestaurantOrderRepository;
@@ -20,6 +22,7 @@ class RepositoryServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind(RestaurantOrderRepositoryInterface::class, RestaurantOrderRepository::class);
+        $this->app->bind(BrandRepositoryInterface::class, BrandRepository::class);
 
         $this->app->bind(RestaurantOrderDriverStatusRepositoryInterface::class, RestaurantOrderDriverStatusRepository::class);
         $this->app->bind(DriverRealtimeDataRepositoryInterface::class, DriverRealtimeDataRepository::class);

@@ -3,82 +3,71 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
-use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
-use App\Models\Brand;
+use App\Repositories\Brand\BrandRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class BrandController extends Controller
 {
-    use FileHelper, StringHelper;
+    private $brandRepository;
 
-    public function index(Request $request)
+    public function __construct(BrandRepositoryInterface $brandRepository)
     {
-        if ($request->filter) {
-            $brands = Brand::search($request->filter)->paginate(10);
-        } else {
-            $brands = Brand::orderBy('name', 'asc')->paginate(10);
-        }
+        $this->brandRepository = $brandRepository;
+    }
 
-        $this->optimizeBrands($brands);
+    public function index()
+    {
+        $brands = $this->brandRepository->getAll();
+        $brands->makeHidden(['created_by', 'updated_by']);
         return CollectionHelper::removePaginateLinks($brands);
     }
 
     public function store(Request $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-
-        $brand = Brand::create($request->validate([
-            'name' => 'required|unique:brands',
-            'slug' => 'required|unique:brands',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]));
-
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'brands', $brand->slug);
-        }
-
+        $brand = $this->brandRepository->create(self::validateCreate($request));
         return response()->json($brand, 201);
     }
 
-    public function show(Brand $brand)
+    public function show($slug)
     {
-        return response()->json($brand->load('products'), 200);
+        return $this->brandRepository->getOne($slug);
     }
 
-    public function update(Request $request, Brand $brand)
+    public function update(Request $request, $slug)
     {
-        $brand->update($request->validate([
-            'name' => [
-                'required',
-                Rule::unique('brands')->ignore($brand->id),
-            ],
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]));
-
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'brands', $brand->slug);
-        }
-
-        return response()->json($brand, 200);
+        return $this->brandRepository->update($slug, self::validateUpdate($request, $slug));
     }
 
-    public function destroy(Brand $brand)
+    public function destroy($slug)
     {
         return response()->json(['message' => 'Permission denied.'], 403);
 
-        foreach ($brand->images as $image) {
-            $this->deleteFile($image->slug);
-        }
-
-        $brand->delete();
+        $this->brandRepository->delete($slug);
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
-    private function optimizeBrands($brands)
+    private static function validateCreate($request)
     {
-        $brands->makeHidden(['created_by', 'updated_by']);
+        $request['slug'] = StringHelper::generateUniqueSlug();
+
+        return $request->validate([
+            'name' => 'required|unique:brands',
+            'slug' => 'required|unique:brands',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
+        ]);
+    }
+
+    private static function validateUpdate($request, $slug)
+    {
+        return $request->validate([
+            'name' => [
+                'required',
+                Rule::unique('brands')->ignore($slug, 'slug'),
+            ],
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
+        ]);
     }
 }

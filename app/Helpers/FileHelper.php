@@ -12,7 +12,7 @@ trait FileHelper
 {
     use ResponseHelper;
 
-    protected function updateFile($slug, $source, $sourceSlug, $user = null, $url = '/')
+    public static function updateFile($slug, $source, $sourceSlug, $user = null, $url = '/')
     {
         $file = File::where('slug', $slug)->firstOrFail();
 
@@ -29,10 +29,10 @@ trait FileHelper
             );
 
             if ($validator->fails()) {
-                return $this->generateResponse($validator->errors()->first(), 422);
+                return ResponseHelper::generateResponse($validator->errors()->first(), 422);
             }
         } catch (\Exception $e) {
-            return $this->generateResponse('The selected source field is incorrect.', 422);
+            return ResponseHelper::generateResponse('The selected source field is incorrect.', 422);
         }
 
         $model = config('model.' . $source);
@@ -47,15 +47,15 @@ trait FileHelper
             'source_id' => $sourceId,
         ]);
 
-        return $this->generateResponse($file, 200);
+        return ResponseHelper::generateResponse($file, 200);
     }
 
-    protected function deleteFile($slug)
+    public static function deleteFile($slug)
     {
         $file = File::where('slug', $slug)->firstOrFail();
 
         if ($file->extension === 'png' || $file->extension === 'jpg' || $file->extension === 'jpeg') {
-            $this->deleteImagesFromStorage($file->file_name);
+            self::deleteImagesFromStorage($file->file_name);
         } elseif ($file->extension === 'gif') {
             Storage::delete('gifs/' . $file->file_name);
         } elseif ($file->extension === 'pdf') {
@@ -66,7 +66,7 @@ trait FileHelper
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    private function deleteImagesFromStorage($fileName)
+    private static function deleteImagesFromStorage($fileName)
     {
         $imageSizes = array_keys(config('images'));
 
