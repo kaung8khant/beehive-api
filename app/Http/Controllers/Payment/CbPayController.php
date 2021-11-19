@@ -8,13 +8,12 @@ use App\Http\Controllers\Controller;
 use App\Models\RestaurantOrder;
 use App\Models\ShopOrder;
 use App\Services\PaymentService\CbPayService;
-use Illuminate\Http\Request;
 
 class CbPayController extends Controller
 {
     use ResponseHelper;
 
-    public function checkTransaction(Request $request, $orderType, $slug)
+    public function checkTransaction($orderType, $slug)
     {
         if ($orderType === 'shop') {
             $order = ShopOrder::where('slug', $slug)->firstOrFail();
@@ -26,21 +25,14 @@ class CbPayController extends Controller
 
         $transactionRequest = [
             'merId' => config('payment.cb_pay.merch_id'),
-            'transRef' => $request->trans_ref,
+            'transRef' => $order->payment_reference,
         ];
 
         try {
             $cbService = new CbPayService();
             $transactionData = $cbService->checkTransaction($transactionRequest);
 
-            $transStatus = config('payment.cb_pay.trans_status')[$transactionData['transStatus']];
-
-            if ($transStatus === 'S') {
-                $order->update(['payment_status' => 'success']);
-            } else if ($transStatus === 'C') {
-                $order->update(['payment_status' => 'cancelled']);
-            }
-
+            $transStatus = $this->updatePaymentStatus($order, $transactionData['transStatus']);
             return $this->generateResponse($transStatus, 200, true);
         } catch (ServerException $e) {
             return $this->generateResponse($e->getMessage(), 500, true);
@@ -57,21 +49,49 @@ class CbPayController extends Controller
             return $this->generateResponse('order type must be shop or restaurant', 422, true);
         }
 
-        $requestData['slug'] = $slug;
-        $requestData['totalAmount'] = $order->total_amount;
+        $requestData = [
+            'slug' => $slug,
+            'totalAmount' => $order->total_amount,
+        ];
 
         try {
             $cbService = new CbPayService();
             $paymentData = $cbService->createTransaction($requestData, $orderType);
 
-            $response = [
-                'mer_dqr_code' => $paymentData['merDqrCode'],
-                'trans_ref' => $paymentData['transRef']
-            ];
+            $order->update([
+                'payment_status' => 'pending',
+                'payment_reference' => $paymentData['transRef'],
+            ]);
 
-            return $this->generateResponse($response, 200);
+            return $this->generateResponse(['mer_dqr_code' => $paymentData['merDqrCode']], 200);
         } catch (ServerException $e) {
             return $this->generateResponse($e->getMessage(), 500, true);
         }
+    }
+
+    private function updatePaymentStatus($order, $transStatus)
+    {
+        $paymentStatus = 'pending';
+
+        switch ($transStatus) {
+            case 'P':
+                $paymentStatus = 'pending';
+                break;
+            case 'S':
+                $paymentStatus = 'success';
+                break;
+            case 'E':
+                $paymentStatus = 'expired';
+                break;
+            case 'C':
+                $paymentStatus = 'cancelled';
+                break;
+            case 'L':
+                $paymentStatus = 'overLimit';
+                break;
+        }
+
+        $order->update(['payment_status' => $paymentStatus]);
+        return config('payment.cb_pay.trans_status')[$transStatus];
     }
 }

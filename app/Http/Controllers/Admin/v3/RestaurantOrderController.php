@@ -133,8 +133,8 @@ class RestaurantOrderController extends Controller
             if ($validatedData['payment_mode'] === 'KPay') {
                 $order['prepay_id'] = $paymentData['Response']['prepay_id'];
             } elseif ($validatedData['payment_mode'] === 'CBPay') {
+                $order->update(['payment_reference' => $paymentData['transRef']]);
                 $order['mer_dqr_code'] = $paymentData['merDqrCode'];
-                $order['trans_ref'] = $paymentData['transRef'];
             }
 
             return $this->generateResponse($order, 201);
