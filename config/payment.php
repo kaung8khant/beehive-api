@@ -20,9 +20,9 @@ return [
         'trans_status' => [
             'P' => 'Pending',
             'S' => 'Success',
+            'E' => 'Expired',
             'C' => 'Cancelled',
             'L' => 'Over limit',
-            'E' => 'Expired',
         ],
     ],
 ];
