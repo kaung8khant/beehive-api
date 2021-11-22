@@ -4,6 +4,7 @@ return [
     'restaurants' => '\App\Models\Restaurant',
     'restaurant_categories' => '\App\Models\RestaurantCategory',
     'shops' => '\App\Models\Shop',
+    'shop_main_categories' => '\App\Models\ShopMainCategory',
     'shop_categories' => '\App\Models\ShopCategory',
     'brands' => 'App\Models\Brand',
     'menus' => 'App\Models\Menu',
