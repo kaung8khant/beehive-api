@@ -2,7 +2,9 @@
 
 namespace App\Repositories\Shop\ShopMainCategory;
 
-interface ShopMainCategoryRepositoryInterface
-{
+use App\Repositories\BaseRepositoryInterface;
 
+interface ShopMainCategoryRepositoryInterface extends BaseRepositoryInterface
+{
+    public function all();
 }

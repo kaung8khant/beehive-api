@@ -32,7 +32,7 @@ class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStat
 
         $order = $this->database->getReference('/orders')
             ->orderByChild('time')
-            // enable the following code if you want real-time active data.
+        // enable the following code if you want real-time active data.
             ->startAt(Carbon::now()->subDay(1)->toDateTimeString())
             ->getSnapshot()->getValue();
         $order[$slug] = [

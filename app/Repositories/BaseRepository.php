@@ -4,9 +4,8 @@ namespace App\Repositories;
 
 use App\Helpers\FileHelper;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
-class BaseRepository implements EloquentRepositoryInterface
+class BaseRepository implements BaseRepositoryInterface
 {
     protected $model;
     protected $table;
@@ -24,12 +23,8 @@ class BaseRepository implements EloquentRepositoryInterface
 
     public function create(array $attributes)
     {
-        $model = DB::transaction(function () use ($attributes) {
-            $model = $this->model->create($attributes);
-            $this->updateImageIfExist($model->slug);
-            return $model;
-        });
-
+        $model = $this->model->create($attributes);
+        $this->updateImageIfExist($model->slug);
         return $model;
     }
 

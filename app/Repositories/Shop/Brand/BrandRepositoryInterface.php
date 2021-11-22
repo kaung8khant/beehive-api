@@ -2,7 +2,9 @@
 
 namespace App\Repositories\Shop\Brand;
 
-interface BrandRepositoryInterface
-{
+use App\Repositories\BaseRepositoryInterface;
 
+interface BrandRepositoryInterface extends BaseRepositoryInterface
+{
+    public function all();
 }

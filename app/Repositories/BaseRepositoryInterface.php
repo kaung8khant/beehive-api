@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-interface EloquentRepositoryInterface
+interface BaseRepositoryInterface
 {
     public function find($slug);
 
