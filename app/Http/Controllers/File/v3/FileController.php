@@ -12,7 +12,7 @@ class FileController extends Controller
         $filePath = 'images/' . $size . '/' . $fileName;
 
         if (Storage::exists($filePath)) {
-            return response()->file(Storage::path($filePath));
+            return Storage::download($filePath);
         }
 
         return null;
