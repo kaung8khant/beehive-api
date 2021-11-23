@@ -6,7 +6,6 @@ use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Repositories\Shop\Brand\BrandRepositoryInterface;
-use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class BrandController extends Controller
@@ -30,15 +29,15 @@ class BrandController extends Controller
         return $this->brandRepository->find($slug);
     }
 
-    public function store(Request $request)
+    public function store()
     {
-        $brand = $this->brandRepository->create(self::validateCreate($request));
+        $brand = $this->brandRepository->create(self::validateCreate());
         return response()->json($brand, 201);
     }
 
-    public function update(Request $request, $slug)
+    public function update($slug)
     {
-        return $this->brandRepository->update($slug, self::validateUpdate($request, $slug));
+        return $this->brandRepository->update($slug, self::validateUpdate($slug));
     }
 
     public function destroy($slug)
@@ -49,20 +48,20 @@ class BrandController extends Controller
         return response()->json(['message' => 'successfully deleted'], 200);
     }
 
-    private static function validateCreate($request)
+    private static function validateCreate()
     {
-        $request['slug'] = StringHelper::generateUniqueSlug();
+        request()->merge(['slug' => StringHelper::generateUniqueSlug()]);
 
-        return $request->validate([
+        return request()->validate([
             'name' => 'required|unique:brands',
             'slug' => 'required|unique:brands',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
     }
 
-    private static function validateUpdate($request, $slug)
+    private static function validateUpdate($slug)
     {
-        return $request->validate([
+        return request()->validate([
             'name' => [
                 'required',
                 Rule::unique('brands')->ignore($slug, 'slug'),
