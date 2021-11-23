@@ -28,6 +28,8 @@ return [
         'shop' => 'ShopsExport',
         'product' => 'ProductsExport',
         'shop-product' => 'ShopProductsExport',
+        'brand-product' => 'BrandProductsExport',
+        'category-product' => 'CategoryProductsExport',
         'shop-category' => 'ShopCategoriesExport',
         'shop-main-category' => 'ShopMainCategoriesExport',
         'shop-sub-category' => 'ShopSubCategoriesExport',
@@ -47,6 +49,7 @@ return [
         'vendor-shop-order' => 'VendorShopOrdersExport',
         'restaurant-branch-menu' => 'RestaurantBranchMenusExport',
         'restaurant-menu' => 'RestaurantMenuExport',
+        'category-menu' => 'CategoryMenusExport',
 
         'restaurant-sales' => 'Sales\RestaurantSalesExport',
         'restaurant-vendor-sales' => 'Sales\RestaurantVendorSalesExport',

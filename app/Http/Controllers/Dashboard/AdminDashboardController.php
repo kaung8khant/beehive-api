@@ -99,7 +99,9 @@ class AdminDashboardController extends Controller
             ->where('o.order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
             ->select('oi.shop_id', DB::raw('count(*) AS total_orders'))
             ->groupBy('oi.shop_id')
-            ->orderBy('total_orders', 'DESC')->limit(10)->get();
+            ->orderBy('total_orders', 'DESC')
+            ->limit(10)
+            ->get();
 
         $data = [];
 
