@@ -49,6 +49,7 @@ return [
         'vendor-shop-order' => 'VendorShopOrdersExport',
         'restaurant-branch-menu' => 'RestaurantBranchMenusExport',
         'restaurant-menu' => 'RestaurantMenuExport',
+        'category-menu' => 'CategoryMenusExport',
 
         'restaurant-sales' => 'Sales\RestaurantSalesExport',
         'restaurant-vendor-sales' => 'Sales\RestaurantVendorSalesExport',
