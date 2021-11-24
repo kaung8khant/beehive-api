@@ -117,12 +117,12 @@ class CustomerAuthController extends Controller
 
     public function refreshToken()
     {
-        if (Auth::guard('customers')->check()) {
+        try {
             $token = Auth::guard('customers')->refresh();
             return $this->generateResponse(['token' => $token], 200);
+        } catch (\Exception $e) {
+            return $this->generateResponse(['token' => null], 200);
         }
-
-        return $this->generateResponse(['token' => null], 200);
     }
 
     public function getProfile()
