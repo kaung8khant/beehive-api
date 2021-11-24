@@ -10,8 +10,6 @@ use Illuminate\Validation\Rule;
 
 class ShopSubCategoryController extends Controller
 {
-    use StringHelper;
-
     private $subCategoryRepository;
 
     public function __construct(ShopSubCategoryRepositoryInterface $subCategoryRepository)

@@ -12,42 +12,30 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Shop;
 use App\Models\ShopCategory;
+use App\Repositories\Shop\Product\ProductRepositoryInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
     use FileHelper, StringHelper;
 
-    private $user;
+    private $productRepository;
 
-    public function __construct()
+    public function __construct(ProductRepositoryInterface $productRepository)
     {
-        if (Auth::guard('users')->check()) {
-            $this->user = Auth::guard('users')->user();
-        }
+        $this->productRepository = $productRepository;
     }
 
-    public function index(Request $request)
+    public function index()
     {
-        if ($request->filter) {
-            $products = Product::search($request->filter);
-        } else {
-            $products = Product::orderBy('search_index', 'desc')->orderBy('id', 'desc');
-        }
-
-        if (isset($request->is_enable)) {
-            $productIds = Product::whereHas('shop', function ($query) use ($request) {
-                $query->where('is_enable', $request->is_enable);
-            })->pluck('id')->toArray();
-
-            $products = $products->where('is_enable', $request->is_enable)
-                ->whereIn('id', $productIds);
-        }
-
-        $products = $products->paginate(10);
+        $products = $this->productRepository->all();
         $this->optimizeProducts($products);
         return CollectionHelper::removePaginateLinks($products);
+    }
+
+    public function show($slug)
+    {
+        return $this->productRepository->find($slug)->load(['shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants']);
     }
 
     public function store(Request $request)
@@ -74,11 +62,6 @@ class ProductController extends Controller
         }
 
         return response()->json($product->refresh()->load('shop', 'productVariants'), 201);
-    }
-
-    public function show(Product $product)
-    {
-        return response()->json($product->load('shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants'), 200);
     }
 
     public function update(Request $request, Product $product)

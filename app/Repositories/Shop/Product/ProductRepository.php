@@ -14,6 +14,10 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
 
     public function all()
     {
-        return 'test';
+        if (request('filter')) {
+            return $this->model->search(request('filter'))->paginate(10);
+        } else {
+            return $this->model->orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
+        }
     }
 }
