@@ -57,7 +57,7 @@ class ShopMainCategoryController extends Controller
         request()->merge(['slug' => StringHelper::generateUniqueSlug()]);
 
         return request()->validate([
-            'code' => 'required|unique:shop_main_categories',
+            'code' => 'required|size:2|unique:shop_main_categories',
             'slug' => 'required|unique:shop_main_categories',
             'name' => 'required|unique:shop_main_categories',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
@@ -69,6 +69,7 @@ class ShopMainCategoryController extends Controller
         return request()->validate([
             'code' => [
                 'required',
+                'size:2',
                 Rule::unique('shop_main_categories')->ignore($slug, 'slug'),
             ],
             'name' => [

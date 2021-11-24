@@ -53,8 +53,9 @@ class BrandController extends Controller
         request()->merge(['slug' => StringHelper::generateUniqueSlug()]);
 
         return request()->validate([
-            'name' => 'required|unique:brands',
+            'code' => 'required|size:4|unique:brands',
             'slug' => 'required|unique:brands',
+            'name' => 'required|unique:brands',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
         ]);
     }
@@ -62,6 +63,11 @@ class BrandController extends Controller
     private static function validateUpdate($slug)
     {
         return request()->validate([
+            'code' => [
+                'required',
+                'size:4',
+                Rule::unique('brands')->ignore($slug, 'slug'),
+            ],
             'name' => [
                 'required',
                 Rule::unique('brands')->ignore($slug, 'slug'),

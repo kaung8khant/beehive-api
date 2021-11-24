@@ -94,8 +94,9 @@ class ShopSubCategoryController extends Controller
         request()->merge(['slug' => StringHelper::generateUniqueSlug()]);
 
         return request()->validate([
-            'name' => 'required|unique:shop_sub_categories',
+            'code' => 'required|size:2|unique:shop_sub_categories',
             'slug' => 'required|unique:shop_sub_categories',
+            'name' => 'required|unique:shop_sub_categories',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ]);
     }
@@ -103,6 +104,11 @@ class ShopSubCategoryController extends Controller
     private static function validateUpdate($slug)
     {
         return request()->validate([
+            'code' => [
+                'required',
+                'size:2',
+                Rule::unique('shop_sub_categories')->ignore($slug, 'slug'),
+            ],
             'name' => [
                 'required',
                 Rule::unique('shop_sub_categories')->ignore($slug, 'slug'),
