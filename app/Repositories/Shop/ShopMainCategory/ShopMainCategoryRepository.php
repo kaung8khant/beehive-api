@@ -14,6 +14,6 @@ class ShopMainCategoryRepository extends BaseRepository implements ShopMainCateg
 
     public function all()
     {
-        return ShopMainCategory::orderBy('search_index', 'desc')->orderBy('name', 'asc')->get();
+        return $this->model->orderBy('search_index', 'desc')->orderBy('name', 'asc')->get();
     }
 }
