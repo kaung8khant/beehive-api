@@ -5,97 +5,72 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\CollectionHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
-use App\Models\ShopCategory;
-use App\Models\ShopSubCategory;
-use Illuminate\Http\Request;
+use App\Repositories\Shop\ShopSubCategory\ShopSubCategoryRepositoryInterface;
 use Illuminate\Validation\Rule;
 
 class ShopSubCategoryController extends Controller
 {
     use StringHelper;
 
-    public function index(Request $request)
-    {
-        if ($request->filter) {
-            $shopSubCategories = ShopSubCategory::search($request->filter)->paginate(10);
-        } else {
-            $shopSubCategories = ShopSubCategory::orderBy('name', 'asc')->paginate(10);
-        }
+    private $subCategoryRepository;
 
-        $this->optimizeShopSubCategories($shopSubCategories);
-        return CollectionHelper::removePaginateLinks($shopSubCategories);
+    public function __construct(ShopSubCategoryRepositoryInterface $subCategoryRepository)
+    {
+        $this->subCategoryRepository = $subCategoryRepository;
     }
 
-    public function store(Request $request)
+    public function index()
     {
-        $request['slug'] = $this->generateUniqueSlug();
-
-        $validatedData = $request->validate([
-            'name' => 'required|unique:shop_sub_categories',
-            'slug' => 'required|unique:shop_sub_categories',
-            'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
-        ]);
-
-        $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
-
-        $subCategory = ShopSubCategory::create($validatedData);
-        return response()->json($subCategory->load('shopCategory'), 201);
+        $subCategories = $this->subCategoryRepository->all();
+        $this->optimizeSubCategories($subCategories);
+        return CollectionHelper::removePaginateLinks($subCategories);
     }
 
-    public function show(ShopSubCategory $shopSubCategory)
+    public function show($slug)
     {
-        return response()->json($shopSubCategory->load('shopCategory'), 200);
+        return $this->subCategoryRepository->find($slug)->load(['shopCategory']);
     }
 
-    public function update(Request $request, ShopSubCategory $shopSubCategory)
+    public function store()
     {
-        $validatedData = $request->validate([
-            'name' => [
-                'required',
-                Rule::unique('shop_sub_categories')->ignore($shopSubCategory->id),
-            ],
-            'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
-        ]);
+        $validatedData = self::validateCreate();
+        $validatedData['shop_category_id'] = $this->subCategoryRepository->getShopCategoryIdBySlug(request('shop_category_slug'));
+        $shopCategory = $this->subCategoryRepository->create($validatedData)->refresh()->load(['shopCategory']);
+        return response()->json($shopCategory, 201);
+    }
 
-        $validatedData['shop_category_id'] = $this->getShopCategoryId($request->shop_category_slug);
-        $shopSubCategory->update($validatedData);
+    public function update($slug)
+    {
+        $validatedData = self::validateUpdate($slug);
+        $validatedData['shop_category_id'] = $this->subCategoryRepository->getShopCategoryIdBySlug(request('shop_category_slug'));
+        $subCategory = $this->subCategoryRepository->update($slug, $validatedData);
 
         // Update the category ids of related products
-        foreach ($shopSubCategory->products as $product) {
+        foreach ($subCategory->products as $product) {
             $product->update([
                 'shop_category_id' => $validatedData['shop_category_id'],
             ]);
         }
 
-        return response()->json($shopSubCategory->load('shopCategory')->unsetRelation('products'), 200);
+        return $subCategory->load(['shopCategory'])->unsetRelation('products');
     }
 
-    public function destroy(ShopSubCategory $shopSubCategory)
+    public function destroy($slug)
     {
         return response()->json(['message' => 'Permission denied.'], 403);
 
-        $shopSubCategory->delete();
+        $this->subCategoryRepository->delete($slug);
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    private function getShopCategoryId($slug)
+    public function getSubCategoriesByCategory($slug)
     {
-        return ShopCategory::where('slug', $slug)->value('id');
+        $subCategories = $this->subCategoryRepository->getAllByShopCategory($slug);
+        $this->optimizeSubCategories($subCategories);
+        return CollectionHelper::removePaginateLinks($subCategories);
     }
 
-    public function getSubCategoriesByCategory(Request $request, ShopCategory $shopCategory)
-    {
-        if ($request->filter) {
-            $shopSubCategories = ShopSubCategory::search($request->filter)->where('shop_category_id', $shopCategory->id)->paginate(10);
-        } else {
-            $shopSubCategories = ShopSubCategory::where('shop_category_id', $shopCategory->id)->orderBy('name', 'asc')->paginate(10);
-        }
-
-        $this->optimizeShopSubCategories($shopSubCategories);
-        return CollectionHelper::removePaginateLinks($shopSubCategories);
-    }
-
-    private function optimizeShopSubCategories($subCategories)
+    private function optimizeSubCategories($subCategories)
     {
         $subCategories->load(['shopCategory' => function ($query) {
             $query->select('id', 'slug', 'name')->get();
@@ -105,5 +80,34 @@ class ShopSubCategoryController extends Controller
             $subCategory->makeHidden(['created_by', 'updated_by']);
             $subCategory->shopCategory->setAppends([]);
         }
+    }
+
+    public function updateSearchIndex($slug)
+    {
+        return $this->subCategoryRepository->update($slug, request()->validate([
+            'search_index' => 'required|numeric',
+        ]));
+    }
+
+    private static function validateCreate()
+    {
+        request()->merge(['slug' => StringHelper::generateUniqueSlug()]);
+
+        return request()->validate([
+            'name' => 'required|unique:shop_sub_categories',
+            'slug' => 'required|unique:shop_sub_categories',
+            'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
+        ]);
+    }
+
+    private static function validateUpdate($slug)
+    {
+        return request()->validate([
+            'name' => [
+                'required',
+                Rule::unique('shop_sub_categories')->ignore($slug, 'slug'),
+            ],
+            'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
+        ]);
     }
 }

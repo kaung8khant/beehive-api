@@ -161,11 +161,15 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        
 
         /*
          * Package Service Providers...
          */
+        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class,
+        Kreait\Laravel\Firebase\ServiceProvider::class,
+        niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -175,12 +179,9 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
-        Intervention\Image\ImageServiceProvider::class,
         App\Providers\FakerServiceProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
-        Kreait\Laravel\Firebase\ServiceProvider::class,
-        niklasravnsborg\LaravelPdf\PdfServiceProvider::class,
+
+        App\Providers\RepositoryServiceProvider::class,
     ],
 
     /*
@@ -195,7 +196,6 @@ return [
     */
 
     'aliases' => [
-
         'App' => Illuminate\Support\Facades\App::class,
         'Arr' => Illuminate\Support\Arr::class,
         'Artisan' => Illuminate\Support\Facades\Artisan::class,
@@ -238,5 +238,4 @@ return [
         'Image' => Intervention\Image\Facades\Image::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
     ],
-
 ];

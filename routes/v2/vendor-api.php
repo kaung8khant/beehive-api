@@ -74,7 +74,7 @@ Route::group([
         Route::resource('shop-orders', 'Admin\ShopOrderController', ['as' => 'vendor']);
         Route::get('shops/{shop}/shop-orders', 'Admin\ShopOrderController@getShopOrders');
         Route::post('shop-orders/{shopOrder}/change-status', 'Admin\ShopOrderController@changeStatus');
-        Route::get('shops/{slug}/customers', 'Admin\ShopController@getCustomersByShop');
+        Route::get('shops/{shop}/customers', 'Admin\CustomerController@getCustomersByShop');
         /* shop */
 
         /* products */

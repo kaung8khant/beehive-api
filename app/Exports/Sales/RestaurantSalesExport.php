@@ -102,6 +102,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
                 $order->order_status != 'cancelled' && $order->tax ? $order->tax : '0',
                 $order->order_status != 'cancelled' && $order->discount ? $order->discount : '0',
                 $order->order_status != 'cancelled' && $order->promocode_amount ? $order->promocode_amount : '0',
+                $order->delivery_fee != 'cancelled' && $order->delivery_fee ? $order->delivery_fee : '0',
                 $totalAmount,
                 $restaurant->commission ? $restaurant->commission : '0',
                 $commission ? $commission : '0',
@@ -145,6 +146,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
                 'commercial tax',
                 'discount',
                 'promo discount',
+                'delivery fee',
                 "total amount\n(tax inclusive)",
                 'commission rate',
                 'commission',
@@ -176,9 +178,9 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
             'I' => 20,
             'J' => 15,
             'K' => 15,
-            'L' => 15,
-            'M' => 17,
-            'N' => 10,
+            'L' => 20,
+            'M' => 20,
+            'N' => 20,
             'O' => 17,
             'P' => 17,
             'Q' => 20,
@@ -189,6 +191,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
             'V' => 20,
             'W' => 20,
             'X' => 20,
+            'Y' => 20,
         ];
     }
 
@@ -204,14 +207,14 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
             'E' => ['alignment' => ['horizontal' => 'center']],
             'F' => ['alignment' => ['horizontal' => 'center']],
             'G' => ['alignment' => ['horizontal' => 'center']],
-            'Q' => ['alignment' => ['horizontal' => 'center']],
             'R' => ['alignment' => ['horizontal' => 'center']],
-            'S' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
-            'T' => ['alignment' => ['horizontal' => 'center']],
+            'S' => ['alignment' => ['horizontal' => 'center']],
+            'T' => ['alignment' => ['horizontal' => 'center', 'wrapText' => true]],
             'U' => ['alignment' => ['horizontal' => 'center']],
             'V' => ['alignment' => ['horizontal' => 'right']],
             'W' => ['alignment' => ['horizontal' => 'right']],
             'X' => ['alignment' => ['horizontal' => 'right']],
+            'Y' => ['alignment' => ['horizontal' => 'right']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -231,6 +234,7 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
             'N' => '#,##0',
             'O' => '#,##0',
             'P' => '#,##0',
+            'Q' => '#,##0',
         ];
     }
 
@@ -256,15 +260,15 @@ class RestaurantSalesExport extends DefaultValueBinder implements FromCollection
 
                 $event->sheet->getStyle(sprintf('H%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
                 $event->sheet->getStyle(sprintf('H%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('L%d:P%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('L%d:P%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('P%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('M%d:Q%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('M%d:Q%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('Q%d', $lastRow))->getFont()->setBold(true);
 
                 $event->sheet->setCellValue(sprintf('H%d', $lastRow), $this->amountSum);
-                $event->sheet->setCellValue(sprintf('L%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->commissionSum);
-                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->commissionCtSum);
-                $event->sheet->setCellValue(sprintf('P%d', $lastRow), $this->balanceSum);
+                $event->sheet->setCellValue(sprintf('M%d', $lastRow), $this->totalAmountSum);
+                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->commissionSum);
+                $event->sheet->setCellValue(sprintf('P%d', $lastRow), $this->commissionCtSum);
+                $event->sheet->setCellValue(sprintf('Q%d', $lastRow), $this->balanceSum);
 
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
 

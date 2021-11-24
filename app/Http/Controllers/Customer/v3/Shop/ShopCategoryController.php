@@ -42,6 +42,7 @@ class ShopCategoryController extends Controller
     private function getCategoriesByIds($categoryIds)
     {
         $categories = ShopCategory::whereIn('id', $categoryIds)
+            ->orderBy('search_index', 'desc')
             ->orderBy('name', 'asc')
             ->get();
 

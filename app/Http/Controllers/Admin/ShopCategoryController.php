@@ -3,94 +3,66 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
-use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\Shop;
-use App\Models\ShopCategory;
-use Illuminate\Http\Request;
+use App\Repositories\Shop\ShopCategory\ShopCategoryRepositoryInterface;
 use Illuminate\Validation\Rule;
 
 class ShopCategoryController extends Controller
 {
-    use FileHelper, StringHelper;
+    private $shopCategoryRepository;
 
-    public function index(Request $request)
+    public function __construct(ShopCategoryRepositoryInterface $shopCategoryRepository)
     {
-        if ($request->filter) {
-            $shopCategories = ShopCategory::search($request->filter)->paginate(10);
-        } else {
-            $shopCategories = ShopCategory::orderBy('name', 'asc')->paginate(10);
-        }
+        $this->shopCategoryRepository = $shopCategoryRepository;
+    }
 
+    public function index()
+    {
+        $shopCategories = $this->shopCategoryRepository->all();
         $this->optimizeShopCategories($shopCategories);
         return CollectionHelper::removePaginateLinks($shopCategories);
     }
 
-    public function store(Request $request)
+    public function show($slug)
     {
-        $request['slug'] = $this->generateUniqueSlug();
+        return $this->shopCategoryRepository->find($slug)->load(['shopMainCategory', 'shopSubCategories']);
+    }
 
-        $shopCategory = ShopCategory::create($request->validate(
-            [
-                'name' => 'required|unique:shop_categories',
-                'slug' => 'required|unique:shop_categories',
-                'image_slug' => 'nullable|exists:App\Models\File,slug',
-            ]
-        ));
+    public function store()
+    {
+        $validatedData = self::validateCreate();
 
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
+        if (request('shop_main_category_slug')) {
+            $validatedData['shop_main_category_id'] = $this->shopCategoryRepository->getMainCategoryIdBySlug(request('shop_main_category_slug'));
         }
 
+        $shopCategory = $this->shopCategoryRepository->create($validatedData)->refresh()->load(['shopMainCategory']);
         return response()->json($shopCategory, 201);
     }
 
-    public function show(ShopCategory $shopCategory)
+    public function update($slug)
     {
-        return response()->json($shopCategory->load('shopSubCategories'), 200);
-    }
+        $validatedData = self::validateUpdate($slug);
 
-    public function update(Request $request, ShopCategory $shopCategory)
-    {
-        $shopCategory->update($request->validate([
-            'name' => [
-                'required',
-                Rule::unique('shop_categories')->ignore($shopCategory->id),
-            ],
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]));
-
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'shop_categories', $shopCategory->slug);
+        if (request('shop_main_category_slug')) {
+            $validatedData['shop_main_category_id'] = $this->shopCategoryRepository->getMainCategoryIdBySlug(request('shop_main_category_slug'));
         }
 
-        return response()->json($shopCategory, 200);
+        return $this->shopCategoryRepository->update($slug, $validatedData);
     }
 
-    public function destroy(ShopCategory $shopCategory)
+    public function destroy($slug)
     {
         return response()->json(['message' => 'Permission denied.'], 403);
 
-        foreach ($shopCategory->images as $image) {
-            $this->deleteFile($image->slug);
-        }
-
-        $shopCategory->delete();
-        return response()->json(['message' => 'successfully deleted'], 200);
+        $this->shopCategoryRepository->delete($slug);
+        return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
-    public function getCategoriesByShop(Request $request, Shop $shop)
+    public function getCategoriesByShop($slug)
     {
-        $categoryIds = Product::where('shop_id', $shop->id)->pluck('shop_category_id')->unique()->values()->toArray();
-
-        if ($request->filter) {
-            $shopCategories = ShopCategory::search($request->filter)->whereIn('id', $categoryIds)->paginate(10);
-        } else {
-            $shopCategories = ShopCategory::whereIn('id', $categoryIds)->orderBy('name', 'asc')->paginate(10);
-        }
-
+        $shopCategories = $this->shopCategoryRepository->getAllByShop($slug);
         $this->optimizeShopCategories($shopCategories);
         return CollectionHelper::removePaginateLinks($shopCategories);
     }
@@ -98,5 +70,40 @@ class ShopCategoryController extends Controller
     private function optimizeShopCategories($shopCategories)
     {
         $shopCategories->makeHidden(['created_by', 'updated_by']);
+
+        $shopCategories->load(['shopMainCategory' => function ($query) {
+            $query->exclude(['created_by', 'updated_by']);
+        }]);
+    }
+
+    public function updateSearchIndex($slug)
+    {
+        return $this->shopCategoryRepository->update($slug, request()->validate([
+            'search_index' => 'required|numeric',
+        ]));
+    }
+
+    private static function validateCreate()
+    {
+        request()->merge(['slug' => StringHelper::generateUniqueSlug()]);
+
+        return request()->validate([
+            'name' => 'required|unique:shop_categories',
+            'slug' => 'required|unique:shop_categories',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
+            'shop_main_category_slug' => 'nullable|exists:App\Models\ShopMainCategory,slug',
+        ]);
+    }
+
+    private static function validateUpdate($slug)
+    {
+        return request()->validate([
+            'name' => [
+                'required',
+                Rule::unique('shop_categories')->ignore($slug, 'slug'),
+            ],
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
+            'shop_main_category_slug' => 'nullable|exists:App\Models\ShopMainCategory,slug',
+        ]);
     }
 }

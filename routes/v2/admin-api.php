@@ -63,14 +63,18 @@ Route::group([
 
         /* Shop */
         Route::resource('shop-categories', 'Admin\ShopCategoryController', ['except' => ['create', 'edit']]);
+        Route::put('shop-categories/{shopCategory}/index', 'Admin\ShopCategoryController@updateSearchIndex');
+
         Route::resource('sub-categories', 'Admin\ShopSubCategoryController', ['except' => ['create', 'edit']])->parameter('sub-categories', 'shopSubCategory');
+        Route::get('shop-categories/{shopCategory}/sub-categories', 'Admin\ShopSubCategoryController@getSubCategoriesByCategory');
+        Route::put('sub-categories/{shopSubCategory}/index', 'Admin\ShopSubCategoryController@updateSearchIndex');
+
         Route::resource('shop-tags', 'Admin\ShopTagController', ['except' => ['create', 'edit']]);
         Route::resource('shops', 'Admin\ShopController', ['except' => ['create', 'edit']]);
         Route::patch('shops/toggle-enable/{shop}', 'Admin\ShopController@toggleEnable');
         Route::post('shops/status', 'Admin\ShopController@multipleStatusUpdate');
         Route::patch('shops/toggle-official/{slug}', 'Admin\ShopController@toggleOfficial');
         Route::get('shops/{shop}/customers', 'Admin\CustomerController@getCustomersByShop');
-        Route::get('shop-categories/{shopCategory}/sub-categories', 'Admin\ShopSubCategoryController@getSubCategoriesByCategory');
         Route::get('shops/{shop}/shop-tags', 'Admin\ShopTagController@getTagsByShop');
         Route::get('shops/{shop}/ratings', 'Admin\ShopRatingController@getShopRatings');
 

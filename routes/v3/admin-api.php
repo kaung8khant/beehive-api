@@ -9,7 +9,10 @@ Route::group([
 ], function () {
     /* Shop Main Category */
     Route::resource('shop-main-categories', 'ShopMainCategoryController', ['as' => 'admin-v3-shop-main-category', 'except' => ['create', 'edit']]);
+    Route::put('shop-main-categories/{shopMainCategory}/index', 'ShopMainCategoryController@updateSearchIndex');
     /* Shop Main Category */
+
+    Route::get('shop-main-categories/{shopMainCategory:slug}/shop-categories', 'ShopCategoryController@getCategoriesByMainCategory');
 
     /* Restaurant Order */
     Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'admin-v3-restaurant', 'except' => ['create', 'edit']]);
@@ -26,11 +29,8 @@ Route::group([
     /* Shop Order */
 
     /* Menu Option */
-    Route::resource('menu-options', 'MenuOptionController', ['as' => 'admin-v3-menu-option', 'except' => ['create', 'edit']]);
-    Route::get('menus/{menu}/menu-options', 'MenuOptionController@index');
-
-    Route::resource('menu-option-items', 'MenuOptionItemController', ['as' => 'admin-v3-menu-option-item', 'except' => ['create', 'edit']]);
-    Route::get('menu-options/{menuOption}/items', 'MenuOptionItemController@index');
+    Route::resource('menus/{menu}/options', 'MenuOptionController', ['as' => 'admin-v3-menu-option', 'except' => ['create', 'edit']]);
+    Route::resource('options/{option}/items', 'MenuOptionItemController', ['as' => 'admin-v3-menu-option-item', 'except' => ['create', 'edit']]);
     /* Menu Option */
 
     Route::get('customers/{customer}/credits', 'CreditController@index');

@@ -74,6 +74,7 @@ class ShopController extends Controller
                     });
             })
             ->having('products_count', '>', 0)
+            ->orderBy('search_index', 'desc')
             ->orderBy('name', 'asc')
             ->get();
 
@@ -89,6 +90,7 @@ class ShopController extends Controller
                         $q->where('is_enable', 1);
                     });
             })
+            ->orderBy('search_index', 'desc')
             ->orderBy('name', 'asc')
             ->paginate(10);
 

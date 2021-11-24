@@ -6,7 +6,6 @@ use App\Helpers\GeoHelper;
 use App\Models\User;
 use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class DriverRealtimeDataRepository implements DriverRealtimeDataRepositoryInterface
 {
@@ -29,11 +28,11 @@ class DriverRealtimeDataRepository implements DriverRealtimeDataRepositoryInterf
     {
         $drivers = $this->database->getReference('/driver')
             ->orderByChild('updated_at')
-            // enable the following code if you want real-time active data.
+        // enable the following code if you want real-time active data.
             ->startAt(Carbon::now()->subMinutes(1)->toDateTimeString())
             ->getSnapshot()->getValue();
 
-        $filterDriver =  array_filter($drivers, function ($obj, $key) use ($exclude) {
+        $filterDriver = array_filter($drivers, function ($obj, $key) use ($exclude) {
             if ($obj['last_order'] == 'accepted' || $obj['last_order'] == 'delivered') {
                 if (in_array($key, $exclude)) {
                     return false;
@@ -45,7 +44,6 @@ class DriverRealtimeDataRepository implements DriverRealtimeDataRepositoryInterf
             }
             return false;
         }, ARRAY_FILTER_USE_BOTH);
-
 
         return $filterDriver;
     }
@@ -64,7 +62,6 @@ class DriverRealtimeDataRepository implements DriverRealtimeDataRepositoryInterf
             }
         }
         array_multisort(array_column($driverlist, 'distance'), SORT_ASC, $driverlist);
-
 
         return $driverlist;
     }
