@@ -40,8 +40,10 @@ class BaseRepository implements BaseRepositoryInterface
     {
         $model = $this->model->where('slug', $slug)->firstOrFail();
 
-        foreach ($model->images as $image) {
-            FileHelper::deleteFile($image->slug);
+        if ($model->images) {
+            foreach ($model->images as $image) {
+                FileHelper::deleteFile($image->slug);
+            }
         }
 
         $model->delete();

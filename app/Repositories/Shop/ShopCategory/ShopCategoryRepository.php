@@ -29,9 +29,9 @@ class ShopCategoryRepository extends BaseRepository implements ShopCategoryRepos
         $categoryIds = $this->getCategoryIdsByShop($this->getShopIdBySlug($slug));
 
         if (request('filter')) {
-            return ShopCategory::search(request('filter'))->whereIn('id', $categoryIds)->paginate(10);
+            return $this->model->search(request('filter'))->whereIn('id', $categoryIds)->paginate(10);
         } else {
-            return ShopCategory::whereIn('id', $categoryIds)->orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
+            return $this->model->whereIn('id', $categoryIds)->orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
         }
     }
 
@@ -40,9 +40,9 @@ class ShopCategoryRepository extends BaseRepository implements ShopCategoryRepos
         $mainCategoryId = $this->getMainCategoryIdBySlug($slug);
 
         if (request('filter')) {
-            return ShopCategory::search(request('filter'))->where('shop_main_category_id', $mainCategoryId)->paginate(10);
+            return $this->model->search(request('filter'))->where('shop_main_category_id', $mainCategoryId)->paginate(10);
         } else {
-            return ShopCategory::where('shop_main_category_id', $mainCategoryId)->orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
+            return $this->model->where('shop_main_category_id', $mainCategoryId)->orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
         }
     }
 
