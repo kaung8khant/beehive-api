@@ -8,12 +8,17 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\DriverAttendance;
+use App\Models\RestaurantOrder;
+use App\Models\RestaurantOrderDriver;
+use App\Models\RestaurantOrderDriverStatus;
 use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
@@ -26,7 +31,7 @@ class DriverController extends Controller
     {
         $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
 
-        return User::with('roles')
+        $users = User::with('roles', 'driverOrder', 'driverShopOrder')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Driver');
             })
@@ -38,6 +43,23 @@ class DriverController extends Controller
             })
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
+        foreach ($users as $user) {
+            $user->res_order = DB::table('restaurant_order_drivers')
+                ->where('status', '!=', 'rejected')
+                ->where('status', '!=', 'no_response')
+                ->where('status', '!=', 'pending')
+                ->select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')
+                ->get();
+            $user->shop_order = DB::table('shop_order_drivers')
+                ->where('status', '!=', 'rejected')
+                ->where('status', '!=', 'no_response')
+                ->where('status', '!=', 'pending')
+                ->select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')
+                ->get();
+        }
+        return $users;
     }
 
     public function store(Request $request)

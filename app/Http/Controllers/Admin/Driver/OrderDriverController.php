@@ -223,14 +223,14 @@ class OrderDriverController extends Controller
 
         $response = OneSignalHelper::sendPush($fields, 'admin');
     }
-    private static function preparePushData($order)
+    private static function preparePushData($order, $type)
     {
         unset($order['created_by']);
         unset($order['updated_by']);
         unset($order['shop_order_items']);
 
         return [
-            'type' => 'shop_order',
+            'type' => 'manual_assign',
             'body' => $order,
         ];
     }
@@ -242,6 +242,7 @@ class OrderDriverController extends Controller
             $resOrderDriver = RestaurantOrderDriver::create([
                 'restaurant_order_id' => $orderID,
                 'user_id' => $driverID,
+                'status' => 'accepted'
             ]);
         }
 
@@ -258,6 +259,7 @@ class OrderDriverController extends Controller
             $shopOrderDriver = ShopOrderDriver::create([
                 'shop_order_id' => $orderID,
                 'user_id' => $driverID,
+                'status' => 'accepted'
             ]);
         }
 
