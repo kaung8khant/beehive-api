@@ -78,7 +78,7 @@ class Menu extends BaseModel
     {
         return File::where('source', 'menus')
             ->where('source_id', $this->id)
-            ->whereIn('extension', ['png', 'jpg'])
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
             ->get();
     }
 

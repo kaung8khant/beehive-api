@@ -16,7 +16,7 @@ class RestaurantOrderDriverStatus extends Model
         'shop_order_driver_id'
     ];
 
-    public function shopOrderDriver()
+    public function restaruantOrderDriver()
     {
         return $this->belongsTo(RestaurantOrderDriver::class);
     }

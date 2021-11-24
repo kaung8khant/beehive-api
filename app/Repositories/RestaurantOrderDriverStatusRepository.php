@@ -62,6 +62,7 @@ class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStat
             $resOrderDriver = RestaurantOrderDriver::create([
                 'restaurant_order_id' => $restaurantOrder->id,
                 'user_id' => $driverId,
+                'status' => 'pending'
             ]);
             $restaurantOrderDriverStatus = RestaurantOrderDriverStatus::create([
                 'restaurant_order_driver_id' => $resOrderDriver->id,
@@ -90,6 +91,9 @@ class RestaurantOrderDriverStatusRepository implements RestaurantOrderDriverStat
 
     public function changeStatus($order, $orderDriver, $status, $type)
     {
+        $orderDriver->status = $status;
+        $orderDriver->save();
+
         if ($type == "restaurant") {
 
             $domain = $this->model->create([

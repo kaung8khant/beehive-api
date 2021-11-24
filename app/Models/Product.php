@@ -94,7 +94,7 @@ class Product extends BaseModel
         return File::where('source', 'products')
             ->where('source_id', $this->id)
             ->where('type', 'image')
-            ->whereIn('extension', ['png', 'jpg'])
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
             ->get();
     }
 
@@ -103,7 +103,7 @@ class Product extends BaseModel
         return File::where('source', 'products')
             ->where('source_id', $this->id)
             ->where('type', 'cover')
-            ->whereIn('extension', ['png', 'jpg'])
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
             ->get();
     }
 
