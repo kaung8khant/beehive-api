@@ -70,7 +70,7 @@ class Restaurant extends BaseModel
         return File::where('source', 'restaurants')
             ->where('source_id', $this->id)
             ->where('type', 'image')
-            ->whereIn('extension', ['png', 'jpg'])
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
             ->get();
     }
 
@@ -79,7 +79,7 @@ class Restaurant extends BaseModel
         return File::where('source', 'restaurants')
             ->where('source_id', $this->id)
             ->where('type', 'cover')
-            ->whereIn('extension', ['png', 'jpg'])
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
             ->get();
     }
 

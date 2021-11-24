@@ -23,7 +23,7 @@ class Content extends Model
         return File::where('source', 'contents')
             ->where('source_id', $this->id)
             ->where('type', 'cover')
-            ->whereIn('extension', ['png', 'jpg'])
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
             ->get();
     }
 }

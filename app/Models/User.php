@@ -38,7 +38,7 @@ class User extends Authenticatable implements JWTSubject
         return File::where('source', 'users')
             ->where('source_id', $this->id)
             ->where('type', 'image')
-            ->whereIn('extension', ['png', 'jpg'])
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
             ->get();
     }
 
