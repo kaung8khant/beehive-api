@@ -92,11 +92,11 @@ class User extends Authenticatable implements JWTSubject
 
     public function driverOrder()
     {
-        return $this->hasMany(RestaurantOrderDriver::class, 'id');
+        return $this->hasMany(RestaurantOrderDriver::class);
     }
     public function driverShopOrder()
     {
-        return $this->hasMany(ShopOrderDriver::class, 'id');
+        return $this->hasMany(ShopOrderDriver::class);
     }
 
     public function shop()

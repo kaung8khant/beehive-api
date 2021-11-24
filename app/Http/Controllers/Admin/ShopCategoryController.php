@@ -67,13 +67,6 @@ class ShopCategoryController extends Controller
         return CollectionHelper::removePaginateLinks($shopCategories);
     }
 
-    public function getCategoriesByMainCategory($slug)
-    {
-        $shopCategories = $this->shopCategoryRepository->getAllByMainCategory($slug);
-        $this->optimizeShopCategories($shopCategories);
-        return CollectionHelper::removePaginateLinks($shopCategories);
-    }
-
     private function optimizeShopCategories($shopCategories)
     {
         $shopCategories->makeHidden(['created_by', 'updated_by']);
