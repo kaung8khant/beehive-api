@@ -12,6 +12,8 @@ Route::group([
     Route::put('shop-main-categories/{shopMainCategory}/index', 'ShopMainCategoryController@updateSearchIndex');
     /* Shop Main Category */
 
+    Route::get('shop-main-categories/{shopMainCategory:slug}/shop-categories', 'ShopCategoryController@getCategoriesByMainCategory');
+
     /* Restaurant Order */
     Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'admin-v3-restaurant', 'except' => ['create', 'edit']]);
     Route::post('restaurant-orders/{restaurantOrder}/status', 'RestaurantOrderController@changeStatus');
