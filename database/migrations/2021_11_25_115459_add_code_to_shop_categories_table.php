@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddCodeToShopMainCategoriesTable extends Migration
+class AddCodeToShopCategoriesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,9 @@ class AddCodeToShopMainCategoriesTable extends Migration
      */
     public function up()
     {
-        Schema::table('shop_main_categories', function (Blueprint $table) {
-            $table->string('code')->unique()->nullable()->after('search_index');
+        Schema::table('shop_categories', function (Blueprint $table) {
+            $table->string('code')->nullable()->after('search_index');
+            $table->unique(['shop_main_category_id', 'code']);
         });
     }
 
@@ -25,8 +26,6 @@ class AddCodeToShopMainCategoriesTable extends Migration
      */
     public function down()
     {
-        Schema::table('shop_main_categories', function (Blueprint $table) {
-            //
-        });
+        //
     }
 }

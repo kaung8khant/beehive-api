@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
+use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Repositories\Shop\ShopSubCategory\ShopSubCategoryRepositoryInterface;
+use Illuminate\Database\QueryException;
 use Illuminate\Validation\Rule;
 
 class ShopSubCategoryController extends Controller
@@ -33,15 +35,25 @@ class ShopSubCategoryController extends Controller
     {
         $validatedData = self::validateCreate();
         $validatedData['shop_category_id'] = $this->subCategoryRepository->getShopCategoryIdBySlug(request('shop_category_slug'));
-        $shopCategory = $this->subCategoryRepository->create($validatedData)->refresh()->load(['shopCategory']);
-        return response()->json($shopCategory, 201);
+
+        try {
+            $shopCategory = $this->subCategoryRepository->create($validatedData)->refresh()->load(['shopCategory']);
+            return response()->json($shopCategory, 201);
+        } catch (QueryException $e) {
+            return ResponseHelper::generateValidateError('code', 'The code has already been taken for this category.');
+        }
     }
 
     public function update($slug)
     {
         $validatedData = self::validateUpdate($slug);
         $validatedData['shop_category_id'] = $this->subCategoryRepository->getShopCategoryIdBySlug(request('shop_category_slug'));
-        $subCategory = $this->subCategoryRepository->update($slug, $validatedData);
+
+        try {
+            $subCategory = $this->subCategoryRepository->update($slug, $validatedData);
+        } catch (QueryException $e) {
+            return ResponseHelper::generateValidateError('code', 'The code has already been taken for this category.');
+        }
 
         // Update the category ids of related products
         foreach ($subCategory->products as $product) {
@@ -92,7 +104,7 @@ class ShopSubCategoryController extends Controller
         request()->merge(['slug' => StringHelper::generateUniqueSlug()]);
 
         return request()->validate([
-            'code' => 'required|size:2|unique:shop_sub_categories',
+            'code' => 'required|size:2',
             'slug' => 'required|unique:shop_sub_categories',
             'name' => 'required|unique:shop_sub_categories',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
@@ -102,11 +114,7 @@ class ShopSubCategoryController extends Controller
     private static function validateUpdate($slug)
     {
         return request()->validate([
-            'code' => [
-                'required',
-                'size:2',
-                Rule::unique('shop_sub_categories')->ignore($slug, 'slug'),
-            ],
+            'code' => 'required|size:2',
             'name' => [
                 'required',
                 Rule::unique('shop_sub_categories')->ignore($slug, 'slug'),

@@ -165,6 +165,18 @@ trait ResponseHelper
         return false;
     }
 
+    public static function generateValidateError($key, $message)
+    {
+        return response()->json([
+            'message' => 'The given data was invalid.',
+            'errors' => [
+                $key => [
+                    $message,
+                ],
+            ],
+        ], 422);
+    }
+
     private function checkFavoriteProduct($product_id)
     {
         if ($customer = Auth::guard('customers')->user()) {

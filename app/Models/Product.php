@@ -26,7 +26,7 @@ class Product extends BaseModel
         'variants' => 'array',
     ];
 
-    protected $appends = ['rating', 'images', 'covers'];
+    protected $appends = ['code', 'rating', 'images', 'covers'];
 
     public function toSearchableArray(): array
     {
@@ -78,6 +78,16 @@ class Product extends BaseModel
     private function cheapestVariant()
     {
         return $this->productVariants()->where('is_enable', 1)->orderBy('price', 'asc')->first();
+    }
+
+    public function getCodeAttribute()
+    {
+        $mainCategoryCode = $this->shopCategory->shopMainCategory ? $this->shopCategory->shopMainCategory->code ?? '00' : '00';
+        $shopCategoryCode = $this->shopCategory->code ?? '000';
+        $subCategoryCode = $this->shopSubCategory->code ?? '00';
+        $brandCode = $this->brand ? $this->brand->code ?? '0000' : '0000';
+
+        return $mainCategoryCode . '-' . $shopCategoryCode . '-' . $subCategoryCode . '-' . $brandCode . '-' . sprintf('%04d', $this->id);
     }
 
     public function getRatingAttribute()

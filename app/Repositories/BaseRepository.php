@@ -49,7 +49,7 @@ class BaseRepository implements BaseRepositoryInterface
         $model->delete();
     }
 
-    private function updateImageIfExist($slug)
+    protected function updateImageIfExist($slug)
     {
         if (request('image_slug')) {
             FileHelper::updateFile(request('image_slug'), $this->table, $slug);

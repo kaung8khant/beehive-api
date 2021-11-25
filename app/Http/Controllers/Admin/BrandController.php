@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
+use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Repositories\Shop\Brand\BrandRepositoryInterface;
+use Illuminate\Database\QueryException;
 use Illuminate\Validation\Rule;
 
 class BrandController extends Controller
@@ -31,13 +33,21 @@ class BrandController extends Controller
 
     public function store()
     {
-        $brand = $this->brandRepository->create(self::validateCreate());
-        return response()->json($brand, 201);
+        try {
+            $brand = $this->brandRepository->create(self::validateCreate());
+            return response()->json($brand, 201);
+        } catch (QueryException $e) {
+            return ResponseHelper::generateValidateError('code', 'The code has already been taken.');
+        }
     }
 
     public function update($slug)
     {
-        return $this->brandRepository->update($slug, self::validateUpdate($slug));
+        try {
+            return $this->brandRepository->update($slug, self::validateUpdate($slug));
+        } catch (QueryException $e) {
+            return ResponseHelper::generateValidateError('code', 'The code has already been taken.');
+        }
     }
 
     public function destroy($slug)
@@ -53,7 +63,7 @@ class BrandController extends Controller
         request()->merge(['slug' => StringHelper::generateUniqueSlug()]);
 
         return request()->validate([
-            'code' => 'required|size:4|unique:brands',
+            'code' => 'required|unique:brands|size:4',
             'slug' => 'required|unique:brands',
             'name' => 'required|unique:brands',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
@@ -65,8 +75,8 @@ class BrandController extends Controller
         return request()->validate([
             'code' => [
                 'required',
+                // Rule::unique('brands')->ignore($slug, 'slug'),
                 'size:4',
-                Rule::unique('brands')->ignore($slug, 'slug'),
             ],
             'name' => [
                 'required',
