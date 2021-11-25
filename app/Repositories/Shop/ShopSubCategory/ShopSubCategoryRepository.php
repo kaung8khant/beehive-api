@@ -27,9 +27,9 @@ class ShopSubCategoryRepository extends BaseRepository implements ShopSubCategor
         $shopCategoryId = $this->getShopCategoryIdBySlug($slug);
 
         if (request('filter')) {
-            return $this->modal->search(request('filter'))->where('shop_category_id', $shopCategoryId)->paginate(10);
+            return $this->model->search(request('filter'))->where('shop_category_id', $shopCategoryId)->paginate(10);
         } else {
-            return $this->modal->where('shop_category_id', $shopCategoryId)->orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
+            return $this->model->where('shop_category_id', $shopCategoryId)->orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
         }
     }
 
