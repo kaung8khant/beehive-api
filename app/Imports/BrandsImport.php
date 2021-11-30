@@ -43,6 +43,7 @@ class BrandsImport implements ToCollection, WithHeadingRow
             $validateRow = $row->toArray();
 
             $rules = [
+                'code' => ['required','unique:brands', 'size:4'],
                 'name' => ['required', 'unique:brands'],
             ];
 
@@ -59,6 +60,7 @@ class BrandsImport implements ToCollection, WithHeadingRow
             if ($validator->fails()) {
                 $validatorErrors[] = [
                     'row' => $key + 2,
+                    'code' => $row['code'],
                     'name' => $row['name'],
                     'errors' => $validator->errors(),
                 ];

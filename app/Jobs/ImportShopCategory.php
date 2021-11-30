@@ -60,6 +60,7 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
     {
         foreach ($this->rows as $key => $row) {
             $rules = [
+                'code' => ['required', 'size:3'],
                 'name' => ['required', 'unique:shop_categories'],
             ];
 
@@ -78,6 +79,7 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
             if (!$validator->fails()) {
                 $shopCategoryData = [
                     'slug' => StringHelper::generateUniqueSlug(),
+                    'code' => $row['code'],
                     'name' => $row['name'],
                 ];
 

@@ -61,6 +61,7 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
     {
         foreach ($this->rows as $key => $row) {
             $rules = [
+                'code' => ['required', 'size:2'],
                 'name' => ['required', 'unique:shop_sub_categories'],
                 'shop_category_slug' => ['required', 'exists:App\Models\ShopCategory,slug'],
             ];
@@ -80,6 +81,7 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
             if (!$validator->fails()) {
                 $shopSubCategoryData = [
                     'slug' => StringHelper::generateUniqueSlug(),
+                    'code' => $row['code'],
                     'name' => $row['name'],
                     'shop_category_id' => ShopCategory::where('slug', $row['shop_category_slug'])->value('id'),
                 ];

@@ -60,6 +60,7 @@ class ImportBrand implements ShouldQueue, ShouldBeUnique
     {
         foreach ($this->rows as $key => $row) {
             $rules = [
+                'code' => ['required', 'unique:brands','size:4'],
                 'name' => ['required', 'unique:brands'],
             ];
 
@@ -78,6 +79,7 @@ class ImportBrand implements ShouldQueue, ShouldBeUnique
             if (!$validator->fails()) {
                 $brandData = [
                     'slug' => StringHelper::generateUniqueSlug(),
+                    'code' => $row['code'],
                     'name' => $row['name'],
                 ];
 
