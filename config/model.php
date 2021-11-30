@@ -6,6 +6,7 @@ return [
     'shops' => '\App\Models\Shop',
     'shop_main_categories' => '\App\Models\ShopMainCategory',
     'shop_categories' => '\App\Models\ShopCategory',
+    'shop_sub_categories' => '\App\Models\ShopSubCategory',
     'brands' => 'App\Models\Brand',
     'menus' => 'App\Models\Menu',
     'products' => 'App\Models\Product',
