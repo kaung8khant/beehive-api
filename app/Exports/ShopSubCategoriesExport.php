@@ -25,6 +25,7 @@ class ShopSubCategoriesExport implements FromQuery, WithHeadings, WithMapping, W
     {
         return [
             $shopSubCategory->slug,
+            $shopSubCategory->code,
             $shopSubCategory->name,
             ShopCategory::where('id', $shopSubCategory->shop_category_id)->value('slug'),
             ShopCategory::where('id', $shopSubCategory->shop_category_id)->value('name'),
@@ -35,6 +36,7 @@ class ShopSubCategoriesExport implements FromQuery, WithHeadings, WithMapping, W
     {
         return [
             'id',
+            'code',
             'name',
             'shop_category_slug',
             'shop_category',
@@ -50,6 +52,7 @@ class ShopSubCategoriesExport implements FromQuery, WithHeadings, WithMapping, W
             'B' => ['alignment' => ['horizontal' => 'center']],
             'C' => ['alignment' => ['horizontal' => 'center']],
             'D' => ['alignment' => ['horizontal' => 'center']],
+            'E' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -57,9 +60,10 @@ class ShopSubCategoriesExport implements FromQuery, WithHeadings, WithMapping, W
     {
         return [
             'A' => 15,
-            'B' => 40,
+            'B' => 15,
             'C' => 40,
             'D' => 40,
+            'E' => 40,
         ];
     }
 }

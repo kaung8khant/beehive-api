@@ -60,6 +60,7 @@ class ImportShopMainCategory implements ShouldQueue, ShouldBeUnique
     {
         foreach ($this->rows as $key => $row) {
             $rules = [
+                'code' => ['required','unique:shop_main_categories', 'size:2'],
                 'name' => ['required', 'unique:shop_main_categories'],
             ];
 
@@ -68,6 +69,7 @@ class ImportShopMainCategory implements ShouldQueue, ShouldBeUnique
             if (isset($row['id'])) {
                 $shopMainCategory = ShopMainCategory::where('slug', $row['id'])->first();
                 $rules['name'][1] = Rule::unique('shop_main_categories')->ignore($shopMainCategory->id);
+                $rules['code'][1] = Rule::unique('shop_main_categories')->ignore($shopMainCategory->id);
             }
 
             $validator = Validator::make(
@@ -78,6 +80,7 @@ class ImportShopMainCategory implements ShouldQueue, ShouldBeUnique
             if (!$validator->fails()) {
                 $shopMainCategoryData = [
                     'slug' => StringHelper::generateUniqueSlug(),
+                    'code' => $row['code'],
                     'name' => $row['name'],
                 ];
 
