@@ -43,6 +43,7 @@ class ShopSubCategoriesImport implements ToCollection, WithHeadingRow
             $validateRow = $row->toArray();
 
             $rules = [
+                'code' => ['required', 'size:2'],
                 'name' => ['required', 'unique:shop_sub_categories'],
                 'shop_category_slug' => ['required', 'exists:App\Models\ShopCategory,slug']];
 
@@ -59,6 +60,7 @@ class ShopSubCategoriesImport implements ToCollection, WithHeadingRow
             if ($validator->fails()) {
                 $validatorErrors[] = [
                     'row' => $key + 2,
+                    'code' => $row['code'],
                     'name' => $row['name'],
                     'shop_category_slug' => $row['shop_category_slug'],
                     'errors' => $validator->errors(),

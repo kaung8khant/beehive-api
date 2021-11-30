@@ -43,12 +43,14 @@ class ShopMainCategoriesImport implements ToCollection, WithHeadingRow
             $validateRow = $row->toArray();
 
             $rules = [
+                'code' => ['required','unique:shop_main_categories', 'size:2'],
                 'name' => ['required', 'unique:shop_main_categories'],
             ];
 
             if (isset($row['id'])) {
                 $shopMainCategory = ShopMainCategory::where('slug', $row['id'])->first();
                 $rules['name'][1] = Rule::unique('shop_main_categories')->ignore($shopMainCategory->id);
+                $rules['code'][1] = Rule::unique('shop_main_categories')->ignore($shopMainCategory->id);
             }
 
             $validator = Validator::make(
@@ -59,6 +61,7 @@ class ShopMainCategoriesImport implements ToCollection, WithHeadingRow
             if ($validator->fails()) {
                 $validatorErrors[] = [
                     'row' => $key + 2,
+                    'code' => $row['code'],
                     'name' => $row['name'],
                     'errors' => $validator->errors(),
                 ];
