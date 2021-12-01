@@ -8,12 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class BaseRepository implements BaseRepositoryInterface
 {
     protected $model;
-    protected $table;
 
-    public function __construct(Model $model, $table = null)
+    public function __construct(Model $model)
     {
         $this->model = $model;
-        $this->table = $table;
     }
 
     public function find($slug)
@@ -52,7 +50,7 @@ class BaseRepository implements BaseRepositoryInterface
     protected function updateImageIfExist($slug)
     {
         if (request('image_slug')) {
-            FileHelper::updateFile(request('image_slug'), $this->table, $slug);
+            FileHelper::updateFile(request('image_slug'), $this->model->getTable(), $slug);
         }
     }
 }

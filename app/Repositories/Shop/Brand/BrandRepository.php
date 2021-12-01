@@ -9,7 +9,7 @@ class BrandRepository extends BaseRepository implements BrandRepositoryInterface
 {
     public function __construct(Brand $model)
     {
-        parent::__construct($model, 'brands');
+        parent::__construct($model);
     }
 
     public function all()

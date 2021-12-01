@@ -12,7 +12,7 @@ class ShopCategoryRepository extends BaseRepository implements ShopCategoryRepos
 {
     public function __construct(ShopCategory $model)
     {
-        parent::__construct($model, 'shop_categories');
+        parent::__construct($model);
     }
 
     public function all()

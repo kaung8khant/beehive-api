@@ -15,7 +15,7 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
 {
     public function __construct(Product $model)
     {
-        parent::__construct($model, 'products');
+        parent::__construct($model);
     }
 
     public function all()
@@ -99,7 +99,7 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
     {
         if (request('image_slugs')) {
             foreach (request('image_slugs') as $imageSlug) {
-                FileHelper::updateFile($imageSlug, $this->table, $slug);
+                FileHelper::updateFile($imageSlug, $this->model->getTable(), $slug);
             }
         }
     }
