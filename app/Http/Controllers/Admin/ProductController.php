@@ -47,8 +47,7 @@ class ProductController extends Controller
     {
         return response()->json(['message' => 'Permission denied.'], 403);
 
-        $this->productRepository->delete($slug);
-        return response()->json(['message' => 'Successfully deleted.'], 200);
+        return $this->productRepository->delete($slug);
     }
 
     private function prepareProductData($validatedData)
@@ -69,9 +68,7 @@ class ProductController extends Controller
 
     public function toggleEnable($slug)
     {
-        $product = $this->productRepository->find($slug);
-        $product->update(['is_enable' => !$product->is_enable]);
-        return response()->json(['message' => 'Success.'], 200);
+        return $this->productRepository->toggleEnable($slug);
     }
 
     public function multipleStatusUpdate()

@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Shop\Product;
 
+use App\Events\DataChanged;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Models\Brand;
@@ -63,6 +64,7 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
     public function create(array $attributes)
     {
         $model = $this->model->create($attributes);
+        DataChanged::dispatch($this->user, 'create', $this->model->getTable(), $attributes['slug'], request()->url(), 'success', $attributes);
         $this->updateImagesIfExist($model->slug);
 
         if (isset($attributes['product_variants'])) {
@@ -72,10 +74,11 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         return $model;
     }
 
-    public function update($slug, array $data)
+    public function update($slug, array $attributes)
     {
         $model = $this->model->where('slug', $slug)->firstOrFail();
-        $model->update($data);
+        $model->update($attributes);
+        DataChanged::dispatch($this->user, 'update', $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
         $this->updateImagesIfExist($model->slug);
         return $model;
     }
@@ -110,7 +113,8 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
             $variant['slug'] = StringHelper::generateUniqueSlugWithTable('product_variants');
             $variant['product_id'] = $productId;
 
-            ProductVariant::create($variant);
+            $variant = ProductVariant::create($variant);
+            DataChanged::dispatch($this->user, 'create', $variant->getTable(), $variant['slug'], request()->url(), 'success', $variant);
 
             if (isset($variant['image_slug'])) {
                 FileHelper::updateFile($variant['image_slug'], 'product_variants', $variant['slug']);

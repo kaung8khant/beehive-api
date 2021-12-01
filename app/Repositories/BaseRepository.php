@@ -2,16 +2,22 @@
 
 namespace App\Repositories;
 
+use App\Events\DataChanged;
 use App\Helpers\FileHelper;
 use Illuminate\Database\Eloquent\Model;
 
 class BaseRepository implements BaseRepositoryInterface
 {
     protected $model;
+    protected $user;
 
     public function __construct(Model $model)
     {
         $this->model = $model;
+
+        if (auth('users')->check()) {
+            $this->user = auth('users')->user();
+        }
     }
 
     public function find($slug)
@@ -22,14 +28,16 @@ class BaseRepository implements BaseRepositoryInterface
     public function create(array $attributes)
     {
         $model = $this->model->create($attributes);
+        DataChanged::dispatch($this->user, 'create', $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
         $this->updateImageIfExist($model->slug);
         return $model;
     }
 
-    public function update($slug, array $data)
+    public function update($slug, array $attributes)
     {
         $model = $this->model->where('slug', $slug)->firstOrFail();
-        $model->update($data);
+        $model->update($attributes);
+        DataChanged::dispatch($this->user, 'update', $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
         $this->updateImageIfExist($model->slug);
         return $model;
     }
@@ -44,7 +52,22 @@ class BaseRepository implements BaseRepositoryInterface
             }
         }
 
+        DataChanged::dispatch($this->user, 'delete', $this->model->getTable(), $model->slug, request()->url(), 'success', $model);
         $model->delete();
+
+        return ['message' => 'Successfully deleted.'];
+    }
+
+    public function toggleEnable($slug)
+    {
+        $model = $this->model->where('slug', $slug)->firstOrFail();
+        $attributes = ['is_enable' => !$model->is_enable];
+        $model->update($attributes);
+
+        $status = $model->is_enable ? 'enable' : 'disable';
+        DataChanged::dispatch($this->user, $status, $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
+
+        return ['message' => 'Success.'];
     }
 
     protected function updateImageIfExist($slug)

@@ -69,8 +69,7 @@ class ShopSubCategoryController extends Controller
     {
         return response()->json(['message' => 'Permission denied.'], 403);
 
-        $this->subCategoryRepository->delete($slug);
-        return response()->json(['message' => 'Successfully deleted.'], 200);
+        return $this->subCategoryRepository->delete($slug);
     }
 
     public function getSubCategoriesByCategory($slug)

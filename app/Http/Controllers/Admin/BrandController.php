@@ -54,8 +54,7 @@ class BrandController extends Controller
     {
         return response()->json(['message' => 'Permission denied.'], 403);
 
-        $this->brandRepository->delete($slug);
-        return response()->json(['message' => 'successfully deleted'], 200);
+        return $this->brandRepository->delete($slug);
     }
 
     private static function validateCreate()

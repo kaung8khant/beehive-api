@@ -51,8 +51,7 @@ class ShopMainCategoryController extends Controller
     {
         return response()->json(['message' => 'Permission denied.'], 403);
 
-        $this->mainCategoryRepository->delete($slug);
-        return response()->json(['message' => 'Successfully deleted.'], 200);
+        return $this->mainCategoryRepository->delete($slug);
     }
 
     public function updateSearchIndex($slug)
