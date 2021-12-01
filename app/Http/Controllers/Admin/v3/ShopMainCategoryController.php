@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin\v3;
 
 use App\Helpers\ResponseHelper;
-use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Repositories\Shop\ShopMainCategory\ShopMainCategoryCreateRequest;
 use App\Repositories\Shop\ShopMainCategory\ShopMainCategoryRepositoryInterface;
+use App\Repositories\Shop\ShopMainCategory\ShopMainCategoryUpdateRequest;
 use Illuminate\Database\QueryException;
-use Illuminate\Validation\Rule;
 
 class ShopMainCategoryController extends Controller
 {
@@ -23,25 +23,25 @@ class ShopMainCategoryController extends Controller
         return $this->mainCategoryRepository->all();
     }
 
-    public function store()
+    public function show($slug)
+    {
+        return $this->mainCategoryRepository->find($slug);
+    }
+
+    public function store(ShopMainCategoryCreateRequest $request)
     {
         try {
-            $mainCategory = $this->mainCategoryRepository->create(self::validateCreate());
+            $mainCategory = $this->mainCategoryRepository->create($request->validated());
             return response()->json($mainCategory, 201);
         } catch (QueryException $e) {
             return ResponseHelper::generateValidateError('code', 'The code has already been taken.');
         }
     }
 
-    public function show($slug)
-    {
-        return $this->mainCategoryRepository->find($slug);
-    }
-
-    public function update($slug)
+    public function update(ShopMainCategoryUpdateRequest $request, $slug)
     {
         try {
-            return $this->mainCategoryRepository->update($slug, self::validateUpdate($slug));
+            return $this->mainCategoryRepository->update($slug, $request->validated());
         } catch (QueryException $e) {
             return ResponseHelper::generateValidateError('code', 'The code has already been taken.');
         }
@@ -49,7 +49,9 @@ class ShopMainCategoryController extends Controller
 
     public function destroy($slug)
     {
-        return response()->json(['message' => 'Permission denied.'], 403);
+        if ($this->mainCategoryRepository->checkProducts($slug)) {
+            return response()->json(['message' => 'Cannot delete product type if there is a linked product.'], 403);
+        }
 
         return $this->mainCategoryRepository->delete($slug);
     }
@@ -59,33 +61,5 @@ class ShopMainCategoryController extends Controller
         return $this->mainCategoryRepository->update($slug, request()->validate([
             'search_index' => 'required|numeric',
         ]));
-    }
-
-    private static function validateCreate()
-    {
-        request()->merge(['slug' => StringHelper::generateUniqueSlug()]);
-
-        return request()->validate([
-            'code' => 'required|unique:shop_main_categories|size:2',
-            'slug' => 'required|unique:shop_main_categories',
-            'name' => 'required|unique:shop_main_categories',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]);
-    }
-
-    private static function validateUpdate($slug)
-    {
-        return request()->validate([
-            'code' => [
-                'required',
-                Rule::unique('shop_main_categories')->ignore($slug, 'slug'),
-                'size:2',
-            ],
-            'name' => [
-                'required',
-                Rule::unique('shop_main_categories')->ignore($slug, 'slug'),
-            ],
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]);
     }
 }
