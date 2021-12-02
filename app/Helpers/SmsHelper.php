@@ -2,42 +2,11 @@
 
 namespace App\Helpers;
 
-use App\Helpers\SmsLength;
 use App\Models\SmsLog;
 use Carbon\Carbon;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 
 trait SmsHelper
 {
-    public static function sendSms($phoneNumber, $text)
-    {
-        try {
-            $client = new Client();
-
-            $response = $client->post(
-                'https://boomsms.net/api/sms/json',
-                [
-                    'headers' => [
-                        'Accept' => 'application/json',
-                        'Authorization' => 'Bearer ' . config('system.boomsms_api_key'),
-                    ],
-                    'form_params' => [
-                        'from' => 'Beehive',
-                        'to' => str_replace('+', '', $phoneNumber),
-                        'text' => $text,
-                    ],
-                    'verify' => false,
-                ]
-            );
-
-            $response = json_decode($response->getBody(), true);
-            return $response;
-        } catch (RequestException $e) {
-            throw $e;
-        }
-    }
-
     public static function prepareSmsData($message, $userId = null)
     {
         $smsLength = new SmsLength($message);

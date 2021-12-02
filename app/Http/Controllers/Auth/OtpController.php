@@ -7,6 +7,7 @@ use App\Helpers\SmsHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\OneTimePassword;
+use App\Services\MessageService\BoomSmsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -65,13 +66,6 @@ class OtpController extends Controller
         $otp = $this->getOtp($phoneNumber, $type, $source);
 
         if ($otp) {
-            // $fifteenMinutes = Carbon::parse($otp->created_at)->addMinutes(15);
-
-            // if ($fifteenMinutes->gt(Carbon::now())) {
-            //     $remainingTime = $fifteenMinutes->diff(Carbon::now())->format('%i');
-            //     return $this->generateResponse('You can send another code after ' . $remainingTime . ' minutes.', 403, true);
-            // }
-
             $oneMinute = Carbon::parse($otp->created_at)->addMinute();
 
             if ($oneMinute->gt(Carbon::now())) {
@@ -82,7 +76,8 @@ class OtpController extends Controller
         $smsData = SmsHelper::prepareSmsData($otpCode);
 
         try {
-            $smsResponse = SmsHelper::sendSms($phoneNumber, 'Your OTP code is ' . $otpCode . '.');
+            $messageService = new BoomSmsService();
+            $smsResponse = $messageService->sendMessage($phoneNumber, 'Your OTP code is ' . $otpCode . '.');
 
             if ($smsResponse['status'] !== 0) {
                 $this->storeOtp($phoneNumber, $otpCode, $smsResponse['message_id'], 'Failed', $type, $source);
