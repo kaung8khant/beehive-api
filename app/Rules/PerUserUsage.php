@@ -19,8 +19,14 @@ class PerUserUsage implements Rule
 
     public function validate($items, $subTotal, $customer, $value): bool
     {
-        $shopOrder = ShopOrder::where('promocode_id', $this->promocode->id)->where('customer_id', $customer->id)->get();
-        $restaurantOrder = RestaurantOrder::where('promocode_id', $this->promocode->id)->where('customer_id', $customer->id)->get();
+        $shopOrder = ShopOrder::where('promocode_id', $this->promocode->id)
+            ->where('customer_id', $customer->id)
+            ->where('order_status', '<>', 'cancelled')
+            ->get();
+        $restaurantOrder = RestaurantOrder::where('promocode_id', $this->promocode->id)
+            ->where('customer_id', $customer->id)
+            ->where('order_status', '<>', 'cancelled')
+            ->get();
         $orderCount = count($shopOrder) + count($restaurantOrder);
         return $orderCount < $value;
     }
