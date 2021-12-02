@@ -11,6 +11,7 @@ use App\Models\Customer;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductVariationValue;
+use App\Models\Setting;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderContact;
@@ -350,7 +351,7 @@ trait ShopOrderHelper
     public static function notifySystem($order, $orderItems, $phoneNumber, $messageService)
     {
         self::sendPushNotifications($order, $orderItems);
-        self::sendSmsNotifications($orderItems, $phoneNumber, $messageService);
+        self::sendSmsNotifications($order, $orderItems, $phoneNumber, $messageService);
     }
 
     public static function sendPushNotifications($order, $orderItems, $message = null)
@@ -438,36 +439,39 @@ trait ShopOrderHelper
         ];
     }
 
-    public static function sendSmsNotifications($orderItems, $customerPhoneNumber, $messageService)
+    public static function sendSmsNotifications($order, $orderItems, $customerPhoneNumber, $messageService)
     {
         // self::sendAdminSms();
-        self::sendVendorSms($orderItems, $messageService);
-        self::sendCustomerSms($customerPhoneNumber, $messageService);
+        self::sendVendorSms($order, $orderItems, $messageService);
+        self::sendCustomerSms($order, $customerPhoneNumber, $messageService);
     }
 
-    private static function sendAdminSms()
-    {
-        $admins = User::whereHas('roles', function ($query) {
-            $query->where('name', 'Admin');
-        })->pluck('phone_number');
+    // private static function sendAdminSms()
+    // {
+    //     $admins = User::whereHas('roles', function ($query) {
+    //         $query->where('name', 'Admin');
+    //     })->pluck('phone_number');
 
-        $message = 'A shop order has been received.';
-        $smsData = SmsHelper::prepareSmsData($message);
-        $uniqueKey = StringHelper::generateUniqueSlug();
+    //     $message = 'A shop order has been received.';
+    //     $smsData = SmsHelper::prepareSmsData($message);
+    //     $uniqueKey = StringHelper::generateUniqueSlug();
 
-        if (count($admins) > 0) {
-            SendSms::dispatch($uniqueKey, $admins, $message, 'order', $smsData);
-        }
-    }
+    //     if (count($admins) > 0) {
+    //         SendSms::dispatch($uniqueKey, $admins, $message, 'order', $smsData);
+    //     }
+    // }
 
-    private static function sendVendorSms($orderItems, $messageService)
+    private static function sendVendorSms($order, $orderItems, $messageService)
     {
         $vendors = collect($orderItems)->map(function ($item) {
             $shopId = Product::where('slug', $item['slug'])->value('shop_id');
             return Shop::where('id', $shopId)->value('notify_numbers');
         })->filter()->collapse()->unique()->values();
 
-        $message = 'An order has been received.';
+        $message = Setting::where('key', 'vendor_shop_order_create')->value('value');
+        $message = SmsHelper::parseShopSmsMessage($order, $message);
+
+        // $message = 'An order has been received.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
@@ -476,9 +480,12 @@ trait ShopOrderHelper
         }
     }
 
-    private static function sendCustomerSms($phoneNumber, $messageService)
+    private static function sendCustomerSms($order, $phoneNumber, $messageService)
     {
-        $message = 'Your order has successfully been created.';
+        $message = Setting::where('key', 'customer_shop_order_create')->value('value');
+        $message = SmsHelper::parseShopSmsMessage($order, $message);
+
+        // $message = 'Your order has successfully been created.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
 
