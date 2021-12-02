@@ -28,6 +28,7 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
             foreach ($group as $variant) {
                 $data = [
                 'id' => $variant->product->slug,
+                'code' => $variant->product->code,
                 'name' => $variant->product->name,
                 'variant_slug' =>  $variant->slug,
                 'variant' =>  $this->stringifyVariant($variant->variant),
@@ -50,6 +51,7 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
     {
         return [
             'id',
+            'code',
             'name',
             'variant_slug',
             'variant',
@@ -73,6 +75,7 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
             'F' => ['alignment' => ['horizontal' => 'center']],
             'G' => ['alignment' => ['horizontal' => 'center']],
             'H' => ['alignment' => ['horizontal' => 'center']],
+            'I' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -80,13 +83,14 @@ class ProductPriceBookExport implements FromCollection, WithHeadings, WithStyles
     {
         return [
             'A' => 15,
-            'B' => 30,
-            'C' => 20,
-            'D' => 30,
-            'E' => 20,
+            'B' => 20,
+            'C' => 30,
+            'D' => 20,
+            'E' => 30,
             'F' => 20,
             'G' => 20,
             'H' => 20,
+            'I' => 20,
         ];
     }
 }
