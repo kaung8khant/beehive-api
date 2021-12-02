@@ -18,8 +18,12 @@ class TotalUsage implements Rule
 
     public function validate($items, $subTotal, $customer, $value): bool
     {
-        $shopOrder = ShopOrder::where('promocode_id', $this->promocode->id)->get();
-        $restaurantOrder = RestaurantOrder::where('promocode_id', $this->promocode->id)->get();
+        $shopOrder = ShopOrder::where('promocode_id', $this->promocode->id)
+            ->where('order_status', '<>', 'cancelled')
+            ->get();
+        $restaurantOrder = RestaurantOrder::where('promocode_id', $this->promocode->id)
+            ->where('order_status', '<>', 'cancelled')
+            ->get();
 
         $orderCount = count($shopOrder) + count($restaurantOrder);
         return $orderCount < $value;
