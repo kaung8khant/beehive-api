@@ -325,7 +325,7 @@ trait RestaurantOrderHelper
         return self::getBranchQuery($query, $request);
     }
 
-    public static function getBranchQuery($query, $request)
+    public static function getBranchQuery($query)
     {
         $radius = CacheHelper::getRestaurantSearchRadius();
 
@@ -335,7 +335,7 @@ trait RestaurantOrderHelper
             ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
                 + sin(radians(?)) * sin(radians(latitude)) )
-            ) AS distance', [$request->lat, $request->lng, $request->lat])
+            ) AS distance', [request('lat'), request('lng'), request('lat')])
             ->whereHas('restaurant', function ($q) {
                 $q->where('is_enable', 1);
             })

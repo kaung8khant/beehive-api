@@ -39,6 +39,8 @@ Route::group([
     /* Restaurant */
     Route::get('restaurants/branches', 'Restaurant\RestaurantBranchController@index');
     Route::get('restaurants/branches/{restaurantBranch}/menus', 'Restaurant\MenuController@getAvailableMenusByBranch');
+
+    Route::get('restaurants/favorites', 'Restaurant\RestaurantBranchController@getFavoriteRestaurants');
     /* Restaurant */
 
     /* Ads */
