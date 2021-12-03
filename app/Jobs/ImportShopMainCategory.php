@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Helpers\StringHelper;
+use App\Models\Product;
+use App\Models\ShopCategory;
 use App\Models\ShopMainCategory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -94,9 +96,18 @@ class ImportShopMainCategory implements ShouldQueue, ShouldBeUnique
                     }
                 } else {
                     $shopMainCategoryData['slug'] = $shopMainCategory->slug;
+                    if ($this->checkProducts($shopMainCategory->id) && $shopMainCategory->code && $shopMainCategory->code !== $shopMainCategoryData['code']) {
+                        return response()->json(['message' => 'Cannot update product type code if there is a linked product.'], 403);
+                    }
                     $shopMainCategory->update($shopMainCategoryData);
                 }
             }
         }
+    }
+
+    public function checkProducts($id)
+    {
+        $categoryIds = ShopMainCategory::where('id', $id)->firstOrFail()->shopCategories->pluck('id');
+        return Product::whereIn('shop_category_id', $categoryIds)->exists();
     }
 }
