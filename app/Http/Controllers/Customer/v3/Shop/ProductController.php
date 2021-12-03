@@ -4,15 +4,16 @@ namespace App\Http\Controllers\Customer\v3\Shop;
 
 use App\Events\KeywordSearched;
 use App\Helpers\AuthHelper;
-use App\Helpers\CollectionHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
+use App\Models\ShopSubCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ProductController extends Controller
 {
@@ -31,7 +32,7 @@ class ProductController extends Controller
 
             KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter, 'shop');
         } else {
-            $products = Product::select(CollectionHelper::selectExclusiveColumns('products'))
+            $products = Product::select(self::selectExclusiveColumns('products'))
                 ->join('product_variants as pv', function ($query) {
                     $query->on('pv.id', '=', DB::raw('(SELECT id FROM product_variants WHERE product_variants.product_id = products.id ORDER BY price ASC LIMIT 1)'));
                 })
@@ -74,6 +75,18 @@ class ProductController extends Controller
         return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $products->lastPage(), true);
     }
 
+    public function getByShopSubCategory(ShopSubCategory $shopSubCategory)
+    {
+        $products = Product::where('shop_sub_category_id', $shopSubCategory->id)
+            ->where('is_enable', 1)
+            ->orderBy('search_index', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate(request('size'));
+
+        $imageFilteredProducts = $this->optimizeProducts($products);
+        return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $products->lastPage(), true);
+    }
+
     private function optimizeProducts($products)
     {
         $products->load(['shop' => function ($query) {
@@ -85,5 +98,14 @@ class ProductController extends Controller
             $product->shop->makeHidden(['rating', 'images', 'covers', 'first_order_date']);
             return $product->images->count() > 0 ? $product : null;
         })->filter()->values();
+    }
+
+    private static function selectExclusiveColumns()
+    {
+        return collect(Schema::getColumnListing('products'))->map(function ($column) {
+            if (!in_array($column, ['description', 'variants', 'created_by', 'updated_by', 'created_at', 'updated_at'])) {
+                return 'products.' . $column;
+            }
+        })->filter()->values()->toArray();
     }
 }
