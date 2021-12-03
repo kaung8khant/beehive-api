@@ -23,7 +23,7 @@ class ShopMainCategoryRepository extends BaseRepository implements ShopMainCateg
     {
         $model = $this->model->where('slug', $slug)->firstOrFail();
 
-        if ($this->checkProducts($slug) && $model->code !== $attributes['code']) {
+        if ($this->checkProducts($slug) && $model->code && $model->code !== $attributes['code']) {
             return response()->json(['message' => 'Cannot update product type code if there is a linked product.'], 403);
         }
 
