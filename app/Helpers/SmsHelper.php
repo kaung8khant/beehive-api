@@ -62,8 +62,8 @@ trait SmsHelper
             $order->restaurantOrderContact->phone_number,
             $order->invoiceId,
             Carbon::parse($order->order_date)->format('Y-m-d'),
-            Carbon::parse($order->order_date)->format('H:i:s'),
-            $order->order_date,
+            Carbon::parse($order->order_date)->format('h:i:s a'),
+            Carbon::parse($order->order_date)->format('Y-m-d h:is a'),
             $order->restaurant->name,
         ];
 
@@ -85,7 +85,7 @@ trait SmsHelper
         $shopName = $order->vendors[0]->shop->name;
 
         if ($order->vendors->count() > 1) {
-            $shopName .= $shopName . ' and others';
+            $shopName .= ' and others';
         }
 
         $replace = [
@@ -93,8 +93,8 @@ trait SmsHelper
             $order->contact->phone_number,
             $order->invoiceId,
             Carbon::parse($order->order_date)->format('Y-m-d'),
-            Carbon::parse($order->order_date)->format('H:i:s'),
-            $order->order_date,
+            Carbon::parse($order->order_date)->format('h:i:s a'),
+            Carbon::parse($order->order_date)->format('Y-m-d h:is a'),
             $shopName,
         ];
 
