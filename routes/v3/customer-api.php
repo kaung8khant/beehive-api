@@ -33,6 +33,7 @@ Route::group([
 
     Route::get('products', 'Shop\ProductController@index');
     Route::get('shops/{shop}/products/arrivals', 'Shop\ProductController@getNewArrivalsByShop');
+    Route::get('shops/{shop}/products/discounts', 'Shop\ProductController@getDiscountsByShop');
     Route::get('brands/{brand}/categories/{category}/products', 'Shop\ProductController@getByBrandAndCategory');
     Route::get('shop-sub-categories/{shopSubCategory}/products', 'Shop\ProductController@getByShopSubCategory');
     /* Shop */

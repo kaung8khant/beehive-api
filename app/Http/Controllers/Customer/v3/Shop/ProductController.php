@@ -11,7 +11,6 @@ use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -19,18 +18,18 @@ class ProductController extends Controller
 {
     use ResponseHelper;
 
-    public function index(Request $request)
+    public function index()
     {
-        if ($request->filter) {
-            $products = Product::search($request->filter)
+        if (request('filter')) {
+            $products = Product::search(request('filter'))
                 ->with([
                     'userToken' => AuthHelper::getCustomerSlug(),
                 ])
                 ->where('is_enable', 1)
                 ->where('is_shop_enable', 1)
-                ->paginate($request->size);
+                ->paginate(request('size'));
 
-            KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter, 'shop');
+            KeywordSearched::dispatch(AuthHelper::getCustomerId(), request('device_id'), request('filter'), 'shop');
         } else {
             $products = Product::select(self::selectExclusiveColumns('products'))
                 ->join('product_variants as pv', function ($query) {
@@ -44,32 +43,56 @@ class ProductController extends Controller
                 ->orderBy('search_index', 'desc')
                 ->orderBy('shop_sub_category_id', 'asc')
                 ->orderBy('id', 'desc')
-                ->paginate($request->size);
+                ->paginate(request('size'));
         }
 
         $imageFilteredProducts = $this->optimizeProducts($products);
         return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $products->lastPage(), true);
     }
 
-    public function getNewArrivalsByShop(Request $request, Shop $shop)
+    public function getNewArrivalsByShop(Shop $shop)
     {
         $products = Product::where('shop_id', $shop->id)
             ->where('is_enable', 1)
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
             ->orderBy('id', 'desc')
-            ->paginate($request->size);
+            ->paginate(request('size'));
 
         $imageFilteredProducts = $this->optimizeProducts($products);
         return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $products->lastPage(), true);
     }
 
-    public function getByBrandAndCategory(Request $request, Brand $brand, ShopCategory $category)
+    public function getDiscountsByShop(Shop $shop)
+    {
+        return $products = Product::where('shop_id', $shop->id)
+            ->where('is_enable', 1)
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
+            ->whereHas('productVariants', function ($query) {
+                $query->where('discount', '>', 0);
+            })
+            ->orderBy('search_index', 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate(request('size'));
+
+        $imageFilteredProducts = $this->optimizeProducts($products);
+        return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $products->lastPage(), true);
+    }
+
+    public function getByBrandAndCategory(Brand $brand, ShopCategory $category)
     {
         $products = Product::where('brand_id', $brand->id)
             ->where('shop_category_id', $category->id)
             ->where('is_enable', 1)
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
             ->orderBy('search_index', 'desc')
             ->orderBy('id', 'desc')
-            ->paginate($request->size);
+            ->paginate(request('size'));
 
         $imageFilteredProducts = $this->optimizeProducts($products);
         return $this->generateProductResponse($imageFilteredProducts, 200, 'array', $products->lastPage(), true);
@@ -79,6 +102,9 @@ class ProductController extends Controller
     {
         $products = Product::where('shop_sub_category_id', $shopSubCategory->id)
             ->where('is_enable', 1)
+            ->whereHas('shop', function ($query) {
+                $query->where('is_enable', 1);
+            })
             ->orderBy('search_index', 'desc')
             ->orderBy('id', 'desc')
             ->paginate(request('size'));
