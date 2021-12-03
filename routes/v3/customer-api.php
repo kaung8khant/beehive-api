@@ -21,19 +21,20 @@ Route::group([
         Route::get('credits', 'CreditController@index');
     });
 
-    Route::get('shop-main-categories', 'Shop\ShopMainCategoryController@index');
-
     /* Shop */
     Route::get('brands', 'Shop\BrandController@getAllBrands');
 
-    Route::get('brands/{brand}/shops', 'Shop\ShopController@getByBrand');
+    Route::get('shop-main-categories', 'Shop\ShopMainCategoryController@index');
 
     Route::get('brands/{brand}/categories', 'Shop\ShopCategoryController@getByBrand');
     Route::get('shops/{shop}/categories', 'Shop\ShopCategoryController@getByShop');
 
+    Route::get('brands/{brand}/shops', 'Shop\ShopController@getByBrand');
+
     Route::get('products', 'Shop\ProductController@index');
     Route::get('shops/{shop}/products/arrivals', 'Shop\ProductController@getNewArrivalsByShop');
     Route::get('brands/{brand}/categories/{category}/products', 'Shop\ProductController@getByBrandAndCategory');
+    Route::get('shop-sub-categories/{shopSubCategory}/products', 'Shop\ProductController@getByShopSubCategory');
     /* Shop */
 
     /* Restaurant */

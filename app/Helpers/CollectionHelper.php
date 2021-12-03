@@ -43,15 +43,6 @@ trait CollectionHelper
         return compact('orderBy', 'sortBy');
     }
 
-    public static function selectExclusiveColumns($table)
-    {
-        return collect(Schema::getColumnListing($table))->map(function ($column) {
-            if (!in_array($column, ['description', 'variants', 'created_by', 'updated_by', 'created_at', 'updated_at'])) {
-                return 'products.' . $column;
-            }
-        })->filter()->values()->toArray();
-    }
-
     public static function removePaginateLinks($paginator)
     {
         return [
