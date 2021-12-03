@@ -37,6 +37,7 @@ class ShopSubCategoryUpdateRequest extends FormRequest
                 'required',
                 Rule::unique('shop_sub_categories')->ignore($this->route('shopSubCategory'), 'slug'),
             ],
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ];
     }
