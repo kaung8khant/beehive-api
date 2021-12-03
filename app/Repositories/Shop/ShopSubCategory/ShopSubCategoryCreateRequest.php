@@ -35,6 +35,7 @@ class ShopSubCategoryCreateRequest extends FormRequest
             'code' => 'required|size:2',
             'slug' => 'required|unique:shop_sub_categories',
             'name' => 'required|unique:shop_sub_categories',
+            'image_slug' => 'nullable|exists:App\Models\File,slug',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ];
     }
