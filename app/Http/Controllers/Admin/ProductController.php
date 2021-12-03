@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Helpers\CacheHelper;
 use App\Helpers\CollectionHelper;
 use App\Http\Controllers\Controller;
 use App\Repositories\Shop\Product\ProductCreateRequest;
@@ -32,15 +31,13 @@ class ProductController extends Controller
 
     public function store(ProductCreateRequest $request)
     {
-        $validatedData = $this->prepareProductData($request->validated());
-        $product = $this->productRepository->create($validatedData)->refresh()->load(['shop', 'productVariants']);
+        $product = $this->productRepository->create($request->validated())->refresh()->load(['shop', 'productVariants']);
         return response()->json($product, 201);
     }
 
     public function update(ProductUpdateRequest $request, $slug)
     {
-        $validatedData = $this->prepareProductData($request->validated());
-        return $this->productRepository->update($slug, $validatedData);
+        return $this->productRepository->update($slug, $request->validated());
     }
 
     public function destroy($slug)
@@ -48,22 +45,6 @@ class ProductController extends Controller
         return response()->json(['message' => 'Permission denied.'], 403);
 
         return $this->productRepository->delete($slug);
-    }
-
-    private function prepareProductData($validatedData)
-    {
-        $validatedData['shop_id'] = CacheHelper::getShopIdBySlug($validatedData['shop_slug']);
-        $validatedData['shop_category_id'] = CacheHelper::getShopCategoryIdBySlug($validatedData['shop_category_slug']);
-
-        if (isset($validatedData['shop_sub_category_slug'])) {
-            $validatedData['shop_sub_category_id'] = CacheHelper::getShopSubCategoryIdBySlug($validatedData['shop_sub_category_slug']);
-        }
-
-        if (isset($validatedData['brand_slug'])) {
-            $validatedData['brand_id'] = CacheHelper::getBrandIdBySlug($validatedData['brand_slug']);
-        }
-
-        return $validatedData;
     }
 
     public function toggleEnable($slug)

@@ -55,7 +55,7 @@ class BaseRepository implements BaseRepositoryInterface
         DataChanged::dispatch($this->user, 'delete', $this->model->getTable(), $model->slug, request()->url(), 'success', $model);
         $model->delete();
 
-        return ['message' => 'Successfully deleted.'];
+        return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
     public function toggleEnable($slug)
@@ -67,13 +67,22 @@ class BaseRepository implements BaseRepositoryInterface
         $status = $model->is_enable ? 'enable' : 'disable';
         DataChanged::dispatch($this->user, $status, $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
 
-        return ['message' => 'Success.'];
+        return response()->json(['message' => 'Success.'], 200);
     }
 
     protected function updateImageIfExist($slug)
     {
         if (request('image_slug')) {
             FileHelper::updateFile(request('image_slug'), $this->model->getTable(), $slug);
+        }
+    }
+
+    protected function updateCoversIfExist($slug)
+    {
+        if (request('cover_slugs')) {
+            foreach (request('cover_slugs') as $coverSlug) {
+                FileHelper::updateFile($coverSlug, $this->model->getTable(), $slug);
+            }
         }
     }
 }

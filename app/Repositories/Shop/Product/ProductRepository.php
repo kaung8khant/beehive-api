@@ -33,9 +33,9 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         $shopId = $this->getShopIdBySlug($slug);
 
         if (request('filter')) {
-            return Product::search(request('filter'))->where('shop_id', $shopId)->paginate(10);
+            return $this->model->search(request('filter'))->where('shop_id', $shopId)->paginate(10);
         } else {
-            return Product::where('shop_id', $shopId)->orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
+            return $this->model->where('shop_id', $shopId)->orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
         }
     }
 
@@ -44,9 +44,9 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         $brandId = $this->getBrandIdBySlug($slug);
 
         if (request('filter')) {
-            return Product::search(request('filter'))->where('brand_id', $brandId)->paginate(10);
+            return $this->model->search(request('filter'))->where('brand_id', $brandId)->paginate(10);
         } else {
-            return Product::where('brand_id', $brandId)->orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
+            return $this->model->where('brand_id', $brandId)->orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
         }
     }
 
@@ -55,9 +55,9 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         $categoryId = $this->getCategoryIdBySlug($slug);
 
         if (request('filter')) {
-            return Product::search(request('filter'))->where('shop_category_id', $categoryId)->paginate(10);
+            return $this->model->search(request('filter'))->where('shop_category_id', $categoryId)->paginate(10);
         } else {
-            return Product::where('shop_category_id', $categoryId)->orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
+            return $this->model->where('shop_category_id', $categoryId)->orderBy('search_index', 'desc')->orderBy('id', 'desc')->paginate(10);
         }
     }
 

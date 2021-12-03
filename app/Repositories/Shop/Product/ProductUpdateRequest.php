@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Shop\Product;
 
+use App\Helpers\CacheHelper;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductUpdateRequest extends FormRequest
@@ -39,5 +40,28 @@ class ProductUpdateRequest extends FormRequest
             'cover_slugs' => 'nullable|array',
             'cover_slugs.*' => 'nullable|exists:App\Models\File,slug',
         ];
+    }
+
+    /**
+     * Get the validated data from the request.
+     *
+     * @return array
+     */
+    public function validated()
+    {
+        $validated = parent::validated();
+
+        $validated['shop_id'] = CacheHelper::getShopIdBySlug($validated['shop_slug']);
+        $validated['shop_category_id'] = CacheHelper::getShopCategoryIdBySlug($validated['shop_category_slug']);
+
+        if (isset($validated['shop_sub_category_slug'])) {
+            $validated['shop_sub_category_id'] = CacheHelper::getShopSubCategoryIdBySlug($validated['shop_sub_category_slug']);
+        }
+
+        if (isset($validated['brand_slug'])) {
+            $validated['brand_id'] = CacheHelper::getBrandIdBySlug($validated['brand_slug']);
+        }
+
+        return $validated;
     }
 }

@@ -18,6 +18,8 @@ use App\Repositories\Shop\ShopMainCategory\ShopMainCategoryRepository;
 use App\Repositories\Shop\ShopMainCategory\ShopMainCategoryRepositoryInterface;
 use App\Repositories\Shop\ShopSubCategory\ShopSubCategoryRepository;
 use App\Repositories\Shop\ShopSubCategory\ShopSubCategoryRepositoryInterface;
+use App\Repositories\Shop\Shop\ShopRepository;
+use App\Repositories\Shop\Shop\ShopRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -31,6 +33,7 @@ class RepositoryServiceProvider extends ServiceProvider
     {
         $this->app->bind(BaseRepositoryInterface::class, BaseRepository::class);
 
+        $this->app->bind(ShopRepositoryInterface::class, ShopRepository::class);
         $this->app->bind(BrandRepositoryInterface::class, BrandRepository::class);
         $this->app->bind(ShopMainCategoryRepositoryInterface::class, ShopMainCategoryRepository::class);
         $this->app->bind(ShopCategoryRepositoryInterface::class, ShopCategoryRepository::class);
