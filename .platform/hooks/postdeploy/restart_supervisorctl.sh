@@ -14,6 +14,8 @@ sudo supervisorctl restart all
 
 cd /var/app/current
 
+php artisan cache:clear
+
 php artisan config:cache
 
 php artisan route:cache
