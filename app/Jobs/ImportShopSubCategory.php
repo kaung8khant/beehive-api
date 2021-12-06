@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Helpers\StringHelper;
+use App\Models\Product;
 use App\Models\ShopCategory;
 use App\Models\ShopSubCategory;
 use Illuminate\Bus\Queueable;
@@ -83,7 +84,7 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
                     'slug' => StringHelper::generateUniqueSlug(),
                     'code' => $row['code'],
                     'name' => $row['name'],
-                    'shop_category_id' => ShopCategory::where('slug', $row['shop_category_slug'])->value('id'),
+                    'shop_category_id' => $this->getShopCategoryIdBySlug($row['shop_category_slug']),
                 ];
 
                 if (!$shopSubCategory) {
@@ -96,9 +97,31 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
                     }
                 } else {
                     $shopSubCategoryData['slug'] = $shopSubCategory->slug;
+                    if ($this->checkProducts($shopSubCategory->id) && $shopSubCategory->code && $shopSubCategory->code !== $shopSubCategoryData['code']) {
+                        return response()->json(['message' => 'Cannot update sub category code if there is a linked product.'], 403);
+                    }
                     $shopSubCategory->update($shopSubCategoryData);
+                    $this->updateProductCategoryIds($shopSubCategory->products, $shopSubCategoryData['shop_category_id']);
                 }
             }
         }
+    }
+
+    public function checkProducts($id)
+    {
+        return Product::where('shop_sub_category_id', $id)->exists();
+    }
+
+    private function updateProductCategoryIds($products, $categoryId)
+    {
+        foreach ($products as $product) {
+            $product->update([
+                'shop_category_id' => $categoryId,
+            ]);
+        }
+    }
+    public function getShopCategoryIdBySlug($slug)
+    {
+        return ShopCategory::where('slug', $slug)->firstOrFail()->id;
     }
 }

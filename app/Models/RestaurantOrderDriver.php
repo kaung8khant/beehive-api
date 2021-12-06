@@ -15,9 +15,9 @@ class RestaurantOrderDriver extends Model
         'id',
     ];
 
-    public function restaurantsOrder()
+    public function restaurantOrder()
     {
-        return $this->belongsTo(RestaurantOrder::class);
+        return $this->belongsTo(RestaurantOrder::class, 'restaurant_order_id');
     }
 
     public function driver()

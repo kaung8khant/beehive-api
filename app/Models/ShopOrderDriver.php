@@ -14,8 +14,6 @@ class ShopOrderDriver extends Model
     protected $hidden = [
         'id',
         'created_by',
-        'updated_by',
-        'updated_at',
     ];
 
     public function shopOrder()
