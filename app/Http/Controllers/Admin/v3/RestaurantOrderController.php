@@ -172,7 +172,7 @@ class RestaurantOrderController extends Controller
         $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
 
         SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
-        RestaurantOrderHelper::createOrderStatus($restaurantOrder->id, 'cancelled');
+        RestaurantOrderHelper::createOrderStatus($restaurantOrder, 'cancelled');
 
         return $this->generateResponse('The order has successfully been cancelled.', 200, true);
     }
@@ -205,7 +205,7 @@ class RestaurantOrderController extends Controller
     {
         $order = DB::transaction(function () use ($validatedData) {
             $order = RestaurantOrder::create($validatedData);
-            RestaurantOrderHelper::createOrderStatus($order->id);
+            RestaurantOrderHelper::createOrderStatus($order);
             RestaurantOrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             RestaurantOrderHelper::createOrderItems($order->id, $validatedData['order_items']);
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
@@ -237,7 +237,7 @@ class RestaurantOrderController extends Controller
             }
         }
 
-        RestaurantOrderHelper::createOrderStatus($restaurantOrder->id, $request->status);
+        RestaurantOrderHelper::createOrderStatus($restaurantOrder, $request->status);
 
         $restaurantOrder['order_status'] = $request->status;
         RestaurantOrderHelper::sendPushNotifications($restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);

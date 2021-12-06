@@ -24,11 +24,21 @@ class ShopOrder extends BaseModel
         'commission' => 'float',
     ];
 
-    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount', 'driver_status', 'invoice_date'];
+    protected $appends = ['invoice_id', 'order_no', 'amount', 'tax', 'discount', 'total_amount', 'driver_status', 'invoice_date'];
 
     public function getInvoiceIdAttribute()
     {
         return 'BHS' . sprintf('%08d', $this->id);
+    }
+
+    public function getOrderNoAttribute()
+    {
+        return 'BHS' . sprintf('%08d', $this->id);
+    }
+
+    public function getInvoiceNoAttribute($invoiceNo)
+    {
+        return $invoiceNo ? 'INS' . sprintf('%08d', $invoiceNo) : null;
     }
 
     public function getAmountAttribute()

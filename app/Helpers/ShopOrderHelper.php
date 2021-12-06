@@ -129,23 +129,29 @@ trait ShopOrderHelper
         return false;
     }
 
-    public static function createOrderStatus($orderId, $orderStatus = 'pending')
+    public static function createOrderStatus($order, $orderStatus = 'pending')
     {
-        ShopOrder::where('id', $orderId)->update(['order_status' => $orderStatus]);
+        $data['order_status'] = $orderStatus;
 
-        $paymentStatus = null;
+        if ($orderStatus === 'pickUp' && !$order->invoice_no) {
+            $data['invoice_no'] = ShopOrder::max('invoice_no') + 1;
+        }
 
         if ($orderStatus === 'delivered') {
             $paymentStatus = 'success';
         } elseif ($orderStatus === 'cancelled') {
             $paymentStatus = 'failed';
+        } else {
+            $paymentStatus = null;
         }
 
         if ($paymentStatus) {
-            ShopOrder::where('id', $orderId)->update(['payment_status' => $paymentStatus]);
+            $data['payment_status'] = $paymentStatus;
         }
 
-        $shopOrderVendor = ShopOrderVendor::where('shop_order_id', $orderId);
+        $order->update($data);
+
+        $shopOrderVendor = ShopOrderVendor::where('shop_order_id', $order->id);
         $shopOrderVendor->update(['order_status' => $orderStatus]);
         $shopOrderVendor = $shopOrderVendor->get();
 

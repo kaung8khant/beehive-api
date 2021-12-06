@@ -184,7 +184,7 @@ class ShopOrderController extends Controller
             $order = ShopOrder::create($validatedData);
             ShopOrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             ShopOrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
-            ShopOrderHelper::createOrderStatus($order->id);
+            ShopOrderHelper::createOrderStatus($order);
             return $order->refresh()->load('contact');
         });
 
@@ -211,7 +211,7 @@ class ShopOrderController extends Controller
             }
         }
 
-        ShopOrderHelper::createOrderStatus($shopOrder->id, $request->status);
+        ShopOrderHelper::createOrderStatus($shopOrder, $request->status);
 
         $orderItems = $shopOrder->vendors->map(function ($vendor) {
             return $vendor->items;

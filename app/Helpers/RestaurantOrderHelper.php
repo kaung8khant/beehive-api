@@ -164,25 +164,31 @@ trait RestaurantOrderHelper
         return Setting::where('key', 'tax')->first()->value;
     }
 
-    public static function createOrderStatus($orderId, $orderStatus = 'pending')
+    public static function createOrderStatus($order, $orderStatus = 'pending')
     {
-        RestaurantOrder::where('id', $orderId)->update(['order_status' => $orderStatus]);
+        $data['order_status'] = $orderStatus;
 
-        $paymentStatus = null;
+        if ($orderStatus === 'pickUp' && !$order->invoice_no) {
+            $data['invoice_no'] = RestaurantOrder::max('invoice_no') + 1;
+        }
 
         if ($orderStatus === 'delivered') {
             $paymentStatus = 'success';
         } elseif ($orderStatus === 'cancelled') {
             $paymentStatus = 'failed';
+        } else {
+            $paymentStatus = null;
         }
 
         if ($paymentStatus) {
-            RestaurantOrder::where('id', $orderId)->update(['payment_status' => $paymentStatus]);
+            $data['payment_status'] = $paymentStatus;
         }
+
+        $order->update($data);
 
         RestaurantOrderStatus::create([
             'status' => $orderStatus,
-            'restaurant_order_id' => $orderId,
+            'restaurant_order_id' => $order->id,
         ]);
     }
 
