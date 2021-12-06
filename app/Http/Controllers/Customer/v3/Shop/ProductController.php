@@ -66,7 +66,7 @@ class ProductController extends Controller
 
     public function getDiscountsByShop(Shop $shop)
     {
-        return $products = Product::where('shop_id', $shop->id)
+        $products = Product::where('shop_id', $shop->id)
             ->where('is_enable', 1)
             ->whereHas('shop', function ($query) {
                 $query->where('is_enable', 1);
