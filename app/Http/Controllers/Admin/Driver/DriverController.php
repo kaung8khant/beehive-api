@@ -12,6 +12,7 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderDriver;
 use App\Models\RestaurantOrderDriverStatus;
 use App\Models\Role;
+use App\Models\ShopOrderDriver;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -30,7 +31,7 @@ class DriverController extends Controller
     {
         $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
 
-        $users = User::with('roles', 'driverOrder', 'driverShopOrder')
+        $users = User::with('roles')
             ->whereHas('roles', function ($q) {
                 $q->where('name', 'Driver');
             })
@@ -42,21 +43,35 @@ class DriverController extends Controller
             })
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
+
         foreach ($users as $user) {
-            $user->res_order = DB::table('restaurant_order_drivers')
+            $user->res_order = RestaurantOrderDriver::with("restaurantOrder")
                 ->where('status', '!=', 'rejected')
                 ->where('status', '!=', 'no_response')
                 ->where('status', '!=', 'pending')
-                ->select('status', DB::raw('count(*) as total'))
-                ->groupBy('status')
-                ->get();
-            $user->shop_order = DB::table('shop_order_drivers')
+                ->where('user_id', $user->id)
+                ->whereDate('updated_at', '>=', Carbon::now()->subDays(3)->startOfDay())->get()->groupBy('status');
+
+            $user->accepted = 0;
+            $user->pickUp = 0;
+            $user->delivered = 0;
+
+            $user->accepted += isset($user->res_order['accepted']) ? count($user->res_order['accepted']) : 0;
+            $user->pickUp += isset($user->res_order['pickUp']) ? count($user->res_order['pickUp']) : 0;
+            $user->delivered += isset($user->res_order['delivered']) ? count($user->res_order['delivered']) : 0;
+
+
+            $user->shop_order = ShopOrderDriver::with("shopOrder")
                 ->where('status', '!=', 'rejected')
                 ->where('status', '!=', 'no_response')
                 ->where('status', '!=', 'pending')
-                ->select('status', DB::raw('count(*) as total'))
-                ->groupBy('status')
-                ->get();
+                ->where('user_id', $user->id)
+                ->whereDate('updated_at', '>=', Carbon::now()->subDays(3)->startOfDay())->get()->groupBy('status');
+
+
+            $user->accepted += isset($user->shop_order['accepted']) ? count($user->shop_order['accepted']) : 0;
+            $user->pickUp += isset($user->shop_order['pickUp']) ? count($user->shop_order['pickUp']) : 0;
+            $user->delivered += isset($user->shop_order['delivered']) ? count($user->shop_order['delivered']) : 0;
         }
         return $users;
     }
