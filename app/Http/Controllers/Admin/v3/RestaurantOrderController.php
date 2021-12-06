@@ -22,6 +22,7 @@ use App\Models\Promocode;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderItem;
+use App\Models\Setting;
 use App\Services\MessageService\MessagingService;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
@@ -162,7 +163,10 @@ class RestaurantOrderController extends Controller
             return $this->generateResponse('The order has already been ' . $restaurantOrder->order_status . '.', 406, true);
         }
 
-        $message = 'Your order has been cancelled.';
+        $message = Setting::where('key', 'customer_restaurant_order_cancel')->value('value');
+        $message = SmsHelper::parseRestaurantSmsMessage($restaurantOrder, $message);
+
+        // $message = 'Your order has been cancelled.';
         $smsData = SmsHelper::prepareSmsData($message);
         $uniqueKey = StringHelper::generateUniqueSlug();
         $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;
@@ -239,7 +243,10 @@ class RestaurantOrderController extends Controller
         RestaurantOrderHelper::sendPushNotifications($restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);
 
         if ($request->status === 'cancelled') {
-            $message = 'Your order has been cancelled.';
+            $message = Setting::where('key', 'customer_restaurant_order_cancel')->value('value');
+            $message = SmsHelper::parseRestaurantSmsMessage($restaurantOrder, $message);
+
+            // $message = 'Your order has been cancelled.';
             $smsData = SmsHelper::prepareSmsData($message);
             $uniqueKey = StringHelper::generateUniqueSlug();
             $phoneNumber = Customer::where('id', $restaurantOrder->customer_id)->first()->phone_number;

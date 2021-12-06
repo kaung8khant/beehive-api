@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
-use App\Helpers\StringHelper;
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
+use App\Repositories\Shop\ShopMainCategory\ShopMainCategoryCreateRequest;
 use App\Repositories\Shop\ShopMainCategory\ShopMainCategoryRepositoryInterface;
-use Illuminate\Validation\Rule;
+use App\Repositories\Shop\ShopMainCategory\ShopMainCategoryUpdateRequest;
+use Illuminate\Database\QueryException;
 
 class ShopMainCategoryController extends Controller
 {
@@ -21,28 +23,37 @@ class ShopMainCategoryController extends Controller
         return $this->mainCategoryRepository->all();
     }
 
-    public function store()
-    {
-        $mainCategory = $this->mainCategoryRepository->create(self::validateCreate());
-        return response()->json($mainCategory, 201);
-    }
-
     public function show($slug)
     {
         return $this->mainCategoryRepository->find($slug);
     }
 
-    public function update($slug)
+    public function store(ShopMainCategoryCreateRequest $request)
     {
-        return $this->mainCategoryRepository->update($slug, self::validateUpdate($slug));
+        try {
+            $mainCategory = $this->mainCategoryRepository->create($request->validated());
+            return response()->json($mainCategory, 201);
+        } catch (QueryException $e) {
+            return ResponseHelper::generateValidateError('code', 'The code has already been taken.');
+        }
+    }
+
+    public function update(ShopMainCategoryUpdateRequest $request, $slug)
+    {
+        try {
+            return $this->mainCategoryRepository->update($slug, $request->validated());
+        } catch (QueryException $e) {
+            return ResponseHelper::generateValidateError('code', 'The code has already been taken.');
+        }
     }
 
     public function destroy($slug)
     {
-        return response()->json(['message' => 'Permission denied.'], 403);
+        if ($this->mainCategoryRepository->checkProducts($slug)) {
+            return response()->json(['message' => 'Cannot delete product type if there is a linked product.'], 403);
+        }
 
-        $this->mainCategoryRepository->delete($slug);
-        return response()->json(['message' => 'Successfully deleted.'], 200);
+        return $this->mainCategoryRepository->delete($slug);
     }
 
     public function updateSearchIndex($slug)
@@ -50,27 +61,5 @@ class ShopMainCategoryController extends Controller
         return $this->mainCategoryRepository->update($slug, request()->validate([
             'search_index' => 'required|numeric',
         ]));
-    }
-
-    private static function validateCreate()
-    {
-        request()->merge(['slug' => StringHelper::generateUniqueSlug()]);
-
-        return request()->validate([
-            'slug' => 'required|unique:shop_main_categories',
-            'name' => 'required|unique:shop_main_categories',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]);
-    }
-
-    private static function validateUpdate($slug)
-    {
-        return request()->validate([
-            'name' => [
-                'required',
-                Rule::unique('shop_main_categories')->ignore($slug, 'slug'),
-            ],
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-        ]);
     }
 }

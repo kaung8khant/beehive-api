@@ -71,7 +71,7 @@ class Shop extends BaseModel
         return File::where('source', 'shops')
             ->where('source_id', $this->id)
             ->where('type', 'image')
-            ->whereIn('extension', ['png', 'jpg'])
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
             ->get();
     }
 
@@ -80,7 +80,7 @@ class Shop extends BaseModel
         return File::where('source', 'shops')
             ->where('source_id', $this->id)
             ->where('type', 'cover')
-            ->whereIn('extension', ['png', 'jpg'])
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
             ->get();
     }
 

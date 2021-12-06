@@ -37,7 +37,7 @@ class RestaurantOrderItem extends Model
     {
         return File::where('source', 'menus')
             ->where('source_id', $this->menu_id)
-            ->whereIn('extension', ['png', 'jpg'])
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
             ->get();
     }
 

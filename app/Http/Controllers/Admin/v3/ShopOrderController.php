@@ -18,6 +18,7 @@ use App\Jobs\SendSms;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Promocode;
+use App\Models\Setting;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
@@ -224,7 +225,10 @@ class ShopOrderController extends Controller
         ShopOrderHelper::sendPushNotifications($shopOrder, $orderItems, 'Order Number:' . $shopOrder->invoice_id . ', is now ' . $request->status);
 
         if ($request->status === 'cancelled') {
-            $message = 'Your order has successfully been ' . $request->status . '.';
+            $message = Setting::where('key', 'customer_shop_order_cancel')->value('value');
+            $message = SmsHelper::parseShopSmsMessage($shopOrder, $message);
+
+            // $message = 'Your order has successfully been ' . $request->status . '.';
             $smsData = SmsHelper::prepareSmsData($message);
             $uniqueKey = StringHelper::generateUniqueSlug();
             $phoneNumber = Customer::where('id', $shopOrder->customer_id)->first()->phone_number;
@@ -287,11 +291,13 @@ class ShopOrderController extends Controller
         $shopOrder = ShopOrder::where('slug', $shopOrder->slug)->first();
         $vendors = $shopOrder->vendors;
         $commission = 0;
+
         foreach ($vendors as $vendor) {
             foreach ($vendor->items as $item) {
                 $commission += $item->commission;
             }
         }
+
         $shopOrder->update(['commission' => $commission]);
         return response()->json(['message' => 'Successfully cancelled.'], 200);
     }

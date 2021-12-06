@@ -6,197 +6,80 @@ use App\Helpers\CollectionHelper;
 use App\Helpers\FileHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
-use App\Models\Brand;
-use App\Models\Shop;
-use App\Models\ShopTag;
+use App\Repositories\Shop\Shop\ShopCreateRequest;
+use App\Repositories\Shop\Shop\ShopRepositoryInterface;
+use App\Repositories\Shop\Shop\ShopUpdateRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Validation\Rule;
-use Propaganistas\LaravelPhone\PhoneNumber;
 
 class ShopController extends Controller
 {
     use FileHelper, StringHelper;
 
-    public function index(Request $request)
-    {
-        if ($request->filter) {
-            $shops = Shop::search($request->filter)->paginate(10);
-        } else {
-            $shops = Shop::orderBy('name', 'asc')->paginate(10);
-        }
+    private $shopRepository;
 
+    public function __construct(ShopRepositoryInterface $shopRepository)
+    {
+        $this->shopRepository = $shopRepository;
+    }
+
+    public function index()
+    {
+        $shops = $this->shopRepository->all();
         $this->optimizeShops($shops);
         return CollectionHelper::removePaginateLinks($shops);
     }
 
-    public function store(Request $request)
+    public function show($slug)
     {
-        $validatedData = $this->validateShop($request, true);
-        $shop = Shop::create($validatedData);
-
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'shops', $shop->slug);
-        }
-
-        if ($request->cover_slugs) {
-            foreach ($request->cover_slugs as $coverSlug) {
-                $this->updateFile($coverSlug, 'shops', $shop->slug);
-            }
-        }
-
-        if ($request->shop_tags) {
-            $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
-            $shop->availableTags()->attach($shopTags);
-
-            foreach ($shopTags as $shopTag) {
-                Cache::forget('shop_ids_tag_' . $shopTag);
-            }
-        }
-
-        return response()->json($shop->refresh()->load(['availableTags', 'availableCategories']), 201);
+        return $this->shopRepository->find($slug)->load(['availableTags']);
     }
 
-    public function show(Shop $shop)
+    public function store(ShopCreateRequest $request)
     {
-        return response()->json($shop->load('availableTags'), 200);
+        $shop = $this->shopRepository->create($request->validated())->refresh()->load(['availableTags']);
+        return response()->json($shop, 201);
     }
 
-    public function update(Request $request, Shop $shop)
+    public function update(ShopUpdateRequest $request, $slug)
     {
-        $validatedData = $this->validateShop($request, false, $shop->id);
-        $shop->update($validatedData);
-
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'shops', $shop->slug);
-        }
-
-        if ($request->cover_slugs) {
-            foreach ($request->cover_slugs as $coverSlug) {
-                $this->updateFile($coverSlug, 'shops', $shop->slug);
-            }
-        }
-
-        if ($request->shop_tags) {
-            $shopTags = ShopTag::whereIn('slug', $request->shop_tags)->pluck('id');
-            $shop->availableTags()->detach();
-            $shop->availableTags()->attach($shopTags);
-
-            foreach ($shopTags as $shopTag) {
-                Cache::forget('shop_ids_tag_' . $shopTag);
-            }
-        }
-
-        return response()->json($shop->load(['availableCategories', 'availableTags']), 201);
+        return $this->shopRepository->update($slug, $request->validated())->load(['availableTags']);
     }
 
-    public function destroy(Shop $shop)
+    public function destroy($slug)
     {
         return response()->json(['message' => 'Permission denied.'], 403);
 
-        foreach ($shop->images as $image) {
-            $this->deleteFile($image->slug);
-        }
-
-        $shop->delete();
-        return response()->json(['message' => 'Successfully deleted.'], 200);
+        return $this->shopRepository->delete($slug);
     }
 
-    private function validateShop($request, $slug = false, $shopId = null)
+    public function toggleEnable($slug)
     {
-        $rules = [
-            'name' => 'required|unique:shops',
-            'address' => 'nullable',
-            'city' => 'nullable|string',
-            'township' => 'nullable|string',
-            'contact_number' => 'required|phone:MM',
-            'notify_numbers' => 'nullable|array',
-            'notify_numbers.*' => 'required|phone:MM',
-            'opening_time' => 'required|date_format:H:i',
-            'closing_time' => 'required|date_format:H:i',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'is_official' => 'required|boolean',
-            'is_enable' => 'required|boolean',
-            'shop_tags' => 'nullable|array',
-            'shop_tags.*' => 'exists:App\Models\ShopTag,slug',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-            'cover_slugs' => 'nullable|array',
-            'cover_slugs.*' => 'nullable|exists:App\Models\File,slug'];
-
-        if ($slug) {
-            $request['slug'] = $this->generateUniqueSlug();
-            $rules['slug'] = 'required|unique:shops';
-        } else {
-            $rules['name'] = [
-                'required',
-                Rule::unique('shops')->ignore($shopId),
-            ];
-        }
-
-        $messages = [
-            'contact_number.phone' => 'Invalid phone number.',
-            'notify_numbers.*.phone' => 'Invalid phone number.',
-        ];
-
-        $validatedData = $request->validate($rules, $messages);
-        $validatedData['contact_number'] = PhoneNumber::make($validatedData['contact_number'], 'MM');
-
-        if (isset($validatedData['notify_numbers'])) {
-            $validatedData['notify_numbers'] = $this->makeNotifyNumbers($validatedData['notify_numbers']);
-        }
-
-        return $validatedData;
-    }
-
-    private function makeNotifyNumbers($notifyNumbers)
-    {
-        $notifyNumbers = array_map(function ($notifyNumber) {
-            return PhoneNumber::make($notifyNumber, 'MM');
-        }, $notifyNumbers);
-
-        return array_values(array_unique($notifyNumbers));
-    }
-
-    public function toggleEnable(Shop $shop)
-    {
-        $shop->update(['is_enable' => !$shop->is_enable]);
-        return response()->json(['message' => 'Success.'], 200);
+        return $this->shopRepository->toggleEnable($slug);
     }
 
     public function multipleStatusUpdate(Request $request)
     {
-        $validatedData = $request->validate([
+        $validatedData = request()->validate([
             'slugs' => 'required|array',
             'slugs.*' => 'required|exists:App\Models\Shop,slug',
+            'is_enable' => 'required|boolean',
         ]);
 
         foreach ($validatedData['slugs'] as $slug) {
-            $shop = Shop::where('slug', $slug)->firstOrFail();
-            $shop->update(['is_enable' => $request->is_enable]);
+            $this->shopRepository->update($slug, ['is_enable' => request('is_enable')]);
         }
 
         return response()->json(['message' => 'Success.'], 200);
     }
 
-    public function toggleOfficial(Shop $shop)
+    public function toggleOfficial($slug)
     {
-        $shop->update(['is_official' => !$shop->is_official]);
-        return response()->json(['message' => 'Success.'], 200);
+        return $this->shopRepository->toggleEnable($slug);
     }
 
-    public function getShopsByBrand(Request $request, Brand $brand)
+    public function getShopsByBrand($slug)
     {
-        $shopIds = Shop::whereHas('products', function ($query) use ($brand) {
-            $query->where('brand_id', $brand->id);
-        })->pluck('id')->toArray();
-
-        if ($request->filter) {
-            $shops = Shop::search($request->filter)->whereIn('id', $shopIds)->paginate(10);
-        } else {
-            $shops = Shop::orderBy('name', 'asc')->whereIn('id', $shopIds)->paginate(10);
-        }
-
+        $shops = $this->shopRepository->getAllByBrand($slug);
         $this->optimizeShops($shops);
         return CollectionHelper::removePaginateLinks($shops);
     }

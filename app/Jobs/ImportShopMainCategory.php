@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Helpers\StringHelper;
+use App\Models\Product;
+use App\Models\ShopCategory;
 use App\Models\ShopMainCategory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -60,6 +62,7 @@ class ImportShopMainCategory implements ShouldQueue, ShouldBeUnique
     {
         foreach ($this->rows as $key => $row) {
             $rules = [
+                'code' => ['required','unique:shop_main_categories', 'size:2'],
                 'name' => ['required', 'unique:shop_main_categories'],
             ];
 
@@ -68,6 +71,7 @@ class ImportShopMainCategory implements ShouldQueue, ShouldBeUnique
             if (isset($row['id'])) {
                 $shopMainCategory = ShopMainCategory::where('slug', $row['id'])->first();
                 $rules['name'][1] = Rule::unique('shop_main_categories')->ignore($shopMainCategory->id);
+                $rules['code'][1] = Rule::unique('shop_main_categories')->ignore($shopMainCategory->id);
             }
 
             $validator = Validator::make(
@@ -78,6 +82,7 @@ class ImportShopMainCategory implements ShouldQueue, ShouldBeUnique
             if (!$validator->fails()) {
                 $shopMainCategoryData = [
                     'slug' => StringHelper::generateUniqueSlug(),
+                    'code' => $row['code'],
                     'name' => $row['name'],
                 ];
 
@@ -91,9 +96,18 @@ class ImportShopMainCategory implements ShouldQueue, ShouldBeUnique
                     }
                 } else {
                     $shopMainCategoryData['slug'] = $shopMainCategory->slug;
+                    if ($this->checkProducts($shopMainCategory->id) && $shopMainCategory->code && $shopMainCategory->code !== $shopMainCategoryData['code']) {
+                        return response()->json(['message' => 'Cannot update product type code if there is a linked product.'], 403);
+                    }
                     $shopMainCategory->update($shopMainCategoryData);
                 }
             }
         }
+    }
+
+    public function checkProducts($id)
+    {
+        $categoryIds = ShopMainCategory::where('id', $id)->firstOrFail()->shopCategories->pluck('id');
+        return Product::whereIn('shop_category_id', $categoryIds)->exists();
     }
 }
