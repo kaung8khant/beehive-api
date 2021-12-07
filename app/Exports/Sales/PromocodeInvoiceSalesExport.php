@@ -46,15 +46,17 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
         $orderList = collect($shopOrders)->merge($restaurantOrders);
 
         $this->result = $orderList->map(function ($order, $key) {
-            $totalAmount = $order->order_status == 'cancelled' ? '0' :  ($order->tax+$order->amount);
-            $this->totalPromoDiscount += $order->order_status == 'cancelled' && $order->promocode_amount ? $order->promocode_amount : '0';
+            $totalAmount = $order->order_status === 'cancelled' ? '0' :  ($order->tax+$order->amount);
+            $this->totalPromoDiscount += $order->order_status !== 'cancelled' && $order->promocode_amount ? $order->promocode_amount : '0';
             $this->totalAmountSum += $totalAmount;
 
             return [
                 $key + 1,
-                $order->invoice_id,
+                $order->order_no,
+                $order->invoice_no,
                 Carbon::parse($order->order_date)->format('M d Y h:i a'),
-                $order->order_status != 'cancelled' && $order->promocode_amount ? $order->promocode_amount : '0',
+                $order->invoice_date ?Carbon::parse($order->invoice_date)->format('M d Y h:i a'):'',
+                $order->order_status !== 'cancelled' && $order->promocode_amount ? $order->promocode_amount : '0',
                 $totalAmount,
                 $order->payment_mode,
                 $order->payment_status,
@@ -79,8 +81,10 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
             [],
             [
                 'no.',
-                'invoice id',
+                'order no',
+                'invoice no',
                 'order date',
+                'invoice date',
                 'promo discount',
                 "total amount\n(tax inclusive)",
                 'payment mode',
@@ -103,6 +107,8 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
             'G' => 20,
             'H' => 20,
             'I' => 30,
+            'J' => 30,
+            'K' => 30,
         ];
     }
 
@@ -114,10 +120,12 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
             'A' => ['alignment' => ['horizontal' => 'center']],
             'B' => ['alignment' => ['horizontal' => 'center']],
             'C' => ['alignment' => ['horizontal' => 'center']],
-            'F' => ['alignment' => ['horizontal' => 'center']],
-            'G' => ['alignment' => ['horizontal' => 'center']],
+            'D' => ['alignment' => ['horizontal' => 'center']],
+            'E' => ['alignment' => ['horizontal' => 'center']],
             'H' => ['alignment' => ['horizontal' => 'center']],
             'I' => ['alignment' => ['horizontal' => 'center']],
+            'J' => ['alignment' => ['horizontal' => 'center']],
+            'K' => ['alignment' => ['horizontal' => 'center']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -128,8 +136,8 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
     public function columnFormats(): array
     {
         return [
-            'D' => '#,##0',
-            'E' => '#,##0',
+            'F' => '#,##0',
+            'G' => '#,##0',
         ];
     }
 
@@ -153,12 +161,12 @@ class PromocodeInvoiceSalesExport implements FromCollection, WithColumnFormattin
             AfterSheet::class => function (AfterSheet $event) {
                 $lastRow = count($this->result) + 6 + 1;
 
-                $event->sheet->getStyle(sprintf('D%d:E%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('D%d:E%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('E%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('F%d:G%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('F%d:G%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('G%d', $lastRow))->getFont()->setBold(true);
 
-                $event->sheet->setCellValue(sprintf('D%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('E%d', $lastRow), $this->totalPromoDiscount);
+                $event->sheet->setCellValue(sprintf('F%d', $lastRow), $this->totalPromoDiscount);
+                $event->sheet->setCellValue(sprintf('G%d', $lastRow), $this->totalAmountSum);
 
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
 

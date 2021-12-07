@@ -118,9 +118,9 @@ class PromocodeController extends Controller
         $totalPromoDiscount = 0;
 
         foreach ($orderList as $order) {
-            $totalAmount = $order->order_status == 'cancelled' ? 0 : ($order->tax+$order->amount);
+            $totalAmount = $order->order_status === 'cancelled' ? 0 : ($order->tax+$order->amount);
             $totalAmountSum += $totalAmount;
-            $totalPromoDiscount += $order->order_status == 'cancelled' && $order->promocode_amount ? $order->promocode_amount : 0;
+            $totalPromoDiscount += $order->order_status !== 'cancelled' && $order->promocode_amount ? $order->promocode_amount : 0;
 
             $data[] = [
                 'order_no' => $order->order_no,
