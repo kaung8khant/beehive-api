@@ -40,7 +40,9 @@ class CreditController extends Controller
 
             $data[] = [
                 'order_no' => $order->order_no,
+                'invoice_no' => $order->invoice_no,
                 'order_date' => Carbon::parse($order->order_date)->format('M d Y h:i a'),
+                'invoice_date' =>$order->invoice_date? Carbon::parse($order->invoice_date)->format('M d Y h:i a') : null,
                 'revenue' => $amount,
                 'commercial_tax' => $order->order_status != 'cancelled' && $order->tax ? $order->tax : 0,
                 'discount' => $order->order_status != 'cancelled' && $order->discount ? $order->discount : 0,
