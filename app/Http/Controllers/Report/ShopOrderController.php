@@ -85,7 +85,7 @@ class ShopOrderController extends Controller
     public function getShopProductSaleReport(Request $request, Shop $shop)
     {
         $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
-            $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
+            $query->whereBetween('order_date', array($request->from, $request->to));
         })->where('shop_id', $shop->id)->get();
 
         // $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {

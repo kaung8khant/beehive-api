@@ -124,7 +124,7 @@
             </tr>
             @endif
 
-            @if ($restaurantOrder['order_status'] === 'pickUp' || $restaurantOrder['order_status'] === 'delivered')
+            @if ($restaurantOrder['invoice_date'])
             <tr>
                 <td></td>
                 <td>

@@ -108,7 +108,7 @@
                 </td>
             </tr>
 
-            @if ($shopOrder['order_status'] === 'pickUp' || $shopOrder['order_status'] === 'delivered')
+            @if ($shopOrder['invoice_date'])
             <tr>
                 <td></td>
                 <td>
