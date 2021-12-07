@@ -258,6 +258,7 @@ class ShopOrderController extends Controller
                 'order_no' =>  $item->vendor->shopOrder->order_no,
                 'invoice_no' =>  $item->vendor->shopOrder->invoice_no,
                 'order_date' => Carbon::parse($item->vendor->shopOrder->order_date)->format('M d Y h:i a'),
+                'invoice_date' =>$item->vendor->shopOrder->invoice_date? Carbon::parse($item->vendor->shopOrder->invoice_date)->format('M d Y h:i a') :null,
                 'code' => $product->code,
                 'product_name' => $item->product_name,
                 'price' => $item->amount,
