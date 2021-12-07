@@ -284,11 +284,6 @@ class HomeController extends Controller
 
     public function getAds(Request $request)
     {
-        try {
-            $this->checkMobileVersion($request);
-        } catch (ForbiddenException $e) {
-            return $this->generateResponse($e->getMessage(), 403, true);
-        }
 
         $ads = Ads::where('type', $request->type);
 
@@ -299,39 +294,6 @@ class HomeController extends Controller
         $result = $ads->exclude(['contact_person', 'company_name', 'phone_number', 'email', 'created_by', 'updated_by', 'created_at', 'updated_at'])->paginate(10)->items();
 
         return $this->generateResponse($result, 200);
-    }
-
-    private function checkMobileVersion($request)
-    {
-        $platform = $request->header('X-APP-TYPE');
-        $appVersion = $request->header('X-APP-VERSION');
-
-        if (!$platform || !$appVersion) {
-            throw new ForbiddenException('Your application is out of date. Please update your application to get the latest features.');
-        }
-
-        if ($platform === 'android') {
-            if ($platform === 'android') {
-                $currentVersion = Setting::where('key', 'android_version')->value('value');
-            } else {
-                $currentVersion = Setting::where('key', 'ios_version')->value('value');
-            }
-
-            $appVersion = str_replace('.', '', $appVersion);
-            $correctVersion = '';
-
-            for ($i = 0; $i < strlen($appVersion); $i++) {
-                $correctVersion .= $appVersion[$i];
-
-                if ($i !== strlen($appVersion) - 1) {
-                    $correctVersion .= '.';
-                }
-            }
-
-            if ($correctVersion < $currentVersion) {
-                throw new ForbiddenException('Your application is out of date. Please update your application to get the latest features.');
-            }
-        }
     }
 
     private function optimizeBranches($branches)
