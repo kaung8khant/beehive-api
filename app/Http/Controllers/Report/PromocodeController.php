@@ -124,7 +124,9 @@ class PromocodeController extends Controller
 
             $data[] = [
                 'order_no' => $order->order_no,
+                'invoice_no' => $order->invoice_no,
                 'order_date' => Carbon::parse($order->order_date)->format('M d Y h:i a'),
+                'invoice_date' =>  $order->invoice_date ? Carbon::parse($order->invoice_date)->format('M d Y h:i a') : null,
                 'promo_discount' => $order->order_status != 'cancelled' && $order->promocode_amount ? $order->promocode_amount : '0',
                 'total_amount' => $totalAmount,
                 'payment_mode' => $order->payment_mode,
