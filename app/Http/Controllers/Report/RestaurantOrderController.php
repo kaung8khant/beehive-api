@@ -100,7 +100,8 @@ class RestaurantOrderController extends Controller
             }
 
             $data[] = [
-                'invoice_id' => $order->invoice_id,
+                'order_no' => $order->order_no,
+                'invoice_no' => $order->invoice_no,
                 'order_date' => Carbon::parse($order->order_date)->format('M d Y h:i a'),
                 'customer_name' => $order->restaurantOrderContact->customer_name,
                 'phone_number' => $order->restaurantOrderContact->phone_number,

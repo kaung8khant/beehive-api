@@ -39,7 +39,7 @@ class CreditController extends Controller
             $totalAmountSum += $totalAmount;
 
             $data[] = [
-                'invoice_id' => $order->invoice_id,
+                'order_no' => $order->order_no,
                 'order_date' => Carbon::parse($order->order_date)->format('M d Y h:i a'),
                 'revenue' => $amount,
                 'commercial_tax' => $order->order_status != 'cancelled' && $order->tax ? $order->tax : 0,

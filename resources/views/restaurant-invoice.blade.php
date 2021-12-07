@@ -96,7 +96,7 @@
                 </td>
                 <td>
                     <strong>
-                        @if($restaurantOrder['order_status'] === 'pickUp')
+                        @if($restaurantOrder['invoice_no'])
                         Invoice No:
                         @else
                         Order Date:
@@ -104,7 +104,7 @@
                     </strong>
                 </td>
                 <td style="text-align: right;">
-                    @if($restaurantOrder['order_status'] === 'pickUp')
+                    @if($restaurantOrder['invoice_no'])
                     {{ $restaurantOrder['invoice_no'] }}
                     @else
                     {{ $date }}
@@ -112,7 +112,7 @@
                 </td>
             </tr>
 
-            @if ($restaurantOrder['order_status'] === 'pickUp')
+            @if ($restaurantOrder['invoice_no'])
             <tr>
                 <td></td>
                 <td>

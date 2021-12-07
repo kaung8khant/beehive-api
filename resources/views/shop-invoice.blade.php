@@ -86,7 +86,7 @@
                 </td>
             </tr>
 
-            @if ($shopOrder['order_status'] === 'pickUp')
+            @if ($shopOrder['invoice_no'])
             <tr>
                 <td></td>
                 <td>
