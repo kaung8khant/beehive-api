@@ -65,8 +65,10 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
 
             return [
                 $this->key,
-                $item->vendor->shopOrder->invoice_id,
+                $item->vendor->shopOrder->order_no,
+                $item->vendor->shopOrder->invoice_no,
                 Carbon::parse($item->vendor->shopOrder->order_date)->format('M d Y h:i a'),
+                $item->vendor->shopOrder->invoice_date? Carbon::parse($item->vendor->shopOrder->invoice_date)->format('M d Y h:i a') :'',
                 $product->code,
                 $item->product_name,
                 implode(',', array_map(function ($n) {
@@ -109,8 +111,10 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
             [],
             [
                 'no.',
-                'invoice id',
+                'order no',
+                'invoice no',
                 'order date',
+                'invoice date',
                 'code',
                 'product',
                 'variant',
@@ -144,8 +148,8 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
             'D' => 30,
             'E' => 30,
             'F' => 30,
-            'G' => 20,
-            'H' => 15,
+            'G' => 30,
+            'H' => 25,
             'I' => 15,
             'J' => 20,
             'K' => 15,
@@ -161,6 +165,8 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
             'U' => 20,
             'V' => 20,
             'W' => 20,
+            'X' => 20,
+            'Y' => 20,
         ];
     }
 
@@ -175,13 +181,15 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
             'D' => ['alignment' => ['horizontal' => 'center']],
             'E' => ['alignment' => ['horizontal' => 'center']],
             'F' => ['alignment' => ['horizontal' => 'center']],
-            'Q' => ['alignment' => ['horizontal' => 'center']],
-            'R' => ['alignment' => ['horizontal' => 'center']],
+            'G' => ['alignment' => ['horizontal' => 'center']],
+            'H' => ['alignment' => ['horizontal' => 'center']],
             'S' => ['alignment' => ['horizontal' => 'center']],
             'T' => ['alignment' => ['horizontal' => 'center']],
             'U' => ['alignment' => ['horizontal' => 'center']],
             'V' => ['alignment' => ['horizontal' => 'center']],
             'W' => ['alignment' => ['horizontal' => 'center']],
+            'X' => ['alignment' => ['horizontal' => 'center']],
+            'Y' => ['alignment' => ['horizontal' => 'center']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -192,8 +200,6 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
     public function columnFormats(): array
     {
         return [
-            'G' => '#,##0',
-            'H' => '#,##0',
             'I' => '#,##0',
             'J' => '#,##0',
             'K' => '#,##0',
@@ -202,6 +208,8 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
             'N' => '#,##0',
             'O' => '#,##0',
             'P' => '#,##0',
+            'Q' => '#,##0',
+            'R' => '#,##0',
         ];
     }
 
@@ -225,17 +233,17 @@ class ShopProductSalesExport implements FromCollection, WithColumnFormatting, Wi
             AfterSheet::class => function (AfterSheet $event) {
                 $lastRow = count($this->result) + 6 + 1;
 
-                $event->sheet->getStyle(sprintf('J%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('J%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('M%d:P%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('M%d:P%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
-                $event->sheet->getStyle(sprintf('P%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('L%d', $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('L%d', $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('O%d:R%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('O%d:R%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('double');
+                $event->sheet->getStyle(sprintf('R%d', $lastRow))->getFont()->setBold(true);
 
-                $event->sheet->setCellValue(sprintf('J%d', $lastRow), $this->amountSum);
-                $event->sheet->setCellValue(sprintf('M%d', $lastRow), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->commissionSum);
-                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->commissionCtSum);
-                $event->sheet->setCellValue(sprintf('P%d', $lastRow), $this->balanceSum);
+                $event->sheet->setCellValue(sprintf('L%d', $lastRow), $this->amountSum);
+                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->totalAmountSum);
+                $event->sheet->setCellValue(sprintf('P%d', $lastRow), $this->commissionSum);
+                $event->sheet->setCellValue(sprintf('Q%d', $lastRow), $this->commissionCtSum);
+                $event->sheet->setCellValue(sprintf('R%d', $lastRow), $this->balanceSum);
 
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
 
