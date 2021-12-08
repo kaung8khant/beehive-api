@@ -23,11 +23,12 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
+use App\Repositories\Shop\ShopOrder\ShopOrderRepositoryInterface;
+use App\Repositories\Shop\ShopOrder\ShopOrderService;
 use App\Services\MessageService\MessagingService;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -35,38 +36,36 @@ class ShopOrderController extends Controller
 {
     use PromocodeHelper, ResponseHelper, StringHelper;
 
-    protected $messageService;
-    protected $paymentService;
-    protected $resMes;
+    private $shopOrderRepository;
+    private $messageService;
+    private $paymentService;
+    private $resMes;
 
-    public function __construct(MessagingService $messageService, PaymentService $paymentService)
+    public function __construct(ShopOrderRepositoryInterface $shopOrderRepository, ShopOrderService $shopOrderService, MessagingService $messageService, PaymentService $paymentService)
     {
+        $this->shopOrderRepository = $shopOrderRepository;
         $this->messageService = $messageService;
         $this->paymentService = $paymentService;
         $this->resMes = config('response-en.shop_order');
     }
 
-    public function index(Request $request)
+    public function index()
     {
-        $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
+        $shopOrders = $this->shopOrderRepository->all()->makeHidden(['vendors']);
+        return ResponseHelper::generateResponse($shopOrders, 200);
+    }
 
-        $shopOrders = ShopOrder::exclude(['special_instruction', 'delivery_mode', 'promocode_amount', 'customer_id', 'created_by', 'updated_by'])
-            ->with(['contact' => function ($query) {
-                $query->exclude(['house_number', 'floor', 'street_name', 'latitude', 'longitude']);
-            }])
-            ->whereBetween('order_date', array($request->from, $request->to))
-            ->where(function ($query) use ($request) {
-                $query->where('id', ltrim(ltrim($request->filter, 'BHS'), '0'))
-                    ->orWhereHas('contact', function ($q) use ($request) {
-                        $q->where('phone_number', $request->filter)
-                            ->orWhere('customer_name', 'LIKE', '%' . $request->filter . '%');
-                    });
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->get()
-            ->makeHidden(['vendors']);
+    public function show($slug)
+    {
+        $shopOrder = $this->shopOrderRepository->find($slug)->load(['contact', 'vendors', 'vendors.shop', 'vendors.shopOrderStatuses', 'drivers', 'drivers.status', 'drivers.driver']);
 
-        return $this->generateResponse($shopOrders, 200);
+        if (cache('shopOrder:' . $shopOrder->slug)) {
+            $shopOrder['assign'] = 'pending';
+        } else {
+            $shopOrder['assign'] = null;
+        }
+
+        return $this->generateResponse($shopOrder, 200);
     }
 
     public function store(Request $request)
@@ -137,19 +136,6 @@ class ShopOrderController extends Controller
 
             throw $e;
         }
-    }
-
-    public function show(ShopOrder $shopOrder)
-    {
-        $cache = Cache::get('shopOrder:' . $shopOrder->slug);
-
-        if ($cache) {
-            $shopOrder['assign'] = 'pending';
-        } else {
-            $shopOrder['assign'] = null;
-        }
-
-        return $this->generateResponse($shopOrder->load('contact', 'vendors', 'vendors.shop', 'vendors.shopOrderStatuses', 'drivers', 'drivers.status', 'drivers.driver'), 200);
     }
 
     private function getPromoData($validatedData, $customer)
