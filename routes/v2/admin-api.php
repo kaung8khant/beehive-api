@@ -112,6 +112,7 @@ Route::group([
         Route::patch('menus/toggle-enable/{menu}', 'Admin\MenuController@toggleEnable');
         Route::post('menus/multiple-delete', 'Admin\MenuController@multipleDelete');
         Route::post('menus/status', 'Admin\MenuController@multipleStatusUpdate');
+        Route::put('menus/index', 'Admin\MenuController@updateSearchIndex');
 
         Route::resource('menu-toppings', 'Admin\MenuToppingController', ['except' => ['create', 'edit']]);
         Route::get('menus/{menu}/menu-toppings', 'Admin\MenuToppingController@getToppingsByMenu');
