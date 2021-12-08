@@ -274,7 +274,7 @@ trait ShopOrderHelper
     private static function getRulesV3($customerSlug)
     {
         $rules = [
-            'slug' => 'required|unique:products',
+            'slug' => 'required|unique:shop_orders',
             'order_date' => 'nullable',
             'special_instruction' => 'nullable',
             'payment_mode' => 'required|in:COD,CBPay,KPay,MABPay,Credit',

@@ -141,13 +141,6 @@ Route::group([
         Route::patch('menus/variants/{menuVariant:slug}/enable', 'Admin\MenuVariantController@toggleEnable');
         /* Restaurant */
 
-        /* Order */
-        Route::resource('restaurant-orders', 'Admin\RestaurantOrderController');
-        Route::post('restaurant-orders/{restaurantOrder}/change-status', 'Admin\RestaurantOrderController@changeStatus');
-        Route::resource('shop-orders', 'Admin\ShopOrderController');
-        Route::post('shop-orders/{shopOrder}/change-status', 'Admin\ShopOrderController@changeStatus');
-        /* Order */
-
         /* Promocode */
         Route::resource('promocodes', 'Admin\PromocodeController', ['except' => ['create', 'edit']]);
         Route::post('promocodes/add-rules/{promocode}', 'Admin\PromocodeController@addRules');
