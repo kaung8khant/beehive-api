@@ -37,7 +37,7 @@ trait PromocodeHelper
         $total = 0;
 
         foreach ($promocode->rules as $data) {
-            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category", "menu", "product", "before_date", "after_date", "buy_one_get_one"))) {
+            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category", "menu", "product", "before_date", "after_date", "buy_and_get"))) {
                 $isItemRule = true;
                 foreach ($orderItems as $item) {
                     if ($promocode->type === 'fix') {
