@@ -85,7 +85,7 @@ class ShopOrderController extends Controller
     public function getShopProductSaleReport(Request $request, Shop $shop)
     {
         $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
-            $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
+            $query->whereBetween('order_date', array($request->from, $request->to));
         })->where('shop_id', $shop->id)->get();
 
         // $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
@@ -142,7 +142,8 @@ class ShopOrderController extends Controller
             }
 
             $data[] = [
-                'invoice_id' => $order->invoice_id,
+                'order_no' => $order->order_no,
+                'invoice_no' => $order->invoice_no,
                 'order_date' => Carbon::parse($order->order_date)->format('M d Y h:i a'),
                 'customer_name' => $order->contact->customer_name,
                 'phone_number' => $order->contact->phone_number,
@@ -254,8 +255,10 @@ class ShopOrderController extends Controller
             $product = Product::where('id', $item->product_id)->first();
 
             $data[] = [
-                'invoice_id' => $item->vendor->shopOrder->invoice_id,
+                'order_no' =>  $item->vendor->shopOrder->order_no,
+                'invoice_no' =>  $item->vendor->shopOrder->invoice_no,
                 'order_date' => Carbon::parse($item->vendor->shopOrder->order_date)->format('M d Y h:i a'),
+                'invoice_date' =>$item->vendor->shopOrder->invoice_date? Carbon::parse($item->vendor->shopOrder->invoice_date)->format('M d Y h:i a') :null,
                 'code' => $product->code,
                 'product_name' => $item->product_name,
                 'price' => $item->amount,
