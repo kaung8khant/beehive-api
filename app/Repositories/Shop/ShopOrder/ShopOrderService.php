@@ -8,17 +8,20 @@ use App\Exceptions\ForbiddenException;
 use App\Helpers\ShopOrderHelper;
 use App\Helpers\v3\OrderHelper;
 use App\Services\MessageService\MessagingService;
+use App\Services\PaymentService\PaymentService;
 use Illuminate\Support\Facades\DB;
 
 class ShopOrderService
 {
     private $shopOrderRepository;
     private $messageService;
+    private $paymentService;
 
-    public function __construct(ShopOrderRepositoryInterface $shopOrderRepository, MessagingService $messageService)
+    public function __construct(ShopOrderRepositoryInterface $shopOrderRepository, MessagingService $messageService, PaymentService $paymentService)
     {
         $this->shopOrderRepository = $shopOrderRepository;
         $this->messageService = $messageService;
+        $this->paymentService = $paymentService;
     }
 
     public function store($validatedData)
