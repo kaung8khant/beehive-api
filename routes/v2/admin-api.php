@@ -62,7 +62,7 @@ Route::group([
         Route::patch('collectors/toggle-enable/{user}', 'Admin\CollectorController@toggleEnable');
 
         /* Shop */
-        Route::resource('shop-categories', 'Admin\ShopCategoryController', ['except' => ['create', 'edit']]);
+        Route::resource('shop-categories', 'Admin\ShopCategoryController', ['except' => ['create', 'edit']])->parameter('shop-categories', 'shopCategory');
         Route::put('shop-categories/{shopCategory}/index', 'Admin\ShopCategoryController@updateSearchIndex');
 
         Route::resource('sub-categories', 'Admin\ShopSubCategoryController', ['except' => ['create', 'edit']])->parameter('sub-categories', 'shopSubCategory');
@@ -141,13 +141,6 @@ Route::group([
         Route::put('menus/variants/{menuVariant:slug}/price', 'Admin\MenuVariantController@updateVariantPrice');
         Route::patch('menus/variants/{menuVariant:slug}/enable', 'Admin\MenuVariantController@toggleEnable');
         /* Restaurant */
-
-        /* Order */
-        Route::resource('restaurant-orders', 'Admin\RestaurantOrderController');
-        Route::post('restaurant-orders/{restaurantOrder}/change-status', 'Admin\RestaurantOrderController@changeStatus');
-        Route::resource('shop-orders', 'Admin\ShopOrderController');
-        Route::post('shop-orders/{shopOrder}/change-status', 'Admin\ShopOrderController@changeStatus');
-        /* Order */
 
         /* Promocode */
         Route::resource('promocodes', 'Admin\PromocodeController', ['except' => ['create', 'edit']]);

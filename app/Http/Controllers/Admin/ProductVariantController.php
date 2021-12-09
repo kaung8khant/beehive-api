@@ -35,6 +35,7 @@ class ProductVariantController extends Controller
             'product_variants.*.slug' => 'nullable|exists:App\Models\ProductVariant,slug',
             'product_variants.*.variant' => 'required',
             'product_variants.*.price' => 'required|numeric',
+            'product_variants.*.vendor_price' => 'required|numeric',
             'product_variants.*.tax' => 'required|numeric',
             'product_variants.*.discount' => 'required|numeric',
             'product_variants.*.is_enable' => 'required|boolean',
@@ -96,8 +97,8 @@ class ProductVariantController extends Controller
         $validatedData = $request->validate([
             'price' => 'required|numeric',
             'vendor_price' => 'required|numeric',
-            'discount' => 'required|numeric',
             'tax' => 'required|numeric',
+            'discount' => 'required|numeric',
         ]);
 
         $productVariant->update($validatedData);

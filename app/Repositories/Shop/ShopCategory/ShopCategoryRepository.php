@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Shop\ShopCategory;
 
+use App\Events\DataChanged;
 use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopCategory;
@@ -12,7 +13,7 @@ class ShopCategoryRepository extends BaseRepository implements ShopCategoryRepos
 {
     public function __construct(ShopCategory $model)
     {
-        parent::__construct($model, 'shop_categories');
+        parent::__construct($model);
     }
 
     public function all()
@@ -44,6 +45,26 @@ class ShopCategoryRepository extends BaseRepository implements ShopCategoryRepos
         } else {
             return $this->model->where('shop_main_category_id', $mainCategoryId)->orderBy('search_index', 'desc')->orderBy('name', 'asc')->paginate(10);
         }
+    }
+
+    public function update($slug, array $attributes)
+    {
+        $model = $this->model->where('slug', $slug)->firstOrFail();
+
+        if ($this->checkProducts($slug) && $model->code && $model->code !== $attributes['code']) {
+            return response()->json(['message' => 'Cannot update category code if there is a linked product.'], 403);
+        }
+
+        $model->update($attributes);
+        DataChanged::dispatch($this->user, 'update', $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
+        $this->updateImageIfExist($model->slug);
+        return $model;
+    }
+
+    public function checkProducts($slug)
+    {
+        $categoryId = $this->find($slug)->id;
+        return Product::where('shop_category_id', $categoryId)->exists();
     }
 
     public function getMainCategoryIdBySlug($slug)

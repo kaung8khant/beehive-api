@@ -83,10 +83,10 @@
                     <strong>{{ $branchInfo['restaurant']['name'] }}</strong>
                 </td>
                 <td style="width: 14%;">
-                    <strong>Invoice No:</strong>
+                    <strong>Order No:</strong>
                 </td>
                 <td style="width: 14%; text-align: right;">
-                    {{ $restaurantOrder['invoice_id'] }}
+                    {{ $restaurantOrder['order_no'] }}
                 </td>
             </tr>
 
@@ -95,14 +95,36 @@
                     <strong>({{ $branchInfo['name'] }})</strong>
                 </td>
                 <td>
+                    <strong>
+                        @if($restaurantOrder['invoice_no'])
+                        Invoice No:
+                        @else
+                        Order Date:
+                        @endif
+                    </strong>
+                </td>
+                <td style="text-align: right;">
+                    @if($restaurantOrder['invoice_no'])
+                    {{ $restaurantOrder['invoice_no'] }}
+                    @else
+                    {{ $date }}
+                    @endif
+                </td>
+            </tr>
+
+            @if ($restaurantOrder['invoice_no'])
+            <tr>
+                <td></td>
+                <td>
                     <strong>Order Date:</strong>
                 </td>
                 <td style="text-align: right;">
                     {{ $date }}
                 </td>
             </tr>
+            @endif
 
-            @if ($restaurantOrder['order_status'] === 'pickUp' || $restaurantOrder['order_status'] === 'delivered')
+            @if ($restaurantOrder['invoice_date'])
             <tr>
                 <td></td>
                 <td>
@@ -163,9 +185,9 @@
                     @if($item['variant'])
                     <div>
                         {{
-                            implode(',', array_map(function ($n) {
-                                return $n['value'];
-                            }, $item['variant']))
+                        implode(',', array_map(function ($n) {
+                        return $n['value'];
+                        }, $item['variant']))
                         }}
                     </div>
                     @endif
@@ -181,9 +203,9 @@
                     @if($item['options'])
                     <div>
                         {{
-                            implode(',', array_map(function ($n) {
-                                return $n['name'];
-                            }, $item['options']))
+                        implode(',', array_map(function ($n) {
+                        return $n['name'];
+                        }, $item['options']))
                         }}
                     </div>
                     @endif

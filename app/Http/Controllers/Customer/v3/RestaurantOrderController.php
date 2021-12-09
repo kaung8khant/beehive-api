@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer\v3;
 use App\Events\OrderAssignEvent;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
+use App\Helpers\GeoHelper;
 use App\Helpers\OrderAssignHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper as OrderHelper;
@@ -110,10 +111,14 @@ class RestaurantOrderController extends Controller
     public function show($slug)
     {
         $order = RestaurantOrder::with('RestaurantOrderContact')
+            ->exclude(['created_by', 'updated_by'])
             ->with('RestaurantOrderItems')
             ->where('slug', $slug)
             ->where('customer_id', $this->customer->id)
             ->firstOrFail();
+
+        $distance = GeoHelper::calculateDistance($order->restaurantOrderContact->latitude, $order->restaurantOrderContact->longitude, $order->restaurant_branch_info['latitude'], $order->restaurant_branch_info['longitude']);
+        $order->delivery_time = GeoHelper::calculateDeliveryTime($distance);
 
         return $this->generateResponse($order, 200);
     }

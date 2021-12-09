@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Helpers\StringHelper;
 use App\Models\Brand;
+use App\Models\Product;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -60,6 +61,7 @@ class ImportBrand implements ShouldQueue, ShouldBeUnique
     {
         foreach ($this->rows as $key => $row) {
             $rules = [
+                'code' => ['required', 'unique:brands','size:4'],
                 'name' => ['required', 'unique:brands'],
             ];
 
@@ -78,6 +80,7 @@ class ImportBrand implements ShouldQueue, ShouldBeUnique
             if (!$validator->fails()) {
                 $brandData = [
                     'slug' => StringHelper::generateUniqueSlug(),
+                    'code' => $row['code'],
                     'name' => $row['name'],
                 ];
 
@@ -91,9 +94,17 @@ class ImportBrand implements ShouldQueue, ShouldBeUnique
                     }
                 } else {
                     $brandData['slug'] = $brand->slug;
+                    if ($this->checkProducts($brand->id) && $brand->code && $brand->code !== $brandData['code']) {
+                        return response()->json(['message' => 'Cannot update brand code if there is a linked product.'], 403);
+                    }
                     $brand->update($brandData);
                 }
             }
         }
+    }
+
+    public function checkProducts($id)
+    {
+        return Product::where('brand_id', $id)->exists();
     }
 }

@@ -2,42 +2,11 @@
 
 namespace App\Helpers;
 
-use App\Helpers\SmsLength;
 use App\Models\SmsLog;
 use Carbon\Carbon;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 
 trait SmsHelper
 {
-    public static function sendSms($phoneNumber, $text)
-    {
-        try {
-            $client = new Client();
-
-            $response = $client->post(
-                'https://boomsms.net/api/sms/json',
-                [
-                    'headers' => [
-                        'Accept' => 'application/json',
-                        'Authorization' => 'Bearer ' . config('system.boomsms_api_key'),
-                    ],
-                    'form_params' => [
-                        'from' => 'Beehive',
-                        'to' => str_replace('+', '', $phoneNumber),
-                        'text' => $text,
-                    ],
-                    'verify' => false,
-                ]
-            );
-
-            $response = json_decode($response->getBody(), true);
-            return $response;
-        } catch (RequestException $e) {
-            throw $e;
-        }
-    }
-
     public static function prepareSmsData($message, $userId = null)
     {
         $smsLength = new SmsLength($message);
@@ -74,6 +43,62 @@ trait SmsHelper
         }
 
         SmsLog::create($params);
+    }
+
+    public static function parseRestaurantSmsMessage($order, $message)
+    {
+        $search = [
+            '{customer_name}',
+            '{customer_phone}',
+            '{order_number}',
+            '{order_date}',
+            '{order_time}',
+            '{order_date_time}',
+            '{restaurant_name}',
+        ];
+
+        $replace = [
+            $order->restaurantOrderContact->customer_name,
+            $order->restaurantOrderContact->phone_number,
+            $order->invoiceId,
+            Carbon::parse($order->order_date)->format('Y-m-d'),
+            Carbon::parse($order->order_date)->format('h:i:s a'),
+            Carbon::parse($order->order_date)->format('Y-m-d h:is a'),
+            $order->restaurant->name,
+        ];
+
+        return str_replace($search, $replace, $message);
+    }
+
+    public static function parseShopSmsMessage($order, $message)
+    {
+        $search = [
+            '{customer_name}',
+            '{customer_phone}',
+            '{order_number}',
+            '{order_date}',
+            '{order_time}',
+            '{order_date_time}',
+            '{shop_name}',
+        ];
+
+        $shopName = $order->vendors[0]->shop->name;
+
+        if ($order->vendors->count() > 1) {
+            $shopName .= ' and others';
+        }
+
+        $replace = [
+            $order->contact->customer_name,
+            $order->contact->phone_number,
+            $order->invoiceId,
+            Carbon::parse($order->order_date)->format('Y-m-d'),
+            Carbon::parse($order->order_date)->format('h:i:s a'),
+            Carbon::parse($order->order_date)->format('Y-m-d h:is a'),
+            $shopName,
+        ];
+
+        return str_replace($search, $replace, $message);
     }
 
     public static function removeEmoji($string)

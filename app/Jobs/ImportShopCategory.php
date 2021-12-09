@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Helpers\StringHelper;
+use App\Models\Product;
 use App\Models\ShopCategory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -60,6 +61,7 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
     {
         foreach ($this->rows as $key => $row) {
             $rules = [
+                'code' => ['required', 'size:3'],
                 'name' => ['required', 'unique:shop_categories'],
             ];
 
@@ -78,6 +80,7 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
             if (!$validator->fails()) {
                 $shopCategoryData = [
                     'slug' => StringHelper::generateUniqueSlug(),
+                    'code' => $row['code'],
                     'name' => $row['name'],
                 ];
 
@@ -91,9 +94,17 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
                     }
                 } else {
                     $shopCategoryData['slug'] = $shopCategory->slug;
+                    if ($this->checkProducts($shopCategory->id) && $shopCategory->code && $shopCategory->code !== $shopCategoryData['code']) {
+                        return response()->json(['message' => 'Cannot update category code if there is a linked product.'], 403);
+                    }
                     $shopCategory->update($shopCategoryData);
                 }
             }
         }
+    }
+
+    public function checkProducts($id)
+    {
+        return Product::where('shop_category_id', $id)->exists();
     }
 }

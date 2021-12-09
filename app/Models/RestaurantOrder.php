@@ -27,11 +27,21 @@ class RestaurantOrder extends BaseModel
         'commission' => 'float',
     ];
 
-    protected $appends = ['invoice_id', 'amount', 'tax', 'discount', 'total_amount', 'driver_status', 'invoice_date'];
+    protected $appends = ['invoice_id', 'order_no', 'amount', 'tax', 'discount', 'total_amount', 'driver_status', 'invoice_date'];
 
     public function getInvoiceIdAttribute()
     {
         return 'BHR' . sprintf('%08d', $this->id);
+    }
+
+    public function getOrderNoAttribute()
+    {
+        return 'BHR' . sprintf('%08d', $this->id);
+    }
+
+    public function getInvoiceNoAttribute($invoiceNo)
+    {
+        return $invoiceNo ? 'INR' . sprintf('%08d', $invoiceNo) : null;
     }
 
     public function getAmountAttribute()

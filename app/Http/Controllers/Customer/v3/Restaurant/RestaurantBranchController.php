@@ -10,54 +10,72 @@ use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\RestaurantBranch;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class RestaurantBranchController extends Controller
 {
     use ResponseHelper;
 
-    public function index(Request $request)
+    public function index()
     {
-        $validator = $this->validateLocation($request);
+        $validator = $this->validateLocation();
         if ($validator->fails()) {
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        if ($request->filter) {
-            $restaurantIdsFromBranches = $this->searchBranches($request);
-            $restaurantIdsFromMenus = $this->searchMenus($request);
+        if (request('filter')) {
+            $restaurantIdsFromBranches = $this->searchBranches();
+            $restaurantIdsFromMenus = $this->searchMenus();
             $restaurantIds = $restaurantIdsFromBranches->merge($restaurantIdsFromMenus)->unique()->values()->toArray();
 
-            $restaurantBranches = $this->getBranches($request)->whereIn('restaurant_id', $restaurantIds)->paginate($request->size);
+            $branches = $this->getBranches()->whereIn('restaurant_id', $restaurantIds)->paginate(request('size'));
 
-            KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter, 'restaurant');
+            KeywordSearched::dispatch(AuthHelper::getCustomerId(), request('device_id'), request('filter'), 'restaurant');
         } else {
-            $restaurantBranches = $this->getBranches($request)->paginate($request->size);
+            $branches = $this->getBranches()->paginate(request('size'));
         }
 
-        $this->optimizeBranches($restaurantBranches);
-        return $this->generateBranchResponse($restaurantBranches, 200, 'array', $restaurantBranches->lastPage());
+        $this->optimizeBranches($branches);
+        return $this->generateBranchResponse($branches, 200, 'array', $branches->lastPage());
     }
 
-    private function validateLocation($request)
+    public function getFavoriteRestaurants()
     {
-        return Validator::make($request->all(), [
+        $validator = $this->validateLocation();
+        if ($validator->fails()) {
+            return $this->generateResponse($validator->errors()->first(), 422, true);
+        }
+
+        $favoriteRestaurants = auth('customers')->user()->favoriteRestaurants()
+            ->with(['restaurantBranches' => function ($query) {
+                self::getBranchQuery($query)->orderBy('distance', 'asc');
+            }])
+            ->paginate(request('size'));
+
+        $branches = $favoriteRestaurants->pluck('restaurantBranches')->collapse();
+        $this->optimizeBranches($branches);
+
+        return $this->generateBranchResponse($branches, 200, 'fav', $favoriteRestaurants->lastPage());
+    }
+
+    private function validateLocation()
+    {
+        return Validator::make(request()->all(), [
             'lat' => 'required|numeric',
             'lng' => 'required|numeric',
         ]);
     }
 
-    private function searchBranches($request)
+    private function searchBranches()
     {
         $index = Algolia::index(RestaurantBranch::class);
 
-        $result = $index->search($request->filter, [
+        $result = $index->search(request('filter'), [
             'attributesToRetrieve' => [
                 'restaurant_id',
             ],
             'attributesToHighlight' => [],
-            'aroundLatLng' => $request->lat . ', ' . $request->lng,
+            'aroundLatLng' => request('lat') . ', ' . request('lng'),
             'aroundRadius' => 10000,
             'hitsPerPage' => 1000,
             'filters' => 'is_enable:true AND is_restaurant_enable:true',
@@ -67,11 +85,11 @@ class RestaurantBranchController extends Controller
         return collect($result['hits'])->pluck('restaurant_id');
     }
 
-    private function searchMenus($request)
+    private function searchMenus()
     {
         $index = Algolia::index(Menu::class);
 
-        $result = $index->search($request->filter, [
+        $result = $index->search(request('filter'), [
             'attributesToRetrieve' => [
                 'restaurant_id',
             ],
@@ -84,15 +102,21 @@ class RestaurantBranchController extends Controller
         return collect($result['hits'])->pluck('restaurant_id');
     }
 
-    private function getBranches($request)
+    private function getBranches()
     {
-        return RestaurantBranch::with('restaurant')
+        $query = new RestaurantBranch;
+        return self::getBranchQuery($query);
+    }
+
+    private static function getBranchQuery($query)
+    {
+        return $query->with('restaurant')
             ->with('restaurant.availableTags')
             ->selectRaw('id, search_index, slug, name, opening_time, closing_time, is_enable, free_delivery, pre_order, restaurant_id,
             @distance := ( 6371 * acos( cos(radians(?)) *
                 cos(radians(latitude)) * cos(radians(longitude) - radians(?))
                 + sin(radians(?)) * sin(radians(latitude)) )
-            ) AS distance', [$request->lat, $request->lng, $request->lat])
+            ) AS distance', [request('lat'), request('lng'), request('lat')])
             ->selectRaw("IF(@distance < ?, true, false) AS instant_order", [CacheHelper::getRestaurantSearchRadius()])
             ->whereHas('restaurant', function ($q) {
                 $q->where('is_enable', 1);

@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use stdClass;
 
 class ProductController extends Controller
@@ -42,7 +43,7 @@ class ProductController extends Controller
 
             KeywordSearched::dispatch(AuthHelper::getCustomerId(), $request->device_id, $request->filter, 'shop');
         } else {
-            $products = Product::select(CollectionHelper::selectExclusiveColumns('products'))
+            $products = Product::select(self::selectExclusiveColumns('products'))
                 ->join('product_variants as pv', function ($query) {
                     $query->on('pv.id', '=', DB::raw('(SELECT id FROM product_variants WHERE product_variants.product_id = products.id ORDER BY price ASC LIMIT 1)'));
                 })
@@ -231,5 +232,14 @@ class ProductController extends Controller
             $product->shop->makeHidden(['rating', 'images', 'covers', 'first_order_date']);
             return $product->images->count() > 0 ? $product : null;
         })->filter()->values();
+    }
+
+    public static function selectExclusiveColumns($table)
+    {
+        return collect(Schema::getColumnListing($table))->map(function ($column) {
+            if (!in_array($column, ['description', 'variants', 'created_by', 'updated_by', 'created_at', 'updated_at'])) {
+                return 'products.' . $column;
+            }
+        })->filter()->values()->toArray();
     }
 }

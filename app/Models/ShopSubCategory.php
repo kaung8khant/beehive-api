@@ -20,6 +20,8 @@ class ShopSubCategory extends BaseModel
         'shop_category_id',
     ];
 
+    protected $appends = ['images'];
+
     public static function boot()
     {
         parent::boot();
@@ -37,6 +39,15 @@ class ShopSubCategory extends BaseModel
         $array['shop_category_id'] = $this->shopCategory ? $this->shopCategory->id : null;
         $array['shop_category_name'] = $this->shopCategory ? $this->shopCategory->name : null;
         return $array;
+    }
+
+    public function getImagesAttribute()
+    {
+        return File::where('source', 'shop_sub_categories')
+            ->where('source_id', $this->id)
+            ->where('type', 'image')
+            ->whereIn('extension', ['png', 'jpg', 'jpeg'])
+            ->get();
     }
 
     public function shopCategory()

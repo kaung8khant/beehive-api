@@ -84,6 +84,7 @@ pipelines:
                   LOG_SLACK_WEBHOOK_URL=${LOG_SLACK_WEBHOOK_URL}
                   ALGOLIA_APP_ID=${ALGOLIA_APP_ID}
                   ALGOLIA_SECRET=${ALGOLIA_SECRET}
+                  ONE_SIGNAL_DRIVER_DEEPLINK_URL=${ONE_SIGNAL_DRIVER_DEEPLINK_URL}
 
                 # add firebase credentials
                 - echo ${FIREBASE_CREDENTIALS} > storage/firebase/firebase_credentials.json

@@ -8,11 +8,11 @@ Route::group([
     'middleware' => ['cors', 'json.response', 'auth:users', 'user.enable'],
 ], function () {
     /* Shop Main Category */
-    Route::resource('shop-main-categories', 'ShopMainCategoryController', ['as' => 'admin-v3-shop-main-category', 'except' => ['create', 'edit']]);
+    Route::resource('shop-main-categories', 'ShopMainCategoryController', ['as' => 'admin-v3-shop-main-category', 'except' => ['create', 'edit']])->parameter('shop-main-categories', 'shopMainCategory');;
     Route::put('shop-main-categories/{shopMainCategory}/index', 'ShopMainCategoryController@updateSearchIndex');
     /* Shop Main Category */
 
-    Route::get('shop-main-categories/{shopMainCategory:slug}/shop-categories', 'ShopCategoryController@getCategoriesByMainCategory');
+    Route::get('shop-main-categories/{shopMainCategory}/shop-categories', 'ShopCategoryController@getCategoriesByMainCategory');
 
     /* Restaurant Order */
     Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'admin-v3-restaurant', 'except' => ['create', 'edit']]);

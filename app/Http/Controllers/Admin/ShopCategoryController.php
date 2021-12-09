@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Helpers\CollectionHelper;
-use App\Helpers\StringHelper;
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
+use App\Repositories\Shop\ShopCategory\ShopCategoryCreateRequest;
 use App\Repositories\Shop\ShopCategory\ShopCategoryRepositoryInterface;
-use Illuminate\Validation\Rule;
+use App\Repositories\Shop\ShopCategory\ShopCategoryUpdateRequest;
+use Illuminate\Database\QueryException;
 
 class ShopCategoryController extends Controller
 {
@@ -29,35 +31,32 @@ class ShopCategoryController extends Controller
         return $this->shopCategoryRepository->find($slug)->load(['shopMainCategory', 'shopSubCategories']);
     }
 
-    public function store()
+    public function store(ShopCategoryCreateRequest $request)
     {
-        $validatedData = self::validateCreate();
-
-        if (request('shop_main_category_slug')) {
-            $validatedData['shop_main_category_id'] = $this->shopCategoryRepository->getMainCategoryIdBySlug(request('shop_main_category_slug'));
+        try {
+            $shopCategory = $this->shopCategoryRepository->create($request->validated())->refresh()->load(['shopMainCategory']);
+            return response()->json($shopCategory, 201);
+        } catch (QueryException $e) {
+            return ResponseHelper::generateValidateError('code', 'The code has already been taken for this product type.');
         }
-
-        $shopCategory = $this->shopCategoryRepository->create($validatedData)->refresh()->load(['shopMainCategory']);
-        return response()->json($shopCategory, 201);
     }
 
-    public function update($slug)
+    public function update(ShopCategoryUpdateRequest $request, $slug)
     {
-        $validatedData = self::validateUpdate($slug);
-
-        if (request('shop_main_category_slug')) {
-            $validatedData['shop_main_category_id'] = $this->shopCategoryRepository->getMainCategoryIdBySlug(request('shop_main_category_slug'));
+        try {
+            return $this->shopCategoryRepository->update($slug, $request->validated());
+        } catch (QueryException $e) {
+            return ResponseHelper::generateValidateError('code', 'The code has already been taken for this product type.');
         }
-
-        return $this->shopCategoryRepository->update($slug, $validatedData);
     }
 
     public function destroy($slug)
     {
-        return response()->json(['message' => 'Permission denied.'], 403);
+        if ($this->shopCategoryRepository->checkProducts($slug)) {
+            return response()->json(['message' => 'Cannot delete category if there is a linked product.'], 403);
+        }
 
-        $this->shopCategoryRepository->delete($slug);
-        return response()->json(['message' => 'Successfully deleted.'], 200);
+        return $this->shopCategoryRepository->delete($slug);
     }
 
     public function getCategoriesByShop($slug)
@@ -81,29 +80,5 @@ class ShopCategoryController extends Controller
         return $this->shopCategoryRepository->update($slug, request()->validate([
             'search_index' => 'required|numeric',
         ]));
-    }
-
-    private static function validateCreate()
-    {
-        request()->merge(['slug' => StringHelper::generateUniqueSlug()]);
-
-        return request()->validate([
-            'name' => 'required|unique:shop_categories',
-            'slug' => 'required|unique:shop_categories',
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-            'shop_main_category_slug' => 'nullable|exists:App\Models\ShopMainCategory,slug',
-        ]);
-    }
-
-    private static function validateUpdate($slug)
-    {
-        return request()->validate([
-            'name' => [
-                'required',
-                Rule::unique('shop_categories')->ignore($slug, 'slug'),
-            ],
-            'image_slug' => 'nullable|exists:App\Models\File,slug',
-            'shop_main_category_slug' => 'nullable|exists:App\Models\ShopMainCategory,slug',
-        ]);
     }
 }

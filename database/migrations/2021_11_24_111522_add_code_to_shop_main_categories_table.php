@@ -14,7 +14,7 @@ class AddCodeToShopMainCategoriesTable extends Migration
     public function up()
     {
         Schema::table('shop_main_categories', function (Blueprint $table) {
-            $table->string('code')->nullable()->after('search_index');
+            $table->string('code')->unique()->nullable()->after('search_index');
         });
     }
 
@@ -26,7 +26,7 @@ class AddCodeToShopMainCategoriesTable extends Migration
     public function down()
     {
         Schema::table('shop_main_categories', function (Blueprint $table) {
-            $table->dropColumn(['code']);
+            //
         });
     }
 }

@@ -79,12 +79,24 @@
             <tr>
                 <td></td>
                 <td style="width: 14%;">
+                    <strong>Order No:</strong>
+                </td>
+                <td style="width: 14%; text-align: right;">
+                    {{ $shopOrder['order_no'] }}
+                </td>
+            </tr>
+
+            @if ($shopOrder['invoice_no'])
+            <tr>
+                <td></td>
+                <td>
                     <strong>Invoice No:</strong>
                 </td>
                 <td style="width: 14%; text-align: right;">
-                    {{ $shopOrder['invoice_id'] }}
+                    {{ $shopOrder['invoice_no'] }}
                 </td>
             </tr>
+            @endif
 
             <tr>
                 <td></td>
@@ -96,7 +108,7 @@
                 </td>
             </tr>
 
-            @if ($shopOrder['order_status'] === 'pickUp' || $shopOrder['order_status'] === 'delivered')
+            @if ($shopOrder['invoice_date'])
             <tr>
                 <td></td>
                 <td>

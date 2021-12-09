@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
-use App\Http\Controllers\Controller;
 use App\Helpers\CollectionHelper;
+use App\Http\Controllers\Controller;
 use App\Repositories\Shop\ShopCategory\ShopCategoryRepositoryInterface;
 
 class ShopCategoryController extends Controller

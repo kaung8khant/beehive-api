@@ -6,6 +6,9 @@ composer install --optimize-autoloader --no-dev
 # Run database migration
 php artisan migrate --force
 
+# Clear cache in case of a setting changes
+php artisan cache:clear
+
 # Optimize configuration loading
 php artisan config:cache
 

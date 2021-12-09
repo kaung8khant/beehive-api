@@ -24,6 +24,7 @@ class ShopMainCategoriesExport implements FromQuery, WithHeadings, WithMapping, 
     {
         return [
             $shopMainCategory->slug,
+            $shopMainCategory->code,
             $shopMainCategory->name,
         ];
     }
@@ -32,6 +33,7 @@ class ShopMainCategoriesExport implements FromQuery, WithHeadings, WithMapping, 
     {
         return [
             'id',
+            'code',
             'name',
         ];
     }
@@ -43,6 +45,7 @@ class ShopMainCategoriesExport implements FromQuery, WithHeadings, WithMapping, 
             1 => ['font' => ['bold' => true]],
             'A' => ['alignment' => ['horizontal' => 'center']],
             'B' => ['alignment' => ['horizontal' => 'center']],
+            'C' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -50,7 +53,8 @@ class ShopMainCategoriesExport implements FromQuery, WithHeadings, WithMapping, 
     {
         return [
             'A' => 15,
-            'B' => 40,
+            'B' => 15,
+            'C' => 40,
         ];
     }
 }
