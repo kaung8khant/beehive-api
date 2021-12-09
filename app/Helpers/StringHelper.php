@@ -41,4 +41,13 @@ trait StringHelper
 
         return $randomString;
     }
+
+    public static function isJson($string)
+    {
+        if (is_string($string)) {
+            json_decode($string);
+            return (json_last_error() == JSON_ERROR_NONE);
+        }
+        return false;
+    }
 }

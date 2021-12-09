@@ -18,14 +18,18 @@ class Category implements Rule
 
     public function validate($items, $subTotal, $customer, $value): bool
     {
+
         if ($this->usage == "shop") {
             foreach ($items as $item) {
                 $product = Product::where('slug', $item['slug'])->with('shopCategory')->first();
-
                 if ($product) {
-                    $category_slug = $product->shopCategory->slug;
 
-                    if ($value === $category_slug) {
+                    $category_slug = $product->shopCategory->slug;
+                    if (is_array($value)) {
+                        if (in_array($category_slug, $value)) {
+                            return true;
+                        }
+                    } else if ($value === $category_slug) {
                         return true;
                     }
                 }
@@ -36,8 +40,12 @@ class Category implements Rule
 
                 if ($menu) {
                     $category_slug = $menu->restaurantCategory->slug;
+                    if (is_array($value)) {
 
-                    if ($value === $category_slug) {
+                        if (in_array($category_slug, $value)) {
+                            return true;
+                        }
+                    } else if ($value === $category_slug) {
                         return true;
                     }
                 }
@@ -50,10 +58,25 @@ class Category implements Rule
     {
         if ($this->usage == "shop") {
             $product = Product::where('slug', $item['slug'])->with('shopCategory')->firstOrFail();
-            return $value == $product->shopCategory->slug;
+            $category_slug = $product->shopCategory->slug;
+            if (is_array($value)) {
+                if (in_array($category_slug, $value)) {
+                    return true;
+                }
+            } else if ($value === $product->shopCategory->slug) {
+                return true;
+            }
         } elseif ($this->usage == "restaurant") {
             $menu = Menu::where('slug', $item['slug'])->with('restaurantCategory')->first();
-            return $value == $menu->restaurantCategory->slug;
+            $category_slug = $menu->restaurantCategory->slug;
+            if (is_array($value)) {
+
+                if (in_array($category_slug, $value)) {
+                    return true;
+                }
+            } else if ($value == $menu->restaurantCategory->slug) {
+                return true;
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Models\Promocode;
 use App\Models\ShopOrder;
+use App\Rules\BuyOneGetOne;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,6 +19,7 @@ trait PromocodeHelper
 
     public static function validatePromocodeRules($promocode, $orderItems, $subTotal, $customer, $usage)
     {
+
         foreach ($promocode['rules'] as $data) {
             $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
 
@@ -36,7 +38,7 @@ trait PromocodeHelper
         $isItemRule = false;
         $total = 0;
         foreach ($promocode->rules as $data) {
-            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category", "menu", "product"))) {
+            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category", "menu", "product", "buy_one_get_one"))) {
                 $isItemRule = true;
                 foreach ($orderItems as $item) {
                     $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
@@ -50,7 +52,7 @@ trait PromocodeHelper
                             // if (isset($item['toppings'])) {
                             //     $variation += $item['variations']->sum('price');
                             // }
-                            $total += (($item['amount']-$item['discount']) * $item['quantity']) * $promocode->amount * 0.01;
+                            $total += (($item['amount'] - $item['discount']) * $item['quantity']) * $promocode->amount * 0.01;
                         }
                     }
                 }
