@@ -4,7 +4,6 @@ namespace App\Helpers;
 
 use App\Models\Promocode;
 use App\Models\ShopOrder;
-use App\Rules\BuyOneGetOne;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
