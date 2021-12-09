@@ -162,7 +162,7 @@ class ShopOrderController extends Controller
             $order = ShopOrder::create($validatedData);
             OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
-            OrderHelper::createOrderStatus($order->id);
+            OrderHelper::createOrderStatus($order);
             return $order->refresh()->load('contact');
         });
 
