@@ -112,6 +112,7 @@ Route::group([
         Route::patch('menus/toggle-enable/{menu}', 'Admin\MenuController@toggleEnable');
         Route::post('menus/multiple-delete', 'Admin\MenuController@multipleDelete');
         Route::post('menus/status', 'Admin\MenuController@multipleStatusUpdate');
+        Route::put('menus/{menu}/index', 'Admin\MenuController@updateSearchIndex');
 
         Route::resource('menu-toppings', 'Admin\MenuToppingController', ['except' => ['create', 'edit']]);
         Route::get('menus/{menu}/menu-toppings', 'Admin\MenuToppingController@getToppingsByMenu');
@@ -140,13 +141,6 @@ Route::group([
         Route::put('menus/variants/{menuVariant:slug}/price', 'Admin\MenuVariantController@updateVariantPrice');
         Route::patch('menus/variants/{menuVariant:slug}/enable', 'Admin\MenuVariantController@toggleEnable');
         /* Restaurant */
-
-        /* Order */
-        Route::resource('restaurant-orders', 'Admin\RestaurantOrderController');
-        Route::post('restaurant-orders/{restaurantOrder}/change-status', 'Admin\RestaurantOrderController@changeStatus');
-        Route::resource('shop-orders', 'Admin\ShopOrderController');
-        Route::post('shop-orders/{shopOrder}/change-status', 'Admin\ShopOrderController@changeStatus');
-        /* Order */
 
         /* Promocode */
         Route::resource('promocodes', 'Admin\PromocodeController', ['except' => ['create', 'edit']]);

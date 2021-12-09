@@ -111,7 +111,7 @@ trait ResponseHelper
         return $this->generateResponse($data, $status, false, $paginate);
     }
 
-    public function generateShopOrderResponse($data, $status, $type = 'obj')
+    public static function generateShopOrderResponse($data, $status, $type = 'obj')
     {
         if ($type === 'obj') {
             $items = collect([]);
@@ -153,7 +153,7 @@ trait ResponseHelper
             }
         }
 
-        return $this->generateResponse($data, $status);
+        return self::generateResponse($data, $status);
     }
 
     public function checkFavoriteRestaurant($restaurantId)

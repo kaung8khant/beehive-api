@@ -18,7 +18,7 @@ class CreditController extends Controller
         $credit = $customer->credit;
 
         if ($credit) {
-            $credit->remaining_amount = OrderHelper::getRemainingCredit($customer);
+            $credit->remaining_amount = OrderHelper::getRemainingCredit($customer->id);
             return $this->generateResponse($credit, 200);
         }
 

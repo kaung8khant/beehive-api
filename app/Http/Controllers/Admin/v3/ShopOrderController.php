@@ -12,7 +12,6 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
-use App\Helpers\v3\OrderHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Customer;
@@ -23,11 +22,13 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
+use App\Repositories\Shop\ShopOrder\ShopOrderCreateRequest;
+use App\Repositories\Shop\ShopOrder\ShopOrderRepositoryInterface;
+use App\Repositories\Shop\ShopOrder\ShopOrderService;
 use App\Services\MessageService\MessagingService;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -35,97 +36,49 @@ class ShopOrderController extends Controller
 {
     use PromocodeHelper, ResponseHelper, StringHelper;
 
-    protected $messageService;
-    protected $paymentService;
-    protected $resMes;
+    private $shopOrderRepository;
+    private $messageService;
+    private $paymentService;
+    private $resMes;
 
-    public function __construct(MessagingService $messageService, PaymentService $paymentService)
+    public function __construct(ShopOrderRepositoryInterface $shopOrderRepository, MessagingService $messageService, PaymentService $paymentService)
     {
+        $this->shopOrderRepository = $shopOrderRepository;
         $this->messageService = $messageService;
         $this->paymentService = $paymentService;
         $this->resMes = config('response-en.shop_order');
     }
 
-    public function index(Request $request)
+    public function index()
     {
-        $sorting = CollectionHelper::getSorting('shop_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
-
-        $shopOrders = ShopOrder::exclude(['special_instruction', 'delivery_mode', 'promocode_amount', 'customer_id', 'created_by', 'updated_by'])
-            ->with(['contact' => function ($query) {
-                $query->exclude(['house_number', 'floor', 'street_name', 'latitude', 'longitude']);
-            }])
-            ->whereBetween('order_date', array($request->from, $request->to))
-            ->where(function ($query) use ($request) {
-                $query->where('id', ltrim(ltrim($request->filter, 'BHS'), '0'))
-                    ->orWhereHas('contact', function ($q) use ($request) {
-                        $q->where('phone_number', $request->filter)
-                            ->orWhere('customer_name', 'LIKE', '%' . $request->filter . '%');
-                    });
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->get()
-            ->makeHidden(['vendors']);
-
-        return $this->generateResponse($shopOrders, 200);
+        $shopOrders = $this->shopOrderRepository->all()->makeHidden(['vendors']);
+        return ResponseHelper::generateResponse($shopOrders, 200);
     }
 
-    public function store(Request $request)
+    public function show($slug)
+    {
+        $shopOrder = $this->shopOrderRepository->find($slug)->load(['contact', 'vendors', 'vendors.shop', 'vendors.shopOrderStatuses', 'drivers', 'drivers.status', 'drivers.driver']);
+
+        if (cache('shopOrder:' . $shopOrder->slug)) {
+            $shopOrder['assign'] = 'pending';
+        } else {
+            $shopOrder['assign'] = null;
+        }
+
+        return $this->generateResponse($shopOrder, 200);
+    }
+
+    public function store(ShopOrderCreateRequest $request, ShopOrderService $shopOrderService)
     {
         try {
-            $request['slug'] = $this->generateUniqueSlug();
-            $validatedData = ShopOrderHelper::validateOrderV3($request, true);
-
-            if (gettype($validatedData) == 'string') {
-                return $this->generateResponse($validatedData, 422, true);
-            }
-
-            try {
-                $validatedData = ShopOrderHelper::prepareProductVariants($validatedData);
-            } catch (ForbiddenException $e) {
-                return $this->generateResponse($e->getMessage(), 403, true);
-            } catch (BadRequestException $e) {
-                return $this->generateResponse($e->getMessage(), 400, true);
-            }
-
-            $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
-            if ($validatedData['promo_code']) {
-                try {
-                    $validatedData = $this->getPromoData($validatedData, $customer);
-                } catch (ForbiddenException $e) {
-                    return $this->generateResponse($e->getMessage(), 403, true);
-                }
-            }
-
-            if ($validatedData['payment_mode'] === 'Credit') {
-                $totalAmount = OrderHelper::getTotalAmount($validatedData['order_items'], isset($validatedData['promocode_amount']) ? $validatedData['promocode_amount'] : 0) + $validatedData['delivery_fee'];
-                $remainingCredit = OrderHelper::getRemainingCredit($customer);
-
-                if ($totalAmount > $remainingCredit) {
-                    return $this->generateResponse('Insufficient credit.', 403, true);
-                }
-
-                $validatedData['payment_status'] = 'success';
-            }
-
-            $paymentData = [];
-            if (!in_array($validatedData['payment_mode'], ['COD', 'Credit'])) {
-                try {
-                    $paymentData = $this->paymentService->createTransaction($validatedData, 'shop');
-                } catch (ServerException $e) {
-                    return $this->generateResponse($e->getMessage(), 500, true);
-                }
-            }
-
-            $order = $this->shopOrderTransaction($validatedData);
-
-            if ($validatedData['payment_mode'] === 'KPay') {
-                $order['prepay_id'] = $paymentData['Response']['prepay_id'];
-            } elseif ($validatedData['payment_mode'] === 'CBPay') {
-                $order->update(['payment_reference' => $paymentData['transRef']]);
-                $order['mer_dqr_code'] = $paymentData['merDqrCode'];
-            }
-
+            $order = $shopOrderService->store($request->validated());
             return $this->generateShopOrderResponse($order, 201);
+        } catch (ForbiddenException $e) {
+            return $this->generateResponse($e->getMessage(), 403, true);
+        } catch (BadRequestException $e) {
+            return $this->generateResponse($e->getMessage(), 400, true);
+        } catch (ServerException $e) {
+            return $this->generateResponse($e->getMessage(), 500, true);
         } catch (\Exception $e) {
             $url = explode('/', $request->path());
 
@@ -137,19 +90,6 @@ class ShopOrderController extends Controller
 
             throw $e;
         }
-    }
-
-    public function show(ShopOrder $shopOrder)
-    {
-        $cache = Cache::get('shopOrder:' . $shopOrder->slug);
-
-        if ($cache) {
-            $shopOrder['assign'] = 'pending';
-        } else {
-            $shopOrder['assign'] = null;
-        }
-
-        return $this->generateResponse($shopOrder->load('contact', 'vendors', 'vendors.shop', 'vendors.shopOrderStatuses', 'drivers', 'drivers.status', 'drivers.driver'), 200);
     }
 
     private function getPromoData($validatedData, $customer)

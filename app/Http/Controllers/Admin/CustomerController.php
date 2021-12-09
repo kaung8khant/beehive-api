@@ -44,7 +44,7 @@ class CustomerController extends Controller
 
         foreach ($customers as $customer) {
             if ($customer->credit) {
-                $customer->credit['remaining_amount'] = OrderHelper::getRemainingCredit($customer);
+                $customer->credit['remaining_amount'] = OrderHelper::getRemainingCredit($customer->id);
             }
         }
 
@@ -98,7 +98,7 @@ class CustomerController extends Controller
         ]);
 
         if ($customer->credit) {
-            $customer->credit['remaining_amount'] = OrderHelper::getRemainingCredit($customer);
+            $customer->credit['remaining_amount'] = OrderHelper::getRemainingCredit($customer->id);
         }
 
         return $customer;

@@ -54,10 +54,6 @@ Route::group([
         Route::delete('menu-toppings/{menuTopping}', 'Admin\MenuToppingController@destroy');
         Route::put('menus/{menu}/variants', 'Admin\MenuVariantController@updateVariants');
         Route::patch('menus/variants/{menuVariant:slug}/enable', 'Admin\MenuVariantController@toggleEnable');
-
-        Route::get('restaurant-branches/{restaurantBranch}/orders', 'Admin\RestaurantOrderController@getBranchOrders');
-        Route::post('restaurant-orders/{restaurantOrder}/change-status', 'Admin\RestaurantOrderController@changeStatus');
-        Route::resource('restaurant-orders', 'Admin\RestaurantOrderController', ['as' => 'vendor']);
         Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\CustomerController@getCustomersByBranch');
         /* restaurant */
 
@@ -70,10 +66,6 @@ Route::group([
         Route::post('shops/add-shop-categories/{slug}', 'Admin\ShopController@addShopCategories');
         Route::post('shops/remove-shop-categories/{slug}', 'Admin\ShopController@removeShopCategories');
         Route::get('shop-categories/{shopCategory}/sub-categories', 'Admin\ShopSubCategoryController@getSubCategoriesByCategory');
-
-        Route::resource('shop-orders', 'Admin\ShopOrderController', ['as' => 'vendor']);
-        Route::get('shops/{shop}/shop-orders', 'Admin\ShopOrderController@getShopOrders');
-        Route::post('shop-orders/{shopOrder}/change-status', 'Admin\ShopOrderController@changeStatus');
         Route::get('shops/{shop}/customers', 'Admin\CustomerController@getCustomersByShop');
         /* shop */
 

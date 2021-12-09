@@ -111,7 +111,7 @@ class RestaurantOrderController extends Controller
 
             if ($validatedData['payment_mode'] === 'Credit') {
                 $totalAmount = OrderHelper::getTotalAmount($validatedData['order_items'], isset($validatedData['promocode_amount']) ? $validatedData['promocode_amount'] : 0) + $validatedData['delivery_fee'];
-                $remainingCredit = OrderHelper::getRemainingCredit($customer);
+                $remainingCredit = OrderHelper::getRemainingCredit($customer->id);
 
                 if ($totalAmount > $remainingCredit) {
                     return $this->generateResponse('Insufficient credit.', 403, true);
