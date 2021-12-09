@@ -2,26 +2,53 @@
 
 namespace App\Repositories\Shop\ShopOrder;
 
+use App\Events\ShopOrderUpdated;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
-use App\Helpers\PromocodeHelper;
-use App\Models\Customer;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\Promocode;
+use App\Helpers\ShopOrderHelper;
+use App\Helpers\v3\OrderHelper;
+use App\Services\MessageService\MessagingService;
+use Illuminate\Support\Facades\DB;
 
 class ShopOrderService
 {
+    private $shopOrderRepository;
+    private $messageService;
+
+    public function __construct(ShopOrderRepositoryInterface $shopOrderRepository, MessagingService $messageService)
+    {
+        $this->shopOrderRepository = $shopOrderRepository;
+        $this->messageService = $messageService;
+    }
+
     public function store($validatedData)
     {
         $validatedData = $this->prepareProductVariants($validatedData);
+        $customer = $this->shopOrderRepository->getCustomerBySlug($validatedData['customer_slug']);
 
-        $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
         if (isset($validatedData['promo_code'])) {
-            $validatedData = $this->getPromoData($validatedData, $customer);
+            $validatedData = OrderHelper::getPromoData($validatedData, $customer);
         }
 
-        return $validatedData;
+        if ($validatedData['payment_mode'] === 'Credit') {
+            $validatedData = OrderHelper::checkCredit($validatedData, $customer->id);
+        }
+
+        $paymentData = [];
+        if (!in_array($validatedData['payment_mode'], ['COD', 'Credit'])) {
+            $paymentData = $this->paymentService->createTransaction($validatedData, 'shop');
+        }
+
+        $order = $this->shopOrderTransaction($validatedData, $customer);
+
+        if ($validatedData['payment_mode'] === 'KPay') {
+            $order['prepay_id'] = $paymentData['Response']['prepay_id'];
+        } elseif ($validatedData['payment_mode'] === 'CBPay') {
+            $order->update(['payment_reference' => $paymentData['transRef']]);
+            $order['mer_dqr_code'] = $paymentData['merDqrCode'];
+        }
+
+        return $order;
     }
 
     private function prepareProductVariants($validatedData)
@@ -32,8 +59,8 @@ class ShopOrderService
         $tax = 0;
 
         foreach ($validatedData['order_items'] as $key => $value) {
-            $productId = Product::where('slug', $value['slug'])->value('id');
-            $productVariant = $this->getProductVariant($value['variant_slug']);
+            $productId = $this->shopOrderRepository->getProductIdBySlug($value['slug']);
+            $productVariant = $this->shopOrderRepository->getProductVariantBySlug($value['variant_slug']);
 
             $this->checkProductAndVariant($productId, $productVariant, $key);
 
@@ -69,11 +96,6 @@ class ShopOrderService
         return $validatedData;
     }
 
-    private function getProductVariant($slug)
-    {
-        return ProductVariant::with('product')->where('slug', $slug)->where('is_enable', 1)->first();
-    }
-
     private function checkProductAndVariant($productId, $productVariant, $key)
     {
         if (!$productVariant) {
@@ -85,29 +107,20 @@ class ShopOrderService
         }
     }
 
-    private function getPromoData($validatedData, $customer)
+    private function shopOrderTransaction($validatedData, $customer)
     {
-        $promocode = Promocode::where('code', strtoupper($validatedData['promo_code']))->with('rules')->latest()->first();
-        if (!$promocode) {
-            throw new ForbiddenException('Promocode not found.');
-        }
+        $order = DB::transaction(function () use ($validatedData) {
+            $order = $this->shopOrderRepository->create($validatedData);
+            ShopOrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            ShopOrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
+            ShopOrderHelper::createOrderStatus($order);
+            return $order->refresh()->load(['contact']);
+        });
 
-        $validUsage = PromocodeHelper::validatePromocodeUsage($promocode, 'shop');
-        if (!$validUsage) {
-            throw new ForbiddenException('Invalid promocode usage for shop.');
-        }
+        event(new ShopOrderUpdated($order));
 
-        $validRule = PromocodeHelper::validatePromocodeRules($promocode, $validatedData['order_items'], $validatedData['subTotal'], $customer, 'shop');
-        if (!$validRule) {
-            throw new ForbiddenException('Invalid promocode.');
-        }
+        ShopOrderHelper::notifySystem($order, $validatedData['order_items'], $customer->phone_number, $this->messageService);
 
-        $promocodeAmount = PromocodeHelper::calculatePromocodeAmount($promocode, $validatedData['order_items'], $validatedData['subTotal'], 'shop');
-
-        $validatedData['promocode_id'] = $promocode->id;
-        $validatedData['promocode'] = $promocode->code;
-        $validatedData['promocode_amount'] = min($validatedData['subTotal'] + $validatedData['tax'], $promocodeAmount);
-
-        return $validatedData;
+        return $order;
     }
 }

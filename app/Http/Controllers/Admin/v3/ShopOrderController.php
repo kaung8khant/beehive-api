@@ -12,7 +12,6 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper;
 use App\Helpers\SmsHelper;
 use App\Helpers\StringHelper;
-use App\Helpers\v3\OrderHelper;
 use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Customer;
@@ -23,6 +22,7 @@ use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
 use App\Models\ShopOrderVendor;
+use App\Repositories\Shop\ShopOrder\ShopOrderCreateRequest;
 use App\Repositories\Shop\ShopOrder\ShopOrderRepositoryInterface;
 use App\Repositories\Shop\ShopOrder\ShopOrderService;
 use App\Services\MessageService\MessagingService;
@@ -41,7 +41,7 @@ class ShopOrderController extends Controller
     private $paymentService;
     private $resMes;
 
-    public function __construct(ShopOrderRepositoryInterface $shopOrderRepository, ShopOrderService $shopOrderService, MessagingService $messageService, PaymentService $paymentService)
+    public function __construct(ShopOrderRepositoryInterface $shopOrderRepository, MessagingService $messageService, PaymentService $paymentService)
     {
         $this->shopOrderRepository = $shopOrderRepository;
         $this->messageService = $messageService;
@@ -68,63 +68,17 @@ class ShopOrderController extends Controller
         return $this->generateResponse($shopOrder, 200);
     }
 
-    public function store(Request $request)
+    public function store(ShopOrderCreateRequest $request, ShopOrderService $shopOrderService)
     {
         try {
-            $request['slug'] = $this->generateUniqueSlug();
-            $validatedData = ShopOrderHelper::validateOrderV3($request, true);
-
-            if (gettype($validatedData) == 'string') {
-                return $this->generateResponse($validatedData, 422, true);
-            }
-
-            try {
-                $validatedData = ShopOrderHelper::prepareProductVariants($validatedData);
-            } catch (ForbiddenException $e) {
-                return $this->generateResponse($e->getMessage(), 403, true);
-            } catch (BadRequestException $e) {
-                return $this->generateResponse($e->getMessage(), 400, true);
-            }
-
-            $customer = Customer::where('slug', $validatedData['customer_slug'])->first();
-            if ($validatedData['promo_code']) {
-                try {
-                    $validatedData = $this->getPromoData($validatedData, $customer);
-                } catch (ForbiddenException $e) {
-                    return $this->generateResponse($e->getMessage(), 403, true);
-                }
-            }
-
-            if ($validatedData['payment_mode'] === 'Credit') {
-                $totalAmount = OrderHelper::getTotalAmount($validatedData['order_items'], isset($validatedData['promocode_amount']) ? $validatedData['promocode_amount'] : 0) + $validatedData['delivery_fee'];
-                $remainingCredit = OrderHelper::getRemainingCredit($customer);
-
-                if ($totalAmount > $remainingCredit) {
-                    return $this->generateResponse('Insufficient credit.', 403, true);
-                }
-
-                $validatedData['payment_status'] = 'success';
-            }
-
-            $paymentData = [];
-            if (!in_array($validatedData['payment_mode'], ['COD', 'Credit'])) {
-                try {
-                    $paymentData = $this->paymentService->createTransaction($validatedData, 'shop');
-                } catch (ServerException $e) {
-                    return $this->generateResponse($e->getMessage(), 500, true);
-                }
-            }
-
-            $order = $this->shopOrderTransaction($validatedData);
-
-            if ($validatedData['payment_mode'] === 'KPay') {
-                $order['prepay_id'] = $paymentData['Response']['prepay_id'];
-            } elseif ($validatedData['payment_mode'] === 'CBPay') {
-                $order->update(['payment_reference' => $paymentData['transRef']]);
-                $order['mer_dqr_code'] = $paymentData['merDqrCode'];
-            }
-
+            $order = $shopOrderService->store($request->validated());
             return $this->generateShopOrderResponse($order, 201);
+        } catch (ForbiddenException $e) {
+            return $this->generateResponse($e->getMessage(), 403, true);
+        } catch (BadRequestException $e) {
+            return $this->generateResponse($e->getMessage(), 400, true);
+        } catch (ServerException $e) {
+            return $this->generateResponse($e->getMessage(), 500, true);
         } catch (\Exception $e) {
             $url = explode('/', $request->path());
 

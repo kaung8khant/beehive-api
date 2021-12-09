@@ -20,12 +20,12 @@ class BaseRepository implements BaseRepositoryInterface
         }
     }
 
-    public function find($slug): ?Model
+    public function find($slug)
     {
         return $this->model->where('slug', $slug)->firstOrFail();
     }
 
-    public function create(array $attributes): Model
+    public function create(array $attributes)
     {
         $model = $this->model->create($attributes);
         DataChanged::dispatch($this->user, 'create', $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);

@@ -97,6 +97,7 @@ class ShopOrder extends BaseModel
         $totalAmount = $totalAmount - $this->promocode_amount;
         return $totalAmount < 0 ? 0 : $totalAmount;
     }
+
     public function getDriverStatusAttribute()
     {
         $orderDriver = ShopOrderDriver::where('shop_order_id', $this->id)->latest()->first();
