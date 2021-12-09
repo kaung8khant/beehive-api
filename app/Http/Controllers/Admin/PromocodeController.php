@@ -49,6 +49,11 @@ class PromocodeController extends Controller
     public function update(Request $request, Promocode $promocode)
     {
         $validatedData = $request->validate($this->getParamsToValidate());
+        foreach ($validatedData['rules'] as $key => $value) {
+            $value = is_string($value['value']) ? $value['value'] : json_encode($value['value']);
+            $validatedData['rules'][$key]['value'] = $value;
+        }
+
         $promocode->update($validatedData);
         $this->createAndUpdateRules($promocode, $validatedData['rules']);
 
@@ -57,6 +62,7 @@ class PromocodeController extends Controller
 
     private function getParamsToValidate($slug = false)
     {
+
         $params = [
             'code' => 'required',
             'type' => 'required|in:fix,percentage',
@@ -64,7 +70,7 @@ class PromocodeController extends Controller
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
             'rules' => 'nullable|array',
-            'rules.*.value' => 'required|string',
+            'rules.*.value' => 'required|string_or_array',
             'rules.*.data_type' => 'required|string',
         ];
 
@@ -79,6 +85,7 @@ class PromocodeController extends Controller
     {
         foreach ($rules as $rule) {
             $rule['promocode_id'] = $promocodeId;
+            $rule['value'] = is_string($rule['value']) ? $rule['value'] : json_encode($rule['value']);
             PromocodeRule::create($rule);
         }
     }
@@ -97,7 +104,7 @@ class PromocodeController extends Controller
     {
         $validatedData = $request->validate([
             'rules' => 'required|array',
-            'rules.*.value' => 'required|string',
+            'rules.*.value' => 'required|string_or_array',
             'rules.*.data_type' => 'required|string',
         ]);
 
@@ -105,6 +112,7 @@ class PromocodeController extends Controller
 
         foreach ($validatedData['rules'] as $rule) {
             $rule['promocode_id'] = $promocode->id;
+            $rule['value'] = is_string($rule['value']) ? $rule['value'] : json_encode($rule['value']);
             PromocodeRule::create($rule);
         }
 

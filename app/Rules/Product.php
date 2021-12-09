@@ -3,11 +3,13 @@
 namespace App\Rules;
 
 use App\Models\Product as ProductModel;
+use App\Helpers\StringHelper;
 
 class Product implements Rule
 {
     private $promocode;
     private $usage;
+    use StringHelper;
 
     public function __construct($promocode, $usage)
     {
@@ -19,7 +21,11 @@ class Product implements Rule
     {
         if ($this->usage == 'shop') {
             foreach ($items as $item) {
-                if ($value === $item['slug']) {
+                if (is_array($value)) {
+                    if (in_array($item['slug'], $value)) {
+                        return true;
+                    }
+                } else if ($value === $item['slug']) {
                     return true;
                 }
             }
@@ -29,8 +35,12 @@ class Product implements Rule
 
     public function validateItem($item, $value): bool
     {
-        if ($this->usage == "shop") {
-            return $item['slug'] == $value;
+        if (is_array($value)) {
+            if (in_array($item['slug'], $value)) {
+                return true;
+            }
+        } else if ($item['slug'] == $value) {
+            return true;
         }
         return false;
     }

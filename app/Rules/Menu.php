@@ -17,9 +17,16 @@ class Menu implements Rule
 
     public function validate($items, $subTotal, $customer, $value): bool
     {
+        Log::info('Menu rule');
         if ($this->usage == 'restaurant') {
             foreach ($items as $item) {
-                if ($value === $item['slug']) {
+                if (is_array($value)) {
+                    Log::info($value);
+                    Log::info($item['slug']);
+                    if (in_array($item['slug'], $value)) {
+                        return true;
+                    }
+                } else if ($value === $item['slug']) {
                     return true;
                 }
             }
@@ -30,7 +37,13 @@ class Menu implements Rule
     public function validateItem($item, $value): bool
     {
         if ($this->usage == "restaurant") {
-            return $item['slug'] == $value;
+            if (is_array($value)) {
+                if (in_array($item['slug'], $value)) {
+                    return true;
+                }
+            } else if ($item['slug'] == $value) {
+                return true;
+            }
         }
         return false;
     }

@@ -12,6 +12,7 @@ use App\Services\PaymentService\KbzPayService;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
+use Validator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -55,5 +56,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         //
+
+        Validator::extend('string_or_array', function ($attribute, $value, $parameters, $validator) {
+            return is_string($value) || is_array($value);
+        });
     }
 }

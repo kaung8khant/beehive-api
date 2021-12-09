@@ -19,10 +19,16 @@ class Brand implements Rule
     {
         if ($this->usage == "shop") {
             foreach ($items as $item) {
+
                 $product = Product::where('slug', $item['slug'])->with('brand')->firstOrFail();
 
                 $brand_slug = $product->brand->slug;
-                if ($value === $brand_slug) {
+
+                if (is_array($value)) {
+                    if (in_array($brand_slug, $value)) {
+                        return true;
+                    }
+                } else if ($value === $brand_slug) {
                     return true;
                 }
             }
@@ -34,7 +40,11 @@ class Brand implements Rule
     {
         if ($this->usage == "shop") {
             $product = Product::where('slug', $item['slug'])->with('brand')->firstOrFail();
-            if ($value == $product->brand->slug) {
+            if (is_array($value)) {
+                if (in_array($product->brand->slug, $value)) {
+                    return true;
+                }
+            } else if ($value == $product->brand->slug) {
                 return true;
             }
         }
