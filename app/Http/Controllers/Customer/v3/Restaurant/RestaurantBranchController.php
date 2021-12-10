@@ -46,6 +46,10 @@ class RestaurantBranchController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
+        if (!auth('customers')->check()) {
+            return $this->generateBranchResponse([], 200, 'fav', 1);
+        }
+
         $favoriteRestaurants = auth('customers')->user()->favoriteRestaurants()
             ->with(['restaurantBranches' => function ($query) {
                 self::getBranchQuery($query)->orderBy('distance', 'asc');
