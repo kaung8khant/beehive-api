@@ -62,16 +62,22 @@
         .pdf-amount-col {
             white-space: nowrap;
         }
+        .logo{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
 <body>
-    <div class="center">
-        <img src="{{ public_path() . '/beehive-logo.png' }}" alt="restaurant-logo" width="80px">
-        <h2>Beehive</h2>
-        <div>Kamayut, Yangon</div>
-        <div>beehive@gmail.com</div>
-        <div>09962223334</div>
+    <div class="logo">
+        <img src="{{ public_path() . '/voucher-logo.png' }}" alt="restaurant-logo" width="200px">
+        <div>
+            <div>Kamayut, Yangon</div>
+            <div>beehive@gmail.com</div>
+            <div>09962223334</div>
+        </div>
     </div>
 
     <hr>
