@@ -58,6 +58,7 @@ return [
         'shop-invoice-sales' => 'Sales\ShopInvoiceSalesExport',
         'shop-sales' => 'Sales\ShopSalesExport',
         'shop-product-sales' => 'Sales\ProductSalesExport',
+        'shop-category-sales' => 'Sales\ShopCategorySalesExport',
         'shop-vendor-product-sales' => 'Sales\ShopProductSalesExport',
         'shop-vendor-invoice' => 'Sales\ShopVendorInvoiceExport',
         'promocode-sales' => 'Sales\PromocodeSalesExport',
