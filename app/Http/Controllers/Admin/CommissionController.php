@@ -34,7 +34,7 @@ class CommissionController extends Controller
                     ->select('so.slug', 'so.id')->get()
                     ->map(function ($data) {
                         $orders = $data;
-                        $orders->invoice_id = sprintf('%08d', $data->id);
+                        $orders->order_no = 'BHS' . sprintf('%08d', $data->id);
                         return $orders;
                     });
                 $shopCommissions->orders = $shopOrders;
@@ -85,7 +85,7 @@ class CommissionController extends Controller
                     ->whereBetween('ro.order_date', array($request->from, $request->to))->get()
                     ->map(function ($data) {
                         $orders = $data;
-                        $orders->invoice_id = sprintf('%08d', $data->id);
+                        $orders->order_no = 'BHR' . sprintf('%08d', $data->id);
                         return $orders;
                     });
 

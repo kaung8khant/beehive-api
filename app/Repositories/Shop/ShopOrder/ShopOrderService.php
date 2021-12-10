@@ -6,7 +6,10 @@ use App\Events\ShopOrderUpdated;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Helpers\ShopOrderHelper;
+use App\Helpers\SmsHelper;
+use App\Helpers\StringHelper;
 use App\Helpers\v3\OrderHelper;
+use App\Jobs\SendSms;
 use App\Services\MessageService\MessagingService;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Support\Facades\DB;
@@ -16,12 +19,14 @@ class ShopOrderService
     private $shopOrderRepository;
     private $messageService;
     private $paymentService;
+    private $resMes;
 
     public function __construct(ShopOrderRepositoryInterface $shopOrderRepository, MessagingService $messageService, PaymentService $paymentService)
     {
         $this->shopOrderRepository = $shopOrderRepository;
         $this->messageService = $messageService;
         $this->paymentService = $paymentService;
+        $this->resMes = config('response-en.shop_order');
     }
 
     public function store($validatedData)
@@ -114,9 +119,9 @@ class ShopOrderService
     {
         $order = DB::transaction(function () use ($validatedData) {
             $order = $this->shopOrderRepository->create($validatedData);
-            ShopOrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
-            ShopOrderHelper::createShopOrderItem($order->id, $validatedData['order_items']);
-            ShopOrderHelper::createOrderStatus($order);
+            $this->createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
+            $this->createShopOrderItems($order->id, $validatedData['order_items']);
+            $this->createOrderStatus($order);
             return $order->refresh()->load(['contact']);
         });
 
@@ -125,5 +130,137 @@ class ShopOrderService
         ShopOrderHelper::notifySystem($order, $validatedData['order_items'], $customer->phone_number, $this->messageService);
 
         return $order;
+    }
+
+    private function createOrderContact($orderId, $customerInfo, $address)
+    {
+        $customerInfo = array_merge($customerInfo, $address);
+        $customerInfo['shop_order_id'] = $orderId;
+        $this->shopOrderRepository->createShopOrderContact($customerInfo);
+    }
+
+    private function createShopOrderItems($orderId, $orderItems)
+    {
+        foreach ($orderItems as $item) {
+            $shop = $this->shopOrderRepository->getShopByProductId($item['product_id']);
+
+            $shopOrderVendor = $this->shopOrderRepository->getVendorByOrderIdAndShopId($orderId, $shop->id);
+
+            if (!$shopOrderVendor) {
+                $shopOrderVendor = $this->shopOrderRepository->createShopOrderVendor([
+                    'slug' => StringHelper::generateUniqueSlugWithTable('shop_order_vendors'),
+                    'shop_order_id' => $orderId,
+                    'shop_id' => $shop->id,
+                ]);
+            }
+
+            $item['shop'] = $shop;
+            $item['shop_order_vendor_id'] = $shopOrderVendor->id;
+            $item['shop_id'] = $shop->id;
+            $item['product_name'] = $item['name'];
+            $item['amount'] = $item['price'];
+
+            $this->shopOrderRepository->createShopOrderItem($item);
+        }
+    }
+
+    public function createOrderStatus($order, $orderStatus = 'pending')
+    {
+        $order->update($this->prepareOrderStatus($order, $orderStatus));
+
+        $shopOrderVendors = $this->shopOrderRepository->getVendorsByShopOrderId($order->id);
+
+        foreach ($shopOrderVendors as $vendor) {
+            $vendor->update([
+                'order_status' => $orderStatus,
+            ]);
+
+            $this->shopOrderRepository->createShopOrderStatus([
+                'shop_order_vendor_id' => $vendor->id,
+                'status' => $orderStatus,
+            ]);
+        }
+    }
+
+    private function prepareOrderStatus($order, $orderStatus)
+    {
+        $data['order_status'] = $orderStatus;
+
+        if ($orderStatus === 'pickUp' && !$order->invoice_no) {
+            $data['invoice_no'] = $this->shopOrderRepository->getMaxInvoiceNo() + 1;
+        }
+
+        if ($orderStatus === 'delivered') {
+            $paymentStatus = 'success';
+        } elseif ($orderStatus === 'cancelled') {
+            $paymentStatus = 'failed';
+        } else {
+            $paymentStatus = null;
+        }
+
+        if ($paymentStatus) {
+            $data['payment_status'] = $paymentStatus;
+        }
+
+        return $data;
+    }
+
+    public function changeOrderStatus($shopOrder)
+    {
+        $this->checkSuperAdminAndPaymentMode($shopOrder);
+        $this->createOrderStatus($shopOrder, request('status'));
+
+        $orderItems = $this->getOrderItemsFromOrder($shopOrder);
+
+        $shopOrder['order_status'] = request('status');
+        ShopOrderHelper::sendPushNotifications($shopOrder, $orderItems, 'Order Number:' . $shopOrder->invoice_id . ', is now ' . request('status'));
+
+        if (request('status') === 'cancelled') {
+            $this->sendSms($shopOrder);
+        }
+
+        if (request('status') === 'pickUp') {
+            event(new ShopOrderUpdated($shopOrder));
+        }
+    }
+
+    private function checkSuperAdminAndPaymentMode($shopOrder)
+    {
+        if ($shopOrder->order_status === 'delivered' || $shopOrder->order_status === 'cancelled') {
+            if (!auth('users')->user()->roles->contains('name', 'SuperAdmin')) {
+                throw new ForbiddenException(sprintf($this->resMes['order_sts_err'], $shopOrder->order_status));
+            }
+        }
+
+        if ($shopOrder->payment_mode !== 'COD' && $shopOrder->payment_status !== 'success' && request('status') !== 'cancelled') {
+            throw new ForbiddenException($this->resMes['payment_err']);
+        }
+    }
+
+    private function getOrderItemsFromOrder($shopOrder)
+    {
+        return $shopOrder->vendors
+            ->map(function ($vendor) {
+                return $vendor->items;
+            })
+            ->collapse()
+            ->values()
+            ->map(function ($item) {
+                unset($item->shop);
+                $item->slug = $this->shopOrderRepository->getProductSlugById($item->id);
+                return $item;
+            })->toArray();
+    }
+
+    private function sendSms($shopOrder)
+    {
+        $message = $this->shopOrderRepository->getOrderCancelMessage();
+        $message = SmsHelper::parseShopSmsMessage($shopOrder, $message);
+
+        $smsData = SmsHelper::prepareSmsData($message);
+        $uniqueKey = StringHelper::generateUniqueSlug();
+        $phoneNumber = OrderHelper::getCustomerPhoneNumber($shopOrder->customer_id);
+
+        SendSms::dispatch($uniqueKey, [$phoneNumber], $message, 'order', $smsData, $this->messageService);
     }
 }

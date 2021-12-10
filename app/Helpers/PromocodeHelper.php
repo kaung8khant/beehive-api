@@ -4,7 +4,6 @@ namespace App\Helpers;
 
 use App\Models\Promocode;
 use App\Models\ShopOrder;
-use App\Rules\BuyOneGetOne;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,13 +37,14 @@ trait PromocodeHelper
         $isItemRule = false;
         $total = 0;
         foreach ($promocode->rules as $data) {
-            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category", "menu", "product", "buy_one_get_one"))) {
+            if (in_array($data['data_type'], array("shop", "brand", "restaurant", "category", "menu", "product", "buy_and_get"))) {
                 $isItemRule = true;
                 foreach ($orderItems as $item) {
                     $_class = '\App\Rules\\' . str_replace('_', '', ucwords($data['data_type'], '_'));
                     $rule = new $_class($promocode, $usage);
 
                     if ($rule->validateItem($item, $data['value'])) {
+
                         if ($promocode->type === 'fix') {
                             $total += $promocode->amount;
                         } else {

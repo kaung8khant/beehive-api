@@ -4,6 +4,7 @@ namespace App\Helpers\v3;
 
 use App\Exceptions\ForbiddenException;
 use App\Models\Credit;
+use App\Models\Customer;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
 use App\Models\ShopOrder;
@@ -90,5 +91,10 @@ trait OrderHelper
         }
 
         return $totalAmount - $promoAmount;
+    }
+
+    public static function getCustomerPhoneNumber($customerId)
+    {
+        return Customer::where('id', $customerId)->value('phone_number');
     }
 }
