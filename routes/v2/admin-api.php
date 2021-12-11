@@ -179,6 +179,7 @@ Route::group([
         Route::get('reports/shop-orders/shop-sales', 'Report\ShopOrderController@getShopSaleReport');
         Route::get('reports/shop-orders/vendor/{shop}/product-sales', 'Report\ShopOrderController@getShopProductSaleReport');
         Route::get('reports/shop-orders/product-sales', 'Report\ShopOrderController@getProductSaleReport');
+        Route::get('reports/shop-orders/shop-category-sales', 'Report\ShopOrderController@getShopCategorySaleReport');
 
         Route::get('reports/promocodes', 'Report\PromocodeController@getPromocodeReport');
         Route::get('reports/promocodes/{promocode}', 'Report\PromocodeController@getPromocodeUsedInvoiceReport');

@@ -31,7 +31,7 @@ class PromocodeController extends Controller
         if (isset($request['restaurant_branch_slug'])) {
             $validatedData = \App\Helpers\RestaurantOrderHelper::validateOrderV3($request);
         } else {
-            $validatedData = \App\Helpers\ShopOrderHelper::validateOrderV3($request);
+            $validatedData = \App\Helpers\ShopOrderHelper::validateOrder($request);
         }
 
         if (gettype($validatedData) == 'string') {

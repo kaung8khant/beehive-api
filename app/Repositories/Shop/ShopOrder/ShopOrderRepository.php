@@ -64,6 +64,23 @@ class ShopOrderRepository extends BaseRepository implements ShopOrderRepositoryI
             ->get();
     }
 
+    public function getAllByCustomer()
+    {
+        return $this->model->where('customer_id', auth('customers')->user()->id)
+            ->orderBy('id', 'desc')
+            ->paginate(request('size'))
+            ->items();
+
+    }
+
+    public function findByCustomer($slug)
+    {
+        return $this->model->with('contact')
+            ->where('customer_id', auth('customers')->user()->id)
+            ->where('slug', $slug)
+            ->firstOrFail();
+    }
+
     public function getShopIdBySlug($slug)
     {
         return Shop::where('slug', $slug)->firstOrFail()->id;
