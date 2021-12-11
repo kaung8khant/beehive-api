@@ -37,7 +37,13 @@ class ShopCategoryController extends Controller
             $shopCategory = $this->shopCategoryRepository->create($request->validated())->refresh()->load(['shopMainCategory']);
             return response()->json($shopCategory, 201);
         } catch (QueryException $e) {
-            return ResponseHelper::generateValidateError('code', 'The code has already been taken for this product type.');
+            if (strpos($e->getMessage(), 'shop_categories_shop_main_category_id_code_unique') !== false) {
+                return ResponseHelper::generateValidateError('code', 'The code has already been taken for this product type.');
+            }
+
+            if (strpos($e->getMessage(), 'shop_categories_shop_main_category_id_name_unique') !== false) {
+                return ResponseHelper::generateValidateError('name', 'The name has already been taken for this product type.');
+            }
         }
     }
 
@@ -46,7 +52,13 @@ class ShopCategoryController extends Controller
         try {
             return $this->shopCategoryRepository->update($slug, $request->validated());
         } catch (QueryException $e) {
-            return ResponseHelper::generateValidateError('code', 'The code has already been taken for this product type.');
+            if (strpos($e->getMessage(), 'shop_categories_shop_main_category_id_code_unique') !== false) {
+                return ResponseHelper::generateValidateError('code', 'The code has already been taken for this product type.');
+            }
+
+            if (strpos($e->getMessage(), 'shop_categories_shop_main_category_id_name_unique') !== false) {
+                return ResponseHelper::generateValidateError('name', 'The name has already been taken for this product type.');
+            }
         }
     }
 
