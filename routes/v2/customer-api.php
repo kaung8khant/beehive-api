@@ -79,6 +79,8 @@ Route::group(['prefix' => 'v2/user', 'middleware' => ['cors', 'json.response']],
         /* Restaurant */
 
         /* Shop */
+        Route::resource('shop-orders', 'Customer\ShopOrderController', ['as' => 'customer']);
+        Route::put('shop-orders/cancel/{slug}', 'Customer\ShopOrderController@cancelOrder');
         Route::post('shop/ratings', 'Customer\ShopRatingController@store');
         /* Shop */
 
