@@ -33,10 +33,7 @@ class ShopSubCategoryUpdateRequest extends FormRequest
     {
         return [
             'code' => 'required|size:2',
-            'name' => [
-                'required',
-                Rule::unique('shop_sub_categories')->ignore($this->route('shopSubCategory'), 'slug'),
-            ],
+            'name' => 'required',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
             'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
         ];
