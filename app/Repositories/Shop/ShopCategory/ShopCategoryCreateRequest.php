@@ -34,7 +34,7 @@ class ShopCategoryCreateRequest extends FormRequest
         return [
             'code' => 'required|size:3',
             'slug' => 'required|unique:shop_categories',
-            'name' => 'required|unique:shop_categories',
+            'name' => 'required',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
             'shop_main_category_slug' => 'nullable|exists:App\Models\ShopMainCategory,slug',
         ];
