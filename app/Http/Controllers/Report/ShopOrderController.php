@@ -96,6 +96,19 @@ class ShopOrderController extends Controller
         return $this->generateProductSaleReport($shopOrderItems);
     }
 
+
+    public function getShopCategorySaleReport(Request $request)
+    {
+        $shopOrderItems = ShopOrderItem::with('product')->whereHas('vendor.shopOrder', function ($query) use ($request) {
+            $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
+        })->get();
+
+        $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
+            return $item->product->shopCategory->id;
+        });
+        return $this->generateGroupSaleReport($groups);
+    }
+
     private function generateReport($shopOrders, $from = null, $to = null, $filterBy = null)
     {
         $data = [];
@@ -290,6 +303,62 @@ class ShopOrderController extends Controller
             'commission_ct_sum' => $commissionCtSum,
             'balance_sum' => $balanceSum,
             'promo_discount' => $promoDiscount,
+            'invoice' => $data,
+        ];
+
+        return $result;
+    }
+
+    private function generateGroupSaleReport($groups)
+    {
+        $data = [];
+        $amountSum = 0;
+        $totalAmountSum = 0;
+        $commissionSum = 0;
+        $commissionCtSum = 0;
+        $balanceSum = 0;
+
+        foreach ($groups as $key => $group) {
+            $amount = 0;
+            $commercialTax = 0;
+            $totalAmount = 0;
+            $commission = 0;
+            $commissionCt = 0;
+            $quantity = 0;
+
+            foreach ($group as $k => $item) {
+                $amount += ($item->amount * $item->quantity);
+                $commission += $item->commission;
+                $totalAmount += $item->total_amount;
+                $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
+                $quantity += $item->quantity;
+            }
+
+            $commissionCt += $commission * 0.05;
+            $amountSum += $amount;
+            $totalAmountSum += $totalAmount;
+            $commissionSum += $commission;
+            $commissionCtSum += $commissionCt;
+            $balance = $totalAmount - $commissionCt;
+            $balanceSum += $balance;
+            $data[] = [
+                'name' => $group[0]->product->shopCategory->name,
+                'quantity' => $quantity,
+                'revenue' => $amount,
+                'commercial_tax' => $commercialTax ? $commercialTax : 0,
+                'total_amount' => $totalAmount,
+                'commission' => $commission ? $commission : 0,
+                'commission_ct' => $commissionCt ? $commissionCt : 0,
+                'balance' => round($balance),
+            ];
+        }
+
+        $result = [
+            'revenue_sum' => $amountSum,
+            'total_amount_sum' => $totalAmountSum,
+            'commission_sum' => $commissionSum,
+            'commission_ct_sum' => $commissionCtSum,
+            'balance_sum' => $balanceSum,
             'invoice' => $data,
         ];
 

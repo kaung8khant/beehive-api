@@ -28,7 +28,11 @@ class BaseRepository implements BaseRepositoryInterface
     public function create(array $attributes)
     {
         $model = $this->model->create($attributes);
-        DataChanged::dispatch($this->user, 'create', $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
+
+        if (auth('users')->check()) {
+            DataChanged::dispatch($this->user, 'create', $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
+        }
+
         $this->updateImageIfExist($model->slug);
         return $model;
     }
@@ -37,7 +41,11 @@ class BaseRepository implements BaseRepositoryInterface
     {
         $model = $this->model->where('slug', $slug)->firstOrFail();
         $model->update($attributes);
-        DataChanged::dispatch($this->user, 'update', $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
+
+        if (auth('users')->check()) {
+            DataChanged::dispatch($this->user, 'update', $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
+        }
+
         $this->updateImageIfExist($model->slug);
         return $model;
     }
@@ -52,9 +60,11 @@ class BaseRepository implements BaseRepositoryInterface
             }
         }
 
-        DataChanged::dispatch($this->user, 'delete', $this->model->getTable(), $model->slug, request()->url(), 'success', $model);
-        $model->delete();
+        if (auth('users')->check()) {
+            DataChanged::dispatch($this->user, 'delete', $this->model->getTable(), $model->slug, request()->url(), 'success', $model);
+        }
 
+        $model->delete();
         return response()->json(['message' => 'Successfully deleted.'], 200);
     }
 
@@ -64,8 +74,10 @@ class BaseRepository implements BaseRepositoryInterface
         $attributes = ['is_enable' => !$model->is_enable];
         $model->update($attributes);
 
-        $status = $model->is_enable ? 'enable' : 'disable';
-        DataChanged::dispatch($this->user, $status, $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
+        if (auth('users')->check()) {
+            $status = $model->is_enable ? 'enable' : 'disable';
+            DataChanged::dispatch($this->user, $status, $this->model->getTable(), $model->slug, request()->url(), 'success', $attributes);
+        }
 
         return response()->json(['message' => 'Success.'], 200);
     }

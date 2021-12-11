@@ -9,7 +9,7 @@ Route::group([
 ], function () {
     Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
         Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'customer-v3-restaurant', 'except' => ['create', 'edit']]);
-        Route::resource('shop-orders', 'ShopOrderController', ['as' => 'customer-v3-shop', 'except' => ['create', 'edit']]);
+        Route::resource('shop-orders', 'Shop\ShopOrderController', ['as' => 'customer-v3-shop', 'except' => ['create', 'edit']]);
 
         Route::post('kbz/pay/{orderType}/{slug}', '\App\Http\Controllers\Payment\KbzPayController@pay');
         Route::post('cb/pay/{orderType}/{slug}', '\App\Http\Controllers\Payment\CbPayController@pay');
