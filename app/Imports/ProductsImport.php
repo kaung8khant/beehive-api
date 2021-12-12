@@ -42,7 +42,7 @@ class ProductsImport implements ToCollection, WithHeadingRow
             $validateRow = $row->toArray();
 
             $rules = [
-                'name' => 'required',
+                'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'price' => 'required|numeric|max:99999999',
                 'vendor_price' => 'required|numeric|max:99999999',

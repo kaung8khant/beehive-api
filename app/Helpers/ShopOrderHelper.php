@@ -40,7 +40,7 @@ trait ShopOrderHelper
 
     public static function getRules($customerSlug = false)
     {
-        return [
+        $rules = [
             'slug' => 'required|unique:shop_orders',
             'order_date' => 'nullable',
             'special_instruction' => 'nullable',
