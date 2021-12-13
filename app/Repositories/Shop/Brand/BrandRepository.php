@@ -3,6 +3,7 @@
 namespace App\Repositories\Shop\Brand;
 
 use App\Events\DataChanged;
+use App\Exceptions\ForbiddenException;
 use App\Models\Brand;
 use App\Models\Product;
 use App\Repositories\BaseRepository;
@@ -28,7 +29,7 @@ class BrandRepository extends BaseRepository implements BrandRepositoryInterface
         $model = $this->model->where('slug', $slug)->firstOrFail();
 
         if ($this->checkProducts($slug) && $model->code && $model->code !== $attributes['code']) {
-            return response()->json(['message' => 'Cannot update brand code if there is a linked product.'], 403);
+            throw new ForbiddenException('Cannot update brand code if there is a linked product.');
         }
 
         $model->update($attributes);
