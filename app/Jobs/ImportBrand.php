@@ -67,7 +67,7 @@ class ImportBrand implements ShouldQueue, ShouldBeUnique
 
             $brand = null;
 
-            $brand = Brand::where('code', $row['code'])->first();
+            $brand = Brand::where('name', $row['name'])->first();
             if ($brand) {
                 $rules['name'][1] = Rule::unique('brands')->ignore($brand->id);
                 $rules['code'][1] = Rule::unique('brands')->ignore($brand->id);
