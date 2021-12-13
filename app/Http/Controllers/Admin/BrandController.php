@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\ForbiddenException;
 use App\Helpers\CollectionHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
@@ -47,6 +48,8 @@ class BrandController extends Controller
             return $this->brandRepository->update($slug, $request->validated());
         } catch (QueryException $e) {
             return ResponseHelper::generateValidateError('code', 'The code has already been taken.');
+        } catch (ForbiddenException $e) {
+            return ResponseHelper::generateResponse($e->getMessage(), 403, true);
         }
     }
 
