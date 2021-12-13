@@ -80,9 +80,9 @@ class ShopSubCategoryController extends Controller
 
     private function optimizeSubCategories($subCategories)
     {
-        $subCategories->load(['shopCategory' => function ($query) {
-            $query->select('id', 'slug', 'name')->get();
-        }]);
+        $subCategories->load([
+            'shopCategory' => fn($query) => $query->select('id', 'slug', 'name')->get(),
+        ]);
 
         foreach ($subCategories as $subCategory) {
             $subCategory->makeHidden(['created_by', 'updated_by']);

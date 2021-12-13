@@ -448,6 +448,8 @@ class RestaurantCartController extends CartController
             return [
                 'slug' => $cartItem->menu['slug'],
                 'quantity' => $cartItem->menu['quantity'],
+                'amount' => $cartItem->menu['amount'],
+                'discount' => $cartItem->menu['discount'],
                 'variant_slug' => $cartItem->menu['variant']['slug'],
                 'topping_slugs' => collect($cartItem->menu['toppings'])->map(function ($value) {
                     $value['value'] = $value['quantity'];
