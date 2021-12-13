@@ -30,4 +30,26 @@ class PromocodeController extends Controller
 
         return $this->generateResponse($result, 200);
     }
+    public function validatePromoCode(Request $request)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        if (isset($request['restaurant_branch_slug'])) {
+            $validatedData = \App\Helpers\RestaurantOrderHelper::validateOrderV3($request);
+        } else {
+            $validatedData = \App\Helpers\ShopOrderHelper::validateOrder($request);
+        }
+
+        if (gettype($validatedData) == 'string') {
+            return $this->generateResponse($validatedData, 422, true);
+        }
+
+        if ($validatedData['promo_code']) {
+            $type = isset($request['restaurant_branch_slug']) ? 'restaurant' : 'shop';
+
+            $validatedData = $this->getPromoData($validatedData, $type);
+        }
+
+        return $this->generateResponse($validatedData, 200);
+    }
 }
