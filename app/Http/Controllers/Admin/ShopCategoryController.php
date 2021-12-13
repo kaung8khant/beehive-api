@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\ForbiddenException;
 use App\Helpers\CollectionHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
@@ -59,6 +60,8 @@ class ShopCategoryController extends Controller
             if (strpos($e->getMessage(), 'shop_categories_shop_main_category_id_name_unique') !== false) {
                 return ResponseHelper::generateValidateError('name', 'The name has already been taken for this product type.');
             }
+        } catch (ForbiddenException $e) {
+            return ResponseHelper::generateResponse($e->getMessage(), 403, true);
         }
     }
 

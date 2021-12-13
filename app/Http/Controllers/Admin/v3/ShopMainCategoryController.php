@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\v3;
 
+use App\Exceptions\ForbiddenException;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Repositories\Shop\ShopMainCategory\ShopMainCategoryCreateRequest;
@@ -44,6 +45,8 @@ class ShopMainCategoryController extends Controller
             return $this->mainCategoryRepository->update($slug, $request->validated());
         } catch (QueryException $e) {
             return ResponseHelper::generateValidateError('code', 'The code has already been taken.');
+        } catch (ForbiddenException $e) {
+            return ResponseHelper::generateResponse($e->getMessage(), 403, true);
         }
     }
 
