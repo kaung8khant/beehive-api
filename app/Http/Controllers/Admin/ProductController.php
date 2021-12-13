@@ -114,23 +114,14 @@ class ProductController extends Controller
     private function optimizeProducts($products)
     {
         $products->load([
-            'shop' => function ($query) {
-                $query->select('id', 'slug', 'name');
-            },
-            'shopCategory' => function ($query) {
-                $query->select('id', 'shop_main_category_id', 'code', 'slug', 'name');
-            },
-            'shopCategory.shopMainCategory' => function ($query) {
-                $query->select('id', 'code', 'slug', 'name');
-            },
-            'brand' => function ($query) {
-                $query->select('id', 'code', 'slug', 'name');
-            },
-            'productVariants' => function ($query) {
-                $query->select('product_id', 'slug', 'variant', 'price', 'discount', 'vendor_price', 'tax')
-                    ->where('is_enable', 1)
-                    ->orderBy('price', 'asc');
-            },
+            'shop' => fn($query) => $query->select('id', 'slug', 'name'),
+            'shopCategory' => fn($query) => $query->select('id', 'shop_main_category_id', 'code', 'slug', 'name'),
+            'shopCategory.shopMainCategory' => fn($query) => $query->select('id', 'code', 'slug', 'name'),
+            'brand' => fn($query) => $query->select('id', 'code', 'slug', 'name'),
+            'productVariants' => fn($query) => $query
+                ->select('product_id', 'slug', 'variant', 'price', 'discount', 'vendor_price', 'tax')
+                ->where('is_enable', 1)
+                ->orderBy('price', 'asc'),
         ]);
 
         foreach ($products as $product) {

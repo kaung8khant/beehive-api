@@ -2,8 +2,6 @@
 
 namespace App\Rules;
 
-use App\Models\Menu as MenuModel;
-
 class Menu implements Rule
 {
     private $promocode;
@@ -17,12 +15,9 @@ class Menu implements Rule
 
     public function validate($items, $subTotal, $customer, $value): bool
     {
-        Log::info('Menu rule');
         if ($this->usage == 'restaurant') {
             foreach ($items as $item) {
                 if (is_array($value)) {
-                    Log::info($value);
-                    Log::info($item['slug']);
                     if (in_array($item['slug'], $value)) {
                         return true;
                     }

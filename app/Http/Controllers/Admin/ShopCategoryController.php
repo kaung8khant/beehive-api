@@ -82,9 +82,9 @@ class ShopCategoryController extends Controller
     {
         $shopCategories->makeHidden(['created_by', 'updated_by']);
 
-        $shopCategories->load(['shopMainCategory' => function ($query) {
-            $query->exclude(['created_by', 'updated_by']);
-        }]);
+        $shopCategories->load([
+            'shopMainCategory' => fn($query) => $query->exclude(['created_by', 'updated_by']),
+        ]);
     }
 
     public function updateSearchIndex($slug)
