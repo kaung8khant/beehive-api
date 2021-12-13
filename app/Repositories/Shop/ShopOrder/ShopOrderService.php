@@ -186,7 +186,7 @@ class ShopOrderService
     {
         $data['order_status'] = $orderStatus;
 
-        if ($orderStatus === 'pickUp' && !$order->invoice_no) {
+        if (in_array($orderStatus, ['pickUp', 'onRoute', 'delivered']) && !$order->invoice_no) {
             $data['invoice_no'] = $this->shopOrderRepository->getMaxInvoiceNo() + 1;
         }
 
