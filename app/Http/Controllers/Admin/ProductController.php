@@ -26,7 +26,7 @@ class ProductController extends Controller
 
     public function show($slug)
     {
-        return $this->productRepository->find($slug)->load(['shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants']);
+        return $this->productRepository->find($slug)->load(['shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariants']);
     }
 
     public function store(ProductCreateRequest $request)
@@ -118,10 +118,13 @@ class ProductController extends Controller
                 $query->select('id', 'slug', 'name');
             },
             'shopCategory' => function ($query) {
-                $query->select('id', 'slug', 'name');
+                $query->select('id', 'shop_main_category_id', 'code', 'slug', 'name');
+            },
+            'shopCategory.shopMainCategory' => function ($query) {
+                $query->select('id', 'code', 'slug', 'name');
             },
             'brand' => function ($query) {
-                $query->select('id', 'slug', 'name');
+                $query->select('id', 'code', 'slug', 'name');
             },
             'productVariants' => function ($query) {
                 $query->select('product_id', 'slug', 'variant', 'price', 'discount', 'vendor_price', 'tax')
@@ -134,6 +137,10 @@ class ProductController extends Controller
             $product->makeHidden(['description', 'created_by', 'updated_by', 'covers']);
             $product->shop->setAppends([]);
             $product->shopCategory->setAppends([]);
+
+            if ($product->shopCategory->shopMainCategory) {
+                $product->shopCategory->shopMainCategory->setAppends([]);
+            }
 
             if ($product->brand) {
                 $product->brand->setAppends([]);
