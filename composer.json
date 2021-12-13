@@ -10,13 +10,13 @@
     "require": {
         "php": "^7.3|^8.0",
         "algolia/scout-extended": "^1.20",
+        "beehive/jwt-auth": "*",
         "doctrine/dbal": "^3.0",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0",
         "intervention/image": "^2.5",
-        "kreait/firebase-php": "^5.25",
-        "kreait/laravel-firebase": "^3.1",
+        "kreait/laravel-firebase": "^3.4",
         "ladumor/one-signal": "^0.3.5",
         "laravel/framework": "^8.12",
         "laravel/helpers": "^1.4",
@@ -27,8 +27,7 @@
         "niklasravnsborg/laravel-pdf": "^4.1",
         "predis/predis": "^1.1",
         "propaganistas/laravel-phone": "^4.3",
-        "sentry/sentry-laravel": "^2.4",
-        "tymon/jwt-auth": "^1.0"
+        "sentry/sentry-laravel": "^2.4"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
@@ -38,6 +37,15 @@
         "nunomaduro/collision": "^5.0",
         "phpunit/phpunit": "^9.3.3"
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/beehive/jwt-auth",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
