@@ -21,8 +21,6 @@ class Menu implements Rule
         if ($this->usage == 'restaurant') {
             foreach ($items as $item) {
                 if (is_array($value)) {
-                    Log::info($value);
-                    Log::info($item['slug']);
                     if (in_array($item['slug'], $value)) {
                         return true;
                     }
