@@ -42,8 +42,6 @@ class ProductController extends Controller
 
     public function destroy($slug)
     {
-        return response()->json(['message' => 'Permission denied.'], 403);
-
         return $this->productRepository->delete($slug);
     }
 
