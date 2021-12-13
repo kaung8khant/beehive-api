@@ -244,6 +244,8 @@ class ShopCartController extends CartController
             return [
                 'slug' => $cartItem->product['slug'],
                 'quantity' => $cartItem->product['quantity'],
+                'amount' => $cartItem->product['amount'],
+                'discount' => $cartItem->product['discount'],
                 'variant_slug' => $cartItem->product['variant']['slug'],
             ];
         })->toArray();
