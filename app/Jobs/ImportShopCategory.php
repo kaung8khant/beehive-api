@@ -90,7 +90,6 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
                 if ($this->getMainCategoryByCode($row['product_type_code'])) {
                     $shopCategoryData['shop_main_category_id'] =$this->getMainCategoryByCode($row['product_type_code'])->id;
                 }
-
                 if (!$shopCategory) {
                     try {
                         $shopCategory = ShopCategory::create($shopCategoryData);
@@ -100,21 +99,11 @@ class ImportShopCategory implements ShouldQueue, ShouldBeUnique
                         $shopCategory->update($shopCategoryData);
                     }
                 } else {
-                    try {
-                        $shopCategoryData['slug'] = $shopCategory->slug;
-                        if ($this->checkProducts($shopCategory->id) && $shopCategory->code && $shopCategory->code !== $shopCategoryData['code']) {
-                            return response()->json(['message' => 'Cannot update category code if there is a linked product.'], 403);
-                        }
-                        $shopCategory->update($shopCategoryData);
-                    } catch (QueryException $e) {
-                        if (strpos($e->getMessage(), 'shop_categories_shop_main_category_id_code_unique') !== false) {
-                            return ResponseHelper::generateValidateError('code', 'The code has already been taken for this product type.');
-                        }
-
-                        if (strpos($e->getMessage(), 'shop_categories_shop_main_category_id_name_unique') !== false) {
-                            return ResponseHelper::generateValidateError('name', 'The name has already been taken for this product type.');
-                        }
+                    $shopCategoryData['slug'] = $shopCategory->slug;
+                    if ($this->checkProducts($shopCategory->id) && $shopCategory->code && $shopCategory->code !== $shopCategoryData['code']) {
+                        return response()->json(['message' => 'Cannot update category code if there is a linked product.'], 403);
                     }
+                    $shopCategory->update($shopCategoryData);
                 }
             }
         }

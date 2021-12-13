@@ -64,13 +64,12 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
             $rules = [
                 'code' => ['required', 'size:2'],
                 'name' => ['required', 'unique:shop_sub_categories'],
-                'shop_category_slug' => ['required', 'exists:App\Models\ShopCategory,slug'],
-            ];
+                'shop_category_code' => ['required', 'exists:App\Models\ShopCategory,code']];
 
             $shopSubCategory = null;
 
-            if (isset($row['id'])) {
-                $shopSubCategory = ShopSubCategory::where('slug', $row['id'])->first();
+            $shopSubCategory = ShopSubCategory::where('name', $row['name'])->first();
+            if ($shopSubCategory) {
                 $rules['name'][1] = Rule::unique('shop_sub_categories')->ignore($shopSubCategory->id);
             }
 
@@ -84,9 +83,8 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
                     'slug' => StringHelper::generateUniqueSlug(),
                     'code' => $row['code'],
                     'name' => $row['name'],
-                    'shop_category_id' => $this->getShopCategoryIdBySlug($row['shop_category_slug']),
+                    'shop_category_id' => $this->getShopCategoryIdByCode($row['shop_category_code']),
                 ];
-
                 if (!$shopSubCategory) {
                     try {
                         $shopSubCategory = ShopSubCategory::create($shopSubCategoryData);
@@ -120,8 +118,8 @@ class ImportShopSubCategory implements ShouldQueue, ShouldBeUnique
             ]);
         }
     }
-    public function getShopCategoryIdBySlug($slug)
+    public function getShopCategoryIdByCode($code)
     {
-        return ShopCategory::where('slug', $slug)->firstOrFail()->id;
+        return ShopCategory::where('code', $code)->firstOrFail()->id;
     }
 }
