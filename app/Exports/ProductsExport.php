@@ -52,11 +52,11 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             Shop::where('id', $productVatiant->product->shop_id)->value('name'),
                 Shop::where('id', $productVatiant->product->shop_id)->value('slug'),
                 ShopCategory::where('id', $productVatiant->product->shop_category_id)->value('name'),
-                ShopCategory::where('id', $productVatiant->product->shop_category_id)->value('slug'),
+                ShopCategory::where('id', $productVatiant->product->shop_category_id)->value('code'),
                 ShopSubCategory::where('id', $productVatiant->product->shop_sub_category_id)->value('name'),
-                ShopSubCategory::where('id', $productVatiant->product->shop_sub_category_id)->value('slug'),
+                ShopSubCategory::where('id', $productVatiant->product->shop_sub_category_id)->value('code'),
                 Brand::where('id', $productVatiant->product->brand_id)->value('name'),
-                Brand::where('id', $productVatiant->product->brand_id)->value('slug'),
+                Brand::where('id', $productVatiant->product->brand_id)->value('code'),
         ];
     }
 
@@ -78,11 +78,11 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'shop',
             'shop_slug',
             'shop_category',
-            'shop_category_slug',
+            'shop_category_code',
             'shop_sub_category',
-            'shop_sub_category_slug',
+            'shop_sub_category_code',
             'brand',
-            'brand_slug',
+            'brand_code',
         ];
     }
 

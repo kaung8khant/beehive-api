@@ -73,9 +73,9 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                 'discount' => 'required|numeric',
                 'is_enable' => 'required|boolean',
                 'shop_slug' => 'required|exists:App\Models\Shop,slug',
-                'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
-                'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
-                'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
+                'shop_category_code' => 'required|exists:App\Models\ShopCategory,code',
+                'shop_sub_category_code' => 'nullable|exists:App\Models\ShopSubCategory,code',
+                'brand_code' => 'nullable|exists:App\Models\Brand,code',
             ];
 
             $validator = Validator::make(
@@ -99,9 +99,9 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                     'discount' => $row['discount'],
                     'is_enable' => $row['is_enable'],
                     'shop_id' => Shop::where('slug', $row['shop_slug'])->value('id'),
-                    'shop_category_id' => ShopCategory::where('slug', $row['shop_category_slug'])->value('id'),
-                    'shop_sub_category_id' => ShopSubCategory::where('slug', $row['shop_sub_category_slug'])->value('id'),
-                    'brand_id' => Brand::where('slug', $row['brand_slug'])->value('id'),
+                    'shop_category_id' => ShopCategory::where('code', $row['shop_category_code'])->value('id'),
+                    'shop_sub_category_id' => ShopSubCategory::where('code', $row['shop_sub_category_code'])->value('id'),
+                    'brand_id' => Brand::where('code', $row['brand_code'])->value('id'),
                     'variants' => [],
                     'created_by' => $this->userId,
                     'updated_by' => $this->userId,

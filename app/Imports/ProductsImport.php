@@ -50,9 +50,9 @@ class ProductsImport implements ToCollection, WithHeadingRow
                 'discount' => 'required|numeric',
                 'is_enable' => 'required|boolean',
                 'shop_slug' => 'required|exists:App\Models\Shop,slug',
-                'shop_category_slug' => 'required|exists:App\Models\ShopCategory,slug',
-                'shop_sub_category_slug' => 'nullable|exists:App\Models\ShopSubCategory,slug',
-                'brand_slug' => 'nullable|exists:App\Models\Brand,slug',
+                'shop_category_code' => 'required|exists:App\Models\ShopCategory,code',
+                'shop_sub_category_code' => 'nullable|exists:App\Models\ShopSubCategory,code',
+                'brand_code' => 'nullable|exists:App\Models\Brand,code',
             ];
 
             $validator = Validator::make(
@@ -71,8 +71,8 @@ class ProductsImport implements ToCollection, WithHeadingRow
                     'discount' => $row['discount'],
                     'is_enable' => $row['is_enable'],
                     'shop_slug' => $row['shop_slug'],
-                    'shop_category_slug' => $row['shop_category_slug'],
-                    'shop_sub_category_slug' => $row['shop_sub_category_slug'],
+                    'shop_category_code' => $row['shop_category_code'],
+                    'shop_sub_category_code' => $row['shop_sub_category_code'],
                     'errors' => $validator->errors(),
                 ];
             }
