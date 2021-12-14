@@ -384,6 +384,7 @@ class RestaurantCartController extends CartController
 
         $request['promo_code'] = $menuCart->promocode;
         $request['order_items'] = $this->getOrderItems($menuCart->menuCartItems);
+        $request['customer_slug'] = auth('customers')->user()->slug;
 
         $order = new RestaurantOrderController($this->messageService, $this->paymentService);
         $result = $order->store($request);
