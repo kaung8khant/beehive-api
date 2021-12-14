@@ -37,7 +37,6 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     public function map($productVatiant): array
     {
         return [
-            $productVatiant->product->slug,
             $productVatiant->product->code,
             $productVatiant->slug,
             $productVatiant->product->name,
@@ -63,7 +62,6 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     public function headings(): array
     {
         return [
-            'id',
             'code',
             'product_variant_slug',
             'name',
@@ -117,12 +115,12 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     public function columnWidths(): array
     {
         return [
-            'A' => 15,
-            'B' => 15,
+            'A' => 20,
+            'B' => 20,
             'C' => 30,
-            'D' => 45,
-            'E' => 45,
-            'F' => 10,
+            'D' => 30,
+            'E' => 10,
+            'F' => 30,
             'G' => 20,
             'H' => 10,
             'I' => 25,
