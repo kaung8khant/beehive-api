@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Shop;
 use App\Models\ShopCategory;
+use App\Models\ShopMainCategory;
 use App\Models\ShopSubCategory;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -73,6 +74,7 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                 'discount' => 'required|numeric',
                 'is_enable' => 'required|boolean',
                 'shop_slug' => 'required|exists:App\Models\Shop,slug',
+                'product_type_code' => 'required|exists:App\Models\ShopMainCategory,code',
                 'shop_category_code' => 'required|exists:App\Models\ShopCategory,code',
                 'shop_sub_category_code' => 'nullable|exists:App\Models\ShopSubCategory,code',
                 'brand_code' => 'nullable|exists:App\Models\Brand,code',
@@ -90,8 +92,12 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                     $productVariant = ProductVariant::where('slug', $row['product_variant_slug'])->first();
                 }
 
+                $shopMainCategoryId = ShopMainCategory::where('code', $row['product_type_code'])->value('id');
+                $shopCategoryId = ShopCategory::where('code', $row['shop_category_code'])->where('shop_main_category_id', $shopMainCategoryId)->value('id');
+                $shopSubCategoryId = ShopSubCategory::where('code', $row['shop_sub_category_code'])->where('shop_category_id', $shopCategoryId)->value('id');
+
                 $productData = [
-                    'slug' => StringHelper::generateUniqueSlug(),
+                    'slug' => StringHelper::generateUniqueSlugWithTable('products'),
                     'name' => $row['name'],
                     'description' => $row['description'],
                     'price' => $row['price'],
@@ -99,8 +105,8 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                     'discount' => $row['discount'],
                     'is_enable' => $row['is_enable'],
                     'shop_id' => Shop::where('slug', $row['shop_slug'])->value('id'),
-                    'shop_category_id' => ShopCategory::where('code', $row['shop_category_code'])->value('id'),
-                    'shop_sub_category_id' => ShopSubCategory::where('code', $row['shop_sub_category_code'])->value('id'),
+                    'shop_category_id' => $shopCategoryId,
+                    'shop_sub_category_id' => $shopSubCategoryId,
                     'brand_id' => Brand::where('code', $row['brand_code'])->value('id'),
                     'variants' => [],
                     'created_by' => $this->userId,
@@ -109,22 +115,22 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
 
                 if (!$productVariant) {
                     $product = Product::create($productData);
-                    $standardProductVariant = [
+
+                    ProductVariant::create([
                         'product_id' => $product->id,
-                        'slug' => StringHelper::generateUniqueSlug(),
+                        'slug' => StringHelper::generateUniqueSlugWithTable('product_variants'),
                         'variant' => json_decode('[{"name":"default","value":"Standard"}]'),
                         'price' => $row['price'],
                         'vendor_price' => $row['vendor_price'],
                         'tax' => $row['tax'],
                         'discount' => $row['discount'],
-                    ];
-                    ProductVariant::create($standardProductVariant);
+                    ]);
                 } else {
                     $productData['slug'] = $productVariant->product->slug;
                     $productData['variants'] = $productVariant->product->variants;
                     $productVariant->product->update($productData);
 
-                    $productVariantData = [
+                    $productVariant->update([
                         'product_id' => $productVariant->product->id,
                         'slug' => $row['product_variant_slug'],
                         'price' => $row['price'],
@@ -132,9 +138,7 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                         'tax' => $row['tax'],
                         'is_enable' => isset($row['variant_is_enable']) ? $row['variant_is_enable'] : '1',
                         'discount' => $row['discount'],
-                    ];
-
-                    $productVariant->update($productVariantData);
+                    ]);
                 }
             }
         }
