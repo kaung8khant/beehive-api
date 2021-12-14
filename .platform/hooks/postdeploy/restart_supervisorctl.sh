@@ -10,7 +10,7 @@
 
 sudo supervisorctl restart all
 
-# /usr/bin/composer.phar dump-autoload --optimize
+/usr/bin/composer.phar dump-autoload --optimize
 
 cd /var/app/current
 
