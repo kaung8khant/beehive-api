@@ -1,5 +1,5 @@
 {
-    "name": "beehive/jwt-auth",
+    "name": "tymon/jwt-auth",
     "description": "JSON Web Token Authentication for Laravel and Lumen",
     "keywords": [
         "auth",

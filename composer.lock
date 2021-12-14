@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7f3ad75cadfd5564f2e5fa27897519e5",
+    "content-hash": "25b03239f5e1260ee7679246138cfc08",
     "packages": [
         {
             "name": "algolia/algoliasearch-client-php",
@@ -269,16 +269,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.208.4",
+            "version": "3.208.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "46376c60570103b55d9440142356995bd6d37c39"
+                "reference": "58fa9d8b522b0afa260299179ff950c783ff0ee1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/46376c60570103b55d9440142356995bd6d37c39",
-                "reference": "46376c60570103b55d9440142356995bd6d37c39",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/58fa9d8b522b0afa260299179ff950c783ff0ee1",
+                "reference": "58fa9d8b522b0afa260299179ff950c783ff0ee1",
                 "shasum": ""
             },
             "require": {
@@ -354,102 +354,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.208.4"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.208.5"
             },
-            "time": "2021-12-09T19:19:02+00:00"
-        },
-        {
-            "name": "beehive/jwt-auth",
-            "version": "dev-develop",
-            "dist": {
-                "type": "path",
-                "url": "packages/beehive/jwt-auth",
-                "reference": "3dd604efd46e423b2fc12448db8a80c444fda9cd"
-            },
-            "require": {
-                "illuminate/auth": "^5.2|^6|^7|^8",
-                "illuminate/contracts": "^5.2|^6|^7|^8",
-                "illuminate/http": "^5.2|^6|^7|^8",
-                "illuminate/support": "^5.2|^6|^7|^8",
-                "lcobucci/jwt": "^3.4.6|^4.0.4|^4.1.5",
-                "namshi/jose": "^7.0",
-                "nesbot/carbon": "^1.0|^2.0",
-                "php": "^7.4|^8.0"
-            },
-            "require-dev": {
-                "illuminate/console": "^5.2|^6|^7|^8",
-                "illuminate/database": "^5.2|^6|^7|^8",
-                "illuminate/routing": "^5.2|^6|^7|^8",
-                "mockery/mockery": ">=0.9.9",
-                "phpunit/phpunit": "~4.8|~6.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-develop": "1.0-dev"
-                },
-                "laravel": {
-                    "aliases": {
-                        "JWTAuth": "Tymon\\JWTAuth\\Facades\\JWTAuth",
-                        "JWTFactory": "Tymon\\JWTAuth\\Facades\\JWTFactory"
-                    },
-                    "providers": [
-                        "Tymon\\JWTAuth\\Providers\\LaravelServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Tymon\\JWTAuth\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Tymon\\JWTAuth\\Test\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "phpunit --colors=always"
-                ],
-                "test:ci": [
-                    "composer test -- --verbose --coverage-text --coverage-clover=coverage.xml"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Sean Tymon",
-                    "email": "tymon148@gmail.com",
-                    "homepage": "https://tymon.xyz",
-                    "role": "Developer"
-                }
-            ],
-            "description": "JSON Web Token Authentication for Laravel and Lumen",
-            "homepage": "https://github.com/tymondesigns/jwt-auth",
-            "keywords": [
-                "auth",
-                "authentication",
-                "json web token",
-                "jwt",
-                "laravel"
-            ],
-            "support": {
-                "issues": "https://github.com/tymondesigns/jwt-auth/issues",
-                "source": "https://github.com/tymondesigns/jwt-auth"
-            },
-            "funding": [
-                {
-                    "type": "patreon",
-                    "url": "https://www.patreon.com/seantymon"
-                }
-            ],
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "time": "2021-12-13T20:17:56+00:00"
         },
         {
             "name": "brick/math",
@@ -10154,6 +10061,99 @@
             "time": "2021-12-08T09:12:39+00:00"
         },
         {
+            "name": "tymon/jwt-auth",
+            "version": "dev-develop",
+            "dist": {
+                "type": "path",
+                "url": "packages/tymon/jwt-auth",
+                "reference": "f80066a3abfa86e3093c79152fc4e911b4b04e7a"
+            },
+            "require": {
+                "illuminate/auth": "^5.2|^6|^7|^8",
+                "illuminate/contracts": "^5.2|^6|^7|^8",
+                "illuminate/http": "^5.2|^6|^7|^8",
+                "illuminate/support": "^5.2|^6|^7|^8",
+                "lcobucci/jwt": "^3.4.6|^4.0.4|^4.1.5",
+                "namshi/jose": "^7.0",
+                "nesbot/carbon": "^1.0|^2.0",
+                "php": "^7.4|^8.0"
+            },
+            "require-dev": {
+                "illuminate/console": "^5.2|^6|^7|^8",
+                "illuminate/database": "^5.2|^6|^7|^8",
+                "illuminate/routing": "^5.2|^6|^7|^8",
+                "mockery/mockery": ">=0.9.9",
+                "phpunit/phpunit": "~4.8|~6.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-develop": "1.0-dev"
+                },
+                "laravel": {
+                    "aliases": {
+                        "JWTAuth": "Tymon\\JWTAuth\\Facades\\JWTAuth",
+                        "JWTFactory": "Tymon\\JWTAuth\\Facades\\JWTFactory"
+                    },
+                    "providers": [
+                        "Tymon\\JWTAuth\\Providers\\LaravelServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Tymon\\JWTAuth\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Tymon\\JWTAuth\\Test\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit --colors=always"
+                ],
+                "test:ci": [
+                    "composer test -- --verbose --coverage-text --coverage-clover=coverage.xml"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sean Tymon",
+                    "email": "tymon148@gmail.com",
+                    "homepage": "https://tymon.xyz",
+                    "role": "Developer"
+                }
+            ],
+            "description": "JSON Web Token Authentication for Laravel and Lumen",
+            "homepage": "https://github.com/tymondesigns/jwt-auth",
+            "keywords": [
+                "auth",
+                "authentication",
+                "json web token",
+                "jwt",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/tymondesigns/jwt-auth/issues",
+                "source": "https://github.com/tymondesigns/jwt-auth"
+            },
+            "funding": [
+                {
+                    "type": "patreon",
+                    "url": "https://www.patreon.com/seantymon"
+                }
+            ],
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "vlucas/phpdotenv",
             "version": "v5.4.1",
             "source": {
@@ -12821,5 +12821,5 @@
         "php": "^7.3|^8.0"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.0.0"
 }
