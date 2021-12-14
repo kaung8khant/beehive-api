@@ -16,8 +16,6 @@ class ShopOrderStatus extends Model
     protected $hidden = [
         'id',
         'shop_order_vendor_id',
-        'created_at',
-        'updated_at',
         'pivot',
     ];
 
