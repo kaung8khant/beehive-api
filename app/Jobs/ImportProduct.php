@@ -86,7 +86,7 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
             if (!$validator->fails()) {
                 $productVariant = null;
 
-                if (isset($row['id'])) {
+                if (isset($row['code'])) {
                     $productVariant = ProductVariant::where('slug', $row['product_variant_slug'])->first();
                 }
 
