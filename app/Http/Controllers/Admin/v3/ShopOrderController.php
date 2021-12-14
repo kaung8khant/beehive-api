@@ -96,10 +96,10 @@ class ShopOrderController extends Controller
         return ResponseHelper::generateResponse($vendorOrders, 200);
     }
 
-    public function cancelOrderItem($orderSlug, $itemSlug)
+    public function cancelOrderItem($orderSlug, $itemId)
     {
         $shopOrder = $this->shopOrderRepository->find($orderSlug);
-        $shopOrderItem = $this->shopOrderRepository->findShopOrderItem($itemSlug);
+        $shopOrderItem = $this->shopOrderRepository->findShopOrderItem($itemId);
 
         $shopOrderItem->delete();
         $commission = 0;

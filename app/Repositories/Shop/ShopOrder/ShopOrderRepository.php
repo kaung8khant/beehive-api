@@ -81,9 +81,9 @@ class ShopOrderRepository extends BaseRepository implements ShopOrderRepositoryI
             ->firstOrFail();
     }
 
-    public function findShopOrderItem($slug)
+    public function findShopOrderItem($id)
     {
-        return ShopOrderItem::where('slug', $slug)->firstOrFail();
+        return ShopOrderItem::findOrFail($id);
     }
 
     public function getShopIdBySlug($slug)
