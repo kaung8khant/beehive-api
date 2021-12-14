@@ -108,7 +108,6 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'Q' => ['alignment' => ['horizontal' => 'center']],
             'R' => ['alignment' => ['horizontal' => 'center']],
             'S' => ['alignment' => ['horizontal' => 'center']],
-            'T' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
