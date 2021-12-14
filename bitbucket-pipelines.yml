@@ -64,7 +64,7 @@ pipelines:
                   BOOMSMS_API_KEY=${BOOMSMS_API_KEY}
                   FIREBASE_DATABASE_URL=${FIREBASE_DATABASE_URL}
                   SENTRY_LARAVEL_DSN=${SENTRY_LARAVEL_DSN}
-                  SENTRY_TRACES_SAMPLE_RATE=0.2
+                  SENTRY_TRACES_SAMPLE_RATE=0.1
                   APP_DEBUG=false
                   FILESYSTEM_DRIVER=s3
                   BUILD_NUMBER=${BITBUCKET_BUILD_NUMBER}

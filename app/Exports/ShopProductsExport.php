@@ -2,12 +2,9 @@
 
 namespace App\Exports;
 
-use App\Models\Brand;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Shop;
-use App\Models\ShopCategory;
-use App\Models\ShopSubCategory;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -28,7 +25,7 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
     {
         $shop = Shop::where('slug', $this->slug)->firstOrFail();
 
-        return ProductVariant::with(['product', 'product.shop', 'product.shopCategory', 'product.shopSubCategory', 'product.brand'])
+        return ProductVariant::with(['product', 'product.shop', 'product.shopCategory', 'product.shopCategory.shopMainCategory', 'product.shopSubCategory', 'product.brand'])
             ->whereHas('product', fn($query) => $query->where('shop_id', $shop->id));
     }
 
@@ -51,6 +48,8 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             $productVatiant->is_enable ? '1' : '0',
             $productVatiant->product->shop->slug,
             $productVatiant->product->shop->name,
+            $productVatiant->product->shopCategory->shopMainCategory ? $productVatiant->product->shopCategory->shopMainCategory->code : '',
+            $productVatiant->product->shopCategory->shopMainCategory ? $productVatiant->product->shopCategory->shopMainCategory->name : '',
             $productVatiant->product->shopCategory->code,
             $productVatiant->product->shopCategory->name,
             $productVatiant->product->shopSubCategory ? $productVatiant->product->shopSubCategory->code : '',
@@ -76,6 +75,8 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             'variant_is_enable',
             'shop_slug',
             'shop',
+            'product_type_code',
+            'product_type',
             'shop_category_code',
             'shop_category',
             'shop_sub_category_code',
@@ -109,6 +110,8 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             'Q' => ['alignment' => ['horizontal' => 'center']],
             'R' => ['alignment' => ['horizontal' => 'center']],
             'S' => ['alignment' => ['horizontal' => 'center']],
+            'T' => ['alignment' => ['horizontal' => 'center']],
+            'U' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -134,6 +137,8 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             'Q' => 25,
             'R' => 25,
             'S' => 25,
+            'T' => 25,
+            'U' => 25,
         ];
     }
 

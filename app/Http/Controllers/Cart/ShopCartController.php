@@ -288,6 +288,7 @@ class ShopCartController extends CartController
             'slug' => StringHelper::generateUniqueSlugWithTable('shop_orders'),
             'promo_code' => $productCart->promocode,
             'order_items' => $this->getOrderItems($productCart->productCartItems),
+            'customer_slug' => auth('customers')->user()->slug,
         ]);
 
         $order = $shopOrderService->store(request()->validate($rules));
