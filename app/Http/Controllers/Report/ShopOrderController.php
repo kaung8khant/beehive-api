@@ -125,19 +125,20 @@ class ShopOrderController extends Controller
         $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
             $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
         })->where('shop_id', $shop->id)->get();
+
         $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
             return $item->product_id . '-' . implode('-', array_map(function ($n) {
                 return $n['value'];
             }, $item->variant)) . '-' . $item->amount . '-' . $item->vendor_price . '-' . $item->discount;
         });
-        return $this->generateProductSaleReport($groups);
+        return $this->generateShopProductSaleReport($groups);
     }
 
     public function getShopCategorySaleReport(Request $request)
     {
         $shopOrderItems = ShopOrderItem::with('product')->whereHas('vendor.shopOrder', function ($query) use ($request) {
             $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
-        })->get();
+        })->has('product.shopCategory')->get();
 
         $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
             return $item->product->shopCategory->id;
@@ -157,7 +158,7 @@ class ShopOrderController extends Controller
     {
         $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
             $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
-        })->where('shop_id', $shop->id)->get();
+        })->has('product.shopCategory')->where('shop_id', $shop->id)->get();
 
         $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
             return $item->product->shopCategory->id;
@@ -328,7 +329,7 @@ class ShopOrderController extends Controller
                 'invoice_no' =>  $item->vendor->shopOrder->invoice_no,
                 'order_date' => Carbon::parse($item->vendor->shopOrder->order_date)->format('M d Y h:i a'),
                 'invoice_date' =>$item->vendor->shopOrder->invoice_date? Carbon::parse($item->vendor->shopOrder->invoice_date)->format('M d Y h:i a') :null,
-                'code' => $product->code,
+                'code' => $product ? $product->code:null,
                 'product_name' => $item->product_name,
                 'price' => $item->amount,
                 'shop' => $shop->name,
@@ -398,7 +399,8 @@ class ShopOrderController extends Controller
             $balance = $totalAmount - $commissionCt;
             $balanceSum += $balance;
             $data[] = [
-                'name' => $group[0]->product->shopCategory->name,
+                'name' =>$group[0]->product->shopCategory->name,
+                'product_name' =>$group[0]->product_name,
                 'quantity' => $quantity,
                 'revenue' => $amount,
                 'commercial_tax' => $commercialTax ? $commercialTax : 0,
@@ -460,7 +462,7 @@ class ShopOrderController extends Controller
             $product = Product::where('id', $group[0]->product_id)->first();
 
             $data[] = [
-                'code' => $product->code,
+                'code' => $product ? $product->code:null,
                 'product_name' => $group[0]->product_name,
                 'price' => $group[0]->amount,
                 'shop' => $shop->name,

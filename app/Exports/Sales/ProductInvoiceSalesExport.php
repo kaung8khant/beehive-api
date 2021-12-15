@@ -80,7 +80,7 @@ class ProductInvoiceSalesExport implements FromCollection, WithColumnFormatting,
                 $item->vendor->shopOrder->invoice_no,
                 Carbon::parse($item->vendor->shopOrder->order_date)->format('M d Y h:i a'),
                 $item->vendor->shopOrder->invoice_date? Carbon::parse($item->vendor->shopOrder->invoice_date)->format('M d Y h:i a') :'',
-                $product->code,
+                $product ? $product->code:null,
                 $item->product_name,
                 $shop->name,
                 implode(',', array_map(function ($n) {

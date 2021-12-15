@@ -2,6 +2,7 @@
 
 namespace App\Exports\Sales;
 
+use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopOrderItem;
 use Carbon\Carbon;
@@ -75,8 +76,12 @@ class ProductByShopSalesExport implements FromCollection, WithColumnFormatting, 
             $this->commissionSum += $commission;
             $this->commissionCtSum += $commissionCt;
             $this->balanceSum += $balance;
+
+            $product = Product::where('id', $group[0]->product_id)->first();
+
             return [
                 $this->key,
+                $product ? $product->code:null,
                 $group[0]->product_name,
                 implode(',', array_map(function ($n) {
                     return $n['value'];

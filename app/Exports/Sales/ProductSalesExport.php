@@ -2,6 +2,7 @@
 
 namespace App\Exports\Sales;
 
+use App\Models\Product;
 use App\Models\Shop;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
@@ -84,8 +85,11 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             $balance = $totalAmount - $commissionCt;
             $this->balanceSum += $balance;
             $this->key += 1;
+            $product = Product::where('id', $group[0]->product_id)->first();
+
             return [
                 $this->key,
+                $product ? $product->code:null,
                 $group[0]->product_name,
                 $shop->name,
                 implode(',', array_map(function ($n) {
@@ -121,6 +125,7 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             [],
             [
                 'no.',
+                'code',
                 'product',
                 'shop',
                 'variant',
@@ -155,6 +160,7 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             'L' => 15,
             'M' => 17,
             'N' => 20,
+            'O' => 20,
         ];
     }
 
@@ -167,6 +173,7 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             'B' => ['alignment' => ['horizontal' => 'center']],
             'C' => ['alignment' => ['horizontal' => 'center']],
             'D' => ['alignment' => ['horizontal' => 'center']],
+            'E' => ['alignment' => ['horizontal' => 'center']],
             2 => ['alignment' => ['horizontal' => 'left']],
             3 => ['alignment' => ['horizontal' => 'left']],
             4 => ['alignment' => ['horizontal' => 'left']],
@@ -177,7 +184,6 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
     public function columnFormats(): array
     {
         return [
-            'E' => '#,##0',
             'F' => '#,##0',
             'G' => '#,##0',
             'I' => '#,##0',
@@ -186,6 +192,7 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             'L' => '#,##0',
             'M' => '#,##0',
             'N' => '#,##0',
+            'O' => '#,##0',
         ];
     }
 
@@ -209,37 +216,37 @@ class ProductSalesExport implements FromCollection, WithColumnFormatting, WithCo
             AfterSheet::class => function (AfterSheet $event) {
                 $lastRow = count($this->result) + 8 + 1;
 
-                $event->sheet->getStyle(sprintf('H%d', $lastRow - 3))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('H%d', $lastRow - 2))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('J%d:N%d', $lastRow - 3, $lastRow - 3))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('J%d:N%d', $lastRow - 2, $lastRow - 2))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('J%d:N%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
-                $event->sheet->getStyle(sprintf('J%d:N%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('I%d', $lastRow - 3))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('I%d', $lastRow - 2))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('K%d:O%d', $lastRow - 3, $lastRow - 3))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('K%d:O%d', $lastRow - 2, $lastRow - 2))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('K%d:O%d', $lastRow - 1, $lastRow - 1))->getBorders()->getBottom()->setBorderStyle('thin');
+                $event->sheet->getStyle(sprintf('K%d:O%d', $lastRow, $lastRow))->getBorders()->getBottom()->setBorderStyle('thin');
 
-                $event->sheet->getStyle(sprintf('N%d', $lastRow - 2))->getFont()->setBold(true);
-                $event->sheet->getStyle(sprintf('J%d', $lastRow-1))->getFont()->setBold(true);
-                $event->sheet->getStyle(sprintf('J%d', $lastRow))->getFont()->setBold(true);
-                $event->sheet->getStyle(sprintf('J%d', $lastRow -1))->getAlignment()->setHorizontal('center');
-                $event->sheet->getStyle(sprintf('J%d', $lastRow))->getAlignment()->setHorizontal('center');
+                $event->sheet->getStyle(sprintf('O%d', $lastRow - 2))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('K%d', $lastRow-1))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('K%d', $lastRow))->getFont()->setBold(true);
+                $event->sheet->getStyle(sprintf('K%d', $lastRow -1))->getAlignment()->setHorizontal('center');
+                $event->sheet->getStyle(sprintf('K%d', $lastRow))->getAlignment()->setHorizontal('center');
 
-                $event->sheet->setCellValue(sprintf('H%d', $lastRow -2), $this->amountSum);
-                $event->sheet->setCellValue(sprintf('K%d', $lastRow-2), $this->totalAmountSum);
-                $event->sheet->setCellValue(sprintf('L%d', $lastRow-2), $this->commissionSum);
-                $event->sheet->setCellValue(sprintf('M%d', $lastRow-2), $this->commissionCtSum);
-                $event->sheet->setCellValue(sprintf('N%d', $lastRow-2), $this->balanceSum);
+                $event->sheet->setCellValue(sprintf('I%d', $lastRow -2), $this->amountSum);
+                $event->sheet->setCellValue(sprintf('L%d', $lastRow-2), $this->totalAmountSum);
+                $event->sheet->setCellValue(sprintf('M%d', $lastRow-2), $this->commissionSum);
+                $event->sheet->setCellValue(sprintf('N%d', $lastRow-2), $this->commissionCtSum);
+                $event->sheet->setCellValue(sprintf('O%d', $lastRow-2), $this->balanceSum);
 
-                $event->sheet->setCellValue(sprintf('J%d', $lastRow - 1), 'Promo Discount');
-                $event->sheet->setCellValue(sprintf('K%d', $lastRow - 1), $this->promoDiscount);
-                $event->sheet->setCellValue(sprintf('N%d', $lastRow - 1), $this->promoDiscount);
-                $event->sheet->setCellValue(sprintf('J%d', $lastRow), 'Net Amount');
-                $event->sheet->setCellValue(sprintf('K%d', $lastRow), $this->totalAmountSum - $this->promoDiscount);
-                $event->sheet->setCellValue(sprintf('N%d', $lastRow), $this->balanceSum - $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('K%d', $lastRow - 1), 'Promo Discount');
+                $event->sheet->setCellValue(sprintf('L%d', $lastRow - 1), $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('O%d', $lastRow - 1), $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('K%d', $lastRow), 'Net Amount');
+                $event->sheet->setCellValue(sprintf('L%d', $lastRow), $this->totalAmountSum - $this->promoDiscount);
+                $event->sheet->setCellValue(sprintf('O%d', $lastRow), $this->balanceSum - $this->promoDiscount);
 
                 $event->sheet->getStyle($lastRow - 2)->getNumberFormat()->setFormatCode('#,##0');
                 $event->sheet->getStyle($lastRow - 1)->getNumberFormat()->setFormatCode('#,##0');
                 $event->sheet->getStyle($lastRow)->getNumberFormat()->setFormatCode('#,##0');
-                $event->sheet->getStyle(sprintf('K%d', $lastRow - 2))->getNumberFormat()->setFormatCode('#,##0');
-                $event->sheet->getStyle(sprintf('K%d', $lastRow - 1))->getNumberFormat()->setFormatCode('#,##0');
+                $event->sheet->getStyle(sprintf('L%d', $lastRow - 2))->getNumberFormat()->setFormatCode('#,##0');
+                $event->sheet->getStyle(sprintf('L%d', $lastRow - 1))->getNumberFormat()->setFormatCode('#,##0');
 
                 $month = Carbon::parse($this->to)->format('F');
 

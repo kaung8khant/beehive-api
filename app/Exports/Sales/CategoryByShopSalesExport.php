@@ -45,7 +45,7 @@ class CategoryByShopSalesExport implements FromCollection, WithColumnFormatting,
 
         $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) {
             $query->whereBetween('order_date', [$this->from, $this->to]);
-        })->where('shop_id', $shop->id)->get();
+        })->has('product.shopCategory')->where('shop_id', $shop->id)->get();
 
         $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
             return $item->product->shopCategory->id;
