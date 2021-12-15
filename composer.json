@@ -15,7 +15,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0",
         "intervention/image": "^2.5",
-        "kreait/laravel-firebase": "^3.1",
+        "kreait/laravel-firebase": "^3.4",
         "ladumor/one-signal": "^0.3.5",
         "laravel/framework": "^8.12",
         "laravel/helpers": "^1.4",
@@ -27,7 +27,7 @@
         "predis/predis": "^1.1",
         "propaganistas/laravel-phone": "^4.3",
         "sentry/sentry-laravel": "^2.4",
-        "tymon/jwt-auth": "^1.0"
+        "tymon/jwt-auth": "*"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
@@ -37,9 +37,15 @@
         "nunomaduro/collision": "^5.0",
         "phpunit/phpunit": "^9.3.3"
     },
-    "replace": {
-        "lcobucci/jwt": "*"
-    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/tymon/jwt-auth",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",

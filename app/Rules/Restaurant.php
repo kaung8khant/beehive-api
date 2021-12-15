@@ -19,8 +19,13 @@ class Restaurant implements Rule
     {
         if ($this->usage == 'restaurant') {
             foreach ($items as $item) {
+
                 $menu = MenuModel::where('slug', $item['slug'])->with('restaurant')->firstOrFail();
-                if ($value === $menu->restaurant->slug) {
+                if (is_array($value)) {
+                    if (in_array($menu->restaurant->slug, $value)) {
+                        return true;
+                    }
+                } else if ($value === $menu->restaurant->slug) {
                     return true;
                 }
             }
@@ -32,7 +37,11 @@ class Restaurant implements Rule
     {
         if ($this->usage == "restaurant") {
             $menu = MenuModel::where('slug', $item['slug'])->with('restaurant')->firstOrFail();
-            if ($value == $menu->restaurant->slug) {
+            if (is_array($value)) {
+                if (in_array($menu->restaurant->slug, $value)) {
+                    return true;
+                }
+            } else if ($value === $menu->restaurant->slug) {
                 return true;
             }
         }

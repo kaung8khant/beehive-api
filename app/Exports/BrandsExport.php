@@ -23,7 +23,6 @@ class BrandsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, 
     public function map($brand): array
     {
         return [
-            $brand->slug,
             $brand->code,
             $brand->name,
         ];
@@ -32,7 +31,6 @@ class BrandsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, 
     public function headings(): array
     {
         return [
-            'id',
             'code',
             'name',
         ];
@@ -45,7 +43,6 @@ class BrandsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, 
             1 => ['font' => ['bold' => true]],
             'A' => ['alignment' => ['horizontal' => 'center']],
             'B' => ['alignment' => ['horizontal' => 'center']],
-            'C' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -54,7 +51,6 @@ class BrandsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, 
         return [
             'A' => 15,
             'B' => 15,
-            'C' => 40,
         ];
     }
 }

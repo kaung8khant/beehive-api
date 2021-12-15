@@ -27,7 +27,7 @@ class ProductCreateRequest extends FormRequest
     {
         return [
             'slug' => 'required|unique:products',
-            'name' => 'required|string',
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'nullable|numeric',
             'tax' => 'nullable|numeric',

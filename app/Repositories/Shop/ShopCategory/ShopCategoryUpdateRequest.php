@@ -33,10 +33,7 @@ class ShopCategoryUpdateRequest extends FormRequest
     {
         return [
             'code' => 'required|size:3',
-            'name' => [
-                'required',
-                Rule::unique('shop_categories')->ignore($this->route('shopCategory'), 'slug'),
-            ],
+            'name' => 'required',
             'image_slug' => 'nullable|exists:App\Models\File,slug',
             'shop_main_category_slug' => 'nullable|exists:App\Models\ShopMainCategory,slug',
         ];
