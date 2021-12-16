@@ -67,8 +67,6 @@ class ProductController extends Controller
 
     public function multipleDelete()
     {
-        return response()->json(['message' => 'Permission denied.'], 403);
-
         $validatedData = request()->validate([
             'slugs' => 'required|array',
             'slugs.*' => 'required|exists:App\Models\Product,slug',
