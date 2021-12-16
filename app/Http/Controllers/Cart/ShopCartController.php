@@ -270,7 +270,7 @@ class ShopCartController extends CartController
 
     public function checkout(ShopOrderService $shopOrderService)
     {
-        $productCart = ProductCart::with('productCartItems')->where('customer_id', $this->customer->id)->first();
+        $productCart = ProductCart::with('productCartItems')->where('customer_id', auth('customers')->user()->id)->first();
 
         if (!$productCart || !isset($productCart->productCartItems) || $productCart->productCartItems->count() === 0) {
             return $this->generateResponse($this->resMes['shop_cart']['empty'], 400, true);
