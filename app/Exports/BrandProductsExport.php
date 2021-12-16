@@ -26,9 +26,8 @@ class BrandProductsExport implements FromQuery, WithHeadings, WithMapping, WithS
     {
         $brand = Brand::where('slug', $this->params)->firstOrFail();
 
-        return  ProductVariant::with("product")->whereHas('product', function ($q) use ($brand) {
-            $q->where('brand_id', $brand->id);
-        });
+        return ProductVariant::with(['product'])
+            ->whereHas('product', fn($q) => $q->where('brand_id', $brand->id));
     }
 
     public function stringifyVariant($variants)
