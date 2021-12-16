@@ -30,6 +30,7 @@ class ShopOrderRepository extends BaseRepository implements ShopOrderRepositoryI
             ->whereBetween('order_date', array(request('from'), request('to')))
             ->where(function ($query) {
                 $query->where('id', ltrim(ltrim(request('filter'), 'BHS'), '0'))
+                    ->orWhere('invoice_no', ltrim(ltrim(request('filter'), 'INS'), '0'))
                     ->orWhereHas('contact', function ($q) {
                         $q->where('phone_number', request('filter'))
                             ->orWhere('customer_name', 'LIKE', '%' . request('filter') . '%');
@@ -70,7 +71,6 @@ class ShopOrderRepository extends BaseRepository implements ShopOrderRepositoryI
             ->orderBy('id', 'desc')
             ->paginate(request('size'))
             ->items();
-
     }
 
     public function findByCustomer($slug)
