@@ -58,7 +58,7 @@ class ShopOrderController extends Controller
         return $this->generateShopSaleReport($shopOrderVendors, $promoDiscount);
     }
 
-    public function getProductSaleReport(Request $request)
+    public function getProductSaleInvoiceReport(Request $request)
     {
         $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
             $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
@@ -82,10 +82,10 @@ class ShopOrderController extends Controller
         return $this->generateProductSaleReport($shopOrderItems, $promoDiscount);
     }
 
-    public function getShopProductSaleReport(Request $request, Shop $shop)
+    public function getProductByShopSaleInvoiceReport(Request $request, Shop $shop)
     {
         $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
-            $query->whereBetween('order_date', array($request->from, $request->to));
+            $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
         })->where('shop_id', $shop->id)->get();
 
         // $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
@@ -97,11 +97,68 @@ class ShopOrderController extends Controller
     }
 
 
+    public function getProductSaleReport(Request $request)
+    {
+        $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
+            $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
+        })->get();
+
+        $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
+            return $item->product_id . '-' . implode('-', array_map(function ($n) {
+                return $n['value'];
+            }, $item->variant)) . '-' . $item->amount . '-' . $item->vendor_price . '-' . $item->discount;
+        });
+
+        $shopOrders = ShopOrder::whereBetween('order_date', [$request->from, $request->to])
+        ->where('order_status', '!=', 'cancelled')
+        ->get();
+        $promoDiscount = 0;
+        foreach ($shopOrders as $k => $order) {
+            $promoDiscount += $order->promocode_amount;
+        }
+
+        return $this->generateShopProductSaleReport($groups, $promoDiscount);
+    }
+
+    public function getProductByShopSaleReport(Request $request, Shop $shop)
+    {
+        $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
+            $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
+        })->where('shop_id', $shop->id)->get();
+
+        $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
+            return $item->product_id . '-' . implode('-', array_map(function ($n) {
+                return $n['value'];
+            }, $item->variant)) . '-' . $item->amount . '-' . $item->vendor_price . '-' . $item->discount;
+        });
+        return $this->generateShopProductSaleReport($groups);
+    }
+
     public function getShopCategorySaleReport(Request $request)
     {
         $shopOrderItems = ShopOrderItem::with('product')->whereHas('vendor.shopOrder', function ($query) use ($request) {
             $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
-        })->get();
+        })->has('product.shopCategory')->get();
+
+        $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
+            return $item->product->shopCategory->id;
+        });
+
+        $shopOrders = ShopOrder::whereBetween('order_date', [$request->from, $request->to])
+        ->where('order_status', '!=', 'cancelled')
+        ->get();
+        $promoDiscount = 0;
+        foreach ($shopOrders as $k => $order) {
+            $promoDiscount += $order->promocode_amount;
+        }
+        return $this->generateGroupSaleReport($groups, $promoDiscount);
+    }
+
+    public function getCategoryByShopSaleReport(Request $request, Shop $shop)
+    {
+        $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
+            $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
+        })->has('product.shopCategory')->where('shop_id', $shop->id)->get();
 
         $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
             return $item->product->shopCategory->id;
@@ -272,7 +329,7 @@ class ShopOrderController extends Controller
                 'invoice_no' =>  $item->vendor->shopOrder->invoice_no,
                 'order_date' => Carbon::parse($item->vendor->shopOrder->order_date)->format('M d Y h:i a'),
                 'invoice_date' =>$item->vendor->shopOrder->invoice_date? Carbon::parse($item->vendor->shopOrder->invoice_date)->format('M d Y h:i a') :null,
-                'code' => $product->code,
+                'code' => $product ? $product->code:null,
                 'product_name' => $item->product_name,
                 'price' => $item->amount,
                 'shop' => $shop->name,
@@ -309,7 +366,7 @@ class ShopOrderController extends Controller
         return $result;
     }
 
-    private function generateGroupSaleReport($groups)
+    private function generateGroupSaleReport($groups, $promoDiscount = null)
     {
         $data = [];
         $amountSum = 0;
@@ -342,7 +399,8 @@ class ShopOrderController extends Controller
             $balance = $totalAmount - $commissionCt;
             $balanceSum += $balance;
             $data[] = [
-                'name' => $group[0]->product->shopCategory->name,
+                'name' =>$group[0]->product->shopCategory->name,
+                'product_name' =>$group[0]->product_name,
                 'quantity' => $quantity,
                 'revenue' => $amount,
                 'commercial_tax' => $commercialTax ? $commercialTax : 0,
@@ -358,7 +416,76 @@ class ShopOrderController extends Controller
             'total_amount_sum' => $totalAmountSum,
             'commission_sum' => $commissionSum,
             'commission_ct_sum' => $commissionCtSum,
+            'promo_discount' => $promoDiscount,
             'balance_sum' => $balanceSum,
+            'invoice' => $data,
+        ];
+
+        return $result;
+    }
+
+    private function generateShopProductSaleReport($groups, $promoDiscount = null)
+    {
+        $data = [];
+        $amountSum = 0;
+        $totalAmountSum = 0;
+        $commissionSum = 0;
+        $commissionCtSum = 0;
+        $balanceSum = 0;
+
+        foreach ($groups as $key => $group) {
+            $amount = 0;
+            $commercialTax = 0;
+            $discount = 0;
+            $totalAmount = 0;
+            $commission = 0;
+            $commissionCt = 0;
+            $quantity = 0;
+            $shop = Shop::where('id', $group[0]->shop_id)->first();
+
+            foreach ($group as $k => $item) {
+                $amount += ($item->amount * $item->quantity);
+                $commission += $item->commission;
+                $totalAmount += $item->total_amount;
+                $commercialTax += $item->tax ? $item->tax * $item->quantity : 0;
+                $discount += $item->discount ? $item->discount * $item->quantity : 0;
+                $quantity += $item->quantity;
+            }
+
+            $commissionCt += $commission * 0.05;
+            $amountSum += $amount;
+            $totalAmountSum += $totalAmount;
+            $commissionSum += $commission;
+            $commissionCtSum += $commissionCt;
+            $balance = $totalAmount - $commissionCt;
+            $balanceSum += $balance;
+            $product = Product::where('id', $group[0]->product_id)->first();
+
+            $data[] = [
+                'code' => $product ? $product->code:null,
+                'product_name' => $group[0]->product_name,
+                'price' => $group[0]->amount,
+                'shop' => $shop->name,
+                'vendor_price' => $group[0]->vendor_price,
+                'variant' => $group[0]->variant,
+                'quantity' => $quantity,
+                'revenue' => $amount,
+                'commercial_tax' => $commercialTax ? $commercialTax : 0,
+                'discount' => $discount ? $discount : 0,
+                'total_amount' => $totalAmount,
+                'commission' => $commission ? $commission : 0,
+                'commission_ct' => $commissionCt ? $commissionCt : 0,
+                'balance' => round($balance),
+            ];
+        }
+
+        $result = [
+            'revenue_sum' => $amountSum,
+            'total_amount_sum' => $totalAmountSum,
+            'commission_sum' => $commissionSum,
+            'commission_ct_sum' => $commissionCtSum,
+            'balance_sum' => $balanceSum,
+            'promo_discount' => $promoDiscount,
             'invoice' => $data,
         ];
 

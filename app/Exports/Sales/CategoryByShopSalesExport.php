@@ -2,6 +2,7 @@
 
 namespace App\Exports\Sales;
 
+use App\Models\Shop;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use App\Models\ShopOrder;
 use App\Models\ShopOrderItem;
@@ -18,7 +19,7 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ShopCategorySalesExport implements FromCollection, WithColumnFormatting, WithColumnWidths, WithDrawings, WithEvents, WithHeadings, WithStyles, WithTitle
+class CategoryByShopSalesExport implements FromCollection, WithColumnFormatting, WithColumnWidths, WithDrawings, WithEvents, WithHeadings, WithStyles, WithTitle
 {
     protected $from;
     protected $to;
@@ -31,17 +32,20 @@ class ShopCategorySalesExport implements FromCollection, WithColumnFormatting, W
     protected $balanceSum;
     protected $key;
 
-    public function __construct($from, $to)
+    public function __construct($param, $from, $to)
     {
+        $this->param = $param;
         $this->from = $from;
         $this->to = $to;
     }
 
     public function collection()
     {
-        $shopOrderItems = ShopOrderItem::with('product')->whereHas('vendor.shopOrder', function ($query) {
-            $query->whereBetween('order_date', [$this->from, $this->to])->where('order_status', '!=', 'cancelled');
-        })->has('product.shopCategory')->get();
+        $shop = Shop::where('slug', $this->param)->first();
+
+        $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) {
+            $query->whereBetween('order_date', [$this->from, $this->to]);
+        })->has('product.shopCategory')->where('shop_id', $shop->id)->get();
 
         $groups = collect($shopOrderItems)->groupBy(function ($item, $key) {
             return $item->product->shopCategory->id;
@@ -202,6 +206,6 @@ class ShopCategorySalesExport implements FromCollection, WithColumnFormatting, W
 
     public function title(): string
     {
-        return 'Shop Category Sales report';
+        return 'Category By Shop Sales report';
     }
 }
