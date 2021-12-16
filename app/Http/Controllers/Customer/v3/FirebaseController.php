@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Customer\v3;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use Firebase\Auth\Token\Exception\InvalidToken;
-use Illuminate\Support\Str;
 
 class FirebaseController extends Controller
 {
@@ -15,16 +15,17 @@ class FirebaseController extends Controller
         $this->auth = app('firebase.auth');
     }
 
-    public function login() // login (or) register
+    public function login()
     {
-        $uid = '+959450026655';
         $customClaims = [
             'custom_claims' => [
-                'email' => 'test@example.com',
+                'phone_number' => request('phone_number'),
+                'email' => request('email'),
+                'name' => request('name'),
             ],
         ];
 
-        $customToken = $this->auth->createCustomToken($uid, $customClaims);
+        $customToken = $this->auth->createCustomToken(request('phone_number'), $customClaims);
         $signInResult = $this->auth->signInWithCustomToken($customToken);
 
         return response()->json($signInResult->asTokenResponse());
@@ -41,6 +42,14 @@ class FirebaseController extends Controller
         }
 
         $uid = $verifiedIdToken->claims()->get('sub');
+        $customer = Customer::where('phone_number', $uid)->first();
+
+        if ($customer) {
+
+        } else {
+            Customer::create($verifiedIdToken->claims()->get('custom_claims'));
+        }
+
         $user = $this->auth->getUser($uid);
 
         $user->customClaims = (array) $verifiedIdToken->claims()->get('custom_claims');
