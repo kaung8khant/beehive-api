@@ -45,10 +45,10 @@ class ShopSubCategoriesImport implements ToCollection, WithHeadingRow
             $rules = [
                 'code' => ['required', 'size:2'],
                 'name' => ['required', 'unique:shop_sub_categories'],
-                'shop_category_slug' => ['required', 'exists:App\Models\ShopCategory,slug']];
+                'shop_category_code' => ['required', 'exists:App\Models\ShopCategory,code']];
 
-            if (isset($row['id'])) {
-                $shopSubCategory = ShopSubCategory::where('slug', $row['id'])->first();
+            $shopSubCategory = ShopSubCategory::where('name', $row['name'])->first();
+            if ($shopSubCategory) {
                 $rules['name'][1] = Rule::unique('shop_sub_categories')->ignore($shopSubCategory->id);
             }
 
@@ -62,7 +62,7 @@ class ShopSubCategoriesImport implements ToCollection, WithHeadingRow
                     'row' => $key + 2,
                     'code' => $row['code'],
                     'name' => $row['name'],
-                    'shop_category_slug' => $row['shop_category_slug'],
+                    'shop_category_code' => $row['shop_category_code'],
                     'errors' => $validator->errors(),
                 ];
             }

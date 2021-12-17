@@ -96,22 +96,23 @@ class ShopOrderController extends Controller
         return ResponseHelper::generateResponse($vendorOrders, 200);
     }
 
-    // public function cancelOrderItem(ShopOrder $shopOrder, ShopOrderItem $shopOrderItem)
-    // {
-    //     $shopOrderItem->delete();
-    //     $shopOrder = ShopOrder::where('slug', $shopOrder->slug)->first();
-    //     $vendors = $shopOrder->vendors;
-    //     $commission = 0;
+    public function cancelOrderItem($orderSlug, $itemId)
+    {
+        $shopOrder = $this->shopOrderRepository->find($orderSlug);
+        $shopOrderItem = $this->shopOrderRepository->findShopOrderItem($itemId);
 
-    //     foreach ($vendors as $vendor) {
-    //         foreach ($vendor->items as $item) {
-    //             $commission += $item->commission;
-    //         }
-    //     }
+        $shopOrderItem->delete();
+        $commission = 0;
 
-    //     $shopOrder->update(['commission' => $commission]);
-    //     return response()->json(['message' => 'Successfully cancelled.'], 200);
-    // }
+        foreach ($shopOrder->vendors as $vendor) {
+            foreach ($vendor->items as $item) {
+                $commission += $item->commission;
+            }
+        }
+
+        $shopOrder->update(['commission' => $commission]);
+        return response()->json(['message' => 'Successfully cancelled.'], 200);
+    }
 
     public function updatePayment($slug)
     {

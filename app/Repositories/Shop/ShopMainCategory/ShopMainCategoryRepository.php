@@ -3,6 +3,7 @@
 namespace App\Repositories\Shop\ShopMainCategory;
 
 use App\Events\DataChanged;
+use App\Exceptions\ForbiddenException;
 use App\Models\Product;
 use App\Models\ShopMainCategory;
 use App\Repositories\BaseRepository;
@@ -24,7 +25,7 @@ class ShopMainCategoryRepository extends BaseRepository implements ShopMainCateg
         $model = $this->model->where('slug', $slug)->firstOrFail();
 
         if ($this->checkProducts($slug) && $model->code && $model->code !== $attributes['code']) {
-            return response()->json(['message' => 'Cannot update product type code if there is a linked product.'], 403);
+            throw new ForbiddenException('Cannot update product type code if there is a linked product.');
         }
 
         $model->update($attributes);

@@ -384,6 +384,7 @@ class RestaurantCartController extends CartController
 
         $request['promo_code'] = $menuCart->promocode;
         $request['order_items'] = $this->getOrderItems($menuCart->menuCartItems);
+        $request['customer_slug'] = auth('customers')->user()->slug;
 
         $order = new RestaurantOrderController($this->messageService, $this->paymentService);
         $result = $order->store($request);
@@ -448,6 +449,8 @@ class RestaurantCartController extends CartController
             return [
                 'slug' => $cartItem->menu['slug'],
                 'quantity' => $cartItem->menu['quantity'],
+                'amount' => $cartItem->menu['amount'],
+                'discount' => $cartItem->menu['discount'],
                 'variant_slug' => $cartItem->menu['variant']['slug'],
                 'topping_slugs' => collect($cartItem->menu['toppings'])->map(function ($value) {
                     $value['value'] = $value['quantity'];

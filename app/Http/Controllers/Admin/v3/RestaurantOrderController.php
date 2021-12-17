@@ -56,6 +56,7 @@ class RestaurantOrderController extends Controller
             ->whereBetween('order_date', array($request->from, $request->to))
             ->where(function ($query) use ($request) {
                 $query->where('id', ltrim(ltrim($request->filter, 'BHR'), '0'))
+                    ->orWhere('invoice_no', ltrim(ltrim(request('filter'), 'INR'), '0'))
                     ->orWhereHas('restaurantOrderContact', function ($q) use ($request) {
                         $q->where('phone_number', $request->filter)
                             ->orWhere('customer_name', 'LIKE', '%' . $request->filter . '%');

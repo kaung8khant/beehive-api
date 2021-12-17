@@ -47,8 +47,8 @@ class ShopMainCategoriesImport implements ToCollection, WithHeadingRow
                 'name' => ['required', 'unique:shop_main_categories'],
             ];
 
-            if (isset($row['id'])) {
-                $shopMainCategory = ShopMainCategory::where('slug', $row['id'])->first();
+            $shopMainCategory = ShopMainCategory::where('name', $row['name'])->first();
+            if ($shopMainCategory) {
                 $rules['name'][1] = Rule::unique('shop_main_categories')->ignore($shopMainCategory->id);
                 $rules['code'][1] = Rule::unique('shop_main_categories')->ignore($shopMainCategory->id);
             }

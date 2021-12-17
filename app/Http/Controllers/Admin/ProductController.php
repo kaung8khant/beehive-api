@@ -26,7 +26,7 @@ class ProductController extends Controller
 
     public function show($slug)
     {
-        return $this->productRepository->find($slug)->load(['shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariations', 'productVariations.productVariationValues', 'productVariants']);
+        return $this->productRepository->find($slug)->load(['shop', 'shopCategory', 'shopSubCategory', 'brand', 'productVariants']);
     }
 
     public function store(ProductCreateRequest $request)
@@ -42,8 +42,6 @@ class ProductController extends Controller
 
     public function destroy($slug)
     {
-        return response()->json(['message' => 'Permission denied.'], 403);
-
         return $this->productRepository->delete($slug);
     }
 
@@ -69,8 +67,6 @@ class ProductController extends Controller
 
     public function multipleDelete()
     {
-        return response()->json(['message' => 'Permission denied.'], 403);
-
         $validatedData = request()->validate([
             'slugs' => 'required|array',
             'slugs.*' => 'required|exists:App\Models\Product,slug',
@@ -116,26 +112,24 @@ class ProductController extends Controller
     private function optimizeProducts($products)
     {
         $products->load([
-            'shop' => function ($query) {
-                $query->select('id', 'slug', 'name');
-            },
-            'shopCategory' => function ($query) {
-                $query->select('id', 'slug', 'name');
-            },
-            'brand' => function ($query) {
-                $query->select('id', 'slug', 'name');
-            },
-            'productVariants' => function ($query) {
-                $query->select('product_id', 'slug', 'variant', 'price', 'discount', 'vendor_price', 'tax')
-                    ->where('is_enable', 1)
-                    ->orderBy('price', 'asc');
-            },
+            'shop' => fn($query) => $query->select('id', 'slug', 'name'),
+            'shopCategory' => fn($query) => $query->select('id', 'shop_main_category_id', 'code', 'slug', 'name'),
+            'shopCategory.shopMainCategory' => fn($query) => $query->select('id', 'code', 'slug', 'name'),
+            'brand' => fn($query) => $query->select('id', 'code', 'slug', 'name'),
+            'productVariants' => fn($query) => $query
+                ->select('product_id', 'slug', 'variant', 'price', 'discount', 'vendor_price', 'tax')
+                ->where('is_enable', 1)
+                ->orderBy('price', 'asc'),
         ]);
 
         foreach ($products as $product) {
             $product->makeHidden(['description', 'created_by', 'updated_by', 'covers']);
             $product->shop->setAppends([]);
             $product->shopCategory->setAppends([]);
+
+            if ($product->shopCategory->shopMainCategory) {
+                $product->shopCategory->shopMainCategory->setAppends([]);
+            }
 
             if ($product->brand) {
                 $product->brand->setAppends([]);

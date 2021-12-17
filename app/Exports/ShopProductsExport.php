@@ -2,12 +2,9 @@
 
 namespace App\Exports;
 
-use App\Models\Brand;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Shop;
-use App\Models\ShopCategory;
-use App\Models\ShopSubCategory;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -17,28 +14,19 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
-    public function __construct(string $params)
+    private $slug;
+
+    public function __construct(string $slug)
     {
-        $this->params = $params;
+        $this->slug = $slug;
     }
 
     public function query()
     {
-        $shop = Shop::where('slug', $this->params)->firstOrFail();
-        // $products = Product::query()->where('shop_id', $shop->id);
+        $shop = Shop::where('slug', $this->slug)->firstOrFail();
 
-        return  ProductVariant::with("product")->whereHas('product', function ($q) use ($shop) {
-            $q->where('shop_id', $shop->id);
-        });
-    }
-
-    public function stringifyVariant($variants)
-    {
-        $implode = array();
-        foreach ($variants as $variant) {
-            $implode[] = implode(':', $variant);
-        }
-        return implode(' / ', $implode);
+        return ProductVariant::with(['product', 'product.shop', 'product.shopCategory', 'product.shopCategory.shopMainCategory', 'product.shopSubCategory', 'product.brand'])
+            ->whereHas('product', fn($query) => $query->where('shop_id', $shop->id));
     }
 
     /**
@@ -47,7 +35,7 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
     public function map($productVatiant): array
     {
         return [
-            $productVatiant->product->slug,
+            $productVatiant->product->code,
             $productVatiant->slug,
             $productVatiant->product->name,
             $productVatiant->product->description,
@@ -58,21 +46,23 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             $productVatiant->tax ? $productVatiant->tax : '0',
             $productVatiant->discount ? $productVatiant->discount : '0',
             $productVatiant->is_enable ? '1' : '0',
-            Shop::where('id', $productVatiant->product->shop_id)->value('name'),
-                Shop::where('id', $productVatiant->product->shop_id)->value('slug'),
-                ShopCategory::where('id', $productVatiant->product->shop_category_id)->value('name'),
-                ShopCategory::where('id', $productVatiant->product->shop_category_id)->value('slug'),
-                ShopSubCategory::where('id', $productVatiant->product->shop_sub_category_id)->value('name'),
-                ShopSubCategory::where('id', $productVatiant->product->shop_sub_category_id)->value('slug'),
-                Brand::where('id', $productVatiant->product->brand_id)->value('name'),
-                Brand::where('id', $productVatiant->product->brand_id)->value('slug'),
+            $productVatiant->product->shop->slug,
+            $productVatiant->product->shop->name,
+            $productVatiant->product->shopCategory->shopMainCategory ? $productVatiant->product->shopCategory->shopMainCategory->code : '',
+            $productVatiant->product->shopCategory->shopMainCategory ? $productVatiant->product->shopCategory->shopMainCategory->name : '',
+            $productVatiant->product->shopCategory->code,
+            $productVatiant->product->shopCategory->name,
+            $productVatiant->product->shopSubCategory ? $productVatiant->product->shopSubCategory->code : '',
+            $productVatiant->product->shopSubCategory ? $productVatiant->product->shopSubCategory->name : '',
+            $productVatiant->product->brand ? $productVatiant->product->brand->code : '',
+            $productVatiant->product->brand ? $productVatiant->product->brand->name : '',
         ];
     }
 
     public function headings(): array
     {
         return [
-            'id',
+            'code',
             'product_variant_slug',
             'name',
             'description',
@@ -83,14 +73,16 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             'tax',
             'discount',
             'variant_is_enable',
-            'shop',
             'shop_slug',
+            'shop',
+            'product_type_code',
+            'product_type',
+            'shop_category_code',
             'shop_category',
-            'shop_category_slug',
+            'shop_sub_category_code',
             'shop_sub_category',
-            'shop_sub_category_slug',
+            'brand_code',
             'brand',
-            'brand_slug',
         ];
     }
 
@@ -118,24 +110,26 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             'Q' => ['alignment' => ['horizontal' => 'center']],
             'R' => ['alignment' => ['horizontal' => 'center']],
             'S' => ['alignment' => ['horizontal' => 'center']],
+            'T' => ['alignment' => ['horizontal' => 'center']],
+            'U' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
     public function columnWidths(): array
     {
         return [
-            'A' => 15,
-            'B' => 30,
+            'A' => 20,
+            'B' => 20,
             'C' => 45,
             'D' => 45,
             'E' => 10,
-            'F' => 10,
-            'G' => 10,
-            'H' => 25,
-            'I' => 25,
-            'J' => 25,
-            'K' => 25,
-            'L' => 25,
+            'F' => 30,
+            'G' => 20,
+            'H' => 20,
+            'I' => 15,
+            'J' => 15,
+            'K' => 20,
+            'L' => 20,
             'M' => 25,
             'N' => 25,
             'O' => 25,
@@ -143,6 +137,19 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
             'Q' => 25,
             'R' => 25,
             'S' => 25,
+            'T' => 25,
+            'U' => 25,
         ];
+    }
+
+    public function stringifyVariant($variants)
+    {
+        $implode = array();
+
+        foreach ($variants as $variant) {
+            $implode[] = implode(':', $variant);
+        }
+
+        return implode(' / ', $implode);
     }
 }

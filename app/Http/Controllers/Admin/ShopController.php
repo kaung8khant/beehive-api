@@ -47,8 +47,6 @@ class ShopController extends Controller
 
     public function destroy($slug)
     {
-        return response()->json(['message' => 'Permission denied.'], 403);
-
         return $this->shopRepository->delete($slug);
     }
 

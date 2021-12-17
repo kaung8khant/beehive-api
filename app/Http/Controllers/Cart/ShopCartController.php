@@ -5,15 +5,15 @@ namespace App\Http\Controllers\Cart;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Helpers\ResponseHelper;
+use App\Helpers\ShopOrderHelper;
 use App\Helpers\StringHelper;
-use App\Http\Controllers\Admin\v3\ShopOrderController;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\ProductCart;
 use App\Models\ProductCartItem;
 use App\Models\ProductVariant;
-use App\Services\MessageService\MessagingService;
-use App\Services\PaymentService\PaymentService;
+use App\Repositories\Shop\ShopOrder\ShopOrderRepositoryInterface;
+use App\Repositories\Shop\ShopOrder\ShopOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -24,18 +24,16 @@ class ShopCartController extends CartController
     use ResponseHelper;
 
     private $customer;
-    private $messageService;
-    private $paymentService;
+    private $shopOrderRepository;
     private $resMes;
 
-    public function __construct(Request $request, MessagingService $messageService, PaymentService $paymentService)
+    public function __construct(Request $request, ShopOrderRepositoryInterface $shopOrderRepository)
     {
         if ($request->customer_slug) {
             $this->customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
         }
 
-        $this->messageService = $messageService;
-        $this->paymentService = $paymentService;
+        $this->shopOrderRepository = $shopOrderRepository;
         $this->resMes = config('response-en');
     }
 
@@ -246,6 +244,8 @@ class ShopCartController extends CartController
             return [
                 'slug' => $cartItem->product['slug'],
                 'quantity' => $cartItem->product['quantity'],
+                'amount' => $cartItem->product['amount'],
+                'discount' => $cartItem->product['discount'],
                 'variant_slug' => $cartItem->product['variant']['slug'],
             ];
         })->toArray();
@@ -268,9 +268,9 @@ class ShopCartController extends CartController
         return $this->generateResponse($cartData, 200);
     }
 
-    public function checkout(Request $request)
+    public function checkout(ShopOrderService $shopOrderService)
     {
-        $productCart = ProductCart::with('productCartItems')->where('customer_id', $this->customer->id)->first();
+        $productCart = ProductCart::with('productCartItems')->where('customer_id', auth('customers')->user()->id)->first();
 
         if (!$productCart || !isset($productCart->productCartItems) || $productCart->productCartItems->count() === 0) {
             return $this->generateResponse($this->resMes['shop_cart']['empty'], 400, true);
@@ -280,20 +280,24 @@ class ShopCartController extends CartController
             $productIds = $productCart->productCartItems->pluck('product_id')->unique();
             $this->checkShopsAndProducts($productIds);
         } catch (ForbiddenException $e) {
-            return $this->generateResponse($e->getMessage(), 400, true);
+            return $this->generateResponse($e->getMessage(), 403, true);
         }
 
-        $request['promo_code'] = $productCart->promocode;
-        $request['order_items'] = $this->getOrderItems($productCart->productCartItems);
+        $rules = ShopOrderHelper::getRules(true);
+        request()->merge([
+            'slug' => StringHelper::generateUniqueSlugWithTable('shop_orders'),
+            'promo_code' => $productCart->promocode,
+            'order_items' => $this->getOrderItems($productCart->productCartItems),
+            'customer_slug' => auth('customers')->user()->slug,
+        ]);
 
-        $order = new ShopOrderController($this->messageService, $this->paymentService);
-        $result = $order->store($request);
+        $order = $shopOrderService->store(request()->validate($rules));
 
-        if (json_decode($result->getContent(), true)['status'] === 201) {
+        if ($order) {
             $productCart->delete();
         }
 
-        return $result;
+        return ResponseHelper::generateShopOrderResponse($order, 201);
     }
 
     private function checkShopsAndProducts($productIds)
