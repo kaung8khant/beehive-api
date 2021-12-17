@@ -7,7 +7,6 @@ use App\Exceptions\ForbiddenException;
 use App\Helpers\ResponseHelper;
 use App\Helpers\ShopOrderHelper;
 use App\Helpers\StringHelper;
-use App\Models\Customer;
 use App\Models\Product;
 use App\Models\ProductCart;
 use App\Models\ProductCartItem;
@@ -23,16 +22,11 @@ class ShopCartController extends CartController
 {
     use ResponseHelper;
 
-    private $customer;
     private $shopOrderRepository;
     private $resMes;
 
-    public function __construct(Request $request, ShopOrderRepositoryInterface $shopOrderRepository)
+    public function __construct(ShopOrderRepositoryInterface $shopOrderRepository)
     {
-        if ($request->customer_slug) {
-            $this->customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
-        }
-
         $this->shopOrderRepository = $shopOrderRepository;
         $this->resMes = config('response-en');
     }
@@ -45,7 +39,7 @@ class ShopCartController extends CartController
         }
 
         try {
-            $productCart = ProductCart::where('customer_id', $this->customer->id)->first();
+            $productCart = ProductCart::where('customer_id', auth('customers')->user()->id)->first();
             $productData = $this->prepareProductData($product, $request);
 
             if ($productCart) {
@@ -65,7 +59,7 @@ class ShopCartController extends CartController
                 }
             } else {
                 $productCart = DB::transaction(function () use ($product, $productData) {
-                    $productCart = $this->createProductCart($this->customer->id);
+                    $productCart = $this->createProductCart(auth('customers')->user()->id);
                     $this->createProductCartItem($productCart->id, $product->id, $productData);
                     return $productCart;
                 });
@@ -81,7 +75,6 @@ class ShopCartController extends CartController
     private function validateProductCart($request)
     {
         return Validator::make($request->all(), [
-            'customer_slug' => 'required|exists:App\Models\Customer,slug',
             'quantity' => 'required|integer',
             'variant_slug' => 'required|exists:App\Models\ProductVariant,slug',
         ]);
@@ -150,7 +143,7 @@ class ShopCartController extends CartController
 
     public function updateQuantity(Request $request, Product $product)
     {
-        $productCart = ProductCart::where('customer_id', $this->customer->id)->first();
+        $productCart = ProductCart::where('customer_id', auth('customers')->user()->id)->first();
         if (!$productCart) {
             return $this->generateResponse($this->resMes['shop_cart']['empty'], 400, true);
         }
@@ -177,7 +170,7 @@ class ShopCartController extends CartController
 
     public function delete(Request $request, Product $product)
     {
-        $productCart = ProductCart::where('customer_id', $this->customer->id)->first();
+        $productCart = ProductCart::where('customer_id', auth('customers')->user()->id)->first();
         if (!$productCart) {
             return $this->generateResponse($this->resMes['shop_cart']['empty'], 400, true);
         }
@@ -204,7 +197,7 @@ class ShopCartController extends CartController
 
     public function deleteCart()
     {
-        $productCart = ProductCart::where('customer_id', $this->customer->id)->first();
+        $productCart = ProductCart::where('customer_id', auth('customers')->user()->id)->first();
         if (!$productCart) {
             return $this->generateResponse($this->resMes['shop_cart']['empty'], 400, true);
         }
@@ -215,7 +208,7 @@ class ShopCartController extends CartController
 
     public function applyPromocode(Request $request)
     {
-        $productCart = ProductCart::with('productCartItems')->where('customer_id', $this->customer->id)->first();
+        $productCart = ProductCart::with('productCartItems')->where('customer_id', auth('customers')->user()->id)->first();
         if (!$productCart) {
             return $this->generateResponse($this->resMes['shop_cart']['empty'], 400, true);
         }
@@ -224,7 +217,7 @@ class ShopCartController extends CartController
             $request['sub_total'] = $this->getSubTotal($productCart->productCartItems->pluck('product'));
             $request['order_items'] = $this->getOrderItems($productCart->productCartItems);
 
-            $promoData = $this->getPromoData($request, $this->customer, 'shop');
+            $promoData = $this->getPromoData($request, auth('customers')->user(), 'shop');
 
             $productCart->promocode_id = $promoData['promocode_id'];
             $productCart->promocode = $promoData['promocode'];
@@ -253,7 +246,7 @@ class ShopCartController extends CartController
 
     public function removePromocode()
     {
-        $productCart = ProductCart::with('productCartItems')->where('customer_id', $this->customer->id)->first();
+        $productCart = ProductCart::with('productCartItems')->where('customer_id', auth('customers')->user()->id)->first();
 
         if (!$productCart) {
             return $this->generateResponse($this->resMes['shop_cart']['empty'], 400, true);

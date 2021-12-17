@@ -8,24 +8,21 @@ use App\Helpers\GeoHelper;
 use App\Helpers\PromocodeHelper;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
 use App\Models\MenuCart;
 use App\Models\ProductCart;
 use App\Models\Promocode;
 use App\Models\RestaurantBranch;
 use App\Models\Shop;
-use Illuminate\Http\Request;
 use stdClass;
 
 class CartController extends Controller
 {
     use ResponseHelper;
 
-    public function viewCart(Request $request)
+    public function viewCart()
     {
-        $customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
-        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $customer->id)->first();
-        $productCart = ProductCart::with('productCartItems')->where('customer_id', $customer->id)->first();
+        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', auth('customers')->user()->id)->first();
+        $productCart = ProductCart::with('productCartItems')->where('customer_id', auth('customers')->user()->id)->first();
 
         $data = [
             'restaurant' => $menuCart ? $this->prepareMenuCartData($menuCart) : new stdClass(),
