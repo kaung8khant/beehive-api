@@ -100,7 +100,7 @@ Route::group([
 
         Route::get('reports/restaurant-orders/vendor/{slug}', 'Report\RestaurantOrderController@getVendorOrders');
         Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
-        Route::get('reports/shop-orders/vendor/{shop}/product-sales', 'Report\ShopOrderController@getShopProductSaleReport');
+        Route::get('reports/shop-orders/vendor/{shop}/product-by-shop-sales', 'Report\ShopOrderController@getProductByShopSaleReport');
 
         Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
 
