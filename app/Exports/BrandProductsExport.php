@@ -5,9 +5,6 @@ namespace App\Exports;
 use App\Models\Brand;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Shop;
-use App\Models\ShopCategory;
-use App\Models\ShopSubCategory;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -26,9 +23,8 @@ class BrandProductsExport implements FromQuery, WithHeadings, WithMapping, WithS
     {
         $brand = Brand::where('slug', $this->params)->firstOrFail();
 
-        return  ProductVariant::with("product")->whereHas('product', function ($q) use ($brand) {
-            $q->where('brand_id', $brand->id);
-        });
+        return ProductVariant::with(['product', 'product.shop', 'product.shopCategory', 'product.shopCategory.shopMainCategory', 'product.shopSubCategory', 'product.brand'])
+            ->whereHas('product', fn ($q) => $q->where('brand_id', $brand->id));
     }
 
     public function stringifyVariant($variants)
@@ -46,7 +42,7 @@ class BrandProductsExport implements FromQuery, WithHeadings, WithMapping, WithS
     public function map($productVatiant): array
     {
         return [
-            $productVatiant->product->slug,
+            $productVatiant->product->code,
             $productVatiant->slug,
             $productVatiant->product->name,
             $productVatiant->product->description,
@@ -57,19 +53,23 @@ class BrandProductsExport implements FromQuery, WithHeadings, WithMapping, WithS
             $productVatiant->tax ? $productVatiant->tax : '0',
             $productVatiant->discount ? $productVatiant->discount : '0',
             $productVatiant->is_enable ? '1' : '0',
-            Shop::where('id', $productVatiant->product->shop_id)->value('name'),
-            Shop::where('id', $productVatiant->product->shop_id)->value('slug'),
-            ShopCategory::where('id', $productVatiant->product->shop_category_id)->value('name'),
-            ShopCategory::where('id', $productVatiant->product->shop_category_id)->value('slug'),
-            ShopSubCategory::where('id', $productVatiant->product->shop_sub_category_id)->value('name'),
-            ShopSubCategory::where('id', $productVatiant->product->shop_sub_category_id)->value('slug'),
+            $productVatiant->product->shop->slug,
+            $productVatiant->product->shop->name,
+            $productVatiant->product->shopCategory->shopMainCategory ? $productVatiant->product->shopCategory->shopMainCategory->code : '',
+            $productVatiant->product->shopCategory->shopMainCategory ? $productVatiant->product->shopCategory->shopMainCategory->name : '',
+            $productVatiant->product->shopCategory->code,
+            $productVatiant->product->shopCategory->name,
+            $productVatiant->product->shopSubCategory ? $productVatiant->product->shopSubCategory->code : '',
+            $productVatiant->product->shopSubCategory ? $productVatiant->product->shopSubCategory->name : '',
+            $productVatiant->product->brand ? $productVatiant->product->brand->code : '',
+            $productVatiant->product->brand ? $productVatiant->product->brand->name : '',
         ];
     }
 
     public function headings(): array
     {
         return [
-            'id',
+            'code',
             'product_variant_slug',
             'name',
             'description',
@@ -80,12 +80,16 @@ class BrandProductsExport implements FromQuery, WithHeadings, WithMapping, WithS
             'tax',
             'discount',
             'variant_is_enable',
-            'shop',
             'shop_slug',
+            'shop',
+            'product_type_code',
+            'product_type',
+            'shop_category_code',
             'shop_category',
-            'shop_category_slug',
+            'shop_sub_category_code',
             'shop_sub_category',
-            'shop_sub_category_slug',
+            'brand_code',
+            'brand',
         ];
     }
 
@@ -111,13 +115,17 @@ class BrandProductsExport implements FromQuery, WithHeadings, WithMapping, WithS
             'O' => ['alignment' => ['horizontal' => 'center']],
             'P' => ['alignment' => ['horizontal' => 'center']],
             'Q' => ['alignment' => ['horizontal' => 'center']],
+            'R' => ['alignment' => ['horizontal' => 'center']],
+            'S' => ['alignment' => ['horizontal' => 'center']],
+            'T' => ['alignment' => ['horizontal' => 'center']],
+            'U' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
     public function columnWidths(): array
     {
         return [
-            'A' => 15,
+            'A' => 30,
             'B' => 30,
             'C' => 45,
             'D' => 50,
@@ -129,11 +137,15 @@ class BrandProductsExport implements FromQuery, WithHeadings, WithMapping, WithS
             'J' => 25,
             'K' => 25,
             'L' => 25,
-            'M' => 25,
+            'M' => 30,
             'N' => 25,
-            'O' => 25,
+            'O' => 30,
             'P' => 25,
-            'Q' => 25,
+            'Q' => 30,
+            'R' => 25,
+            'S' => 30,
+            'T' => 25,
+            'U' => 30,
         ];
     }
 }
