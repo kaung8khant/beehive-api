@@ -22,9 +22,8 @@ class RestaurantMenuExport implements FromQuery, WithHeadings, WithMapping, With
 
     public function query()
     {
-        return MenuVariant::with("menu", 'menu.restaurant')->whereHas('menu.restaurant', function ($q) {
-            $q->where('slug', $this->params);
-        });
+        return MenuVariant::with("menu", 'menu.restaurant', 'menu.restaurantCategory')->whereHas('menu.restaurant', fn ($q) =>
+            $q->where('slug', $this->params));
     }
 
     public function stringifyVariant($variants)
@@ -52,10 +51,10 @@ class RestaurantMenuExport implements FromQuery, WithHeadings, WithMapping, With
             $menuVariant->tax ? $menuVariant->tax : '0',
             $menuVariant->discount ? $menuVariant->discount : '0',
             $menuVariant->is_enable ? '1' : '0',
-            Restaurant::where('id', $menuVariant->menu->restaurant_id)->value('name'),
-            Restaurant::where('id', $menuVariant->menu->restaurant_id)->value('slug'),
-            RestaurantCategory::where('id', $menuVariant->menu->restaurant_category_id)->value('name'),
-            RestaurantCategory::where('id', $menuVariant->menu->restaurant_category_id)->value('slug'),
+            $menuVariant->menu->restaurant->slug,
+            $menuVariant->menu->restaurant->name,
+            $menuVariant->menu->restaurant->slug,
+            $menuVariant->menu->restaurant->name,
         ];
     }
 
@@ -72,10 +71,10 @@ class RestaurantMenuExport implements FromQuery, WithHeadings, WithMapping, With
             'tax',
             'discount',
             'variant_is_enable',
-            'restaurant',
             'restaurant_slug',
-            'restaurant_category',
+            'restaurant',
             'restaurant_category_slug',
+            'restaurant_category',
         ];
     }
 
@@ -109,7 +108,7 @@ class RestaurantMenuExport implements FromQuery, WithHeadings, WithMapping, With
             'C' => 45,
             'D' => 45,
             'E' => 10,
-            'F' => 10,
+            'F' => 30,
             'G' => 10,
             'H' => 25,
             'I' => 15,

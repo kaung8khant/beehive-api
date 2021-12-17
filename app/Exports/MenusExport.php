@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-// use App\Models\Menu;
 use App\Models\MenuVariant;
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
@@ -17,7 +16,7 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
 {
     public function query()
     {
-        return MenuVariant::query()->with("menu");
+        return MenuVariant::with(['menu', 'menu.restaurant', 'menu.restaurantCategory']);
     }
 
     public function stringifyVariant($variants)
@@ -45,10 +44,10 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             $menuVariant->tax ? $menuVariant->tax : '0',
             $menuVariant->discount ? $menuVariant->discount : '0',
             $menuVariant->is_enable ? '1' : '0',
-            Restaurant::where('id', $menuVariant->menu->restaurant_id)->value('name'),
-            Restaurant::where('id', $menuVariant->menu->restaurant_id)->value('slug'),
-            RestaurantCategory::where('id', $menuVariant->menu->restaurant_category_id)->value('name'),
-            RestaurantCategory::where('id', $menuVariant->menu->restaurant_category_id)->value('slug'),
+            $menuVariant->menu->restaurant->slug,
+            $menuVariant->menu->restaurant->name,
+            $menuVariant->menu->restaurantCategory->slug,
+            $menuVariant->menu->restaurantCategory->name,
         ];
     }
 
@@ -65,10 +64,10 @@ class MenusExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'tax',
             'discount',
             'variant_is_enable',
-            'restaurant',
             'restaurant_slug',
-            'restaurant_category',
+            'restaurant',
             'restaurant_category_slug',
+            'restaurant_category',
         ];
     }
 

@@ -4,7 +4,6 @@ namespace App\Exports;
 
 use App\Models\Menu;
 use App\Models\MenuVariant;
-use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
