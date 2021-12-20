@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Repositories\Shop\ShopOrder\ShopOrderRepositoryInterface;
 use App\Repositories\Shop\ShopOrder\ShopOrderService;
+use Illuminate\Support\Facades\Validator;
 
 class ShopOrderController extends Controller
 {
@@ -36,12 +37,17 @@ class ShopOrderController extends Controller
 
     public function store( /* ShopOrderCreateRequest $request, */ShopOrderService $shopOrderService)
     {
-        if (auth('customers')->check()) {
-            request()->merge(['customer_slug' => auth('customers')->user()->slug]);
+        request()->merge([
+            'slug' => StringHelper::generateUniqueSlugWithTable('shop_orders'),
+            'customer_slug' => auth('customers')->user()->slug,
+        ]);
+
+        $validator = Validator::make(request()->all(), ShopOrderHelper::getRules(true));
+        if ($validator->fails()) {
+            return ResponseHelper::generateResponse($validator->errors()->first(), 422, true);
         }
 
-        request()->merge(['slug' => StringHelper::generateUniqueSlugWithTable('shop_orders')]);
-        $validated = request()->validate(ShopOrderHelper::getRules(true));
+        $validated = $validator->validated();
         $validated['customer_id'] = Customer::where('slug', $validated['customer_slug'])->first()->id;
 
         try {
