@@ -70,7 +70,7 @@
         <tbody>
             <tr>
                 <td>
-                    <img src="{{ public_path() . '/voucher-logo.png' }}" alt="restaurant-logo" width="200px">
+                    <img src="{{ public_path() . '/voucher-logo.png' }}" alt="restaurant-logo" width="80px">
                 </td>
                 <td style="text-align: right;">
                     <div>
