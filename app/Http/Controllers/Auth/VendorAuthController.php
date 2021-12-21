@@ -49,7 +49,7 @@ class VendorAuthController extends Controller
             }
 
             $vendorRole = $user->roles->contains(function ($role) {
-                return $role->name === 'Shop' || $role->name === 'Restaurant';
+                return $role->name === 'Shop' || $role->name === 'Restaurant'|| $role->name === 'RestaurantVendor';
             });
 
             if (!$vendorRole) {

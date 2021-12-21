@@ -50,6 +50,9 @@ Route::group([
         Route::get('logistics-users', 'Admin\UserController@getLogisticsUsers');
         Route::post('logistics-users', 'Admin\UserController@storeLogisticsUser');
         Route::put('logistics-users/{user}', 'Admin\UserController@updateLogisticsUser');
+        Route::get('restaurant-vendor-users', 'Admin\UserController@getRestaurantVendorUsers');
+        Route::post('restaurant-vendor-users', 'Admin\UserController@storeRestaurantVendorUser');
+        Route::put('restaurant-vendor-users/{user}', 'Admin\UserController@updateRestaurantVendorUser');
 
         Route::resource('customers', 'Admin\CustomerController', ['except' => ['create', 'edit']]);
         Route::get('customers/{customer}/orders', 'Admin\CustomerController@getOrdersByCustomer');

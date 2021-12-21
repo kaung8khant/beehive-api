@@ -9,6 +9,7 @@ use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Audit;
 use App\Models\Customer;
+use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\Role;
 use App\Models\Shop;
@@ -77,6 +78,25 @@ class UserController extends Controller
             ->orderBy($sorting['orderBy'], $sorting['sortBy'])
             ->paginate(10);
     }
+
+    public function getRestaurantVendorUsers(Request $request)
+    {
+        $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
+
+        return User::with('roles')->with('restaurant')
+            ->whereHas('roles', function ($q) {
+                $q->where('name', 'RestaurantVendor');
+            })
+            ->where(function ($q) use ($request) {
+                $q->where('username', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->paginate(10);
+    }
+
 
     public function getLogisticsUsers(Request $request)
     {
@@ -151,6 +171,24 @@ class UserController extends Controller
         return response()->json($user->refresh()->load(['restaurantBranch', 'restaurantBranch.restaurant']), 201);
     }
 
+    public function storeRestaurantVendorUser(Request $request)
+    {
+        $request['slug'] = $this->generateUniqueSlug();
+
+        $validatedData = $this->validateUserCreate($request, 'restaurantVendor');
+        $validatedData['restaurant_id'] = $this->getRestaruantId($request->restaurant_slug);
+        $user = User::create($validatedData);
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $user->slug);
+        }
+
+        $restaurantRoleId = Role::where('name', 'RestaurantVendor')->first()->id;
+        $user->roles()->attach($restaurantRoleId);
+
+        return response()->json($user->refresh()->load(['restaurant']), 201);
+    }
+
     public function storeLogisticsUser(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
@@ -176,6 +214,11 @@ class UserController extends Controller
     private function getRestaruantBranchId($slug)
     {
         return RestaurantBranch::where('slug', $slug)->first()->id;
+    }
+
+    private function getRestaruantId($slug)
+    {
+        return Restaurant::where('slug', $slug)->first()->id;
     }
 
     public function show(User $user)
@@ -226,6 +269,19 @@ class UserController extends Controller
         }
 
         return response()->json($user->refresh()->load(['restaurantBranch', 'restaurantBranch.restaurant']), 201);
+    }
+
+    public function updateRestaurantVendorUser(Request $request, User $user)
+    {
+        $validatedData = $this->validateUserUpdate($request, $user->id, 'restaurantVendor');
+        $validatedData['restaurant_id'] = $this->getRestaruantId($request->restaurant_slug);
+        $user->update($validatedData);
+
+        if ($request->image_slug) {
+            $this->updateFile($request->image_slug, 'users', $user->slug);
+        }
+
+        return response()->json($user->refresh()->load(['restaurant']), 201);
     }
 
     public function updateLogisticsUser(Request $request, User $user)
@@ -322,7 +378,9 @@ class UserController extends Controller
             $rules['restaurant_branch_slug'] = 'required|exists:App\Models\RestaurantBranch,slug';
         } elseif ($type === 'admin') {
             $rules['roles'] = 'required|array';
-            // $rules['roles.*'] = 'required|exists:App\Models\Role,slug';
+        // $rules['roles.*'] = 'required|exists:App\Models\Role,slug';
+        } elseif ($type === 'restaurantVendor') {
+            $rules['restaurant_slug'] = 'required|exists:App\Models\Restaurant,slug';
         }
 
         return $rules;
