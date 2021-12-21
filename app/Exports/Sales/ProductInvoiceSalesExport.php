@@ -41,7 +41,7 @@ class ProductInvoiceSalesExport implements FromCollection, WithColumnFormatting,
 
     public function collection()
     {
-        $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) {
+        $shopOrderItems = ShopOrderItem::with(['product', 'shop'])->whereHas('vendor.shopOrder', function ($query) {
             $query->whereBetween('order_date', [$this->from, $this->to])->where('order_status', '!=', 'cancelled');
         })->get();
 
@@ -54,8 +54,6 @@ class ProductInvoiceSalesExport implements FromCollection, WithColumnFormatting,
         }
 
         $this->result = $shopOrderItems->map(function ($item, $key) {
-            $shop = Shop::where('id', $item->shop_id)->first();
-
             $amount = $item->vendor->shopOrder->order_status == 'cancelled' ? '0' :$item->amount * $item->quantity;
             $commission =  $item->vendor->shopOrder->order_status == 'cancelled' ? '0' : $item->commission;
             $commissionCt = $commission * 0.05;
@@ -72,17 +70,15 @@ class ProductInvoiceSalesExport implements FromCollection, WithColumnFormatting,
             $this->balanceSum += $balance;
             $this->key += 1;
 
-            $product = Product::where('id', $item->product_id)->first();
-
             return [
                 $this->key,
                 $item->vendor->shopOrder->order_no,
                 $item->vendor->shopOrder->invoice_no,
                 Carbon::parse($item->vendor->shopOrder->order_date)->format('M d Y h:i a'),
                 $item->vendor->shopOrder->invoice_date? Carbon::parse($item->vendor->shopOrder->invoice_date)->format('M d Y h:i a') :'',
-                $product ? $product->code:null,
+                $item->product ? $item->product->code:null,
                 $item->product_name,
-                $shop->name,
+                $item->shop->name,
                 implode(',', array_map(function ($n) {
                     return $n['value'];
                 }, $item->variant)),

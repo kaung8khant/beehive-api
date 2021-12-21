@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -16,7 +15,7 @@ class RestaurantBranchesExport implements FromQuery, WithHeadings, WithMapping, 
 {
     public function query()
     {
-        return RestaurantBranch::query();
+        return RestaurantBranch::with(['restaurant']);
     }
 
     /**
@@ -34,8 +33,8 @@ class RestaurantBranchesExport implements FromQuery, WithHeadings, WithMapping, 
             $restaurantBranch->township,
             $restaurantBranch->city,
             $restaurantBranch->address,
-            Restaurant::where('id', $restaurantBranch->restaurant_id)->value('name'),
-            Restaurant::where('id', $restaurantBranch->restaurant_id)->value('slug'),
+            $restaurantBranch->restaurant->slug,
+            $restaurantBranch->restaurant->name,
             Carbon::parse($restaurantBranch->opening_time)->format('H:i'),
             Carbon::parse($restaurantBranch->closing_time)->format('H:i'),
             $restaurantBranch->latitude,
@@ -55,8 +54,8 @@ class RestaurantBranchesExport implements FromQuery, WithHeadings, WithMapping, 
             'township',
             'city',
             'address',
-            'restaurant',
             'restaurant_slug',
+            'restaurant',
             'opening_time',
             'closing_time',
             'latitude',
@@ -99,8 +98,8 @@ class RestaurantBranchesExport implements FromQuery, WithHeadings, WithMapping, 
             'G' => 20,
             'H' => 20,
             'I' => 100,
-            'J' => 15,
-            'K' => 15,
+            'J' => 20,
+            'K' => 20,
             'L' => 15,
             'M' => 15,
             'N' => 15,

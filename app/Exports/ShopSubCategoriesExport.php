@@ -15,7 +15,7 @@ class ShopSubCategoriesExport implements FromQuery, WithHeadings, WithMapping, W
 {
     public function query()
     {
-        return ShopSubCategory::query();
+        return ShopSubCategory::with(['shopCategory']);
     }
 
     /**
@@ -26,7 +26,7 @@ class ShopSubCategoriesExport implements FromQuery, WithHeadings, WithMapping, W
         return [
             $shopSubCategory->code,
             $shopSubCategory->name,
-            ShopCategory::where('id', $shopSubCategory->shop_category_id)->value('code'),
+            $shopSubCategory->shopCategory->code,
         ];
     }
 
