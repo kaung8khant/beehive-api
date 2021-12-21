@@ -40,7 +40,7 @@ class ShopSalesExport implements FromCollection, WithColumnFormatting, WithColum
 
     public function collection()
     {
-        $shopOrderVendors = ShopOrderVendor::whereHas('shopOrder', function ($query) {
+        $shopOrderVendors = ShopOrderVendor::with(['shop'])->whereHas('shopOrder', function ($query) {
             $query->whereBetween('order_date', [$this->from, $this->to])->where('order_status', '!=', 'cancelled');
         })->get()->groupBy('shop_id');
         $shopOrders = ShopOrder::whereBetween('order_date', [$this->from, $this->to])
@@ -53,8 +53,6 @@ class ShopSalesExport implements FromCollection, WithColumnFormatting, WithColum
 
         $this->result = $shopOrderVendors->map(function ($group) {
             foreach ($group as $vendor) {
-                $shop = Shop::where('id', $vendor->shop_id)->first();
-
                 $amount = $vendor->shopOrder->order_status == 'cancelled' ? '0' : $vendor->amount;
                 $commission = $vendor->shopOrder->order_status == 'cancelled' ? '0' : $vendor->commission;
                 $commissionCt = $commission * 0.05;
@@ -69,7 +67,7 @@ class ShopSalesExport implements FromCollection, WithColumnFormatting, WithColum
             }
             return [
                 $this->key += 1,
-                $shop->name,
+                $vendor->shop->name,
                 $amount,
                 $vendor->tax ? $vendor->tax : '0',
                 $vendor->discount ? $vendor->discount : '0',

@@ -24,7 +24,7 @@ class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
 
     public function query()
     {
-        return RestaurantOrder::query()->whereBetween('order_date', array($this->from, $this->to));
+        return RestaurantOrder::with(['restaurant','restaurantBranch'])->whereBetween('order_date', array($this->from, $this->to));
     }
 
     /**
@@ -40,9 +40,9 @@ class RestaurantOrdersExport implements FromQuery, WithHeadings, WithMapping, Wi
             $restaurantOrder->slug,
             $restaurantOrder->invoice_id,
             Carbon::parse($restaurantOrder->order_date)->format('M d Y h:i a'),
-            Restaurant::where('id', $restaurantOrder->restaurant_id)->value('name'),
-            RestaurantBranch::where('id', $restaurantOrder->restaurant_branch_id)->value('name'),
-            RestaurantBranch::where('id', $restaurantOrder->restaurant_branch_id)->value('contact_number'),
+            $restaurantOrder->restaurant->name,
+            $restaurantOrder->restaurantBranch->name,
+            $restaurantOrder->restaurantBranch->contact_number,
             $contact->value('customer_name'),
             $contact->value('phone_number'),
             $address,

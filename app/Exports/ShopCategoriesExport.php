@@ -3,7 +3,6 @@
 namespace App\Exports;
 
 use App\Models\ShopCategory;
-use App\Models\ShopMainCategory;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -15,7 +14,7 @@ class ShopCategoriesExport implements FromQuery, WithHeadings, WithMapping, With
 {
     public function query()
     {
-        return ShopCategory::query();
+        return ShopCategory::with(['shopMainCategory']);
     }
 
     /**
@@ -26,7 +25,7 @@ class ShopCategoriesExport implements FromQuery, WithHeadings, WithMapping, With
         return [
             $shopCategory->code,
             $shopCategory->name,
-            ShopMainCategory::where('id', $shopCategory->shop_main_category_id)->value('code'),
+            $shopCategory->shopMainCategory->code,
         ];
     }
 
