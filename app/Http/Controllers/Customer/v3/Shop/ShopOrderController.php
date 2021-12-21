@@ -6,10 +6,13 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\ServerException;
 use App\Helpers\ResponseHelper;
+use App\Helpers\ShopOrderHelper;
+use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
-use App\Repositories\Shop\ShopOrder\ShopOrderCreateRequest;
+use App\Models\Customer;
 use App\Repositories\Shop\ShopOrder\ShopOrderRepositoryInterface;
 use App\Repositories\Shop\ShopOrder\ShopOrderService;
+use Illuminate\Support\Facades\Validator;
 
 class ShopOrderController extends Controller
 {
@@ -32,10 +35,23 @@ class ShopOrderController extends Controller
         return ResponseHelper::generateShopOrderResponse($shopOrder, 200);
     }
 
-    public function store(ShopOrderCreateRequest $request, ShopOrderService $shopOrderService)
+    public function store( /* ShopOrderCreateRequest $request, */ShopOrderService $shopOrderService)
     {
+        request()->merge([
+            'slug' => StringHelper::generateUniqueSlugWithTable('shop_orders'),
+            'customer_slug' => auth('customers')->user()->slug,
+        ]);
+
+        $validator = Validator::make(request()->all(), ShopOrderHelper::getRules(true));
+        if ($validator->fails()) {
+            return ResponseHelper::generateResponse($validator->errors()->first(), 422, true);
+        }
+
+        $validated = $validator->validated();
+        $validated['customer_id'] = Customer::where('slug', $validated['customer_slug'])->first()->id;
+
         try {
-            $order = $shopOrderService->store($request->validated());
+            $order = $shopOrderService->store($validated);
             return ResponseHelper::generateShopOrderResponse($order, 201);
         } catch (ForbiddenException $e) {
             return ResponseHelper::generateResponse($e->getMessage(), 403, true);

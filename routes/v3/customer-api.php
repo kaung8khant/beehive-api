@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Customer\v3\FirebaseController;
+use App\Http\Controllers\Auth\FirebaseAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
@@ -8,8 +8,8 @@ Route::group([
     'namespace' => '\App\\Http\\Controllers\\Customer\\v3',
     'middleware' => ['cors', 'json.response'],
 ], function () {
-    Route::post('firebase/login', [FirebaseController::class, 'login']);
-    Route::post('firebase/verify', [FirebaseController::class, 'verify']);
+    Route::post('firebase/login', [FirebaseAuthController::class, 'login']);
+    Route::post('firebase/verify', [FirebaseAuthController::class, 'verify']);
 
     Route::middleware(['auth:customers', 'customer.enable'])->group(function () {
         Route::resource('restaurant-orders', 'RestaurantOrderController', ['as' => 'customer-v3-restaurant', 'except' => ['create', 'edit']]);

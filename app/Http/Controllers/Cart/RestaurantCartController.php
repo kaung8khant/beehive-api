@@ -9,7 +9,6 @@ use App\Helpers\GeoHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Admin\v3\RestaurantOrderController;
-use App\Models\Customer;
 use App\Models\Menu;
 use App\Models\MenuCart;
 use App\Models\MenuCartItem;
@@ -29,17 +28,12 @@ class RestaurantCartController extends CartController
 {
     use ResponseHelper;
 
-    private $customer;
     private $messageService;
     private $paymentService;
     private $resMes;
 
-    public function __construct(Request $request, MessagingService $messageService, PaymentService $paymentService)
+    public function __construct(MessagingService $messageService, PaymentService $paymentService)
     {
-        if ($request->customer_slug) {
-            $this->customer = Customer::where('slug', $request->customer_slug)->firstOrFail();
-        }
-
         $this->messageService = $messageService;
         $this->paymentService = $paymentService;
         $this->resMes = config('response-en');
@@ -54,7 +48,7 @@ class RestaurantCartController extends CartController
 
         try {
             $restaurantBranch = RestaurantBranch::where('slug', $request->restaurant_branch_slug)->first();
-            $menuCart = MenuCart::where('customer_id', $this->customer->id)->first();
+            $menuCart = MenuCart::where('customer_id', auth('customers')->user()->id)->first();
             $menuData = $this->prepareMenuData($menu, $request);
 
             if ($menuCart) {
@@ -82,7 +76,7 @@ class RestaurantCartController extends CartController
                 }
             } else {
                 $menuCart = DB::transaction(function () use ($restaurantBranch, $menu, $menuData, $request) {
-                    $menuCart = $this->createMenuCart($this->customer->id, $restaurantBranch->id, $request->address);
+                    $menuCart = $this->createMenuCart(auth('customers')->user()->id, $restaurantBranch->id, $request->address);
                     $this->createMenuCartItem($menuCart->id, $menu->id, $menuData);
                     return $menuCart;
                 });
@@ -98,7 +92,6 @@ class RestaurantCartController extends CartController
     private function validateMenuCart($request)
     {
         return Validator::make($request->all(), [
-            'customer_slug' => 'required|exists:App\Models\Customer,slug',
             'restaurant_branch_slug' => 'required|exists:App\Models\RestaurantBranch,slug',
             'quantity' => 'required|integer',
             'variant_slug' => 'required|exists:App\Models\MenuVariant,slug',
@@ -254,7 +247,7 @@ class RestaurantCartController extends CartController
 
     public function updateQuantity(Request $request, Menu $menu)
     {
-        $menuCart = MenuCart::where('customer_id', $this->customer->id)->first();
+        $menuCart = MenuCart::where('customer_id', auth('customers')->user()->id)->first();
         if (!$menuCart) {
             return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
@@ -281,7 +274,7 @@ class RestaurantCartController extends CartController
 
     public function delete(Request $request, Menu $menu)
     {
-        $menuCart = MenuCart::where('customer_id', $this->customer->id)->first();
+        $menuCart = MenuCart::where('customer_id', auth('customers')->user()->id)->first();
         if (!$menuCart) {
             return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
@@ -308,7 +301,7 @@ class RestaurantCartController extends CartController
 
     public function deleteCart()
     {
-        $menuCart = MenuCart::where('customer_id', $this->customer->id)->first();
+        $menuCart = MenuCart::where('customer_id', auth('customers')->user()->id)->first();
         if (!$menuCart) {
             return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
@@ -319,7 +312,7 @@ class RestaurantCartController extends CartController
 
     public function applyPromocode(Request $request)
     {
-        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
+        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', auth('customers')->user()->id)->first();
         if (!$menuCart) {
             return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
@@ -328,7 +321,7 @@ class RestaurantCartController extends CartController
             $request['sub_total'] = $this->getSubTotal($menuCart->menuCartItems->pluck('menu'));
             $request['order_items'] = $this->getOrderItems($menuCart->menuCartItems);
 
-            $promoData = $this->getPromoData($request, $this->customer, 'restaurant');
+            $promoData = $this->getPromoData($request, auth('customers')->user(), 'restaurant');
 
             $menuCart->promocode_id = $promoData['promocode_id'];
             $menuCart->promocode = $promoData['promocode'];
@@ -344,7 +337,7 @@ class RestaurantCartController extends CartController
 
     public function removePromocode()
     {
-        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
+        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', auth('customers')->user()->id)->first();
         if (!$menuCart) {
             return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
@@ -360,7 +353,7 @@ class RestaurantCartController extends CartController
 
     public function checkout(Request $request)
     {
-        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
+        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', auth('customers')->user()->id)->first();
         if (!$menuCart || !isset($menuCart->menuCartItems) || $menuCart->menuCartItems->count() === 0) {
             return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
@@ -398,7 +391,7 @@ class RestaurantCartController extends CartController
 
     public function updateAddress(Request $request)
     {
-        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', $this->customer->id)->first();
+        $menuCart = MenuCart::with('menuCartItems')->where('customer_id', auth('customers')->user()->id)->first();
         if (!$menuCart || !isset($menuCart->menuCartItems) || $menuCart->menuCartItems->count() === 0) {
             return $this->generateResponse($this->resMes['restaurant_cart']['empty'], 400, true);
         }
