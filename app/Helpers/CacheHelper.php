@@ -24,27 +24,6 @@ trait CacheHelper
         });
     }
 
-    public static function getCategoryIdsByBranch($branchId)
-    {
-        return Cache::remember('category_ids_branch_' . $branchId, 86400, function () use ($branchId) {
-            return DB::table('menus as m')
-                ->join('restaurant_branch_menu_map as rbmm', 'rbmm.menu_id', '=', 'm.id')
-                ->where('rbmm.restaurant_branch_id', $branchId)
-                ->where('m.is_enable', 1)
-                ->where('rbmm.is_available', 1)
-                ->pluck('restaurant_category_id');
-        });
-    }
-
-    public static function forgetCategoryIdsByBranchCache($menuId)
-    {
-        $branchIds = DB::table('restaurant_branch_menu_map')->where('menu_id', $menuId)->pluck('restaurant_branch_id');
-
-        foreach ($branchIds as $branchId) {
-            Cache::forget('category_ids_branch_' . $branchId);
-        }
-    }
-
     public static function getRestaurantCategoryById($categoryId)
     {
         return Cache::remember('restaurant_category_id_' . $categoryId, 86400, function () use ($categoryId) {
@@ -98,13 +77,6 @@ trait CacheHelper
     {
         return Cache::remember('restaurant_category_id_slug_' . $slug, 86400, function () use ($slug) {
             return DB::table('restaurant_categories')->where('slug', $slug)->value('id');
-        });
-    }
-
-    public static function getAllRestaurantBranchesByRestaurantId($restaurantId)
-    {
-        return Cache::remember('all_restaurant_branches_restaurant_id' . $restaurantId, 86400, function () use ($restaurantId) {
-            return RestaurantBranch::where('restaurant_id', $restaurantId)->get();
         });
     }
 }
