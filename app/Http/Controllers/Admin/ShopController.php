@@ -72,7 +72,7 @@ class ShopController extends Controller
 
     public function toggleOfficial($slug)
     {
-        return $this->shopRepository->toggleEnable($slug);
+        return $this->shopRepository->toggleOfficial($slug);
     }
 
     public function getShopsByBrand($slug)

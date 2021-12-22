@@ -25,6 +25,7 @@ class RestaurantBranch extends BaseModel
         'free_delivery' => 'boolean',
         'pre_order' => 'boolean',
         'instant_order' => 'boolean',
+        'extra_charges' => 'array',
     ];
 
     public function toSearchableArray(): array

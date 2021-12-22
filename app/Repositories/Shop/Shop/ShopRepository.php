@@ -26,7 +26,7 @@ class ShopRepository extends BaseRepository implements ShopRepositoryInterface
 
     public function getAllByBrand($slug)
     {
-        $brandId = $this->getBrandIdBySlug($slug);
+        $brandId = Brand::where('slug', $slug)->firstOrFail()->id;
 
         $shopIds = $this->model->whereHas('products', function ($query) use ($brandId) {
             $query->where('brand_id', $brandId);
@@ -87,10 +87,5 @@ class ShopRepository extends BaseRepository implements ShopRepositoryInterface
         foreach ($shopTags as $shopTag) {
             cache()->forget('shop_ids_tag_' . $shopTag);
         }
-    }
-
-    private function getBrandIdBySlug($slug)
-    {
-        return Brand::where('slug', $slug)->firstOrFail()->id;
     }
 }

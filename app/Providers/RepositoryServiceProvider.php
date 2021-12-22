@@ -8,6 +8,8 @@ use App\Repositories\BaseRepository;
 use App\Repositories\BaseRepositoryInterface;
 use App\Repositories\DriverRealtimeDataRepository;
 use App\Repositories\RestaurantOrderDriverStatusRepository;
+use App\Repositories\Restaurant\RestaurantBranch\RestaurantBranchRepository;
+use App\Repositories\Restaurant\RestaurantBranch\RestaurantBranchRepositoryInterface;
 use App\Repositories\Shop\Brand\BrandRepository;
 use App\Repositories\Shop\Brand\BrandRepositoryInterface;
 use App\Repositories\Shop\Product\ProductRepository;
@@ -42,6 +44,8 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(ShopSubCategoryRepositoryInterface::class, ShopSubCategoryRepository::class);
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
         $this->app->bind(ShopOrderRepositoryInterface::class, ShopOrderRepository::class);
+
+        $this->app->bind(RestaurantBranchRepositoryInterface::class, RestaurantBranchRepository::class);
 
         $this->app->bind(RestaurantOrderDriverStatusRepositoryInterface::class, RestaurantOrderDriverStatusRepository::class);
         $this->app->bind(DriverRealtimeDataRepositoryInterface::class, DriverRealtimeDataRepository::class);
