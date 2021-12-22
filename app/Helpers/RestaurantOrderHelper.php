@@ -477,6 +477,7 @@ trait RestaurantOrderHelper
         $validatedData['restaurant_branch_info'] = $restaurantBranch;
         $validatedData['restaurant_id'] = $restaurantBranch->restaurant->id;
         $validatedData['restaurant_branch_id'] = $restaurantBranch->id;
+        $validatedData['extra_charges'] = $restaurantBranch->extra_charges;
 
         return $validatedData;
     }
