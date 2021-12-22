@@ -19,6 +19,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SendSms;
 use App\Models\Customer;
 use App\Models\Promocode;
+use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderItem;
@@ -273,6 +274,31 @@ class RestaurantOrderController extends Controller
 
         $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
             ->where('restaurant_branch_id', $restaurantBranch->id)
+            ->whereBetween('order_date', array($request->from, $request->to))
+            ->where(function ($query) use ($request) {
+                $query->whereHas('restaurantOrderContact', function ($q) use ($request) {
+                    $q->where('customer_name', 'LIKE', '%' . $request->filter . '%')
+                        ->orWhere('phone_number', $request->filter);
+                })
+                    ->orWhere('id', ltrim(ltrim($request->filter, 'BHR'), '0'));
+            })
+            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
+            ->get();
+
+        return $this->generateResponse($restaurantOrders, 200);
+    }
+
+    public function getCentralRestaurantOrders(Request $request, Restaurant $restaurant)
+    {
+        $vendorId = Auth::guard('vendors')->user()->restaurant_id;
+        if ($vendorId !== $restaurant->id) {
+            abort(404);
+        }
+
+        $sorting = CollectionHelper::getSorting('restaurant_orders', 'id', $request->by ? $request->by : 'desc', $request->order);
+
+        $restaurantOrders = RestaurantOrder::with('RestaurantOrderContact', 'RestaurantOrderItems')
+            ->where('restaurant_id', $restaurant->id)
             ->whereBetween('order_date', array($request->from, $request->to))
             ->where(function ($query) use ($request) {
                 $query->whereHas('restaurantOrderContact', function ($q) use ($request) {

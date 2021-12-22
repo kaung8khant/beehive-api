@@ -35,6 +35,8 @@ Route::group([
         Route::put('restaurant-branches/{restaurantBranch}/update', 'Admin\RestaurantBranchController@updateWithTagsAndCategories');
         Route::get('restaurant-categories', 'Admin\RestaurantCategoryController@index');
         Route::get('restaurant-tags', 'Admin\RestaurantTagController@index');
+        Route::put('restaurants/{restaurant}', 'Admin\RestaurantController@update');
+
 
         /* menus */
         Route::get('restaurant-branches/{restaurantBranch}/menus', 'Admin\MenuController@getMenusByBranch');

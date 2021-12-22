@@ -82,7 +82,7 @@ class VendorAuthController extends Controller
 
     public function getProfile()
     {
-        $user = User::with('shop', 'restaurantBranch', 'restaurantBranch.restaurant', 'roles', 'restaurantBranch.restaurant.availableTags', 'restaurantBranch.restaurant.availableCategories', 'shop.availableTags', 'shop.availableCategories')->where('id', Auth::guard('vendors')->user()->id)->get();
+        $user = User::with('shop', 'restaurant', 'restaurantBranch', 'restaurantBranch.restaurant', 'roles', 'restaurantBranch.restaurant.availableTags', 'restaurantBranch.restaurant.availableCategories', 'shop.availableTags', 'shop.availableCategories')->where('id', Auth::guard('vendors')->user()->id)->get();
 
         return response()->json($user);
     }

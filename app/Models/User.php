@@ -24,6 +24,7 @@ class User extends Authenticatable implements JWTSubject
         'pivot',
         'shop_id',
         'restaurant_branch_id',
+        'restaurant_id',
     ];
 
     protected $casts = [
