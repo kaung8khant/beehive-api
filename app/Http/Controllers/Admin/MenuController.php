@@ -79,7 +79,7 @@ class MenuController extends Controller
             $this->createOptions($request, $menu->id, $validatedData['menu_options']);
         }
 
-        $restaurantBranches = CacheHelper::getAllRestaurantBranchesByRestaurantId($validatedData['restaurant_id']);
+        $restaurantBranches = RestaurantBranch::where('restaurant_id', $validatedData['restaurant_id'])->get();
 
         foreach ($restaurantBranches as $branch) {
             $branch->availableMenus()->attach($menu->id);
@@ -99,7 +99,6 @@ class MenuController extends Controller
         $oldRestaurantId = $menu->restaurant_id;
 
         $menu->update($validatedData);
-        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         DataChanged::dispatch($this->user, 'update', 'menus', $menu->slug, $request->url(), 'success', $request->all());
 
         if ($request->image_slug) {
@@ -128,8 +127,8 @@ class MenuController extends Controller
         // }
 
         if ($oldRestaurantId !== $validatedData['restaurant_id']) {
-            $newBranches = CacheHelper::getAllRestaurantBranchesByRestaurantId($validatedData['restaurant_id']);
-            $oldBranches = CacheHelper::getAllRestaurantBranchesByRestaurantId($oldRestaurantId);
+            $newBranches = RestaurantBranch::where('restaurant_id', $validatedData['restaurant_id'])->get();
+            $oldBranches = RestaurantBranch::where('restaurant_id', $oldRestaurantId)->get();
 
             foreach ($oldBranches as $branch) {
                 $branch->availableMenus()->detach($menu->id);
@@ -152,7 +151,6 @@ class MenuController extends Controller
         }
 
         DataChanged::dispatch($this->user, 'delete', 'menus', $menu->slug, $request->url(), 'success');
-        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         $menu->delete();
 
         return response()->json(['message' => 'Successfully deleted.'], 200);
@@ -262,7 +260,6 @@ class MenuController extends Controller
     public function toggleEnable(Request $request, Menu $menu)
     {
         $menu->update(['is_enable' => !$menu->is_enable]);
-        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
 
         $status = $menu->is_enable ? 'enable' : 'disable';
         DataChanged::dispatch($this->user, $status, 'menus', $menu->slug, $request->url(), 'success');
@@ -281,7 +278,6 @@ class MenuController extends Controller
             $menu = Menu::where('slug', $slug)->firstOrFail();
 
             $menu->update(['is_enable' => $request->is_enable]);
-            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
 
             $status = $menu->is_enable ? 'enable' : 'disable';
             DataChanged::dispatch($this->user, $status, 'menus', $menu->slug, $request->url(), 'success');
@@ -307,7 +303,6 @@ class MenuController extends Controller
             }
 
             DataChanged::dispatch($this->user, 'delete', 'menus', $menu->slug, $request->url(), 'success');
-            CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
             $menu->delete();
         }
 
@@ -410,7 +405,6 @@ class MenuController extends Controller
         ]);
 
         $menu->update($validatedData);
-        CacheHelper::forgetCategoryIdsByBranchCache($menu->id);
         DataChanged::dispatch($this->user, 'update', 'menus', $menu->slug, $request->url(), 'success', $request->all());
 
         return response()->json($menu->load('restaurant', 'restaurantCategory'), 200);
