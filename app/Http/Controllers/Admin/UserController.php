@@ -79,13 +79,13 @@ class UserController extends Controller
             ->paginate(10);
     }
 
-    public function getRestaurantVendorUsers(Request $request)
+    public function getCentralRestaurantUsers(Request $request)
     {
         $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
 
         return User::with('roles')->with('restaurant')
             ->whereHas('roles', function ($q) {
-                $q->where('name', 'RestaurantVendor');
+                $q->where('name', 'CentralRestaurant');
             })
             ->where(function ($q) use ($request) {
                 $q->where('username', 'LIKE', '%' . $request->filter . '%')
@@ -171,11 +171,11 @@ class UserController extends Controller
         return response()->json($user->refresh()->load(['restaurantBranch', 'restaurantBranch.restaurant']), 201);
     }
 
-    public function storeRestaurantVendorUser(Request $request)
+    public function storeCentralRestaurantUser(Request $request)
     {
         $request['slug'] = $this->generateUniqueSlug();
 
-        $validatedData = $this->validateUserCreate($request, 'restaurantVendor');
+        $validatedData = $this->validateUserCreate($request, 'centralRestaurant');
         $validatedData['restaurant_id'] = $this->getRestaruantId($request->restaurant_slug);
         $user = User::create($validatedData);
 
@@ -183,7 +183,7 @@ class UserController extends Controller
             $this->updateFile($request->image_slug, 'users', $user->slug);
         }
 
-        $restaurantRoleId = Role::where('name', 'RestaurantVendor')->first()->id;
+        $restaurantRoleId = Role::where('name', 'CentralRestaurant')->first()->id;
         $user->roles()->attach($restaurantRoleId);
 
         return response()->json($user->refresh()->load(['restaurant']), 201);
@@ -271,9 +271,9 @@ class UserController extends Controller
         return response()->json($user->refresh()->load(['restaurantBranch', 'restaurantBranch.restaurant']), 201);
     }
 
-    public function updateRestaurantVendorUser(Request $request, User $user)
+    public function updateCentralRestaurantUser(Request $request, User $user)
     {
-        $validatedData = $this->validateUserUpdate($request, $user->id, 'restaurantVendor');
+        $validatedData = $this->validateUserUpdate($request, $user->id, 'centralRestaurant');
         $validatedData['restaurant_id'] = $this->getRestaruantId($request->restaurant_slug);
         $user->update($validatedData);
 
@@ -379,7 +379,7 @@ class UserController extends Controller
         } elseif ($type === 'admin') {
             $rules['roles'] = 'required|array';
         // $rules['roles.*'] = 'required|exists:App\Models\Role,slug';
-        } elseif ($type === 'restaurantVendor') {
+        } elseif ($type === 'centralRestaurant') {
             $rules['restaurant_slug'] = 'required|exists:App\Models\Restaurant,slug';
         }
 
