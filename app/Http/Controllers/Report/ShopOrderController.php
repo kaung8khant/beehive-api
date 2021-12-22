@@ -44,7 +44,7 @@ class ShopOrderController extends Controller
 
     public function getShopSaleReport(Request $request)
     {
-        $shopOrderVendors = ShopOrderVendor::whereHas('shopOrder', function ($query) use ($request) {
+        $shopOrderVendors = ShopOrderVendor::with(['shop'])->whereHas('shopOrder', function ($query) use ($request) {
             $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
         })->get()->groupBy('shop_id');
         $shopOrders = ShopOrder::whereBetween('order_date', [$request->from, $request->to])
@@ -60,7 +60,7 @@ class ShopOrderController extends Controller
 
     public function getProductSaleInvoiceReport(Request $request)
     {
-        $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
+        $shopOrderItems = ShopOrderItem::with(['product', 'shop'])->whereHas('vendor.shopOrder', function ($query) use ($request) {
             $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
         })->get();
 
@@ -84,7 +84,7 @@ class ShopOrderController extends Controller
 
     public function getProductByShopSaleInvoiceReport(Request $request, Shop $shop)
     {
-        $shopOrderItems = ShopOrderItem::whereHas('vendor.shopOrder', function ($query) use ($request) {
+        $shopOrderItems = ShopOrderItem::with(['product', 'shop'])->whereHas('vendor.shopOrder', function ($query) use ($request) {
             $query->whereBetween('order_date', array($request->from, $request->to))->where('order_status', '!=', 'cancelled');
         })->where('shop_id', $shop->id)->get();
 
@@ -258,8 +258,6 @@ class ShopOrderController extends Controller
 
         foreach ($shopOrderVendors as $group) {
             foreach ($group as $vendor) {
-                $shop = Shop::where('id', $vendor->shop_id)->first();
-
                 $amount = $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->amount;
                 $commission = $vendor->shopOrder->order_status == 'cancelled' ? 0 : $vendor->commission;
                 $commissionCt = $commission * 0.05;
@@ -273,7 +271,7 @@ class ShopOrderController extends Controller
                 $balanceSum += $balance;
             }
             $data[] = [
-                'shop' => $shop->name,
+                'shop' => $vendor->shop->name,
                 'revenue' => $amount,
                 'commercial_tax' => $vendor->shopOrder->order_status != 'cancelled' && $vendor->tax ? $vendor->tax : 0,
                 'discount' => $vendor->shopOrder->order_status != 'cancelled' && $vendor->discount ? $vendor->discount : 0,
@@ -321,18 +319,15 @@ class ShopOrderController extends Controller
             $commissionCtSum += $commissionCt;
             $balanceSum += $balance;
 
-            $shop = Shop::where('id', $item->shop_id)->first();
-            $product = Product::where('id', $item->product_id)->first();
-
             $data[] = [
                 'order_no' =>  $item->vendor->shopOrder->order_no,
                 'invoice_no' =>  $item->vendor->shopOrder->invoice_no,
                 'order_date' => Carbon::parse($item->vendor->shopOrder->order_date)->format('M d Y h:i a'),
                 'invoice_date' =>$item->vendor->shopOrder->invoice_date? Carbon::parse($item->vendor->shopOrder->invoice_date)->format('M d Y h:i a') :null,
-                'code' => $product ? $product->code:null,
+                'code' => $item->product ? $item->product->code:null,
                 'product_name' => $item->product_name,
                 'price' => $item->amount,
-                'shop' => $shop->name,
+                'shop' => $item->shop->name,
                 'vendor_price' => $item->vendor_price,
                 'variant' => $item->variant,
                 'quantity' => $quantity,

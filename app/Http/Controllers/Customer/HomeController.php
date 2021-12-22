@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Customer;
 
 use Algolia\ScoutExtended\Facades\Algolia;
 use App\Events\KeywordSearched;
-use App\Exceptions\ForbiddenException;
 use App\Helpers\AuthHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\RestaurantOrderHelper;
@@ -14,7 +13,6 @@ use App\Models\Customer;
 use App\Models\Menu;
 use App\Models\Product;
 use App\Models\RestaurantBranch;
-use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -284,14 +282,19 @@ class HomeController extends Controller
 
     public function getAds(Request $request)
     {
+        $ads = Ads::where('type', request('type'));
 
-        $ads = Ads::where('type', $request->type);
-
-        if ($request->source) {
-            $ads = $ads->where('source', $request->source);
+        if (request('source')) {
+            $ads = $ads->where('source', request('source'));
         }
 
-        $result = $ads->exclude(['contact_person', 'company_name', 'phone_number', 'email', 'created_by', 'updated_by', 'created_at', 'updated_at'])->paginate(10)->items();
+        $result = $ads->orderBy('search_index', 'desc')
+            ->orderBy('id', 'desc')
+            ->exclude([
+                'contact_person', 'company_name', 'phone_number', 'email', 'created_by', 'updated_by', 'created_at', 'updated_at',
+            ])
+            ->paginate(10)
+            ->items();
 
         return $this->generateResponse($result, 200);
     }
