@@ -109,9 +109,10 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
 
     private function createProductVariants($productId, $productVariants)
     {
-        foreach ($productVariants as $variant) {
+        foreach ($productVariants as $key => $variant) {
             $variant['slug'] = StringHelper::generateUniqueSlugWithTable('product_variants');
             $variant['product_id'] = $productId;
+            $variant['code'] = sprintf('%02d', $key + 1);
 
             $variant = ProductVariant::create($variant);
             DataChanged::dispatch($this->user, 'create', $variant->getTable(), $variant['slug'], request()->url(), 'success', $variant);
