@@ -31,8 +31,9 @@ class ShopOrderService
 
     public function store($validatedData)
     {
-        $validatedData = $this->prepareProductVariants($validatedData);
         $customer = $this->shopOrderRepository->getCustomerBySlug($validatedData['customer_slug']);
+        $validatedData = $this->prepareProductVariants($validatedData);
+        $validatedData['customer_id'] = $customer->id;
 
         if (isset($validatedData['promo_code'])) {
             $validatedData = OrderHelper::getPromoData($validatedData, $customer);
