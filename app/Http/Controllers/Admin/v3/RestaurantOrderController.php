@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Log;
 
 class RestaurantOrderController extends Controller
 {
-    use PromocodeHelper, ResponseHelper, StringHelper, OrderAssignHelper;
+    use PromocodeHelper, ResponseHelper, OrderAssignHelper;
 
     protected $messageService;
     protected $paymentService;
@@ -87,12 +87,8 @@ class RestaurantOrderController extends Controller
     public function store(Request $request)
     {
         try {
-            $request['slug'] = $this->generateUniqueSlug();
+            $request['slug'] = StringHelper::generateUniqueSlugWithTable('restaurant_orders');
             $validatedData = RestaurantOrderHelper::validateOrderV3($request, true);
-
-            if (gettype($validatedData) == 'string') {
-                return $this->generateResponse($validatedData, 422, true);
-            }
 
             try {
                 $validatedData = RestaurantOrderHelper::prepareRestaurantVariants($validatedData);

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class RestaurantOrder extends BaseModel
@@ -21,9 +20,10 @@ class RestaurantOrder extends BaseModel
     ];
 
     protected $casts = [
-        'restaurant_branch_info' => AsArrayObject::class,
+        'restaurant_branch_info' => 'array',
         'delivery_fee' => 'float',
         'promocode_amount' => 'float',
+        'extra_charges' => 'array',
         'commission' => 'float',
     ];
 
@@ -90,7 +90,14 @@ class RestaurantOrder extends BaseModel
             $totalAmount += $amount;
         }
 
-        $totalAmount = $totalAmount - $this->promocode_amount + $this->delivery_fee;
+        $extraCharges = 0;
+        if ($this->extra_charges) {
+            foreach ($this->extra_charges as $extraCharge) {
+                $extraCharges += $extraCharge['value'];
+            }
+        }
+
+        $totalAmount = $totalAmount - $this->promocode_amount + $this->delivery_fee + $extraCharges;
         return $totalAmount < 0 ? 0 : $totalAmount;
     }
 
