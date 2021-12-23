@@ -117,8 +117,9 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                     $product = Product::create($productData);
 
                     ProductVariant::create([
-                        'product_id' => $product->id,
                         'slug' => StringHelper::generateUniqueSlugWithTable('product_variants'),
+                        'product_id' => $product->id,
+                        'code' => '00',
                         'variant' => json_decode('[{"name":"default","value":"Standard"}]'),
                         'price' => $row['price'],
                         'vendor_price' => $row['vendor_price'],
@@ -131,8 +132,8 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                     $productVariant->product->update($productData);
 
                     $productVariant->update([
-                        'product_id' => $productVariant->product->id,
                         'slug' => $row['product_variant_slug'],
+                        'product_id' => $productVariant->product->id,
                         'price' => $row['price'],
                         'vendor_price' => $row['vendor_price'],
                         'tax' => $row['tax'],
