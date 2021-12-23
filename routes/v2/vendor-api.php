@@ -39,6 +39,7 @@ Route::group([
 
 
         /* menus */
+        Route::get('restaurants/{restaurant}/menus', 'Admin\MenuController@getMenusByRestaurant');
         Route::get('restaurant-branches/{restaurantBranch}/menus', 'Admin\MenuController@getMenusByBranch');
         Route::get('restaurant-branches/{restaurantBranch}/menus-with-additionals', 'Admin\MenuController@getMenusByBranchWithAdditionals');
         Route::post('menus/status', 'Admin\MenuController@multipleStatusUpdate');
@@ -57,6 +58,7 @@ Route::group([
         Route::put('menus/{menu}/variants', 'Admin\MenuVariantController@updateVariants');
         Route::patch('menus/variants/{menuVariant:slug}/enable', 'Admin\MenuVariantController@toggleEnable');
         Route::get('restaurant-branches/{restaurantBranch}/customers', 'Admin\CustomerController@getCustomersByBranch');
+        Route::get('restaurants/{restaurant}/customers', 'Admin\CustomerController@getCustomersByRestaurant');
         /* restaurant */
 
         /* shop */
