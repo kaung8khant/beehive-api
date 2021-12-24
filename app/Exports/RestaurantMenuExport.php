@@ -21,7 +21,7 @@ class RestaurantMenuExport implements FromQuery, WithHeadings, WithMapping, With
     public function query()
     {
         return MenuVariant::with("menu", 'menu.restaurant', 'menu.restaurantCategory')->whereHas('menu.restaurant', fn ($q) =>
-            $q->where('slug', $this->params));
+        $q->where('slug', $this->params));
     }
 
     public function stringifyVariant($variants)
@@ -51,8 +51,8 @@ class RestaurantMenuExport implements FromQuery, WithHeadings, WithMapping, With
             $menuVariant->is_enable ? '1' : '0',
             $menuVariant->menu->restaurant->slug,
             $menuVariant->menu->restaurant->name,
-            $menuVariant->menu->restaurant->slug,
-            $menuVariant->menu->restaurant->name,
+            $menuVariant->menu->restaurantCategory->slug,
+            $menuVariant->menu->restaurantCategory->name,
         ];
     }
 
