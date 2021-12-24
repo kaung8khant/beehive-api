@@ -57,7 +57,8 @@ class CartController extends Controller
             'sub_total' => $this->getSubTotal($menuCart->menuCartItems->pluck('menu')),
             'total_tax' => $this->getTotalTax($menuCart->menuCartItems->pluck('menu')),
             'promo_amount' => $menuCart->promo_amount,
-            'total_amount' => $this->getTotalAmount($menuCart->menuCartItems->pluck('menu'), $menuCart->promo_amount) + $deliveryFee,
+            'extra_charges' => $branch->extra_charges,
+            'total_amount' => $this->getTotalAmount($menuCart->menuCartItems->pluck('menu'), $menuCart->promo_amount) + $this->calculateExtraCharges($branch->extra_charges) + $deliveryFee,
             'menus' => $menuCart->menuCartItems->pluck('menu'),
         ];
     }
@@ -97,6 +98,19 @@ class CartController extends Controller
         }
 
         return $tax;
+    }
+
+    private function calculateExtraCharges($extraCharges)
+    {
+        $amount = 0;
+
+        if ($extraCharges) {
+            foreach ($extraCharges as $extraCharge) {
+                $amount += $extraCharge['value'];
+            }
+        }
+
+        return $amount;
     }
 
     private function getTotalAmount($cartItems, $promoAmount)

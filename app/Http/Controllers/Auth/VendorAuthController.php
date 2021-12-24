@@ -49,7 +49,7 @@ class VendorAuthController extends Controller
             }
 
             $vendorRole = $user->roles->contains(function ($role) {
-                return $role->name === 'Shop' || $role->name === 'Restaurant';
+                return $role->name === 'Shop' || $role->name === 'Restaurant'|| $role->name === 'CentralRestaurant';
             });
 
             if (!$vendorRole) {
@@ -82,7 +82,7 @@ class VendorAuthController extends Controller
 
     public function getProfile()
     {
-        $user = User::with('shop', 'restaurantBranch', 'restaurantBranch.restaurant', 'roles', 'restaurantBranch.restaurant.availableTags', 'restaurantBranch.restaurant.availableCategories', 'shop.availableTags', 'shop.availableCategories')->where('id', Auth::guard('vendors')->user()->id)->get();
+        $user = User::with('shop', 'restaurant', 'restaurantBranch', 'restaurantBranch.restaurant', 'roles', 'restaurantBranch.restaurant.availableTags', 'restaurantBranch.restaurant.availableCategories', 'shop.availableTags', 'shop.availableCategories')->where('id', Auth::guard('vendors')->user()->id)->get();
 
         return response()->json($user);
     }

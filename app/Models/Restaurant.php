@@ -107,4 +107,9 @@ class Restaurant extends BaseModel
     {
         return $this->belongsToMany(Customer::class, 'favorite_restaurant');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'users', 'id');
+    }
 }
