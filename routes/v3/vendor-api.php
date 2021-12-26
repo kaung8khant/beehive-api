@@ -18,6 +18,7 @@ Route::group([
     Route::get('restaurant-branches/{restaurantBranch}/orders', 'RestaurantOrderController@getBranchOrders');
     Route::delete('restaurant-order-items/{restaurantOrderItem}/cancel', 'RestaurantOrderController@cancelOrderItem');
     Route::delete('restaurant-orders/{restaurantOrder}/restaurant-order-items/{restaurantOrderItem}/cancel', 'RestaurantOrderController@cancelOrderItem');
+    Route::get('restaurants/{restaurant}/orders', 'RestaurantOrderController@getCentralRestaurantOrders');
 
     /* Menu Option */
     Route::resource('menus/{menu}/options', 'MenuOptionController', ['as' => 'vendor-v3-menu-option', 'except' => ['create', 'edit']]);

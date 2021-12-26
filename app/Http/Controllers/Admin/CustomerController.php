@@ -8,6 +8,7 @@ use App\Helpers\v3\OrderHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerGroup;
+use App\Models\Restaurant;
 use App\Models\RestaurantBranch;
 use App\Models\RestaurantOrder;
 use App\Models\Shop;
@@ -244,6 +245,24 @@ class CustomerController extends Controller
     public function getCustomersByBranch(Request $request, RestaurantBranch $restaurantBranch)
     {
         $customerIds = RestaurantOrder::where('restaurant_branch_id', $restaurantBranch->id)->pluck('customer_id')->filter()->unique()->values();
+
+        $customers = Customer::whereIn('id', $customerIds)
+            ->where(function ($query) use ($request) {
+                $query->where('email', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
+                    ->orWhere('slug', $request->filter);
+            })
+            ->orderBy('name')
+            ->paginate($request->size);
+
+        $this->optimizeCustomers($customers);
+        return CollectionHelper::removePaginateLinks($customers);
+    }
+
+    public function getCustomersByRestaurant(Request $request, Restaurant $restaurant)
+    {
+        $customerIds = RestaurantOrder::where('restaurant_id', $restaurant->id)->pluck('customer_id')->filter()->unique()->values();
 
         $customers = Customer::whereIn('id', $customerIds)
             ->where(function ($query) use ($request) {

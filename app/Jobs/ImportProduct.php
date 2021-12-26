@@ -10,6 +10,7 @@ use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Models\ShopMainCategory;
 use App\Models\ShopSubCategory;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -128,6 +129,9 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                 } else {
                     $productData['slug'] = $productVariant->product->slug;
                     $productData['variants'] = $productVariant->product->variants;
+                    if (isset($productVariant->product->created_by)) {
+                        $productData['created_by'] =User::where('slug', $productVariant->product->created_by->slug)->first()->id;
+                    }
                     $productVariant->product->update($productData);
 
                     $productVariant->update([
