@@ -24,6 +24,7 @@ class User extends Authenticatable implements JWTSubject
         'pivot',
         'shop_id',
         'restaurant_branch_id',
+        'restaurant_id',
     ];
 
     protected $casts = [
@@ -107,6 +108,11 @@ class User extends Authenticatable implements JWTSubject
     public function restaurantBranch()
     {
         return $this->belongsTo(RestaurantBranch::class, 'restaurant_branch_id');
+    }
+
+    public function restaurant()
+    {
+        return $this->belongsTo(Restaurant::class, 'restaurant_id');
     }
 
     public function sessions()
