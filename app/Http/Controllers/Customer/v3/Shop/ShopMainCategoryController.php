@@ -21,9 +21,11 @@ class ShopMainCategoryController extends Controller
                     $query->exclude(['created_by', 'updated_by'])->orderBy('search_index', 'desc')->orderBy('name', 'asc');
                 },
                 'shopCategories.shopSubCategories' => function ($query) {
-                    $query->exclude(['created_by', 'updated_by'])->orderBy('search_index', 'desc')->orderBy('name', 'asc');
+
+                    $query->whereHas("products")->exclude(['created_by', 'updated_by'])->orderBy('search_index', 'desc')->orderBy('name', 'asc');
                 },
-            ]);
+
+            ])->whereHas('shopCategories.products');
         }
 
         return ResponseHelper::generateResponse($shopMainCategories->get(), 200);
