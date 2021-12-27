@@ -227,8 +227,6 @@ class VendorDashboardController extends Controller
     public function getCentralRestaurantBranchEarning()
     {
         $today = Carbon::now();
-        $startDate = Carbon::now()->subMonths(11)->startOfMonth();
-        $endDate = Carbon::now();
         $restaurant = Restaurant::with('restaurantBranches')->where('id', $this->vendorId)->first();
 
         $data = [];
@@ -236,8 +234,7 @@ class VendorDashboardController extends Controller
         foreach ($restaurant->restaurantBranches as $key) {
             $totalAmount = DB::table('restaurant_orders as o')
             ->join('restaurant_order_items as oi', 'o.id', '=', 'oi.restaurant_order_id')
-            ->where('o.order_date', '>', $startDate->format('Y-m-d H:i:s'))
-            ->where('o.order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->whereDate('o.order_date', $today->format('Y-m-d'))
             ->where('o.order_status', '!=', 'cancelled')
             ->where('o.restaurant_branch_id', $key->id)
             ->sum(DB::raw('(amount + tax - discount) * quantity'));
