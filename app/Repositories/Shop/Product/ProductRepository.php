@@ -11,6 +11,7 @@ use App\Models\ProductVariant;
 use App\Models\Shop;
 use App\Models\ShopCategory;
 use App\Repositories\BaseRepository;
+use Illuminate\Support\Facades\DB;
 
 class ProductRepository extends BaseRepository implements ProductRepositoryInterface
 {
@@ -63,13 +64,18 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
 
     public function create(array $attributes)
     {
-        $model = $this->model->create($attributes);
-        DataChanged::dispatch($this->user, 'create', $this->model->getTable(), $attributes['slug'], request()->url(), 'success', $attributes);
-        $this->updateImagesIfExist($model->slug);
+        $model = DB::transaction(function () use ($attributes) {
+            $model = $this->model->create($attributes);
 
-        if (isset($attributes['product_variants'])) {
-            $this->createProductVariants($model->id, $attributes['product_variants']);
-        }
+            if (isset($attributes['product_variants'])) {
+                $this->createProductVariants($model->id, $attributes['product_variants']);
+            }
+
+            return $model;
+        });
+
+        $this->updateImagesIfExist($model->slug);
+        DataChanged::dispatch($this->user, 'create', $this->model->getTable(), $attributes['slug'], request()->url(), 'success', $attributes);
 
         return $model;
     }
@@ -113,7 +119,7 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
             $variant['slug'] = StringHelper::generateUniqueSlugWithTable('product_variants');
             $variant['product_id'] = $productId;
 
-            if (count($variant->variant) === 1 && $variant->variant[0]['name'] === 'default') {
+            if (count($variant['variant']) === 1 && $variant['variant'][0]['name'] === 'default') {
                 $variant['code'] = sprintf('%02d', $key);
             } else {
                 $variant['code'] = sprintf('%02d', $key + 1);
