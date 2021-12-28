@@ -105,6 +105,7 @@ Route::group([
 
         Route::get('reports/restaurant-orders/vendor/{slug}', 'Report\RestaurantOrderController@getVendorOrders');
         Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
+        Route::get('reports/restaurant-orders/restaurants/{slug}', 'Report\RestaurantOrderController@getBranchSaleReportByRestaurant');
         Route::get('reports/shop-orders/vendor/{shop}/product-by-shop-sales', 'Report\ShopOrderController@getProductByShopSaleReport');
 
         Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
