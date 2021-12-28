@@ -25,6 +25,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     {
         return [
             $productVatiant->product->code,
+            $productVatiant->code,
             $productVatiant->slug,
             $productVatiant->product->name,
             $productVatiant->product->description,
@@ -52,6 +53,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     {
         return [
             'code',
+            'product_variant_code',
             'product_variant_slug',
             'name',
             'description',
@@ -101,6 +103,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'S' => ['alignment' => ['horizontal' => 'center']],
             'T' => ['alignment' => ['horizontal' => 'center']],
             'U' => ['alignment' => ['horizontal' => 'center']],
+            'V' => ['alignment' => ['horizontal' => 'center']],
         ];
     }
 
@@ -128,6 +131,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'S' => 25,
             'T' => 25,
             'U' => 25,
+            'W' => 25,
         ];
     }
 
