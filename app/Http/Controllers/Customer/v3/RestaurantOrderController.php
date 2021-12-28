@@ -140,7 +140,7 @@ class RestaurantOrderController extends Controller
         $uniqueKey = StringHelper::generateUniqueSlug();
 
         SendSms::dispatch($uniqueKey, [$this->customer->phone_number], $message, 'order', $smsData, $this->messageService);
-        OrderHelper::createOrderStatus($order->id, 'cancelled');
+        OrderHelper::createOrderStatus($order, 'cancelled');
 
         return $this->generateResponse($message, 200, true);
     }
@@ -175,7 +175,7 @@ class RestaurantOrderController extends Controller
     {
         $order = DB::transaction(function () use ($validatedData) {
             $order = RestaurantOrder::create($validatedData);
-            OrderHelper::createOrderStatus($order->id);
+            OrderHelper::createOrderStatus($order);
             OrderHelper::createOrderContact($order->id, $validatedData['customer_info'], $validatedData['address']);
             OrderHelper::createOrderItems($order->id, $validatedData['order_items']);
             return $order->refresh()->load('restaurantOrderContact', 'restaurantOrderItems');
