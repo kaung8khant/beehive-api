@@ -16,16 +16,17 @@ class ShopMainCategoryController extends Controller
         $shopMainCategories = ShopMainCategory::exclude(['created_by', 'updated_by'])->orderBy('search_index', 'desc')->orderBy('name', 'asc');
 
         if ($request->populate && (bool) $request->populate) {
-            $shopMainCategories->with([
-                'shopCategories' => function ($query) {
-                    $query->exclude(['created_by', 'updated_by'])->orderBy('search_index', 'desc')->orderBy('name', 'asc');
-                },
-                'shopCategories.shopSubCategories' => function ($query) {
-
-                    $query->whereHas("products")->exclude(['created_by', 'updated_by'])->orderBy('search_index', 'desc')->orderBy('name', 'asc');
-                },
-
-            ])->whereHas('shopCategories.products');
+            $shopMainCategories
+                ->whereHas('shopCategories.products')
+                ->whereHas('shopCategories.shopSubCategories.products')
+                ->with([
+                    'shopCategories' => function ($query) {
+                        $query->exclude(['created_by', 'updated_by'])->orderBy('search_index', 'desc')->orderBy('name', 'asc');
+                    },
+                    'shopCategories.shopSubCategories' => function ($query) {
+                        $query->exclude(['created_by', 'updated_by'])->orderBy('search_index', 'desc')->orderBy('name', 'asc');
+                    },
+                ]);
         }
 
         return ResponseHelper::generateResponse($shopMainCategories->get(), 200);
