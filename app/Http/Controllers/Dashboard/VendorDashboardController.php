@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\Product;
+use App\Models\Restaurant;
 use App\Models\ShopOrder;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -223,6 +224,36 @@ class VendorDashboardController extends Controller
         return response()->json($result);
     }
 
+    public function getCentralRestaurantBranchEarning()
+    {
+        $today = Carbon::now();
+        $restaurant = Restaurant::with('restaurantBranches')->where('id', $this->vendorId)->first();
+
+        $data = [];
+
+        foreach ($restaurant->restaurantBranches as $key) {
+            $totalAmount = DB::table('restaurant_orders as o')
+            ->join('restaurant_order_items as oi', 'o.id', '=', 'oi.restaurant_order_id')
+            ->whereDate('o.order_date', $today->format('Y-m-d'))
+            ->where('o.order_status', '!=', 'cancelled')
+            ->where('o.restaurant_branch_id', $key->id)
+            ->sum(DB::raw('(amount + tax - discount) * quantity'));
+
+            $branchData = [
+                    'name' => $key->name,
+                    'total_amount' => $totalAmount,
+                ];
+
+            array_push($data, $branchData);
+        }
+
+        $result = [
+            'data' => $data,
+        ];
+
+        return response()->json($result);
+    }
+
     private function getCentralRestaurantEarning($date)
     {
         return DB::table('restaurant_order_items as oi')
@@ -256,7 +287,7 @@ class VendorDashboardController extends Controller
         if ($this->userRole === 'Restaurant') {
             $result = $this->getRestaurantTopSellings();
         } elseif ($this->userRole === 'CentralRestaurant') {
-            $result = $this->getRestaurantTopSellings();
+            $result = $this->getCentralRestaurantTopSellings();
         } elseif ($this->userRole === 'Shop') {
             $result = $this->getShopTopSellings();
         }

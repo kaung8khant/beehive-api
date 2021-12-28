@@ -12,6 +12,29 @@ use Illuminate\Http\Request;
 
 class RestaurantOrderController extends Controller
 {
+    public function getBranchSaleReportByRestaurant(Request $request, $slug)
+    {
+        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+
+        return RestaurantOrder::where('restaurant_id', $restaurant->id)
+            ->pluck('restaurant_branch_id')
+            ->unique()
+            ->map(function ($branchId) {
+                $branch = RestaurantBranch::where('id', $branchId)->first(['name', 'id','slug']);
+                return $branch;
+            })
+            ->map(function ($branch) use ($request) {
+                $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')
+                ->where('restaurant_branch_id', $branch->id)
+                ->orderBy('restaurant_id')
+                ->orderBy('restaurant_branch_id')
+                ->orderBy('id');
+                $restaurantOrders=$this->filterByDate($restaurantOrders, $request->from, $request->to, $request->filterBy);
+                $branch['report'] = $this->generateReport($restaurantOrders, $request->from, $request->to, $request->filterBy);
+                return $branch;
+            });
+    }
+
     public function getAllOrders(Request $request)
     {
         $restaurantOrders = RestaurantOrder::with('restaurantOrderContact')

@@ -23,6 +23,7 @@ Route::group([
         Route::get('dashboard/order-data', 'Dashboard\VendorDashboardController@getOrderData');
         Route::get('dashboard/daywise-orders', 'Dashboard\VendorDashboardController@getDaywiseOrders');
         Route::get('dashboard/total-earnings', 'Dashboard\VendorDashboardController@getTotalEarnings');
+        Route::get('dashboard/branch-earnings', 'Dashboard\VendorDashboardController@getCentralRestaurantBranchEarning');
         Route::get('dashboard/top-sellings', 'Dashboard\VendorDashboardController@getTopSellings');
         Route::get('dashboard/recent-orders', 'Dashboard\VendorDashboardController@getRecentOrders');
         /* Dashboard */
@@ -104,6 +105,7 @@ Route::group([
 
         Route::get('reports/restaurant-orders/vendor/{slug}', 'Report\RestaurantOrderController@getVendorOrders');
         Route::get('reports/restaurant-orders/branch/{slug}', 'Report\RestaurantOrderController@getBranchOrders');
+        Route::get('reports/restaurant-orders/restaurants/{slug}', 'Report\RestaurantOrderController@getBranchSaleReportByRestaurant');
         Route::get('reports/shop-orders/vendor/{shop}/product-by-shop-sales', 'Report\ShopOrderController@getProductByShopSaleReport');
 
         Route::post('devices', 'OneSignal\OneSignalController@registerAdminDevice');
