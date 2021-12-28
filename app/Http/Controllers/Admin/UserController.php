@@ -31,7 +31,7 @@ class UserController extends Controller
 
         return User::with('roles')
             ->whereHas('roles', function ($q) {
-                $q->where('name', '!=', 'Shop')->where('name', '!=', 'Restaurant');
+                $q->where('name', '!=', 'Shop')->where('name', '!=', 'Restaurant')->where('name', '!=', 'Driver');
             })
             ->where(function ($q) use ($request) {
                 $q->where('username', 'LIKE', '%' . $request->filter . '%')
