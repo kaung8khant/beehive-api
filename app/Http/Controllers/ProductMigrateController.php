@@ -17,7 +17,11 @@ class ProductMigrateController extends Controller
 
         foreach ($products as $product) {
             foreach ($product->productVariants as $key => $variant) {
-                $variant->update(['code' => sprintf('%02d', $key + 1)]);
+                if (count($variant->variant) === 1 && $variant->variant[0]['name'] === 'default') {
+                    $variant->update(['code' => sprintf('%02d', $key)]);
+                } else {
+                    $variant->update(['code' => sprintf('%02d', $key + 1)]);
+                }
             }
         }
 

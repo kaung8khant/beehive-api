@@ -112,7 +112,12 @@ class ProductRepository extends BaseRepository implements ProductRepositoryInter
         foreach ($productVariants as $key => $variant) {
             $variant['slug'] = StringHelper::generateUniqueSlugWithTable('product_variants');
             $variant['product_id'] = $productId;
-            $variant['code'] = sprintf('%02d', $key + 1);
+
+            if (count($variant->variant) === 1 && $variant->variant[0]['name'] === 'default') {
+                $variant['code'] = sprintf('%02d', $key);
+            } else {
+                $variant['code'] = sprintf('%02d', $key + 1);
+            }
 
             $variant = ProductVariant::create($variant);
             DataChanged::dispatch($this->user, 'create', $variant->getTable(), $variant['slug'], request()->url(), 'success', $variant);
