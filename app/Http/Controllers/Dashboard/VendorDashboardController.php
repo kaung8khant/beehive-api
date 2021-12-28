@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\Product;
+use App\Models\Restaurant;
 use App\Models\ShopOrder;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,8 @@ class VendorDashboardController extends Controller
 
             if ($this->userRole === 'Restaurant') {
                 $this->vendorId = $user->restaurant_branch_id;
+            } elseif ($this->userRole === 'CentralRestaurant') {
+                $this->vendorId = $user->restaurant_id;
             } elseif ($this->userRole === 'Shop') {
                 $this->vendorId = $user->shop_id;
             }
@@ -33,11 +36,25 @@ class VendorDashboardController extends Controller
     {
         if ($this->userRole === 'Restaurant') {
             $result = $this->getRestaurantOrderData();
+        } elseif ($this->userRole === 'CentralRestaurant') {
+            $result = $this->getCentralRestaurantOrderData();
         } elseif ($this->userRole === 'Shop') {
             $result = $this->getShopOrderData();
         }
 
         return response()->json($result);
+    }
+
+    private function getCentralRestaurantOrderData()
+    {
+        return [
+            'pending_orders' => $this->getCentralRestaurantOrderStatus('pending'),
+            'preparing_orders' => $this->getCentralRestaurantOrderStatus('preparing'),
+            'delivered_orders' => $this->getCentralRestaurantOrderStatus('delivered'),
+            'cancelled_orders' => $this->getCentralRestaurantOrderStatus('cancelled'),
+            'total_orders' => $this->getCentralRestaurantOrderStatus(),
+            'rating' => $this->getCentralRestaurantRating(),
+        ];
     }
 
     private function getRestaurantOrderData()
@@ -50,6 +67,28 @@ class VendorDashboardController extends Controller
             'total_orders' => $this->getRestaurantOrderStatus(),
             'rating' => $this->getRestaurantRating(),
         ];
+    }
+
+    private function getCentralRestaurantOrderStatus($status = null)
+    {
+        $query = DB::table('restaurant_orders')
+            ->where('restaurant_id', $this->vendorId);
+
+        if ($status) {
+            $query->where('order_status', $status);
+        }
+
+        return $query->count();
+    }
+
+    private function getCentralRestaurantRating()
+    {
+        $rating = DB::table('restaurant_ratings')
+            ->where('target_id', $this->vendorId)
+            ->where('target_type', 'restaurant')
+            ->avg('rating');
+
+        return $rating ? round($rating, 1) : null;
     }
 
     private function getRestaurantOrderStatus($status = null)
@@ -117,11 +156,24 @@ class VendorDashboardController extends Controller
 
         if ($this->userRole === 'Restaurant') {
             $result = $this->getRestaurantDaywiseOrders($startDate, $endDate);
+        } elseif ($this->userRole === 'CentralRestaurant') {
+            $result = $this->getCentralRestaurantDaywiseOrders($startDate, $endDate);
         } elseif ($this->userRole === 'Shop') {
             $result = $this->getShopDaywiseOrders($startDate, $endDate);
         }
 
         return response()->json($result);
+    }
+
+    private function getCentralRestaurantDaywiseOrders($startDate, $endDate)
+    {
+        return DB::table('restaurant_orders')
+            ->where('order_date', '>', $startDate->format('Y-m-d H:i:s'))
+            ->where('order_date', '<', $endDate->format('Y-m-d') . ' 23:59:59')
+            ->where('restaurant_id', $this->vendorId)
+            ->select(DB::raw('DATE(order_date) AS date'), DB::raw('count(*) AS total_orders'))
+            ->groupBy('date')
+            ->get();
     }
 
     private function getRestaurantDaywiseOrders($startDate, $endDate)
@@ -157,6 +209,11 @@ class VendorDashboardController extends Controller
                 'today_earning' => $this->getRestaurantEarning($today),
                 'yesterday_earning' => $this->getRestaurantEarning($yesterday),
             ];
+        } elseif ($this->userRole === 'CentralRestaurant') {
+            $result = [
+                'today_earning' => $this->getCentralRestaurantEarning($today),
+                'yesterday_earning' => $this->getCentralRestaurantEarning($yesterday),
+            ];
         } elseif ($this->userRole === 'Shop') {
             $result = [
                 'today_earning' => $this->getShopEarning($today),
@@ -165,6 +222,45 @@ class VendorDashboardController extends Controller
         }
 
         return response()->json($result);
+    }
+
+    public function getCentralRestaurantBranchEarning()
+    {
+        $today = Carbon::now();
+        $restaurant = Restaurant::with('restaurantBranches')->where('id', $this->vendorId)->first();
+
+        $data = [];
+
+        foreach ($restaurant->restaurantBranches as $key) {
+            $totalAmount = DB::table('restaurant_orders as o')
+            ->join('restaurant_order_items as oi', 'o.id', '=', 'oi.restaurant_order_id')
+            ->whereDate('o.order_date', $today->format('Y-m-d'))
+            ->where('o.order_status', '!=', 'cancelled')
+            ->where('o.restaurant_branch_id', $key->id)
+            ->sum(DB::raw('(amount + tax - discount) * quantity'));
+
+            $branchData = [
+                    'name' => $key->name,
+                    'total_amount' => $totalAmount,
+                ];
+
+            array_push($data, $branchData);
+        }
+
+        $result = [
+            'data' => $data,
+        ];
+
+        return response()->json($result);
+    }
+
+    private function getCentralRestaurantEarning($date)
+    {
+        return DB::table('restaurant_order_items as oi')
+            ->join('restaurant_orders as o', 'o.id', '=', 'oi.restaurant_order_id')
+            ->whereDate('o.order_date', $date->format('Y-m-d'))
+            ->where('o.restaurant_id', $this->vendorId)
+            ->sum(DB::raw('(oi.amount + oi.tax - oi.discount) * oi.quantity'));
     }
 
     private function getRestaurantEarning($date)
@@ -190,11 +286,44 @@ class VendorDashboardController extends Controller
     {
         if ($this->userRole === 'Restaurant') {
             $result = $this->getRestaurantTopSellings();
+        } elseif ($this->userRole === 'CentralRestaurant') {
+            $result = $this->getCentralRestaurantTopSellings();
         } elseif ($this->userRole === 'Shop') {
             $result = $this->getShopTopSellings();
         }
 
         return response()->json($result);
+    }
+
+    private function getCentralRestaurantTopSellings()
+    {
+        $menusCount = DB::table('restaurant_order_items as oi')
+            ->join('restaurant_orders as o', 'o.id', '=', 'oi.restaurant_order_id')
+            ->where('o.restaurant_id', $this->vendorId)
+            ->select('oi.menu_id', DB::raw('count(*) as total_orders'))
+            ->groupBy('menu_id')
+            ->orderBy('total_orders', 'DESC')
+            ->limit(10)
+            ->get();
+
+        $result = [];
+        foreach ($menusCount as $key) {
+            if ($key->menu_id) {
+                $menu = Menu::find($key->menu_id);
+
+                $topSellingMenu = [
+                    'slug' => $menu->slug,
+                    'item_name' => $menu->name,
+                    'total_orders' => $key->total_orders,
+                    'total_earning' => $this->getTotalEarningByMenu($menu->id),
+                    'images' => $menu->images,
+                ];
+
+                array_push($result, $topSellingMenu);
+            }
+        }
+
+        return $result;
     }
 
     private function getRestaurantTopSellings()
@@ -276,14 +405,36 @@ class VendorDashboardController extends Controller
     {
         if ($this->userRole === 'Restaurant') {
             $result = $this->getRestaurantRecentOrders();
+        } elseif ($this->userRole === 'CentralRestaurant') {
+            $result = $this->getCentralRestaurantRecentOrders();
         } elseif ($this->userRole === 'Shop') {
-            // dd($this->userRole);
-
-            // return "ff";
             $result = $this->getShopRecentOrders();
         }
 
         return response()->json($result);
+    }
+
+    private function getCentralRestaurantRecentOrders()
+    {
+        $orders = DB::table('restaurant_orders')
+            ->where('restaurant_id', $this->vendorId)
+            ->select('id', 'order_status', 'slug')
+            ->orderBy('id', 'DESC')
+            ->limit(10)
+            ->get();
+
+        $result = [];
+        foreach ($orders as $key) {
+            $order = [
+                'order_id' => $key->slug,
+                'status' => $key->order_status,
+                'delivered_time' => $this->getRestaurantDeliveredTime($key->id),
+            ];
+
+            array_push($result, $order);
+        }
+
+        return $result;
     }
 
     private function getRestaurantRecentOrders()
