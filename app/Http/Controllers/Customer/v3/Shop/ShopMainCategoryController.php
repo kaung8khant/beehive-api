@@ -17,14 +17,12 @@ class ShopMainCategoryController extends Controller
 
         if ($request->populate && (bool) $request->populate) {
             $shopMainCategories
-                ->whereHas('shopCategories.products')
-                ->whereHas('shopCategories.shopSubCategories.products')
                 ->with([
                     'shopCategories' => function ($query) {
-                        $query->exclude(['created_by', 'updated_by'])->orderBy('search_index', 'desc')->orderBy('name', 'asc');
+                        $query->exclude(['created_by', 'updated_by'])->whereHas('products')->orderBy('search_index', 'desc')->orderBy('name', 'asc');
                     },
                     'shopCategories.shopSubCategories' => function ($query) {
-                        $query->exclude(['created_by', 'updated_by'])->orderBy('search_index', 'desc')->orderBy('name', 'asc');
+                        $query->exclude(['created_by', 'updated_by'])->whereHas('products')->orderBy('search_index', 'desc')->orderBy('name', 'asc');
                     },
                 ]);
         }
