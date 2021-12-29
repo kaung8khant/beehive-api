@@ -62,6 +62,8 @@ class ProductUpdateRequest extends FormRequest
 
         if (isset($validated['brand_slug'])) {
             $validated['brand_id'] = CacheHelper::getBrandIdBySlug($validated['brand_slug']);
+        } else {
+            $validated['brand_id'] = null;
         }
 
         return $validated;
