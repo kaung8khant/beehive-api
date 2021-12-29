@@ -32,12 +32,12 @@ class NotificationService implements NotificationServiceInterface
         $request->data = $this->preparePushData($data, $type);
         $request->title = $title;
         $request->send_after = $delay;
-
-        if ($type == "restaruant_order") {
-            $request->url = "restaurants/orders/" . $order->slug;
+        if ($type == "restaurant_order") {
+            $request->url = "restaurants/orders/" . $data['slug'];
         } else if ($type == "shop_order") {
-            $request->url = "shops/orders/" . $order->slug;
+            $request->url = "shops/orders/" . $data['slug'];
         }
+        Log::info(json_encode($request));
         $response = $this->oneSignalService->sendPush($request);
 
         if (isset($response['errors'])) {
