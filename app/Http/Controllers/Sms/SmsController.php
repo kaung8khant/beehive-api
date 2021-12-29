@@ -10,9 +10,11 @@ use App\Models\CustomerGroup;
 use App\Models\SmsCampaign;
 use App\Models\SmsLog;
 use App\Services\MessageService\MessagingService;
+use App\Services\OneSignalService\NotificationServiceInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
@@ -20,11 +22,13 @@ class SmsController extends Controller
 {
     protected $phonesPerWorker;
     protected $messageService;
+    protected $oneSignalService;
 
-    public function __construct(MessagingService $messageService)
+    public function __construct(MessagingService $messageService, NotificationServiceInterface $oneSignal)
     {
         $this->messageService = $messageService;
         $this->phonesPerWorker = 200;
+        $this->oneSignalService = $oneSignal;
     }
 
     public function createCampaigns(Request $request)
@@ -36,7 +40,16 @@ class SmsController extends Controller
             return $customerGroup->customers()->pluck('phone_number');
         })->collapse()->unique()->values()->toArray();
 
-        $this->prepareAndSend($request);
+        $request['slugs'] = collect($request->group_slugs)->map(function ($groupSlug) {
+            $customerGroup = CustomerGroup::where('slug', $groupSlug)->first();
+            return $customerGroup->customers()->pluck('slug');
+        })->collapse()->unique()->values()->toArray();
+
+        $result = $this->oneSignalService->sendUserNotification($request->slugs, $request->message, $request->name, [], $request->scheduled_date, '');
+
+        if (!$result) {
+            $this->prepareAndSend($request);
+        }
         return response()->json(['Your sms is preparing and being sent to users.'], 200);
     }
 

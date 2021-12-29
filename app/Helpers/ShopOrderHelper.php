@@ -3,7 +3,6 @@
 namespace App\Helpers;
 
 use App\Helpers\StringHelper;
-use App\Jobs\SendPushNotification;
 use App\Jobs\SendSms;
 use App\Models\Customer;
 use App\Models\Product;
@@ -13,10 +12,10 @@ use App\Models\ShopOrder;
 use App\Models\ShopOrderDriver;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 trait ShopOrderHelper
 {
+
     public static function validateOrder($request, $customerSlug = false)
     {
         $validator = validator()->make(request()->all(), self::getRules($customerSlug));
@@ -70,39 +69,34 @@ trait ShopOrderHelper
         return $rules;
     }
 
-    public static function notifySystem($order, $orderItems, $phoneNumber, $messageService)
+    public static function notifySystem($order, $orderItems, $phoneNumber, $notiService, $messageService)
     {
-        self::sendPushNotifications($order, $orderItems);
+        self::sendPushNotifications($order, $orderItems, $notiService);
         self::sendSmsNotifications($order, $orderItems, $phoneNumber, $messageService);
     }
 
-    public static function sendPushNotifications($order, $orderItems, $message = null)
+    public static function sendPushNotifications($order, $orderItems, $notiService, $message = null)
     {
         $order = json_decode(json_encode($order), true);
-        self::sendAdminPushNotifications($order, $message);
-        self::sendVendorPushNotifications($order, $orderItems, $message);
-        self::sendDriverPushNotifications($order, $message);
+
+        self::sendAdminPushNotifications($notiService, $order, $message);
+        self::sendVendorPushNotifications($notiService, $order, $orderItems, $message);
+        self::sendDriverPushNotifications($notiService, $order, $message);
+        self::sendUserPushNotifications($notiService, $order, $message);
     }
 
-    private static function sendAdminPushNotifications($order, $message = null)
+    private static function sendAdminPushNotifications($notiService, $order, $message = null)
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
         })->pluck('slug');
 
-        $request = new Request();
-        $request['slugs'] = $admins;
-        $request['message'] = $message ? $message : 'A shop order has been received.';
-        $request['data'] = self::preparePushData($order);
+        $message = $message ? $message : 'A shop order has been received.';
 
-        $appId = config('one-signal.admin_app_id');
-        $fields = OneSignalHelper::prepareNotification($request, $appId);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-
-        SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
+        $notiService->sendAdminPushNotifications($admins, self::preparePushData($order), $message);
     }
 
-    private static function sendVendorPushNotifications($order, $orderItems, $message = null)
+    private static function sendVendorPushNotifications($notiService, $order, $orderItems, $message = null)
     {
         $shopIds = array_map(function ($item) {
             return Product::where('slug', $item['slug'])->value('shop_id');
@@ -111,19 +105,13 @@ trait ShopOrderHelper
         $shopIds = array_values(array_unique($shopIds));
         $vendors = User::whereIn('shop_id', $shopIds)->pluck('slug');
 
-        $request = new Request();
-        $request['slugs'] = $vendors;
-        $request['message'] = $message ? $message : 'An order has been received.';
-        $request['data'] = self::preparePushData($order);
+        $message = $message ? $message : "An order has been received.";
 
-        $appId = config('one-signal.vendor_app_id');
-        $fields = OneSignalHelper::prepareNotification($request, $appId);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-
-        SendPushNotification::dispatch($uniqueKey, $fields, 'vendor');
+        $notiService->sendVendorPushNotifications($vendors, $order, $message, "shop_order");
     }
 
-    private static function sendDriverPushNotifications($order, $message = null)
+
+    private static function sendDriverPushNotifications($notiService, $order, $message = null)
     {
         $orderID = ShopOrder::where('slug', $order['slug'])->pluck('id');
         $driverID = ShopOrderDriver::where('shop_order_id', $orderID)->whereHas('status', function ($q) {
@@ -132,21 +120,22 @@ trait ShopOrderHelper
 
         if ($driverID) {
             $driver = User::where('id', $driverID->user_id)->pluck('slug');
-            $request = new Request();
-            $request['slugs'] = $driver;
-            $request['message'] = $message ? $message : 'An order has been updated.';
 
-            $request['data'] = self::preparePushData($order, "driver_order_update");
-            $request['android_channel_id'] = config('one-signal.android_channel_id');
-            $request['url'] = 'hive://beehivedriver/job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
+            $messsage = $message ? $message : 'An order has been updated.';
 
-            $appId = config('one-signal.admin_app_id');
-
-            $fields = OneSignalHelper::prepareNotification($request, $appId);
-            $uniqueKey = StringHelper::generateUniqueSlug();
-
-            $response = OneSignalHelper::sendPush($fields, 'admin');
+            $notiService->sendDriverOrderUpdateNoti($driver, $order, $messsage);
         }
+    }
+
+    private static function sendUserPushNotifications($notiService, $order, $message = null)
+    {
+
+        $userID = ShopOrder::where('slug', $order['slug'])->first()->customer_id;
+        $user = Customer::where('id', $userID)->pluck('slug');
+
+        $message = $message ? $message : 'Your order has been updated!';
+
+        $notiService->sendUserNotification($user, $message, null, $order, null, 'restaurant_order');
     }
 
     private static function preparePushData($order)

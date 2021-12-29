@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Abstracts;
+namespace App\Repositories\Driver;
 
 use App\Models\RestaurantBranch;
 

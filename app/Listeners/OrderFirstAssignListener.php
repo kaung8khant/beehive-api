@@ -4,12 +4,13 @@ namespace App\Listeners;
 
 use App\Events\OrderAssignEvent;
 use App\Models\RestaurantBranch;
-use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
-use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
+use App\Repositories\Driver\DriverRealtimeDataRepositoryInterface;
+use App\Repositories\OrderDriver\RestaurantOrderDriverStatusRepositoryInterface;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Services\OneSignalService\NotificationServiceInterface;
 use Illuminate\Queue\InteractsWithQueue;
 
-class OrderFirstAssignListener implements ShouldQueue
+class OrderFirstAssignListener
 {
     use InteractsWithQueue;
 
@@ -28,10 +29,11 @@ class OrderFirstAssignListener implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(RestaurantOrderDriverStatusRepositoryInterface $repository, DriverRealtimeDataRepositoryInterface $driverRealtime)
+    public function __construct(RestaurantOrderDriverStatusRepositoryInterface $repository, DriverRealtimeDataRepositoryInterface $driverRealtime, NotificationServiceInterface $oneSignal)
     {
         $this->repository = $repository;
         $this->driverRealtime = $driverRealtime;
+        $this->oneSignal = $oneSignal;
     }
 
     /**
@@ -64,6 +66,11 @@ class OrderFirstAssignListener implements ShouldQueue
 
             if (isset($driverSlug)) {
                 $this->repository->assignDriver($event->order, $driverSlug);
+                $this->oneSignal->sendDriverNotification(
+                    array($driverSlug),
+                    'You have received new order. Accept Now!',
+                    $event->order
+                );
                 $this->repository->setJobToFirebase($event->order->slug, $driverSlug);
             }
         }

@@ -27,6 +27,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 trait RestaurantOrderHelper
@@ -482,57 +483,43 @@ trait RestaurantOrderHelper
         return $validatedData;
     }
 
-    public static function notifySystem($order, $phoneNumber, $messageService)
+    public static function notifySystem($order, $phoneNumber, $notificationService, $messageService)
     {
-        self::sendPushNotifications($order, $order->restaurant_branch_id);
+        self::sendPushNotifications($notificationService, $order, $order->restaurant_branch_id);
         self::sendSmsNotifications($order, $phoneNumber, $messageService);
         // self::assignBiker($order->order_type, $order->slug);
     }
 
-    public static function sendPushNotifications($order, $branchId, $message = null)
+    public static function sendPushNotifications($notificationService, $order, $branchId, $message = null)
     {
         $order = json_decode(json_encode($order), true);
-        self::sendAdminPushNotifications($order, $message);
-        self::sendVendorPushNotifications($order, $branchId, $message);
-        self::sendDriverPushNotifications($order, $message);
+        self::sendAdminPushNotifications($notificationService, $order, $message);
+        self::sendVendorPushNotifications($notificationService, $order, $branchId, $message);
+        self::sendDriverPushNotifications($notificationService, $order, $message);
+        self::sendUserPushNotifications($notificationService, $order, $message);
     }
 
-    private static function sendAdminPushNotifications($order, $message = null)
+    private static function sendAdminPushNotifications($notiService, $order, $message = null)
     {
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
         })->pluck('slug');
 
-        $request = new Request();
-        $request['slugs'] = $admins;
-        $request['message'] = $message ? $message : 'A restaurant order has been received.';
-        $request['data'] = self::preparePushData($order);
+        $message = $message ? $message : 'A restaurant order has been received.';
 
-        $appId = config('one-signal.admin_app_id');
-        $fields = OneSignalHelper::prepareNotification($request, $appId);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-
-        SendPushNotification::dispatch($uniqueKey, $fields, 'admin');
+        $notiService->sendAdminPushNotifications($admins, self::preparePushData($order), $message);
     }
 
-    private static function sendVendorPushNotifications($order, $branchId, $message = null)
+    private static function sendVendorPushNotifications($notiService, $order, $branchId, $message = null)
     {
         $vendors = User::where('restaurant_branch_id', $branchId)->pluck('slug');
-        $request = new Request();
-        $request['slugs'] = $vendors;
-        $request['message'] = $message ? $message : 'An order has been received.';
-        $request['data'] = self::preparePushData($order);
-        $request['android_channel_id'] = '28503fba-9837-4521-896e-7897e2e8b150';
-        $request['url'] = 'http://www.beehivevendor.com/status?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
 
-        $appId = config('one-signal.vendor_app_id');
-        $fields = OneSignalHelper::prepareNotification($request, $appId);
-        $uniqueKey = StringHelper::generateUniqueSlug();
+        $message = $message ? $message : 'An order has been received.';
 
-        SendPushNotification::dispatch($uniqueKey, $fields, 'vendor');
+        $notiService->sendVendorPushNotifications($vendors, $order, $message, 'restaruant_order');
     }
 
-    private static function sendDriverPushNotifications($order, $message = null)
+    private static function sendDriverPushNotifications($notiService, $order, $message = null)
     {
         $orderID = RestaurantOrder::where('slug', $order['slug'])->pluck('id');
         $driverID = RestaurantOrderDriver::where('restaurant_order_id', $orderID)->whereHas('status', function ($q) {
@@ -540,24 +527,24 @@ trait RestaurantOrderHelper
         })->first();
 
         if ($driverID) {
+
             $driver = User::where('id', $driverID->user_id)->pluck('slug');
-            $request = new Request();
-            $request['slugs'] = $driver;
-            $request['message'] = $message ? $message : 'An order has been updated.';
 
-            $request['data'] = self::preparePushData($order, "driver_order_update");
-            $request['android_channel_id'] = config('one-signal.android_channel_id');
-            $request['url'] = 'hive://beehivedriver/job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
+            $message = $message ? $message : 'An order has been updated.';
 
-            $appId = config('one-signal.admin_app_id');
-
-            $fields = OneSignalHelper::prepareNotification($request, $appId);
-            $uniqueKey = StringHelper::generateUniqueSlug();
-
-            $response = OneSignalHelper::sendPush($fields, 'admin');
+            $notiService->sendDriverOrderUpdateNoti($driver, $order, $messsage);
         }
     }
+    private static function sendUserPushNotifications($notiService, $order, $message = null)
+    {
 
+        $userID = RestaurantOrder::where('slug', $order['slug'])->first()->customer_id;
+        $user = Customer::where('id', $userID)->pluck('slug');
+
+        $message = $message ? $message : 'Your order has been updated!';
+
+        $notiService->sendUserNotification($user, $message, null, $order, null, 'restaurant_order');
+    }
     private static function preparePushData($order, $type = "restaurant_order")
     {
         unset($order['created_by']);
