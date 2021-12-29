@@ -52,7 +52,7 @@ class ShopCategoryRepository extends BaseRepository implements ShopCategoryRepos
     {
         $model = $this->model->where('slug', $slug)->firstOrFail();
 
-        if ($this->checkProducts($slug) && $model->code && $model->code !== $attributes['code']) {
+        if ($this->checkProducts($slug) && $model->code && isset($attributes['code']) && $model->code !== $attributes['code']) {
             throw new ForbiddenException('Cannot update category code if there is a linked product.');
         }
 
