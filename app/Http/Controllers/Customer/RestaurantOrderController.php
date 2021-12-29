@@ -18,6 +18,7 @@ use App\Models\MenuVariationValue;
 use App\Models\Promocode;
 use App\Models\RestaurantOrder;
 use App\Services\MessageService\MessagingService;
+use App\Services\OneSignalService\NotificationServiceInterface;
 use App\Services\PaymentService\PaymentService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -32,8 +33,9 @@ class RestaurantOrderController extends Controller
     protected $customer;
     protected $messageService;
     protected $paymentService;
+    protected $oneSignalService;
 
-    public function __construct(MessagingService $messageService, PaymentService $paymentService)
+    public function __construct(MessagingService $messageService, PaymentService $paymentService, NotificationServiceInterface $oneSignal)
     {
         if (Auth::guard('customers')->check()) {
             $this->customer = Auth::guard('customers')->user();
@@ -41,6 +43,7 @@ class RestaurantOrderController extends Controller
 
         $this->messageService = $messageService;
         $this->paymentService = $paymentService;
+        $this->oneSignalService = $oneSignal;
     }
 
     public function index(Request $request)
@@ -204,7 +207,7 @@ class RestaurantOrderController extends Controller
 
         $this->assignOrder('restaurant', $order->slug);
 
-        OrderHelper::notifySystem($order, $this->customer->phone_number, $this->messageService);
+        OrderHelper::notifySystem($order, $this->customer->phone_number, $this->oneSignalService, $this->messageService);
 
         return $order;
     }

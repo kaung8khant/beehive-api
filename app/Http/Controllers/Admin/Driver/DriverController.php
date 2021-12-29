@@ -7,6 +7,8 @@ use App\Helpers\FileHelper;
 use App\Helpers\ResponseHelper;
 use App\Helpers\StringHelper;
 use App\Http\Controllers\Controller;
+use App\Repositories\Driver\DriverCreateRequest;
+use App\Repositories\Driver\DriverUpdateRequest;
 use App\Models\DriverAttendance;
 use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderDriver;
@@ -14,76 +16,37 @@ use App\Models\RestaurantOrderDriverStatus;
 use App\Models\Role;
 use App\Models\ShopOrderDriver;
 use App\Models\User;
+use App\Repositories\Driver\DriverRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 class DriverController extends Controller
 {
     use ResponseHelper, FileHelper, StringHelper;
 
+    public function __construct(DriverRepositoryInterface $repository)
+    {
+        $this->repository = $repository;
+    }
+
     public function index(Request $request)
     {
         $sorting = CollectionHelper::getSorting('users', 'name', $request->by, $request->order);
 
-        $users = User::with('roles')
-            ->whereHas('roles', function ($q) {
-                $q->where('name', 'Driver');
-            })
-            ->where(function ($q) use ($request) {
-                $q->where('username', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('name', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('phone_number', 'LIKE', '%' . $request->filter . '%')
-                    ->orWhere('slug', $request->filter);
-            })
-            ->orderBy($sorting['orderBy'], $sorting['sortBy'])
-            ->paginate(10);
-
-        foreach ($users as $user) {
-            $user->res_order = RestaurantOrderDriver::with("restaurantOrder")
-                ->where('status', '!=', 'rejected')
-                ->where('status', '!=', 'no_response')
-                ->where('status', '!=', 'pending')
-                ->where('user_id', $user->id)
-                ->whereDate('updated_at', '>=', Carbon::now()->subDays(3)->startOfDay())->get()->groupBy('status');
-
-            $user->accepted = 0;
-            $user->pickUp = 0;
-            $user->delivered = 0;
-
-            $user->accepted += isset($user->res_order['accepted']) ? count($user->res_order['accepted']) : 0;
-            $user->pickUp += isset($user->res_order['pickUp']) ? count($user->res_order['pickUp']) : 0;
-            $user->delivered += isset($user->res_order['delivered']) ? count($user->res_order['delivered']) : 0;
-
-
-            $user->shop_order = ShopOrderDriver::with("shopOrder")
-                ->where('status', '!=', 'rejected')
-                ->where('status', '!=', 'no_response')
-                ->where('status', '!=', 'pending')
-                ->where('user_id', $user->id)
-                ->whereDate('updated_at', '>=', Carbon::now()->subDays(3)->startOfDay())->get()->groupBy('status');
-
-
-            $user->accepted += isset($user->shop_order['accepted']) ? count($user->shop_order['accepted']) : 0;
-            $user->pickUp += isset($user->shop_order['pickUp']) ? count($user->shop_order['pickUp']) : 0;
-            $user->delivered += isset($user->shop_order['delivered']) ? count($user->shop_order['delivered']) : 0;
-        }
-        return $users;
+        return $this->repository->getAllDriver($sorting);
     }
 
-    public function store(Request $request)
+    public function store(DriverCreateRequest $request)
     {
-        $request['slug'] = $this->generateUniqueSlug();
-
         $phoneNumber = PhoneNumber::make($request->phone_number, 'MM');
-        $driver = User::where('phone_number', $phoneNumber)->first();
-        $driverRoleId = Role::where('name', 'Driver')->value('id');
+        $driver = $this->repository->getDriverWithPhone($phoneNumber);
 
+        $driverRoleId = Role::where('name', 'Driver')->value('id');
         if ($driver) {
             if ($driver->roles->contains('name', 'Driver')) {
                 return $this->generateResponse('The phone number has already been taken.', 422, true);
@@ -91,23 +54,12 @@ class DriverController extends Controller
                 $driver->roles()->attach($driverRoleId);
             }
         } else {
-            $validatedData = $request->validate(
-                [
-                    'slug' => 'required|unique:users',
-                    'username' => 'required|unique:users',
-                    'name' => 'required|string',
-                    'phone_number' => 'required|phone:MM|unique:users',
-                    'password' => 'required|min:6',
-                    'image_slug' => 'nullable|exists:App\Models\File,slug',
-                ],
-                [
-                    'phone_number.phone' => 'Invalid phone number.',
-                ]
-            );
+            $validatedData = $request->validated();
+
 
             $validatedData['phone_number'] = $phoneNumber;
             $validatedData['password'] = Hash::make($validatedData['password']);
-            $driver = User::create($validatedData);
+            $driver = $this->repository->create($validatedData);
             $driver->roles()->attach($driverRoleId);
         }
 
@@ -123,44 +75,19 @@ class DriverController extends Controller
         return User::with('roles')->where('slug', $slug)->firstOrFail();
     }
 
-    public function update(Request $request, User $driver)
+    public function update(DriverUpdateRequest $request, User $driver)
     {
-        $validatedData = $request->validate(
-            [
-                'username' => [
-                    'required',
-                    Rule::unique('users')->ignore($driver->id),
-                ],
-                'name' => 'required',
-                'phone_number' => [
-                    'required',
-                    'phone:MM',
-                    Rule::unique('users')->ignore($driver->id),
-                ],
-                'image_slug' => 'nullable|exists:App\Models\File,slug',
-            ],
-            [
-                'phone_number.phone' => 'Invalid phone number.',
-            ]
-        );
+        $validatedData = $request->validate();
 
         $validatedData['phone_number'] = PhoneNumber::make($validatedData['phone_number'], 'MM');
-        $checkPhone = User::where('phone_number', $validatedData['phone_number'])->where('id', '<>', $driver->id)->first();
+
+        $checkPhone = $this->repository->getDriverWithPhone($validatedData['phone_number'], $driver->id);
 
         if ($checkPhone) {
             return $this->generateResponse('The phone number has already been taken.', 422, true);
         }
 
-        $driver->update($validatedData);
-
-        if (!$driver->roles->contains('name', 'Driver')) {
-            $driverRoleId = Role::where('name', 'Driver')->value('id');
-            $driver->roles()->attach($driverRoleId);
-        }
-
-        if ($request->image_slug) {
-            $this->updateFile($request->image_slug, 'users', $driver->slug);
-        }
+        $this->repository->update($driver->id, $validatedData);
 
         return response()->json($driver->refresh()->load('roles'), 200);
     }

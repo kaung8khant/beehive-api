@@ -11,6 +11,7 @@ use App\Helpers\StringHelper;
 use App\Helpers\v3\OrderHelper;
 use App\Jobs\SendSms;
 use App\Services\MessageService\MessagingService;
+use App\Services\OneSignalService\NotificationServiceInterface;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Support\Facades\DB;
 
@@ -21,11 +22,12 @@ class ShopOrderService
     private $paymentService;
     private $resMes;
 
-    public function __construct(ShopOrderRepositoryInterface $shopOrderRepository, MessagingService $messageService, PaymentService $paymentService)
+    public function __construct(ShopOrderRepositoryInterface $shopOrderRepository, MessagingService $messageService, PaymentService $paymentService, NotificationServiceInterface $oneSignal)
     {
         $this->shopOrderRepository = $shopOrderRepository;
         $this->messageService = $messageService;
         $this->paymentService = $paymentService;
+        $this->oneSignalService = $oneSignal;
         $this->resMes = config('response-en.shop_order');
     }
 
@@ -128,7 +130,7 @@ class ShopOrderService
 
         event(new ShopOrderUpdated($order));
 
-        ShopOrderHelper::notifySystem($order, $validatedData['order_items'], $customer->phone_number, $this->messageService);
+        ShopOrderHelper::notifySystem($order, $validatedData['order_items'], $customer->phone_number, $this->oneSignalService, $this->messageService);
 
         return $order;
     }
