@@ -216,7 +216,7 @@ class ShopOrderService
         $orderItems = $this->getOrderItemsFromOrder($shopOrder);
 
         $shopOrder['order_status'] = request('status');
-        ShopOrderHelper::sendPushNotifications($shopOrder, $orderItems, 'Order Number:' . $shopOrder->invoice_id . ', is now ' . request('status'));
+        ShopOrderHelper::sendPushNotifications($shopOrder, $orderItems, $this->oneSignalService, 'Order Number:' . $shopOrder->invoice_id . ', is now ' . request('status'));
 
         if (request('status') === 'cancelled') {
             $this->sendSms($shopOrder);
