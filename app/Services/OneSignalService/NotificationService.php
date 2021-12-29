@@ -66,7 +66,7 @@ class NotificationService implements NotificationServiceInterface
 
         $request = new OneSignalRequest('driver', $users, $message);
         $request->url = 'job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
-        $request->data = $this->preparePushData($data, $type);
+        $request->data = $this->preparePushData($order, $type);
 
         $response = $this->oneSignalService->sendPush($request);
     }

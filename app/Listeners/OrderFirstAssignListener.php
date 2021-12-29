@@ -10,7 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Services\OneSignalService\NotificationServiceInterface;
 use Illuminate\Queue\InteractsWithQueue;
 
-class OrderFirstAssignListener
+class OrderFirstAssignListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
