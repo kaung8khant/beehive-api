@@ -119,7 +119,7 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                     'shop_id' => Shop::where('slug', $row['shop_slug'])->value('id'),
                     'shop_category_id' => $shopCategoryId,
                     'shop_sub_category_id' => $shopSubCategoryId,
-                    'brand_id' => Brand::where('code', $row['brand_code'])->value('id'),
+                    'brand_id' =>isset($row['brand_code'])? Brand::where('code', $row['brand_code'])->value('id'):null,
                     'variants' => [],
                     'created_by' => $this->userId,
                     'updated_by' => $this->userId,
