@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Shop\ShopOrder;
 
+use App\Events\OrderAssignEvent;
 use App\Events\ShopOrderUpdated;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
@@ -127,7 +128,7 @@ class ShopOrderService
             $this->createOrderStatus($order);
             return $order->refresh()->load(['contact']);
         });
-
+        event(new OrderAssignEvent($order, [], 0));
         event(new ShopOrderUpdated($order));
 
         ShopOrderHelper::notifySystem($order, $validatedData['order_items'], $customer->phone_number, $this->oneSignalService, $this->messageService);
