@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Shop\ShopOrder;
 
+use App\Events\OrderAssignEvent;
 use App\Events\ShopOrderUpdated;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenException;
@@ -14,6 +15,7 @@ use App\Services\MessageService\MessagingService;
 use App\Services\OneSignalService\NotificationServiceInterface;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ShopOrderService
 {
@@ -127,7 +129,8 @@ class ShopOrderService
             $this->createOrderStatus($order);
             return $order->refresh()->load(['contact']);
         });
-
+        Log::info('before assign here');
+        event(new OrderAssignEvent($order, [], 0));
         event(new ShopOrderUpdated($order));
 
         ShopOrderHelper::notifySystem($order, $validatedData['order_items'], $customer->phone_number, $this->oneSignalService, $this->messageService);
