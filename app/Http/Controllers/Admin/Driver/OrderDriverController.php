@@ -16,7 +16,8 @@ use App\Models\ShopOrder;
 use App\Models\ShopOrderDriver;
 use App\Models\ShopOrderDriverStatus;
 use App\Models\User;
-use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
+use App\Repositories\OrderDriver\RestaurantOrderDriverStatusRepositoryInterface;
+use App\Services\OneSignalService\NotificationServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -29,10 +30,11 @@ class OrderDriverController extends Controller
 
     private $repository;
 
-    public function __construct(RestaurantOrderDriverStatusRepositoryInterface $repository)
+    public function __construct(RestaurantOrderDriverStatusRepositoryInterface $repository, NotificationServiceInterface $noti)
     {
         $this->driver = Auth::guard('users')->user();
         $this->repository = $repository;
+        $this->oneSignalService = $noti;
     }
 
     public function jobList()
@@ -155,7 +157,7 @@ class OrderDriverController extends Controller
         }
 
         try {
-            $this->repository->validateStatus($currentDriverStatus, $request->status, $order->order_status);
+            $this->validateStatus($currentDriverStatus, $request->status, $order->order_status);
         } catch (BadRequestException $e) {
             return response()->json(['status' => 'failed', 'message' => $e->getMessage()], 406);
         }
@@ -185,8 +187,8 @@ class OrderDriverController extends Controller
     }
     public function manualAssignOrder($slug, $driverSlug): \Illuminate\Http\JsonResponse
     {
-        $driverID = User::where('slug', $driverSlug)->first()->id;
-
+        $driver = User::where('slug', $driverSlug)->first();
+        $driverID = $driver->id;
         $orderID = null;
 
         $order = RestaurantOrder::where('slug', $slug)->first();
@@ -199,40 +201,14 @@ class OrderDriverController extends Controller
             $orderID = $order->id;
             $orderDriverStatus = $this->assginToShop($orderID, $driverID);
         }
-        $this->sendDriverPushNotifications($order, $driverID, "You had been assigned to an order!");
+
+        $this->oneSignalService->sendDriverNotification(
+            array($driver->slug),
+            "You had been assigned to an order!",
+            $order
+        );
+
         return $this->generateResponse($orderDriverStatus->refresh(), 201);
-    }
-
-    private static function sendDriverPushNotifications($order, $driverID, $message = null)
-    {
-
-        $driver = User::where('id', $driverID)->pluck('slug');
-
-        $request = new Request();
-        $request['slugs'] = $driver;
-        $request['message'] = $message ? $message : 'An order has been updated.';
-
-        $request['data'] = self::preparePushData($order, "driver_order_update");
-        $request['android_channel_id'] = config('one-signal.android_channel_id');
-        $request['url'] = 'hive://beehivedriver/job?&slug=' . $order->slug . '&orderStatus=' . $order->order_status;
-
-        $appId = config('one-signal.admin_app_id');
-
-        $fields = OneSignalHelper::prepareNotification($request, $appId);
-        $uniqueKey = StringHelper::generateUniqueSlug();
-
-        $response = OneSignalHelper::sendPush($fields, 'admin');
-    }
-    private static function preparePushData($order, $type)
-    {
-        unset($order['created_by']);
-        unset($order['updated_by']);
-        unset($order['shop_order_items']);
-
-        return [
-            'type' => 'manual_assign',
-            'body' => $order,
-        ];
     }
     private function assginToRes($orderID, $driverID)
     {
@@ -267,5 +243,39 @@ class OrderDriverController extends Controller
             'shop_order_driver_id' => $shopOrderDriver->id,
             'status' => 'accepted',
         ]);
+    }
+
+    public function validateStatus($currentDriverStatus, $newDriverStatus, $currentOrderStatus): bool
+    {
+        // if the order is pending, you can either accept or reject.
+        if ($currentDriverStatus == 'pending' && ($newDriverStatus == 'accepted' || $newDriverStatus == 'rejected')) {
+            return true;
+        }
+
+        // can only pickUp when the order is ready to pickUp.
+        if ($newDriverStatus == 'pickUp' && $currentOrderStatus != 'pickUp') {
+            throw new BadRequestException("Order is not yet ready to pick up", 401);
+        }
+
+        // if the order is already pickUp, you can only deliver now.
+        if ($currentDriverStatus == 'pickUp' && $newDriverStatus != 'delivered') {
+            throw new BadRequestException("Order is already pickUp, you can only deliver now", 401);
+        }
+
+        $driverStatuses = ['pending' => 0, 'accepted' => 1, 'pickUp' => 2, 'delivered' => 3, 'rejected' => 3, 'cancelled' => 3];
+
+        $currentDriverStatusValue = $driverStatuses[$currentDriverStatus];
+        $newDriverStatusValue = $driverStatuses[$newDriverStatus];
+
+        // you cannot change the status with the same level as of the current one
+        if ($currentDriverStatusValue === $newDriverStatusValue) {
+            throw new BadRequestException("Order is already {$currentDriverStatus}", 401);
+        }
+
+        // status always need to be incremented.
+        if ($newDriverStatusValue != $currentDriverStatusValue + 1) {
+            throw new BadRequestException("Order is already {$currentDriverStatus}, you cannot {$newDriverStatus} anymore.", 401);
+        }
+        return true;
     }
 }

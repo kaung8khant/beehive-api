@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Repositories\Driver;
 
 use App\Helpers\GeoHelper;
 use App\Models\User;
-use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
+use App\Repositories\Driver\DriverRealtimeDataRepositoryInterface;
 use Carbon\Carbon;
 
 class DriverRealtimeDataRepository implements DriverRealtimeDataRepositoryInterface
@@ -28,7 +28,7 @@ class DriverRealtimeDataRepository implements DriverRealtimeDataRepositoryInterf
     {
         $drivers = $this->database->getReference('/driver')
             ->orderByChild('updated_at')
-        // enable the following code if you want real-time active data.
+            // enable the following code if you want real-time active data.
             ->startAt(Carbon::now()->subMinutes(1)->toDateTimeString())
             ->getSnapshot()->getValue();
 

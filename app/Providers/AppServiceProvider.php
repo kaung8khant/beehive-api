@@ -5,6 +5,10 @@ namespace App\Providers;
 use App\Services\MessageService\BoomSmsService;
 use App\Services\MessageService\MessagingService;
 use App\Services\MessageService\SlackMessagingService;
+use App\Services\OneSignalService\NotificationService;
+use App\Services\OneSignalService\NotificationServiceInterface;
+use App\Services\OneSignalService\OneSignalService;
+use App\Services\OneSignalService\OneSignalServiceInterface;
 use App\Services\PaymentService\CbPayService;
 use App\Services\PaymentService\CodService;
 use App\Services\PaymentService\CreditService;
@@ -46,6 +50,9 @@ class AppServiceProvider extends ServiceProvider
                 return new CodService();
             }
         });
+
+        $this->app->bind(OneSignalServiceInterface::class, OneSignalService::class);
+        $this->app->bind(NotificationServiceInterface::class, NotificationService::class);
     }
 
     /**

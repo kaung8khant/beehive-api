@@ -149,9 +149,8 @@ trait OrderAssignHelper
                 $appId = config('one-signal.admin_app_id');
                 $request['data'] = ['slug' => $order->slug, 'price' => $order->total_amount, 'invoice_id' => $order->invoice_id];
                 $fields = OneSignalHelper::prepareNotification($request, $appId);
-                Log::info($fields);
+
                 $response = OneSignalHelper::sendPush($fields, 'admin');
-                Log::info($response);
             }
         }
     }

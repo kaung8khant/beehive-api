@@ -60,6 +60,15 @@ return [
 
     'vendor_app_id' => env('ONE_SIGNAL_VENDOR_APP_ID'),
     'vendor_api_key' => env('ONE_SIGNAL_VENDOR_API_KEY'),
+    'user_channel_id' => env('ONE_SIGNAL_VENDOR_ANDROID_CHANNEL_ID'),
+    'user_deeplink_url' => env('ONE_SIGNAL_VENDOR_DEEPLINK_URL'),
+
+    'user_app_id' => env('ONE_SIGNAL_USER_APP_ID'),
+    'user_api_key' => env('ONE_SIGNAL_USER_API_KEY'),
+    'user_channel_id' => env('ONE_SIGNAL_USER_ANDROID_CHANNEL_ID'),
+    'user_deeplink_url' => env('ONE_SIGNAL_USER_DEEPLINK_URL'),
 
     'android_channel_id' => env('ONE_SIGNAL_ANDROID_CHANNEL_ID'),
+
+    'driver_deeplink_url' => env('ONE_SIGNAL_DRIVER_DEEPLINK_URL')
 ];

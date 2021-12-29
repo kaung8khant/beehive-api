@@ -25,6 +25,7 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderItem;
 use App\Models\Setting;
 use App\Services\MessageService\MessagingService;
+use App\Services\OneSignalService\NotificationServiceInterface;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,11 +39,13 @@ class RestaurantOrderController extends Controller
     protected $messageService;
     protected $paymentService;
     protected $resMes;
+    protected $oneSignalService;
 
-    public function __construct(MessagingService $messageService, PaymentService $paymentService)
+    public function __construct(MessagingService $messageService, PaymentService $paymentService, NotificationServiceInterface $oneSignal)
     {
         $this->messageService = $messageService;
         $this->paymentService = $paymentService;
+        $this->oneSignalService = $oneSignal;
         $this->resMes = config('response-en.restaurant_order');
     }
 
@@ -215,7 +218,7 @@ class RestaurantOrderController extends Controller
         event(new RestaurantOrderUpdated($order));
 
         $phoneNumber = Customer::where('id', $order->customer_id)->value('phone_number');
-        RestaurantOrderHelper::notifySystem($order, $phoneNumber, $this->messageService);
+        RestaurantOrderHelper::notifySystem($order, $phoneNumber, $this->oneSignalService, $this->messageService);
 
         return $order;
     }

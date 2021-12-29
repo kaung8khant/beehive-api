@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
-use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
-use App\Repositories\Abstracts\RestaurantOrderDriverStatusRepositoryInterface;
+use App\Repositories\Driver\DriverRealtimeDataRepositoryInterface;
 use App\Repositories\BaseRepository;
 use App\Repositories\BaseRepositoryInterface;
-use App\Repositories\DriverRealtimeDataRepository;
-use App\Repositories\RestaurantOrderDriverStatusRepository;
+use App\Repositories\Driver\DriverRepositoryInterface;
+use App\Repositories\Driver\DriverRepository;
+use App\Repositories\Driver\DriverRealtimeDataRepository;
+use App\Repositories\OrderDriver\RestaurantOrderDriverStatusRepositoryInterface;
+use App\Repositories\OrderDriver\RestaurantOrderDriverStatusRepository;
 use App\Repositories\Restaurant\RestaurantBranch\RestaurantBranchRepository;
 use App\Repositories\Restaurant\RestaurantBranch\RestaurantBranchRepositoryInterface;
 use App\Repositories\Shop\Brand\BrandRepository;
@@ -49,6 +51,7 @@ class RepositoryServiceProvider extends ServiceProvider
 
         $this->app->bind(RestaurantOrderDriverStatusRepositoryInterface::class, RestaurantOrderDriverStatusRepository::class);
         $this->app->bind(DriverRealtimeDataRepositoryInterface::class, DriverRealtimeDataRepository::class);
+        $this->app->bind(DriverRepositoryInterface::class, DriverRepository::class);
     }
 
     /**
