@@ -20,13 +20,19 @@ class ShopMainCategoryController extends Controller
                 ->with([
                     'shopCategories' => function ($query) {
                         $query->exclude(['created_by', 'updated_by'])
-                            ->whereHas('products', fn($query) => $query->where('is_enable', 1))
+                            ->whereHas('products', fn($query) =>
+                                $query->where('is_enable', 1)
+                                    ->whereHas('shop', fn($q) => $q->where('is_enable', 1))
+                            )
                             ->orderBy('search_index', 'desc')
                             ->orderBy('name', 'asc');
                     },
                     'shopCategories.shopSubCategories' => function ($query) {
                         $query->exclude(['created_by', 'updated_by'])
-                            ->whereHas('products', fn($query) => $query->where('is_enable', 1))
+                            ->whereHas('products', fn($query) =>
+                                $query->where('is_enable', 1)
+                                    ->whereHas('shop', fn($q) => $q->where('is_enable', 1))
+                            )
                             ->orderBy('search_index', 'desc')
                             ->orderBy('name', 'asc');
                     },
