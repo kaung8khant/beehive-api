@@ -69,7 +69,6 @@ class NotificationService implements NotificationServiceInterface
         $request->data = $this->preparePushData($data, $type);
 
         $response = $this->oneSignalService->sendPush($request);
-        Log::info($response);
     }
 
 

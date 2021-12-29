@@ -48,7 +48,7 @@ class DriverCreateRequest extends FormRequest
     protected function prepareForValidation()
     {
         $this->merge([
-            'slug' => $this->generateUniqueSlug(),
+            'slug' => StringHelper::generateUniqueSlug(),
         ]);
     }
 }
