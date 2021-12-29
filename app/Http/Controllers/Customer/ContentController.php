@@ -5,18 +5,12 @@ namespace App\Http\Controllers\Customer;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Content;
-use App\Repositories\Abstracts\DriverRealtimeDataRepositoryInterface;
 use Illuminate\Http\Request;
 
 class ContentController extends Controller
 {
     use ResponseHelper;
-    private $repository;
 
-    public function __construct(DriverRealtimeDataRepositoryInterface $repository)
-    {
-        $this->repository = $repository;
-    }
     /**
      * Display a listing of the resource.
      *
