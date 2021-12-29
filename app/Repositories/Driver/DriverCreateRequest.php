@@ -9,7 +9,7 @@ use App\Helpers\StringHelper;
 
 class DriverCreateRequest extends FormRequest
 {
-    use StringHelper;
+
     /**
      * Determine if the user is authorized to make this request.
      *
