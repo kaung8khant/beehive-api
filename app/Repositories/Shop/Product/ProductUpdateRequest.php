@@ -56,6 +56,8 @@ class ProductUpdateRequest extends FormRequest
 
         if (isset($validated['shop_sub_category_slug'])) {
             $validated['shop_sub_category_id'] = CacheHelper::getShopSubCategoryIdBySlug($validated['shop_sub_category_slug']);
+        } else {
+            $validated['shop_sub_category_id'] = null;
         }
 
         if (isset($validated['brand_slug'])) {
