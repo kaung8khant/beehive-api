@@ -28,12 +28,16 @@ class NotificationService implements NotificationServiceInterface
 
     public function sendUserNotification($users, $message, $title, $data, $delay, $type = "alert")
     {
-
         $request = new OneSignalRequest('user', $users, $message);
         $request->data = $this->preparePushData($data, $type);
         $request->title = $title;
         $request->send_after = $delay;
 
+        if ($type == "restaruant_order") {
+            $request->url = "restaurants/orders/" . $order->slug;
+        } else if ($type == "shop_order") {
+            $request->url = "shops/orders/" . $order->slug;
+        }
         $response = $this->oneSignalService->sendPush($request);
 
         if (isset($response['errors'])) {
@@ -68,7 +72,7 @@ class NotificationService implements NotificationServiceInterface
         $request->url = 'job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
         $request->data = $this->preparePushData($order, $type);
 
-        $response = $this->oneSignalService->sendPush($request);
+        $this->oneSignalService->sendPush($request);
     }
 
 
