@@ -84,7 +84,7 @@ class ShopSubCategoryController extends Controller
     private function optimizeSubCategories($subCategories)
     {
         $subCategories->load([
-            'shopCategory' => fn($query) => $query->select('id', 'slug', 'name')->get(),
+            'shopCategory' => fn ($query) => $query->select('id', 'slug', 'name', 'code')->get(),
         ]);
 
         foreach ($subCategories as $subCategory) {
