@@ -40,7 +40,7 @@ class ShopSubCategoryRepository extends BaseRepository implements ShopSubCategor
     {
         $model = $this->model->where('slug', $slug)->firstOrFail();
 
-        if ($this->checkProducts($slug) && $model->code && $model->code !== $attributes['code']) {
+        if ($this->checkProducts($slug) && $model->code && isset($attributes['code']) && $model->code !== $attributes['code']) {
             throw new ForbiddenException('Cannot update sub category code if there is a linked product.');
         }
 
