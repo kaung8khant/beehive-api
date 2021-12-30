@@ -39,7 +39,6 @@ class NotificationService implements NotificationServiceInterface
         } else if ($type == "shop_order") {
             $request->url = "shops/orders/" . $data['slug'];
         }
-        Log::info(json_encode($request));
         $response = $this->oneSignalService->sendPush($request);
 
         if (isset($response['errors'])) {
