@@ -13,7 +13,11 @@ class BrandController extends Controller
 
     public function getAllBrands(Request $request)
     {
-        $brands = Brand::exclude(['created_by', 'updated_by'])
+        $brands = Brand::exclude(['created_by', 'updated_by'])->whereHas(
+            'products',
+            fn ($query) =>
+            $query->where('is_enable', 1)
+        )
             ->orderBy('id', 'desc')
             ->paginate($request->size);
 
