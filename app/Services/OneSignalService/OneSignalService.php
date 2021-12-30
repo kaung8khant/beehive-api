@@ -65,6 +65,10 @@ class OneSignalService implements OneSignalServiceInterface
         if ($request->data) {
             $fields['data'] = $request->data;
         }
+        if ($request->large_icon) {
+            $fields['large_icon'] = $request->large_icon;
+            $fields['huawei_large_icon'] = $request->large_icon;
+        }
         return json_encode($fields);
     }
 
