@@ -95,7 +95,18 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
 
                 $shopMainCategoryId = ShopMainCategory::where('code', $row['product_type_code'])->value('id');
                 $shopCategoryId = ShopCategory::where('code', $row['shop_category_code'])->where('shop_main_category_id', $shopMainCategoryId)->value('id');
-                $shopSubCategoryId = ShopSubCategory::where('code', $row['shop_sub_category_code'])->where('shop_category_id', $shopCategoryId)->value('id');
+
+                if (isset($row['shop_sub_category_code'])) {
+                    $shopSubCategoryId = ShopSubCategory::where('code', $row['shop_sub_category_code'])->where('shop_category_id', $shopCategoryId)->value('id');
+                    if (!$shopSubCategoryId) {
+                        $shopCategory =ShopSubCategory::where('code', $row['shop_sub_category_code'])->first();
+                        $shopSubCategoryId = $shopCategory->id;
+                        $shopCategoryId = $shopCategory->shop_category_id;
+                        $shopMainCategoryId = $shopCategory->shopCategory->shop_main_category_id;
+                    }
+                } else {
+                    $shopSubCategoryId = null;
+                }
 
                 $productData = [
                     'slug' => StringHelper::generateUniqueSlugWithTable('products'),
@@ -108,7 +119,7 @@ class ImportProduct implements ShouldQueue, ShouldBeUnique
                     'shop_id' => Shop::where('slug', $row['shop_slug'])->value('id'),
                     'shop_category_id' => $shopCategoryId,
                     'shop_sub_category_id' => $shopSubCategoryId,
-                    'brand_id' => Brand::where('code', $row['brand_code'])->value('id'),
+                    'brand_id' =>isset($row['brand_code'])? Brand::where('code', $row['brand_code'])->value('id'):null,
                     'variants' => [],
                     'created_by' => $this->userId,
                     'updated_by' => $this->userId,

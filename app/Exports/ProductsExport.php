@@ -24,7 +24,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     public function map($productVatiant): array
     {
         return [
-            $productVatiant->product->code,
+            $productVatiant->code? $productVatiant->product->code.'-'.$productVatiant->code : $productVatiant->product->code,
             $productVatiant->slug,
             $productVatiant->product->name,
             $productVatiant->product->description,
@@ -107,7 +107,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     public function columnWidths(): array
     {
         return [
-            'A' => 20,
+            'A' => 25,
             'B' => 20,
             'C' => 45,
             'D' => 45,

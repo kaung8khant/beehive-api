@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Address;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AddressController extends Controller
@@ -18,8 +19,14 @@ class AddressController extends Controller
 
     public function __construct()
     {
-        if (Auth::guard('customers')->check()) {
-            $this->customerId = Auth::guard('customers')->user()->id;
+        try {
+
+            if (Auth::guard('customers')->check()) {
+                $this->customerId = Auth::guard('customers')->user()->id;
+            }
+        } catch (\Exception $e) {
+            Log::info("token blacklisted");
+            Log::info("token=>" . Auth::get('customers'));
         }
     }
 
@@ -122,8 +129,7 @@ class AddressController extends Controller
             return $this->generateResponse($validator->errors()->first(), 422, true);
         }
 
-        $address = Address::
-            selectRaw('slug, label, house_number, floor, street_name, latitude, longitude, is_primary,
+        $address = Address::selectRaw('slug, label, house_number, floor, street_name, latitude, longitude, is_primary,
         ( 6371 * acos( cos(radians(?)) *
             cos(radians(latitude)) * cos(radians(longitude) - radians(?))
             + sin(radians(?)) * sin(radians(latitude)) )

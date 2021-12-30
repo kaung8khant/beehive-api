@@ -26,7 +26,7 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
         $shop = Shop::where('slug', $this->slug)->firstOrFail();
 
         return ProductVariant::with(['product', 'product.shop', 'product.shopCategory', 'product.shopCategory.shopMainCategory', 'product.shopSubCategory', 'product.brand'])
-            ->whereHas('product', fn($query) => $query->where('shop_id', $shop->id));
+            ->whereHas('product', fn ($query) => $query->where('shop_id', $shop->id));
     }
 
     /**
@@ -35,7 +35,7 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
     public function map($productVatiant): array
     {
         return [
-            $productVatiant->product->code,
+            $productVatiant->code? $productVatiant->product->code.'-'.$productVatiant->code : $productVatiant->product->code,
             $productVatiant->slug,
             $productVatiant->product->name,
             $productVatiant->product->description,
@@ -118,7 +118,7 @@ class ShopProductsExport implements FromQuery, WithHeadings, WithMapping, WithSt
     public function columnWidths(): array
     {
         return [
-            'A' => 20,
+            'A' => 25,
             'B' => 20,
             'C' => 45,
             'D' => 45,

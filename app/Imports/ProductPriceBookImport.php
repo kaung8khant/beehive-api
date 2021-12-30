@@ -42,7 +42,7 @@ class ProductPriceBookImport implements ToCollection, WithHeadingRow
             $validateRow = $row->toArray();
 
             $rules = [
-                'variant_slug' => 'required|exists:App\Models\ProductVariant,slug',
+                'variant_code' => 'required|exists:App\Models\ProductVariant,code',
                 'price' => 'required|numeric|max:99999999',
                 'vendor_price' => 'required|numeric|max:99999999',
                 'discount' => 'required|numeric',
@@ -57,7 +57,7 @@ class ProductPriceBookImport implements ToCollection, WithHeadingRow
             if ($validator->fails()) {
                 $validatorErrors[] = [
                     'row' => $key + 2,
-                    'variant_slug' => $row['variant_slug'],
+                    'variant_code' => $row['variant_code'],
                     'price' => $row['price'],
                     'vendor_price' => $row['vendor_price'],
                     'tax' => $row['tax'],

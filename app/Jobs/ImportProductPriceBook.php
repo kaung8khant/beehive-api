@@ -59,7 +59,7 @@ class ImportProductPriceBook implements ShouldQueue, ShouldBeUnique
     {
         foreach ($this->rows as $row) {
             $rules = [
-                'variant_slug' => 'required|exists:App\Models\ProductVariant,slug',
+                'variant_code' => 'required|exists:App\Models\ProductVariant,code',
                 'price' => 'required|numeric|max:99999999',
                 'vendor_price' => 'required|numeric|max:99999999',
                 'discount' => 'required|numeric',
@@ -72,9 +72,8 @@ class ImportProductPriceBook implements ShouldQueue, ShouldBeUnique
             );
 
             if (!$validator->fails()) {
-                $productVariant = ProductVariant::where('slug', $row['variant_slug'])->first();
+                $productVariant = ProductVariant::where('code', $row['variant_code'])->first();
                 $productVariantData = [
-                        'slug' => $row['variant_slug'],
                         'price' => $row['price'],
                         'vendor_price' => $row['vendor_price'],
                         'discount' => $row['discount'],

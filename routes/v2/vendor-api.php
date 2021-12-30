@@ -71,7 +71,9 @@ Route::group([
         Route::post('shops/add-shop-categories/{slug}', 'Admin\ShopController@addShopCategories');
         Route::post('shops/remove-shop-categories/{slug}', 'Admin\ShopController@removeShopCategories');
         Route::get('shop-categories/{shopCategory}/sub-categories', 'Admin\ShopSubCategoryController@getSubCategoriesByCategory');
+        Route::get('sub-categories', 'Admin\ShopSubCategoryController@index');
         Route::get('shops/{shop}/customers', 'Admin\CustomerController@getCustomersByShop');
+
         /* shop */
 
         /* products */

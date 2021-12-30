@@ -18,6 +18,7 @@ use App\Models\MenuTopping;
 use App\Models\MenuVariant;
 use App\Models\RestaurantBranch;
 use App\Services\MessageService\MessagingService;
+use App\Services\OneSignalService\NotificationService;
 use App\Services\PaymentService\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,12 +32,14 @@ class RestaurantCartController extends CartController
     private $messageService;
     private $paymentService;
     private $resMes;
+    private $oneSignalService;
 
-    public function __construct(MessagingService $messageService, PaymentService $paymentService)
+    public function __construct(MessagingService $messageService, PaymentService $paymentService, NotificationService $oneSignal)
     {
         $this->messageService = $messageService;
         $this->paymentService = $paymentService;
         $this->resMes = config('response-en');
+        $this->oneSignalService = $oneSignal;
     }
 
     public function store(Request $request, Menu $menu)
@@ -379,7 +382,7 @@ class RestaurantCartController extends CartController
         $request['order_items'] = $this->getOrderItems($menuCart->menuCartItems);
         $request['customer_slug'] = auth('customers')->user()->slug;
 
-        $order = new RestaurantOrderController($this->messageService, $this->paymentService);
+        $order = new RestaurantOrderController($this->messageService, $this->paymentService, $this->oneSignalService);
         $result = $order->store($request);
 
         if (json_decode($result->getContent(), true)['status'] === 201) {

@@ -28,12 +28,17 @@ class NotificationService implements NotificationServiceInterface
 
     public function sendUserNotification($users, $message, $title, $data, $delay, $type = "alert")
     {
-
         $request = new OneSignalRequest('user', $users, $message);
         $request->data = $this->preparePushData($data, $type);
         $request->title = $title;
         $request->send_after = $delay;
+        $request->large_icon = "https://beehive-admin-panel.hivestage.com/static/media/beehive-logo.e6ff694d.png";
 
+        if ($type == "restaurant_order") {
+            $request->url = "restaurants/orders/" . $data['slug'];
+        } else if ($type == "shop_order") {
+            $request->url = "shops/orders/" . $data['slug'];
+        }
         $response = $this->oneSignalService->sendPush($request);
 
         if (isset($response['errors'])) {
@@ -66,10 +71,9 @@ class NotificationService implements NotificationServiceInterface
 
         $request = new OneSignalRequest('driver', $users, $message);
         $request->url = 'job?&slug=' . $order['slug'] . '&orderStatus=' . $order['order_status'];
-        $request->data = $this->preparePushData($data, $type);
+        $request->data = $this->preparePushData($order, $type);
 
-        $response = $this->oneSignalService->sendPush($request);
-        Log::info($response);
+        $this->oneSignalService->sendPush($request);
     }
 
 

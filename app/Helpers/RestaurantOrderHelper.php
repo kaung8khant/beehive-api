@@ -532,7 +532,7 @@ trait RestaurantOrderHelper
 
             $message = $message ? $message : 'An order has been updated.';
 
-            $notiService->sendDriverOrderUpdateNoti($driver, $order, $messsage);
+            $notiService->sendDriverOrderUpdateNoti($driver, $order, $message);
         }
     }
     private static function sendUserPushNotifications($notiService, $order, $message = null)

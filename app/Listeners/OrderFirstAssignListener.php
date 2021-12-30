@@ -10,7 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Services\OneSignalService\NotificationServiceInterface;
 use Illuminate\Queue\InteractsWithQueue;
 
-class OrderFirstAssignListener
+class OrderFirstAssignListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
@@ -46,6 +46,7 @@ class OrderFirstAssignListener
     {
 
         if (count($event->driver) == 0) {
+
             $restaurantBranch = RestaurantBranch::where('slug', $event->order->restaurant_branch_info['slug'])->first();
 
             $driver = $this->driverRealtime->getAvailableDrivers($event->driver);
@@ -65,6 +66,7 @@ class OrderFirstAssignListener
             }
 
             if (isset($driverSlug)) {
+
                 $this->repository->assignDriver($event->order, $driverSlug);
                 $this->oneSignal->sendDriverNotification(
                     array($driverSlug),

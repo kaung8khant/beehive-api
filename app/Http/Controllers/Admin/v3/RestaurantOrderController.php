@@ -241,7 +241,7 @@ class RestaurantOrderController extends Controller
         RestaurantOrderHelper::createOrderStatus($restaurantOrder, $request->status);
 
         $restaurantOrder['order_status'] = $request->status;
-        RestaurantOrderHelper::sendPushNotifications($restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);
+        RestaurantOrderHelper::sendPushNotifications($this->oneSignalService, $restaurantOrder, $restaurantOrder->restaurant_branch_id, 'Order Number:' . $restaurantOrder->invoice_id . ', is now ' . $request->status);
 
         if ($request->status === 'cancelled') {
             $message = Setting::where('key', 'customer_restaurant_order_cancel')->value('value');
