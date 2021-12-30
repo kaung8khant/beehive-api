@@ -135,7 +135,7 @@ trait ShopOrderHelper
 
         $message = $message ? $message : 'Your order has been updated!';
 
-        $notiService->sendUserNotification($user, $message, null, $order, null, 'restaurant_order');
+        $notiService->sendUserNotification($user, $message, null, $order, null, 'shop_order');
     }
 
     private static function preparePushData($order)

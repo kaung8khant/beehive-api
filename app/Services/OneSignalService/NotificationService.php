@@ -32,11 +32,12 @@ class NotificationService implements NotificationServiceInterface
         $request->data = $this->preparePushData($data, $type);
         $request->title = $title;
         $request->send_after = $delay;
+        $request->large_icon = "https://beehive-admin-panel.hivestage.com/static/media/beehive-logo.e6ff694d.png";
 
-        if ($type == "restaruant_order") {
-            $request->url = "restaurants/orders/" . $order->slug;
+        if ($type == "restaurant_order") {
+            $request->url = "restaurants/orders/" . $data['slug'];
         } else if ($type == "shop_order") {
-            $request->url = "shops/orders/" . $order->slug;
+            $request->url = "shops/orders/" . $data['slug'];
         }
         $response = $this->oneSignalService->sendPush($request);
 
